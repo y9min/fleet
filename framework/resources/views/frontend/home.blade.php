@@ -49,8 +49,14 @@
     .main-menubar {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
         width: 100%;
+        position: relative;
+    }
+    
+    .navbar-brand {
+        position: absolute;
+        left: 0;
     }
 
     .navbar-nav {

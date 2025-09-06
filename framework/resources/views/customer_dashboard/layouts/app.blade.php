@@ -110,7 +110,7 @@
 
 
 
-    <script src="{{ asset('assets/vendor/jquery-3.6.0.min.js') }}"></script>
+    <!-- <script src="{{ asset('assets/vendor/jquery-3.6.0.min.js') }}"></script> -->
 
     <script src="{{ asset('assets/customer_dashboard/assets/js/core/popper.min.js') }}"></script>
     <script src="{{ asset('assets/customer_dashboard/assets/js/core/bootstrap.min.js') }}"></script>
@@ -120,7 +120,7 @@
 
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <!-- Temporarily disabled jQuery datepicker: <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script> -->
 
 
 
@@ -128,15 +128,15 @@
 
 
     <script>
-        $(document).ready(function() {
+        // Disabled jQuery - $(document).ready(function() {
 
-            $("#successAlert").fadeTo(5000, 0).slideUp(500, function() {
-                $(this).remove();
+            // Disabled jQuery - $("#successAlert").fadeTo(5000, 0).slideUp(500, function() {
+                // Disabled jQuery - $(this).remove();
             });
 
 
-            $("#errorAlert").fadeTo(5000, 0).slideUp(500, function() {
-                $(this).remove();
+            // Disabled jQuery - $("#errorAlert").fadeTo(5000, 0).slideUp(500, function() {
+                // Disabled jQuery - $(this).remove();
             });
         });
     </script>
@@ -176,12 +176,12 @@
 
 
     <script>
-        $(document).ready(function() {
+        // Disabled jQuery - $(document).ready(function() {
 
             var firstDropdownSelected = false;
 
             $('#stage + .dropdown-menu .dropdown-item').click(function() {
-                var selectedValue = $(this).text();
+                var selectedValue = // Disabled jQuery - $(this).text();
                 $('#stage').html(selectedValue +
                     ' <span class="arrow-icon"><img src="assets/customer_dashboard/assets/img/svg/icon _chevron-down_.svg"></span>'
                     );
@@ -196,7 +196,7 @@
             var secondDropdownSelected = false;
 
             $('#entries_page + .dropdown-menu .dropdown-item').click(function() {
-                var selectedValue = $(this).text();
+                var selectedValue = // Disabled jQuery - $(this).text();
                 $('#entries_page').html(selectedValue +
                     ' <span class="arrow-icon"><img src="assets/customer_dashboard/assets/img/svg/icon _chevron-down_.svg"></span>'
                     );
@@ -214,9 +214,9 @@
         });
     </script>
     <script>
-        $(document).ready(function() {
-            var $filterBtn = $("#dropdownMenuButton1");
-            var $filterOptions = $("#filterOptions");
+        // Disabled jQuery - $(document).ready(function() {
+            var $filterBtn = // Disabled jQuery - $("#dropdownMenuButton1");
+            var $filterOptions = // Disabled jQuery - $("#filterOptions");
 
             $filterBtn.on("click", function(event) {
                 event.stopPropagation();
@@ -227,7 +227,7 @@
                 }
             });
 
-            $("body").on("click", function(event) {
+            // Disabled jQuery - $("body").on("click", function(event) {
                 if (!$filterOptions.is(event.target) && $filterOptions.has(event.target).length === 0 &&
                     $filterOptions.css("display") === "block") {
                     $filterOptions.css("display", "none");
@@ -236,7 +236,7 @@
         });
     </script>
     <script>
-        $(document).ready(function() {
+        // Disabled jQuery - $(document).ready(function() {
             $('.custom-date-picker input[type="date"]').on('click', function() {
 
             });
@@ -251,14 +251,14 @@
     </script>
 
     <script>
-        $(document).ready(function() {
+        // Disabled jQuery - $(document).ready(function() {
 
-            $("#fileUploadButton").click(function() {
-                $("#myFile").click();
+            // Disabled jQuery - $("#fileUploadButton").click(function() {
+                // Disabled jQuery - $("#myFile").click();
             });
-            $("#myFile").change(function() {
-                var fileName = $(this).val().split('\\').pop();
-                $("#fileUploadButton.text").text(fileName);
+            // Disabled jQuery - $("#myFile").change(function() {
+                var fileName = // Disabled jQuery - $(this).val().split('\\').pop();
+                // Disabled jQuery - $("#fileUploadButton.text").text(fileName);
             });
         });
 

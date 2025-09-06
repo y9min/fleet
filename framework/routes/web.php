@@ -53,6 +53,9 @@ Route::group(['middleware' => ['IsInstalled', 'lang_check_user', 'front_enable']
     Route::get('contact', 'FrontEnd\HomeController@contact')->name('frontend.contact');
     Route::get('about', 'FrontEnd\HomeController@about')->name('frontend.about');
     Route::post('user-login', 'FrontEnd\HomeController@user_login');
+    Route::get('user-login', function () {
+        return redirect('/login');
+    });
     Route::get('booking-history/{id}', 'FrontEnd\HomeController@booking_history')->middleware('auth_user')->name('frontend.booking_history');
     Route::post('user-logout', 'FrontEnd\HomeController@user_logout');
    // Route::get('forgot-password', 'FrontEnd\HomeController@forgot');

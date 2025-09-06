@@ -3,7 +3,7 @@
     <!--
     @copyright
 
-  Fleet Manager v7.1.2
+  PCO Flow v7.1.2
 
   Copyright (C) 2017-2025 Hyvikk Solutions <https://hyvikk.com/> All rights reserved.
   Design and developed by Hyvikk Solutions <https://hyvikk.com/>  -->
@@ -26,7 +26,7 @@
 <div class="master">
     <div class="box" style="width: 50% !important;">
         <div class="header">
-            <img src="{{ asset('/assets/images/logo.png') }}" height="55px" alt="">
+            <img src="{{ asset('/assets/images/pco-flow-logo.png') }}" height="55px" alt="PCO Flow">
             <h1 class="header__title">@yield('title')</h1>
         </div>
 

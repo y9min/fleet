@@ -7,7 +7,29 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <div class="main-menubar">
-                <a class="navbar-brand" href="{{ route('frontend.home') }}"> <img src="{{ asset('assets/images/pco-flow-logo.png') }}" width="172px" height="auto" alt="PCO Flow"></a> 
+                <a class="navbar-brand" href="{{ route('frontend.home') }}"> <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow"></a>
+                
+                <!-- Desktop Navigation -->
+                <div class="navbar-nav d-none d-lg-flex">
+                    <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">@lang('frontend.home')</a>
+                    <a class="nav-link" href="{{ route('frontend.about') }}">@lang('frontend.about')</a>
+                    <a class="nav-link" href="{{ route('frontend.contact') }}">@lang('frontend.contact')</a>
+                    @if (!Auth::guest() && (Auth::user()->user_type == 'C' || Auth::user()->user_type == 'D'))
+                        <a class="nav-link" href="{{ route('frontend.booking_history', Auth::user()->id) }}">@lang('frontend.booking_history')</a>
+                    @endif
+                </div>
+                
+                <!-- Auth Buttons Desktop -->
+                <div class="auth-buttons d-none d-lg-flex">
+                    @if (!Auth::guest() && (Auth::user()->user_type == 'C' || Auth::user()->user_type == 'D'))
+                        <a href="#" class="d-block link-dark-none text-decoration-none" data-bs-toggle="modal" data-bs-target="#profile-detail">
+                            <img src="{{ isset(Auth::user()->profile_pic) ? asset('uploads/'.Auth::user()->profile_pic) : asset('assets/images/l6.png') }}" alt="Profile" class="rounded-circle" width="40" height="40">
+                        </a>
+                    @else
+                        <a href="{{url('/login')}}" class="btn">@lang('frontend.login')</a>
+                        <a href="{{url('/sign_up')}}" class="btn">@lang('frontend.sign_up')</a>
+                    @endif
+                </div> 
 
                 <div class="res-collapse d-flex d-sm-flex d-md-flex d-lg-none d-xl-none ">
                     @if (!Auth::guest() && (Auth::user()->user_type == 'C' || Auth::user()->user_type == 'D'))

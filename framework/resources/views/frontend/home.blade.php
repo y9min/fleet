@@ -57,13 +57,32 @@
         height: auto;
     }
 
-    .navbar-collapse {
-        flex-grow: 1;
-        justify-content: center;
+    .main-menubar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
     }
 
     .navbar-nav {
+        display: flex;
+        align-items: center;
         margin: 0;
+        flex-direction: row;
+    }
+
+    .navbar-collapse {
+        flex-grow: 0;
+    }
+
+    .navbar-nav .nav-item {
+        margin: 0 15px;
+    }
+
+    .auth-buttons {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
     .navbar-nav .nav-link {

@@ -74,7 +74,7 @@
                 </div>
             @endif
         </main>
-    @elseif(request()->is('login') || request()->is('forgot-password'))
+    @elseif(request()->is('login') || request()->is('forgot-password') || request()->is('log_in'))
         <div class="container position-sticky z-index-sticky top-0 p-0">
             <div class="row">
                 <div class="col-12">

@@ -18,7 +18,10 @@ use Closure;
 class AuthUser {
 
         public function handle($request, Closure $next) {
-                if (Auth::user() && Auth::user()->user_type == "C") {
+                // Ensure we're using the web guard
+                auth()->shouldUse('web');
+                
+                if (Auth::guard('web')->check() && Auth::guard('web')->user()->user_type === 'C') {
                         return $next($request);
                 }
 

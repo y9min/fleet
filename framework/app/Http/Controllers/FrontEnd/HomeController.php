@@ -523,8 +523,6 @@ class HomeController extends Controller {
                                         } else {
                                                 // Standard form submission - redirect to dashboard
                                                 $request->session()->regenerate();
-                                                // Ensure user session is properly saved before redirect
-                                                session()->save();
                                                 
                                                 return redirect()->intended('/dashboard');
                                         }

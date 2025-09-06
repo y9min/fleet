@@ -503,7 +503,8 @@ class HomeController extends Controller {
                                         } else {
                                                 // Standard form submission - redirect to dashboard
                                                 $request->session()->regenerate();
-                                                return redirect()->intended('/dashboard');
+                                                // Force a simple redirect to test
+                                                return redirect('/dashboard')->with('success', 'Login successful!');
                                         }
                                 } else {
                                         Auth::logout();

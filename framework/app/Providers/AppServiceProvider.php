@@ -17,26 +17,29 @@ use Laravel\Passport\Console\KeysCommand;
 use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider {
-	/**
-	 * Bootstrap any application services.
-	 *
-	 * @return void
-	 */
-	public function boot() {
-		//
-	}
+        /**
+         * Bootstrap any application services.
+         *
+         * @return void
+         */
+        public function boot() {
+                // Force HTTPS for assets and URLs when in production or using HTTPS
+                if (request()->isSecure() || app()->environment('production')) {
+                    \URL::forceScheme('https');
+                }
+        }
 
-	/**
-	 * Register any application services.
-	 *
-	 * @return void
-	 */
-	public function register() {
-		// Passport::routes();
-		$this->commands([
-			InstallCommand::class,
-			ClientCommand::class,
-			KeysCommand::class,
-		]);
-	}
+        /**
+         * Register any application services.
+         *
+         * @return void
+         */
+        public function register() {
+                // Passport::routes();
+                $this->commands([
+                        InstallCommand::class,
+                        ClientCommand::class,
+                        KeysCommand::class,
+                ]);
+        }
 }

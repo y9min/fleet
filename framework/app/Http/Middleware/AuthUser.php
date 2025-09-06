@@ -21,6 +21,15 @@ class AuthUser {
                 // Ensure we're using the web guard
                 auth()->shouldUse('web');
                 
+                // DEBUG: Log middleware check
+                \Log::info('AuthUser middleware check', [
+                    'url' => $request->url(),
+                    'authenticated' => Auth::guard('web')->check(),
+                    'user_id' => Auth::guard('web')->check() ? Auth::guard('web')->user()->id : null,
+                    'user_type' => Auth::guard('web')->check() ? Auth::guard('web')->user()->user_type : null,
+                    'session_id' => session()->getId()
+                ]);
+                
                 if (Auth::guard('web')->check() && Auth::guard('web')->user()->user_type === 'C') {
                         return $next($request);
                 }

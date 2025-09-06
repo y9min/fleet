@@ -39,7 +39,7 @@
                 
                 </div>
                 <div class="collapse navbar-collapse" id="navbarsExample09">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a href="{{ url('/') }}"
                                 class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">@lang('frontend.home')</a>

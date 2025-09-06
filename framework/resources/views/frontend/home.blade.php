@@ -58,7 +58,7 @@
     }
 
     .navbar-nav {
-        margin-left: auto;
+        margin: 0 auto;
     }
 
     .navbar-nav .nav-link {
@@ -154,17 +154,18 @@
     /* Brand Logos */
     .brand-logos {
         padding: 60px 0;
-        background: #f8f9fa;
+        background: #032127;
     }
 
     .brand-logos img {
         height: 40px;
-        opacity: 0.6;
+        opacity: 0.4;
         transition: opacity 0.3s ease;
+        filter: brightness(0) invert(1);
     }
 
     .brand-logos img:hover {
-        opacity: 1;
+        opacity: 0.8;
     }
 
     /* Features Section */

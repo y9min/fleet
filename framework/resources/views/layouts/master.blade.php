@@ -26,7 +26,7 @@
 <div class="master">
     <div class="box" style="width: 50% !important;">
         <div class="header">
-            <img src="{{ asset('/assets/images/pco-flow-logo.png') }}" height="55px" alt="PCO Flow">
+            <img src="{{ asset('/assets/images/pco-flow-logo.png') }}" height="55px" alt="PCO Flow 2">
             <h1 class="header__title">@yield('title')</h1>
         </div>
 

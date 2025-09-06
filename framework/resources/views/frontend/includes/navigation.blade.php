@@ -7,7 +7,7 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <div class="main-menubar">
-                <a class="navbar-brand" href="{{ route('frontend.home') }}"> <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow"></a>
+                <a class="navbar-brand" href="{{ route('frontend.home') }}"> <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow 2"></a>
                 
  
 

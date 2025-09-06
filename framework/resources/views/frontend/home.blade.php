@@ -409,6 +409,16 @@
         margin-bottom: 2rem;
     }
 
+    /* Footer Styles */
+    footer {
+        background: #F7F7F7 !important;
+        color: #333 !important;
+    }
+
+    footer a {
+        color: #333 !important;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .hero-title {

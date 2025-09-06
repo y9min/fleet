@@ -95,13 +95,20 @@
 
 @section('script')
 <script>
-// Simple and reliable login handler
+// Completely reliable login handler using native form submission with AJAX enhancement
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Setting up login form...');
     var loginForm = document.getElementById('loginForm');
     if (!loginForm) {
         console.error('Login form not found');
         return;
+    }
+    
+    // Make sure we have essential elements
+    var tokenInput = loginForm.querySelector('input[name="_token"]');
+    if (!tokenInput) {
+        console.error('CSRF token input not found - form will use native submission');
+        return; // Let form submit normally
     }
     
     loginForm.addEventListener('submit', function(e) {
@@ -121,11 +128,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear previous alerts
         if (alertContainer) alertContainer.innerHTML = '';
         
-        var email = this.querySelector('input[name="email"]').value;
+        var email = this.querySelector('input[name="email"]').value.trim();
         var password = this.querySelector('input[name="password"]').value;
-        // Get CSRF token with fallback to form input
-        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        var token = csrfMeta ? csrfMeta.getAttribute('content') : this.querySelector('input[name="_token"]').value;
+        var token = tokenInput.value; // Use the hidden input token directly
+        
+        // Debug information
+        console.log('Form action:', this.action);
+        console.log('CSRF Token length:', token.length);
+        console.log('Email:', email);
         
         // Basic validation
         if (!email || !password) {
@@ -136,19 +146,22 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Get login URL safely - use form action as primary, global variable as fallback
-        var loginUrl = this.action || (typeof login !== 'undefined' ? login : '{{ url("user-login") }}');
+        // Create FormData object for proper form submission
+        var formData = new FormData();
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('_token', token);
         
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', loginUrl, true);
+        xhr.open('POST', this.action, true);
         xhr.timeout = 15000; // 15 second timeout
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.setRequestHeader('X-CSRF-TOKEN', token);
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.setRequestHeader('Accept', 'application/json');
         
         xhr.onload = function() {
             console.log('Response received. Status:', xhr.status);
+            console.log('Response headers:', xhr.getAllResponseHeaders());
             console.log('Response text:', xhr.responseText);
             
             // Reset loading state
@@ -182,6 +195,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else if (xhr.status === 419) {
                 if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Session expired. Please refresh the page and try again.</div>';
+            } else if (xhr.status === 422) {
+                // Validation errors
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    var errorHtml = '<div class="alert alert-danger"><ul class="mb-0">';
+                    if (response && response.errors) {
+                        Object.keys(response.errors).forEach(function(field) {
+                            response.errors[field].forEach(function(message) {
+                                errorHtml += '<li style="color:#fff">' + message + '</li>';
+                            });
+                        });
+                    } else {
+                        errorHtml += '<li style="color:#fff">Validation error occurred.</li>';
+                    }
+                    errorHtml += '</ul></div>';
+                    if (alertContainer) alertContainer.innerHTML = errorHtml;
+                } catch (e) {
+                    if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Validation error occurred.</div>';
+                }
             } else {
                 if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Network error. Status: ' + xhr.status + '</div>';
             }
@@ -203,8 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Request timeout. Please try again.</div>';
         };
         
-        var formData = 'email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&_token=' + encodeURIComponent(token);
-        console.log('Sending request...');
+        console.log('Sending request with FormData...');
         xhr.send(formData);
     });
 });

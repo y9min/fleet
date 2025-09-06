@@ -72,7 +72,6 @@
 
     .navbar-nav .nav-item {
         margin: 0 15px;
-        padding-left: 20%;
     }
 
     .auth-buttons {

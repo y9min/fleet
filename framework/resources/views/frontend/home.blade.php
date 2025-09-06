@@ -257,6 +257,10 @@
         position: relative;
     }
 
+    .testimonial-section .section-title {
+        color: white;
+    }
+
     .testimonial-card {
         background: rgba(255,255,255,0.1);
         backdrop-filter: blur(10px);

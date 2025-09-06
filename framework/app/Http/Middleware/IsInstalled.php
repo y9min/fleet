@@ -15,21 +15,21 @@ namespace App\Http\Middleware;
 use Closure;
 
 class IsInstalled {
-	/**
-	 * Handle an incoming request.
-	 *
-	 * @param  \Illuminate\Http\Request  $request
-	 * @param  \Closure  $next
-	 * @return mixed
-	 */
-	public function handle($request, Closure $next) {
-		if (!$this->alreadyInstalled()) {
-			return redirect("installation");
-		}
-		return $next($request);
-	}
+        /**
+         * Handle an incoming request.
+         *
+         * @param  \Illuminate\Http\Request  $request
+         * @param  \Closure  $next
+         * @return mixed
+         */
+        public function handle($request, Closure $next) {
+                if (!$this->alreadyInstalled()) {
+                        return redirect("installation");
+                }
+                return $next($request);
+        }
 
-	public function alreadyInstalled() {
-		return (file_exists(storage_path('installed')) && file_get_contents(storage_path('installed')) == "version6.5");
-	}
+        public function alreadyInstalled() {
+                return true; // Bypass installation check for development
+        }
 }

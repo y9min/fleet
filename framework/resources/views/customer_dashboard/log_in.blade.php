@@ -95,121 +95,118 @@
 
 @section('script')
 <script>
-// Test jQuery availability and provide fallback
-if (typeof $ === 'undefined') {
-    console.log('jQuery not loaded, falling back to vanilla JS');
-    // Fallback to vanilla JavaScript
-    document.addEventListener('DOMContentLoaded', function() {
-        var loginForm = document.getElementById('loginForm');
-        if (!loginForm) return;
-        
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('Submitting login with vanilla JS fallback...');
-            
-            var email = this.querySelector('input[name="email"]').value;
-            var password = this.querySelector('input[name="password"]').value;
-            var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', login, true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.setRequestHeader('X-CSRF-TOKEN', token);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response.status == 100) {
-                        window.location.href = "{{ url('/dashboard') }}";
-                    } else {
-                        alert('Login failed: Invalid credentials');
-                    }
-                } else {
-                    alert('Login failed: Network error');
-                }
-            };
-            
-            xhr.send('email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&_token=' + encodeURIComponent(token));
-        });
-    });
-} else {
-    console.log('jQuery loaded successfully');
-    $(document).ready(function() {
-    $('#loginForm').on('submit', function(e) {
+// Simple and reliable login handler
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Setting up login form...');
+    var loginForm = document.getElementById('loginForm');
+    if (!loginForm) {
+        console.error('Login form not found');
+        return;
+    }
+    
+    loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
+        console.log('Form submitted, processing login...');
         
-        var form = $(this);
-        var submitBtn = form.find('button[type="submit"]');
-        var spinner = submitBtn.find('.spinner-border');
-        var btnText = submitBtn.find('.hide-2');
-        var alertContainer = $('.custom-alerts');
+        var submitBtn = this.querySelector('button[type="submit"]');
+        var spinner = submitBtn.querySelector('.spinner-border');
+        var btnText = submitBtn.querySelector('.hide-2');
+        var alertContainer = document.querySelector('.custom-alerts');
         
         // Show loading state
-        spinner.removeClass('d-none');
-        btnText.text('Please wait...');
-        submitBtn.prop('disabled', true);
+        if (spinner) spinner.classList.remove('d-none');
+        if (btnText) btnText.textContent = 'Please wait...';
+        submitBtn.disabled = true;
         
         // Clear previous alerts
-        alertContainer.empty();
+        if (alertContainer) alertContainer.innerHTML = '';
         
-        // Get form data
-        var formData = form.serialize();
+        var email = this.querySelector('input[name="email"]').value;
+        var password = this.querySelector('input[name="password"]').value;
+        // Get CSRF token with fallback to form input
+        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        var token = csrfMeta ? csrfMeta.getAttribute('content') : this.querySelector('input[name="_token"]').value;
         
-        $.ajax({
-            url: login,
-            type: 'POST',
-            data: formData,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function(response) {
-                spinner.addClass('d-none');
-                btnText.text(@json(__('frontend.login')));
-                submitBtn.prop('disabled', false);
-                
-                if (response.status == 100) {
-                    alertContainer.html('<div class="alert alert-success">Login successful! Redirecting...</div>');
-                    setTimeout(function() {
-                        window.location.href = "{{ url('/dashboard') }}";
-                    }, 1000);
-                } else if (response.status == 200) {
-                    alertContainer.html('<div class="alert alert-danger">Access denied. Customer account required.</div>');
-                } else if (response.status == 300) {
-                    alertContainer.html('<div class="alert alert-danger">Invalid email or password. Please try again.</div>');
-                } else {
-                    alertContainer.html('<div class="alert alert-danger">Login failed. Please try again.</div>');
-                }
-            },
-            error: function(xhr, status, error) {
-                spinner.addClass('d-none');
-                btnText.text(@json(__('frontend.login')));
-                submitBtn.prop('disabled', false);
-                
-                if (xhr.status === 419) {
-                    alertContainer.html('<div class="alert alert-danger">Session expired. Please refresh the page and try again.</div>');
-                } else if (xhr.status === 422) {
-                    var response = xhr.responseJSON;
-                    var errorHtml = '<div class="alert alert-danger"><ul class="mb-0">';
-                    if (response && response.errors) {
-                        $.each(response.errors, function(field, messages) {
-                            $.each(messages, function(index, message) {
-                                errorHtml += '<li style="color:#fff">' + message + '</li>';
-                            });
-                        });
+        // Basic validation
+        if (!email || !password) {
+            if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Please enter both email and password.</div>';
+            if (spinner) spinner.classList.add('d-none');
+            if (btnText) btnText.textContent = @json(__('frontend.login'));
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        // Get login URL safely - use form action as primary, global variable as fallback
+        var loginUrl = this.action || (typeof login !== 'undefined' ? login : '{{ url("user-login") }}');
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', loginUrl, true);
+        xhr.timeout = 15000; // 15 second timeout
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.setRequestHeader('X-CSRF-TOKEN', token);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Accept', 'application/json');
+        
+        xhr.onload = function() {
+            console.log('Response received. Status:', xhr.status);
+            console.log('Response text:', xhr.responseText);
+            
+            // Reset loading state
+            if (spinner) spinner.classList.add('d-none');
+            if (btnText) btnText.textContent = @json(__('frontend.login'));
+            submitBtn.disabled = false;
+            
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log('Parsed response:', response);
+                    
+                    if (response.status == 100) {
+                        // Successful login
+                        if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-success">Login successful! Redirecting...</div>';
+                        setTimeout(function() {
+                            window.location.href = "{{ url('/dashboard') }}";
+                        }, 1000);
+                    } else if (response.status == 200) {
+                        // Wrong user type - admin trying to use customer login
+                        if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">This login is for customers only. Please use the admin login.</div>';
+                    } else if (response.status == 300) {
+                        // Invalid credentials
+                        if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Invalid email or password. Please try again.</div>';
                     } else {
-                        errorHtml += '<li style="color:#fff">Validation error occurred. Please check your input.</li>';
+                        if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Login failed. Status: ' + response.status + '</div>';
                     }
-                    errorHtml += '</ul></div>';
-                    alertContainer.html(errorHtml);
-                } else {
-                    alertContainer.html('<div class="alert alert-danger">Network error. Please check your connection and try again.</div>');
+                } catch (e) {
+                    console.error('Failed to parse response:', e);
+                    if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Invalid response from server.</div>';
                 }
+            } else if (xhr.status === 419) {
+                if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Session expired. Please refresh the page and try again.</div>';
+            } else {
+                if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Network error. Status: ' + xhr.status + '</div>';
             }
-        });
+        };
+        
+        xhr.onerror = function() {
+            console.error('Network error occurred');
+            if (spinner) spinner.classList.add('d-none');
+            if (btnText) btnText.textContent = @json(__('frontend.login'));
+            submitBtn.disabled = false;
+            if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Network error. Please check your connection and try again.</div>';
+        };
+        
+        xhr.ontimeout = function() {
+            console.error('Request timeout occurred');
+            if (spinner) spinner.classList.add('d-none');
+            if (btnText) btnText.textContent = @json(__('frontend.login'));
+            submitBtn.disabled = false;
+            if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Request timeout. Please try again.</div>';
+        };
+        
+        var formData = 'email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password) + '&_token=' + encodeURIComponent(token);
+        console.log('Sending request...');
+        xhr.send(formData);
     });
-    }); // Close jQuery document ready
-} // Close if-else block
+});
 </script>
 @endsection

@@ -76,7 +76,7 @@
 
                                 <form role="form" method="POST" action="{{ url('user-login') }}">
 
-                                    {!! csrf_field() !!}
+                                    @csrf
 
                                     <label class="form_label">@lang('frontend.Email_Id')</label>
 

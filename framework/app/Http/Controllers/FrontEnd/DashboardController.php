@@ -49,8 +49,8 @@ class DashboardController extends Controller {
             $monthsall[] = date('M', mktime(0, 0, 0, $i, 1));
             $countsall[] = 0;
         }
-        $data_all = Bookings::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-                    ->where('customer_id',Auth::user()->id)->groupBy('month')
+        $data_all = Bookings::selectRaw('EXTRACT(month FROM created_at) as month, COUNT(*) as count')
+                    ->where('customer_id',Auth::user()->id)->groupByRaw('EXTRACT(month FROM created_at)')
                     ->whereYear('bookings.created_at', date('Y'))
                     ->get();
         foreach ($data_all as $item) {
@@ -59,8 +59,8 @@ class DashboardController extends Controller {
         }
        //Bookings Cancelled Counts
         $cancel_booking=Bookings::join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-		->where('bookings.customer_id',Auth::user()->id)->where('bookings_meta.key', 'ride_status')
-		->where('bookings_meta.value', 'Cancelled')
+                ->where('bookings.customer_id',Auth::user()->id)->where('bookings_meta.key', 'ride_status')
+                ->where('bookings_meta.value', 'Cancelled')
         ->whereYear('bookings.created_at', date('Y'))->count();
         $monthscancel = [];
         $countscancel = [];
@@ -69,12 +69,12 @@ class DashboardController extends Controller {
             $monthscancel[] = date('M', mktime(0, 0, 0, $i, 1));
             $countscancel[] = 0;
         }
-        $data_cancel = Bookings::selectRaw('MONTH(bookings.created_at) as month, COUNT(*) as count')
+        $data_cancel = Bookings::selectRaw('EXTRACT(month FROM bookings.created_at) as month, COUNT(*) as count')
             ->where('bookings.customer_id',Auth::user()->id)
             ->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
             ->where('bookings_meta.key', 'ride_status')
             ->where('bookings_meta.value', 'Cancelled')
-            ->groupBy('month')
+            ->groupByRaw('EXTRACT(month FROM bookings.created_at)')
             ->whereYear('bookings.created_at', date('Y'))
             ->get();
         foreach ($data_cancel as $item) {
@@ -83,9 +83,9 @@ class DashboardController extends Controller {
         }
         //Bookings Completed Counts
         $complete_booking=Bookings::join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-		->where('bookings.customer_id',Auth::user()->id)
+                ->where('bookings.customer_id',Auth::user()->id)
         ->where('bookings_meta.key', 'ride_status')
-		->where('bookings_meta.value', 'Completed')
+                ->where('bookings_meta.value', 'Completed')
         ->whereYear('bookings.created_at', date('Y'))
         ->count();
         $monthscomplete = [];
@@ -95,12 +95,12 @@ class DashboardController extends Controller {
             $monthscomplete[] = date('M', mktime(0, 0, 0, $i, 1));
             $countscomplete[] = 0;
         }
-        $data_complete = Bookings::selectRaw('MONTH(bookings.created_at) as month, COUNT(*) as count')
+        $data_complete = Bookings::selectRaw('EXTRACT(month FROM bookings.created_at) as month, COUNT(*) as count')
         ->where('bookings.customer_id',Auth::user()->id)   
         ->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
             ->where('bookings_meta.key', 'ride_status')
             ->where('bookings_meta.value', 'Completed')
-            ->groupBy('month')
+            ->groupByRaw('EXTRACT(month FROM bookings.created_at)')
             ->whereYear('bookings.created_at', date('Y'))
             ->get();
         foreach ($data_complete as $item) {
@@ -121,12 +121,12 @@ class DashboardController extends Controller {
             $monthspending[] = date('M', mktime(0, 0, 0, $i, 1));
             $countspending[] = 0; // Initialize count to 0 for each month
         }
-        $data_pending = Bookings::selectRaw('MONTH(bookings.created_at) as month, COUNT(*) as count')
+        $data_pending = Bookings::selectRaw('EXTRACT(month FROM bookings.created_at) as month, COUNT(*) as count')
         ->where('bookings.customer_id',Auth::user()->id)    
         ->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
             ->where('bookings_meta.key', 'ride_status')
             ->whereIn('bookings_meta.value', ['Pending','Upcoming'])
-            ->groupBy('month')
+            ->groupByRaw('EXTRACT(month FROM bookings.created_at)')
             ->whereYear('bookings.created_at', date('Y'))
             ->get();
         foreach ($data_pending as $item) {
@@ -142,8 +142,8 @@ class DashboardController extends Controller {
         ->join('booking_payments', 'booking_payments.booking_id', '=', 'bookings.id')
         ->whereIn('booking_payments.payment_status', ['succeeded', 'Success'])
         ->whereYear('booking_payments.created_at', date('Y'))
-        ->selectRaw('MONTH(booking_payments.created_at) as month, SUM(booking_payments.amount) as total_amount')
-        ->groupBy('month')
+        ->selectRaw('EXTRACT(month FROM booking_payments.created_at) as month, SUM(booking_payments.amount) as total_amount')
+        ->groupByRaw('EXTRACT(month FROM booking_payments.created_at)')
         ->get();
         // Initialize array for all 12 months (default to 0)
         $countsexpense = array_fill(0, 12, 0);
@@ -152,7 +152,7 @@ class DashboardController extends Controller {
             $countsexpense[$monthIndex] = $item->total_amount; // Store the total amount for that month
         }
         $ongoing_booking=Bookings::join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-		->where('bookings.customer_id',Auth::user()->id)
+                ->where('bookings.customer_id',Auth::user()->id)
         ->where('bookings_meta.key', 'ride_status') 
         ->whereYear('bookings.created_at', date('Y'))
         ->where('bookings_meta.value', 'Ongoing')->count();
@@ -174,7 +174,7 @@ class DashboardController extends Controller {
         ->where('bookings_meta.key', 'total_time')
         ->whereNotNull('bookings_meta.value')
         ->where('bookings_meta.value', '<>', '')
-        ->selectRaw('SUM(HOUR(bookings_meta.value) * 60 + MINUTE(bookings_meta.value)) AS total_minutes')
+        ->selectRaw('SUM(EXTRACT(hour FROM bookings_meta.value::time) * 60 + EXTRACT(minute FROM bookings_meta.value::time)) AS total_minutes')
         ->value('total_minutes');
         $total_kms_sum = Bookings::join('bookings_meta', 'bookings.id', '=', 'bookings_meta.booking_id')
         ->where('bookings.customer_id',Auth::user()->id)
@@ -188,15 +188,15 @@ class DashboardController extends Controller {
     public function show_info()
     {
          $data=Bookings::select('bookings.*')->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-		->where('bookings_meta.key', 'ride_status')
-		->where('bookings_meta.value', 'Ongoing')->where('bookings.customer_id',Auth::user()->id)->orderBy('bookings.id','DESC')->get();
+                ->where('bookings_meta.key', 'ride_status')
+                ->where('bookings_meta.value', 'Ongoing')->where('bookings.customer_id',Auth::user()->id)->orderBy('bookings.id','DESC')->get();
         return view('customer_dashboard.show_dashboard',compact('data'));
     }
     public function single_booking_info(Request $request)
     {
         $data=Bookings::select('bookings.*')->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-		->where('bookings_meta.key', 'ride_status')
-		->where('bookings_meta.value', 'Ongoing')->where('bookings.id',$request->id)->first();
+                ->where('bookings_meta.key', 'ride_status')
+                ->where('bookings_meta.value', 'Ongoing')->where('bookings.id',$request->id)->first();
         $vehicle = null;
         $v_type = null;
         $driver = null;
@@ -225,14 +225,14 @@ class DashboardController extends Controller {
     public function single_ongoing_booking(Request $request)
     {
         $data=Bookings::select('bookings.*')->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-		->where('bookings_meta.key', 'ride_status')
-		->where('bookings_meta.value', 'Ongoing')->where('bookings.id',$request->booking_id)->where('bookings.customer_id',Auth::user()->id)->latest()->get();
+                ->where('bookings_meta.key', 'ride_status')
+                ->where('bookings_meta.value', 'Ongoing')->where('bookings.id',$request->booking_id)->where('bookings.customer_id',Auth::user()->id)->latest()->get();
         return view('customer_dashboard.show_dashboard',compact('data'));
     }
     public function booking_details($id)
     {
         $data=Bookings::select('bookings.*')->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-		->where('bookings.id',$id)->first();
+                ->where('bookings.id',$id)->first();
         $vehicle = null;
         $v_type = null;
         $driver = null;
@@ -261,7 +261,7 @@ class DashboardController extends Controller {
     public function booking_details_ongoing($id)
     {
          $data=Bookings::select('bookings.*')->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-		->where('bookings.id',$id)->first();
+                ->where('bookings.id',$id)->first();
         $vehicle = null;
         $v_type = null;
         $driver = null;

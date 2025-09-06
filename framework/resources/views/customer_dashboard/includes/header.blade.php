@@ -124,7 +124,7 @@
 
     <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 space" href="{{url('/')}}">
 
-        <img src="{{ asset('assets/images/'. Hyvikk::get('logo_img') ) }}" width="172px" height="auto">
+        <img src="{{ asset('assets/images/pco-flow-logo.png') }}" width="172px" height="auto">
 
     </a>
 

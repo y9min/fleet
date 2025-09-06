@@ -20,18 +20,16 @@
         overflow-x: hidden;
     }
 
-    /* Hero Section */
-    .hero-modern {
+    /* Header and Hero Combined */
+    .main-section-background {
         background: var(--primary-gradient);
         min-height: 100vh;
-        display: flex;
-        align-items: center;
         color: white;
         position: relative;
         overflow: hidden;
     }
 
-    .hero-modern::before {
+    .main-section-background::before {
         content: '';
         position: absolute;
         top: 0;
@@ -40,7 +38,68 @@
         bottom: 0;
         background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
         opacity: 0.3;
+        z-index: 1;
     }
+
+    /* Header Styles */
+    .header {
+        padding: 15px 0;
+        position: relative;
+        z-index: 10;
+    }
+
+    .navbar {
+        padding: 0;
+    }
+    
+    .navbar-brand img {
+        width: 140px;
+        height: auto;
+    }
+
+    .navbar-nav {
+        margin-left: auto;
+    }
+
+    .navbar-nav .nav-link {
+        color: white !important;
+        font-weight: 500;
+        margin: 0 10px;
+        transition: all 0.3s ease;
+    }
+
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link.active {
+        color: var(--success-color) !important;
+    }
+
+    .signin-signup-btn .btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 500;
+        margin-left: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .signin-signup-btn .btn:hover {
+        background: white;
+        color: var(--dark-bg);
+        border-color: white;
+    }
+
+    /* Hero Section */
+    .hero-modern {
+        padding: 80px 0 100px;
+        display: flex;
+        align-items: center;
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+
 
     .hero-content {
         position: relative;
@@ -340,6 +399,18 @@
         
         .dashboard-preview img {
             transform: none;
+        }
+
+        .navbar-brand img {
+            width: 120px;
+        }
+
+        .navbar-toggler {
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
     }
 </style>

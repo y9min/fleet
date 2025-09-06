@@ -502,7 +502,8 @@ class HomeController extends Controller {
                                                 return response()->json(['status'=>100]);
                                         } else {
                                                 // Standard form submission - redirect to dashboard
-                                                return redirect('/dashboard');
+                                                $request->session()->regenerate();
+                                                return redirect()->intended('/dashboard');
                                         }
                                 } else {
                                         Auth::logout();

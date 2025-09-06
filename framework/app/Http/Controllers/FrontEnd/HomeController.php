@@ -492,7 +492,7 @@ class HomeController extends Controller {
                 else
                 {
                         if (Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
-                                $user = Login::user();
+                                $user = Auth::guard('web')->user();
                                 if ($user->user_type == "C") {
                                         $user->login_status = 1;
                                         $user->save();

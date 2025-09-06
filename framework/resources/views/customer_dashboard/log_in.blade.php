@@ -74,7 +74,7 @@
 
                                 @endif
 
-                                <form role="form" method="POST" action="{{ url('user-login') }}">
+                                <form role="form" method="POST" action="{{ url('user-login') }}" onsubmit="return true;">
 
                                     @csrf
 

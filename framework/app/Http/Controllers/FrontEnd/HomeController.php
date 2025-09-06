@@ -477,6 +477,13 @@ class HomeController extends Controller {
                 return redirect('/');
         }
         public function user_login(Request $request) {
+                // DEBUG: Log login attempt
+                \Log::info("HomeController user_login called", [
+                    "email" => $request->email,
+                    "session_id" => session()->getId(),
+                    "is_ajax" => $request->expectsJson() || $request->ajax(),
+                    "auth_check_before" => Auth::guard("web")->check()
+                ]);
 
 
                 $validator = Validator::make($request->all(), [
@@ -485,9 +492,15 @@ class HomeController extends Controller {
         ]);
   
         if ($validator->fails()) {
+                    // Check if this is an AJAX request
+                    if ($request->expectsJson() || $request->ajax()) {
                         return response()->json([
-                                'error' => $validator->errors(),
-                        ]);
+                                "error" => $validator->errors(),
+                        ], 422);
+                    } else {
+                        // Standard form submission - redirect back with errors
+                        return back()->withErrors($validator)->withInput();
+                    }
         }
                 else
                 {
@@ -495,6 +508,13 @@ class HomeController extends Controller {
                                 $user = Auth::guard('web')->user();
                                 if ($user->user_type == "C") {
                                         $user->login_status = 1;
+                                                // DEBUG: Log successful authentication
+                                                \Log::info("Authentication successful", [
+                                                    "user_id" => $user->id,
+                                                    "user_type" => $user->user_type,
+                                                    "session_id" => session()->getId(),
+                                                    "auth_check_after" => Auth::guard("web")->check()
+                                                ]);
                                         $user->save();
                                         // return redirect('/');
                                         // Check if this is an AJAX request

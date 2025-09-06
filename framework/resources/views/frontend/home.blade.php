@@ -86,21 +86,27 @@
         color: var(--success-color) !important;
     }
 
-    .signin-signup-btn .btn {
+    .auth-buttons .btn {
         background: rgba(255,255,255,0.2);
         color: white;
         border: 2px solid rgba(255,255,255,0.3);
-        padding: 8px 20px;
+        padding: 10px 20px;
         border-radius: 25px;
         font-weight: 500;
         margin-left: 10px;
         transition: all 0.3s ease;
+        white-space: nowrap;
+        min-width: 80px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
     }
 
-    .signin-signup-btn .btn:hover {
+    .auth-buttons .btn:hover {
         background: white;
         color: var(--dark-bg);
         border-color: white;
+        text-decoration: none;
     }
 
     /* Hero Section */

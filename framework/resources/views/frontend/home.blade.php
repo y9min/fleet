@@ -442,7 +442,41 @@
         }
 
         .navbar-brand img {
-            width: 120px;
+            width: 100px;
+        }
+
+        .main-menubar {
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+
+        .navbar-nav {
+            position: static !important;
+            left: auto !important;
+            transform: none !important;
+            flex-direction: column;
+            background: var(--dark-bg);
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+
+        .navbar-nav .nav-item {
+            margin: 5px 0;
+        }
+
+        .auth-buttons {
+            margin-top: 15px;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .signin-signup-btn .btn,
+        .auth-buttons .btn {
+            margin-left: 0;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: center;
         }
 
         .navbar-toggler {

@@ -491,7 +491,7 @@ class HomeController extends Controller {
         }
                 else
                 {
-                        if (Login::attempt(['email' => $request->email, 'password' => $request->password])) {
+                        if (Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
                                 $user = Login::user();
                                 if ($user->user_type == "C") {
                                         $user->login_status = 1;
@@ -503,8 +503,10 @@ class HomeController extends Controller {
                                         } else {
                                                 // Standard form submission - redirect to dashboard
                                                 $request->session()->regenerate();
-                                                // Force a simple redirect to test
-                                                return redirect('/dashboard')->with('success', 'Login successful!');
+                                                // Ensure user session is properly saved before redirect
+                                                session()->save();
+                                                
+                                                return redirect()->intended('/dashboard');
                                         }
                                 } else {
                                         Auth::logout();

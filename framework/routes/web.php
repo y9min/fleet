@@ -5,7 +5,7 @@
 
 
 
-Route::group(['middleware' => ['IsInstalled', 'lang_check_user', 'front_enable']], function () {
+Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_enable']], function () {
 
 
     Route::get('/login', function () {

@@ -57,14 +57,13 @@
         height: auto;
     }
 
-    .navbar-nav {
-        margin: 0 auto;
+    .navbar-collapse {
+        flex-grow: 1;
         justify-content: center;
-        width: 100%;
     }
 
-    .navbar-collapse {
-        flex-grow: 0;
+    .navbar-nav {
+        margin: 0;
     }
 
     .navbar-nav .nav-link {

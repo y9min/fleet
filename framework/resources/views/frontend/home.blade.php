@@ -92,7 +92,8 @@
         color: var(--success-color) !important;
     }
 
-    .signin-signup-btn .btn {
+    .signin-signup-btn .btn,
+    .auth-buttons .btn {
         background: rgba(255,255,255,0.2);
         color: white;
         border: 2px solid rgba(255,255,255,0.3);
@@ -101,6 +102,8 @@
         font-weight: 500;
         margin-left: 10px;
         transition: all 0.3s ease;
+        white-space: nowrap;
+        min-width: 80px;
     }
 
     .signin-signup-btn .btn:hover {

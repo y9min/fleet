@@ -112,7 +112,7 @@
                         </div>
                     @endif
 
-                    @if ($errors->any())
+                    @if (isset($errors) && $errors->any())
                     <div class="clear-msg">
                           <div class="alert alert-danger col-sm-10 offset-sm-1 " style="color:white;">
                             <ul>

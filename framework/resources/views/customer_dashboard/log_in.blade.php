@@ -56,7 +56,7 @@
 
                                 @endif
 
-                                @if (count($errors->login) > 0)
+                                @if (isset($errors->login) && count($errors->login) > 0)
 
                                     <div id="errorAlert"  class="alert alert-danger p-1">
 

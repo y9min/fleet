@@ -22,7 +22,7 @@
 
     /* Header and Hero Combined */
     .main-section-background {
-        background: var(--primary-gradient);
+        background: #032127;
         min-height: 100vh;
         color: white;
         position: relative;
@@ -59,6 +59,12 @@
 
     .navbar-nav {
         margin: 0 auto;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .navbar-collapse {
+        flex-grow: 0;
     }
 
     .navbar-nav .nav-link {

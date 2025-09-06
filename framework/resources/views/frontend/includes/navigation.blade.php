@@ -38,7 +38,7 @@
                     @endif
                 
                 </div>
-                <div class="collapse navbar-collapse" id="navbarsExample09">
+                <div class="collapse navbar-collapse justify-content-center" id="navbarsExample09">
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a href="{{ url('/') }}"

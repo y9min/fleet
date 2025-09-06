@@ -146,8 +146,8 @@
     }
 
     .btn-hero {
-        background: white;
-        color: #032127;
+        background: linear-gradient(to right, #80D7DF, #BDEFCC);
+        color: white;
         padding: 15px 35px;
         border-radius: 50px;
         font-weight: 600;
@@ -374,7 +374,7 @@
     }
 
     .btn-pricing {
-        background: var(--primary-gradient);
+        background: linear-gradient(to right, #80D7DF, #BDEFCC);
         color: white;
         padding: 12px 30px;
         border-radius: 50px;

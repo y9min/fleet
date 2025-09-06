@@ -56,13 +56,13 @@
 
                                 @endif
 
-                                @if (isset($errors->login) && count($errors->login) > 0)
+                                @if (isset($errors) && $errors->any())
 
                                     <div id="errorAlert"  class="alert alert-danger p-1">
 
                                         <ul class="mb-0">
 
-                                            @foreach ($errors->login->all() as $error)
+                                            @foreach ($errors->all() as $error)
 
                                                 <li style="color:#fff">{{ $error }}</li>
 
@@ -74,7 +74,7 @@
 
                                 @endif
 
-                                <form role="form" method="POST">
+                                <form role="form" method="POST" action="{{ url('user-login') }}">
 
                                     {!! csrf_field() !!}
 
@@ -116,7 +116,7 @@
 
                                     <div class="text-center">
 
-                                        <button type="button" class="btn w-100 mt-3 mb-0 login_btn pt-2 pb-2 login-user">
+                                        <button type="submit" class="btn w-100 mt-3 mb-0 login_btn pt-2 pb-2">
 
 
 

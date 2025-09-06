@@ -18,7 +18,7 @@
                        @if(Hyvikk::frontend('footer_link'))
  
  
-                       @foreach(json_decode(Hyvikk::frontend('footer_link')) as $f)
+                       @foreach((json_decode(Hyvikk::frontend('footer_link')) ?? []) as $f)
          
                          
          
@@ -58,7 +58,7 @@
                @if(Hyvikk::frontend('footer_link'))
  
  
-               @foreach(json_decode(Hyvikk::frontend('footer_link')) as $f)
+               @foreach((json_decode(Hyvikk::frontend('footer_link')) ?? []) as $f)
  
                    <a href="{{$f->url}}" target="_blank" class="me-0 me-sm-3 me-md-4 me-lg-4 me-xl-5 mb-sm-0 mb-2">{{$f->title}}</a>
                  

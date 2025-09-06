@@ -21,19 +21,10 @@ class AuthUser {
                 // Ensure we're using the web guard
                 auth()->shouldUse('web');
                 
-                // DEBUG: Log middleware check
-                \Log::info('AuthUser middleware check', [
-                    'url' => $request->url(),
-                    'authenticated' => Auth::guard('web')->check(),
-                    'user_id' => Auth::guard('web')->check() ? Auth::guard('web')->user()->id : null,
-                    'user_type' => Auth::guard('web')->check() ? Auth::guard('web')->user()->user_type : null,
-                    'session_id' => session()->getId()
-                ]);
-                
                 // Check if user is authenticated
                 if (!Auth::guard('web')->check()) {
                     // Not authenticated - redirect to login with intended URL
-                    return redirect()->guest('/user-login');
+                    return redirect()->guest('/login');
                 }
                 
                 $user = Auth::guard('web')->user();
@@ -48,6 +39,6 @@ class AuthUser {
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
                 
-                return redirect()->guest('/user-login')->with('error', 'Please log in as a customer.');
+                return redirect()->guest('/login')->with('error', 'Please log in as a customer.');
         }
 }

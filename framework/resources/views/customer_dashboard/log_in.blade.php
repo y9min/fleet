@@ -34,7 +34,7 @@
                                     </div>
                                 @endif
 
-                                <form role="form" method="POST" action="{{ url('user-login') }}" id="loginForm" onsubmit="return true;">
+                                <form role="form" method="POST" action="{{ url('user-login') }}" id="loginForm">
                                     @csrf
                                     <label class="form_label">@lang('frontend.Email_Id')</label>
                                     <div class="mb-3">
@@ -95,85 +95,81 @@
 
 @section('script')
 <script>
-// Wait for jQuery to be loaded before using it
-function waitForJQuery(callback) {
-    if (typeof jQuery !== 'undefined') {
-        callback(jQuery);
-    } else {
-        setTimeout(function() {
-            waitForJQuery(callback);
-        }, 50);
-    }
-}
-
-waitForJQuery(function($) {
-    $(document).ready(function() {
-        console.log('Login page JavaScript loaded successfully with jQuery');
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    if (!loginForm) return;
+    
+    loginForm.addEventListener('submit', function(e) {
+        // Show loading spinner
+        const spinner = document.querySelector('.hide-1');
+        const buttonText = document.querySelector('.hide-2');
+        const submitBtn = document.querySelector('.login_btn');
         
-        // Remove the onsubmit attribute to prevent conflicts
-        $('#loginForm').removeAttr('onsubmit');
+        if (spinner) spinner.classList.remove('d-none');
+        if (buttonText) buttonText.style.display = 'none';
+        if (submitBtn) submitBtn.disabled = true;
         
-        // Handle login form submission
-        $('#loginForm').on('submit', function(e) {
-            console.log('Form submission triggered');
-            
-            // Show loading spinner
-            $('.hide-1').removeClass('d-none');
-            $('.hide-2').hide();
-            $('.login_btn').prop('disabled', true);
-            
-            // Clear any previous error messages
-            $('.custom-alerts').empty();
-            $('.error-email1, .error-password1').empty().removeClass('text-danger');
-            
-            var email = $('.user-email').val().trim();
-            var password = $('.user-pass').val().trim();
-            
-            // Basic validation
-            if (!email || !password) {
-                showError('Please fill in all required fields.');
-                resetButton();
-                e.preventDefault();
-                return false;
-            }
-            
-            if (!isValidEmail(email)) {
-                showError('Please enter a valid email address.');
-                resetButton();
-                e.preventDefault();
-                return false;
-            }
-            
-            console.log('Form validation passed, submitting to:', $(this).attr('action'));
-            console.log('Email:', email);
-            console.log('Form method:', $(this).attr('method'));
-            
-            // Allow form to submit normally
-            return true;
-        });
+        // Clear any previous error messages
+        const alerts = document.querySelector('.custom-alerts');
+        if (alerts) alerts.innerHTML = '';
         
-        function isValidEmail(email) {
-            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailPattern.test(email);
+        const email = document.querySelector('.user-email').value.trim();
+        const password = document.querySelector('.user-pass').value.trim();
+        
+        // Basic validation
+        if (!email || !password) {
+            showError('Please fill in all required fields.');
+            resetButton();
+            e.preventDefault();
+            return false;
         }
         
-        function showError(message) {
-            $('.custom-alerts').html('<div class="alert alert-danger alert-dismissible fade show" role="alert">' + 
-                message + 
-                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        if (!isValidEmail(email)) {
+            showError('Please enter a valid email address.');
+            resetButton();
+            e.preventDefault();
+            return false;
         }
         
-        function resetButton() {
-            $('.hide-1').addClass('d-none');
-            $('.hide-2').show();
-            $('.login_btn').prop('disabled', false);
-        }
-        
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            $('.alert').fadeOut();
-        }, 5000);
+        // Form is valid, allow submission
+        return true;
     });
+    
+    function isValidEmail(email) {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailPattern.test(email);
+    }
+    
+    function showError(message) {
+        const alerts = document.querySelector('.custom-alerts');
+        if (alerts) {
+            alerts.innerHTML = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' + 
+                message + 
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+        }
+    }
+    
+    function resetButton() {
+        const spinner = document.querySelector('.hide-1');
+        const buttonText = document.querySelector('.hide-2');
+        const submitBtn = document.querySelector('.login_btn');
+        
+        if (spinner) spinner.classList.add('d-none');
+        if (buttonText) buttonText.style.display = 'block';
+        if (submitBtn) submitBtn.disabled = false;
+    }
+    
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                if (alert.parentNode) alert.parentNode.removeChild(alert);
+            }, 500);
+        });
+    }, 5000);
 });
 </script>
 @endsection

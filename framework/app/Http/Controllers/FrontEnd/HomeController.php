@@ -526,8 +526,8 @@ class HomeController extends Controller {
                                         if ($request->expectsJson() || $request->ajax()) {
                                                 return response()->json(['status'=>100]);
                                         } else {
-                                                // Standard form submission - redirect to dashboard
-                                                return redirect('/dashboard');
+                                                // Standard form submission - redirect to dashboard  
+                                                return redirect()->to('/dashboard')->with('success', 'Login successful!');
                                         }
                                 } else {
                                         Auth::logout();

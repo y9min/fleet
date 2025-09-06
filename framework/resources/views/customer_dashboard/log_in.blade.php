@@ -34,7 +34,7 @@
                                     </div>
                                 @endif
 
-                                <form role="form" method="POST" action="{{ url('user-login') }}" id="loginForm">
+                                <form role="form" method="POST" action="{{ url('user-login') }}" id="loginForm" onsubmit="return true;">
                                     @csrf
                                     <label class="form_label">@lang('frontend.Email_Id')</label>
                                     <div class="mb-3">

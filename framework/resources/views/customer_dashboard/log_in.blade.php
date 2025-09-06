@@ -126,19 +126,33 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Get form data
         var formData = new FormData(loginForm);
-        var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        var csrfToken = document.querySelector('meta[name="csrf-token"]');
+        
+        if (!csrfToken) {
+            console.error('CSRF token not found in page');
+            alertContainer.innerHTML = '<div class="alert alert-danger">Security token missing. Please refresh the page and try again.</div>';
+            spinner.classList.add('d-none');
+            btnText.textContent = @json(__('frontend.login'));
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        csrfToken = csrfToken.getAttribute('content');
         
         // Create AJAX request
         var xhr = new XMLHttpRequest();
         xhr.open('POST', loginForm.action, true);
+        xhr.withCredentials = true; // Ensure cookies are sent with request
         xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.setRequestHeader('Accept', 'application/json');
+        // Don't set Content-Type manually when using FormData - browser sets it automatically with boundary
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 console.log('Request completed with status:', xhr.status);
                 console.log('Response text:', xhr.responseText);
+                console.log('Response headers:', xhr.getAllResponseHeaders());
                 
                 // Reset loading state
                 spinner.classList.add('d-none');
@@ -204,6 +218,14 @@ document.addEventListener('DOMContentLoaded', function() {
             btnText.textContent = @json(__('frontend.login'));
             submitBtn.disabled = false;
             alertContainer.innerHTML = '<div class="alert alert-danger">Network error. Please check your connection and try again.</div>';
+        };
+        
+        xhr.ontimeout = function() {
+            console.error('Request timeout occurred');
+            spinner.classList.add('d-none');
+            btnText.textContent = @json(__('frontend.login'));
+            submitBtn.disabled = false;
+            alertContainer.innerHTML = '<div class="alert alert-danger">Request timeout. Please try again.</div>';
         };
         
         xhr.send(formData);

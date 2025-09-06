@@ -1,15 +1,16 @@
 @extends('frontend.layouts.app')
 
 @section('title') 
-    <title>Streamline Your Business, One Click at a Time | {{ Hyvikk::get('app_name') }}</title>
+    <title>Streamline Your PCO Operations, One Click at a Time | PCO Flow</title>
 @endsection
 
 @section('css')
 <style>
     :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --dark-bg: #1a1a2e;
-        --accent-color: #4facfe;
+        --primary-gradient: linear-gradient(135deg, #7FD7E1 0%, #032127 100%);
+        --dark-bg: #032127;
+        --accent-color: #7FD7E1;
+        --success-color: #B7ECCE;
         --text-light: #f8f9fa;
         --card-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
@@ -62,7 +63,7 @@
 
     .btn-hero {
         background: white;
-        color: #667eea;
+        color: #032127;
         padding: 15px 35px;
         border-radius: 50px;
         font-weight: 600;
@@ -75,7 +76,8 @@
     .btn-hero:hover {
         transform: translateY(-2px);
         box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-        color: #667eea;
+        background: var(--success-color);
+        color: #032127;
     }
 
     .dashboard-preview {
@@ -282,7 +284,7 @@
     }
 
     .plan-features li i {
-        color: #48bb78;
+        color: var(--success-color);
         margin-right: 0.5rem;
     }
 
@@ -351,14 +353,14 @@
         <div class="row align-items-center">
             <div class="col-lg-6">
                 <div class="hero-content">
-                    <h1 class="hero-title">Streamline Your Business, One Click at a Time</h1>
-                    <p class="hero-subtitle">Powerful fleet management platform that transforms how you manage vehicles, drivers, and operations with intelligent automation and real-time insights.</p>
+                    <h1 class="hero-title">Streamline Your PCO Operations</h1>
+                    <p class="hero-subtitle">Complete Private Hire Vehicle management platform designed for PCO operators. Manage drivers, bookings, vehicles, and compliance with intelligent automation and real-time insights.</p>
                     <a href="#features" class="btn-hero">Get Started Today</a>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="dashboard-preview">
-                    <img src="{{ asset('assets/images/dashboard-preview.png') }}" alt="Fleet Manager Dashboard" class="img-fluid">
+                    <img src="{{ asset('assets/images/dashboard-preview.png') }}" alt="PCO Flow Dashboard" class="img-fluid">
                 </div>
             </div>
         </div>
@@ -391,15 +393,15 @@
 <!-- Features Section -->
 <section class="features-section" id="features">
     <div class="container">
-        <h2 class="section-title">Why Choose Fleet Manager</h2>
+        <h2 class="section-title">Why Choose PCO Flow</h2>
         <div class="row">
             <div class="col-lg-4 col-md-6">
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <h3 class="feature-title">Real-time Analytics</h3>
-                    <p class="feature-description">Get comprehensive insights into your fleet operations with real-time tracking, performance metrics, and detailed reporting.</p>
+                    <h3 class="feature-title">Driver Management</h3>
+                    <p class="feature-description">Complete driver portal with license tracking, document management, and performance analytics designed for PCO operations.</p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
@@ -407,8 +409,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-mobile-alt"></i>
                     </div>
-                    <h3 class="feature-title">Mobile Optimization</h3>
-                    <p class="feature-description">Access your fleet management system anywhere, anytime with our fully responsive mobile-optimized platform.</p>
+                    <h3 class="feature-title">Booking System</h3>
+                    <p class="feature-description">Advanced booking management with customer portal, automated dispatch, and integrated payment processing for seamless operations.</p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
@@ -416,8 +418,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-shield-alt"></i>
                     </div>
-                    <h3 class="feature-title">Advanced Security</h3>
-                    <p class="feature-description">Enterprise-grade security with encrypted data transmission, secure authentication, and compliance with industry standards.</p>
+                    <h3 class="feature-title">Compliance Management</h3>
+                    <p class="feature-description">Built-in TfL compliance tools, license monitoring, and automated reminders to keep your PCO operation fully compliant.</p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
@@ -425,8 +427,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-route"></i>
                     </div>
-                    <h3 class="feature-title">Route Optimization</h3>
-                    <p class="feature-description">Intelligent route planning and optimization to reduce fuel costs, improve efficiency, and enhance customer satisfaction.</p>
+                    <h3 class="feature-title">Live Tracking</h3>
+                    <p class="feature-description">Real-time vehicle tracking with telematics integration for monitoring driver behavior, vehicle location, and trip analytics.</p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
@@ -434,8 +436,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-credit-card"></i>
                     </div>
-                    <h3 class="feature-title">Payment Integration</h3>
-                    <p class="feature-description">Seamless payment processing with multiple payment gateways, automated billing, and financial reporting.</p>
+                    <h3 class="feature-title">Financial Management</h3>
+                    <p class="feature-description">Comprehensive invoicing, commission tracking, driver payments, and financial reporting tailored for PCO business models.</p>
                 </div>
             </div>
             <div class="col-lg-4 col-md-6">
@@ -443,8 +445,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-cogs"></i>
                     </div>
-                    <h3 class="feature-title">API Integration</h3>
-                    <p class="feature-description">Flexible API integration capabilities to connect with your existing systems and third-party applications.</p>
+                    <h3 class="feature-title">Multi-Platform</h3>
+                    <p class="feature-description">Native mobile apps for drivers and customers, web dashboard for operators, and API integration with third-party systems.</p>
                 </div>
             </div>
         </div>
@@ -454,14 +456,14 @@
 <!-- Testimonial Section -->
 <section class="testimonial-section">
     <div class="container">
-        <h2 class="section-title">See How Fleet Manager is Transforming Businesses</h2>
+        <h2 class="section-title">See How PCO Flow is Transforming Private Hire Operations</h2>
         <div class="testimonial-card">
-            <p class="testimonial-text">"Fleet Manager has revolutionized our operations. The real-time tracking and automated reporting have saved us countless hours and significantly improved our efficiency."</p>
+            <p class="testimonial-text">"PCO Flow has completely transformed our private hire business. The driver management system and compliance tools have saved us hours of admin work while keeping us fully TfL compliant."</p>
             <div class="testimonial-author">
                 <img src="{{ asset('assets/images/testimonial-avatar.jpg') }}" alt="Sarah Johnson" class="author-avatar">
                 <div class="author-info">
-                    <h4>Sarah Johnson</h4>
-                    <p>Operations Director, TransportCo</p>
+                    <h4>Michael Thompson</h4>
+                    <p>Fleet Manager, London Cabs Ltd</p>
                 </div>
             </div>
         </div>
@@ -471,7 +473,7 @@
 <!-- Pricing Section -->
 <section class="pricing-section">
     <div class="container">
-        <h2 class="section-title">Flexible Plans Tailored for Every Business</h2>
+        <h2 class="section-title">Flexible Plans Tailored for PCO Operators</h2>
         <div class="row justify-content-center">
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="pricing-card">
@@ -479,8 +481,8 @@
                     <div class="plan-price">$29</div>
                     <p class="plan-period">per month</p>
                     <ul class="plan-features">
-                        <li><i class="fas fa-check"></i> Up to 10 vehicles</li>
-                        <li><i class="fas fa-check"></i> Basic reporting</li>
+                        <li><i class="fas fa-check"></i> Up to 10 drivers</li>
+                        <li><i class="fas fa-check"></i> Basic driver portal</li>
                         <li><i class="fas fa-check"></i> Email support</li>
                         <li><i class="fas fa-check"></i> Mobile app access</li>
                     </ul>
@@ -493,11 +495,11 @@
                     <div class="plan-price">$79</div>
                     <p class="plan-period">per month</p>
                     <ul class="plan-features">
-                        <li><i class="fas fa-check"></i> Up to 50 vehicles</li>
-                        <li><i class="fas fa-check"></i> Advanced analytics</li>
+                        <li><i class="fas fa-check"></i> Up to 50 drivers</li>
+                        <li><i class="fas fa-check"></i> TfL compliance tools</li>
                         <li><i class="fas fa-check"></i> Priority support</li>
-                        <li><i class="fas fa-check"></i> API integration</li>
-                        <li><i class="fas fa-check"></i> Custom reporting</li>
+                        <li><i class="fas fa-check"></i> Payment processing</li>
+                        <li><i class="fas fa-check"></i> Financial reporting</li>
                     </ul>
                     <button class="btn-pricing">Get Started</button>
                 </div>
@@ -508,11 +510,11 @@
                     <div class="plan-price">Custom</div>
                     <p class="plan-period">contact us</p>
                     <ul class="plan-features">
-                        <li><i class="fas fa-check"></i> Unlimited vehicles</li>
+                        <li><i class="fas fa-check"></i> Unlimited drivers</li>
                         <li><i class="fas fa-check"></i> White-label solution</li>
                         <li><i class="fas fa-check"></i> 24/7 dedicated support</li>
                         <li><i class="fas fa-check"></i> Custom integrations</li>
-                        <li><i class="fas fa-check"></i> On-premise deployment</li>
+                        <li><i class="fas fa-check"></i> Multi-operator setup</li>
                     </ul>
                     <button class="btn-pricing">Contact Sales</button>
                 </div>
@@ -524,8 +526,8 @@
 <!-- CTA Section -->
 <section class="cta-section">
     <div class="container">
-        <h2 class="cta-title">Ready to Transform Your Fleet?</h2>
-        <p class="cta-subtitle">Join thousands of businesses already using Fleet Manager to streamline their operations.</p>
+        <h2 class="cta-title">Ready to Transform Your PCO Operations?</h2>
+        <p class="cta-subtitle">Join hundreds of PCO operators already using PCO Flow to streamline their private hire business.</p>
         <a href="{{ route('frontend.contact') }}" class="btn-hero">Start Your Free Trial</a>
     </div>
 </section>

@@ -224,7 +224,7 @@
     .feature-icon {
         width: 60px;
         height: 60px;
-        background: var(--primary-gradient);
+        background: linear-gradient(to right, #80D7DF, #BDEFCC);
         border-radius: 15px;
         display: flex;
         align-items: center;

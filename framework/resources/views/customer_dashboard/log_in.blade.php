@@ -95,143 +95,108 @@
 
 @section('script')
 <script>
-// Vanilla JS implementation that doesn't rely on jQuery
+// Simple login handler that doesn't require external dependencies
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, setting up login form...');
-    
     var loginForm = document.getElementById('loginForm');
-    if (!loginForm) {
-        console.error('Login form not found');
-        return;
-    }
-    
-    console.log('Login form found, binding submit event...');
+    if (!loginForm) return;
     
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        console.log('Form submitted, starting AJAX request...');
         
-        var submitBtn = loginForm.querySelector('button[type="submit"]');
+        // Get elements
+        var submitBtn = this.querySelector('button[type="submit"]');
         var spinner = submitBtn.querySelector('.spinner-border');
         var btnText = submitBtn.querySelector('.hide-2');
         var alertContainer = document.querySelector('.custom-alerts');
         
-        // Show loading state
-        spinner.classList.remove('d-none');
-        btnText.textContent = 'Please wait...';
+        // Show loading
+        if (spinner) spinner.classList.remove('d-none');
+        if (btnText) btnText.textContent = 'Please wait...';
         submitBtn.disabled = true;
         
-        // Clear previous errors
-        alertContainer.innerHTML = '';
+        // Clear alerts
+        if (alertContainer) alertContainer.innerHTML = '';
         
-        // Get form data
-        var formData = new FormData(loginForm);
-        var csrfToken = document.querySelector('meta[name="csrf-token"]');
+        // Get form data and CSRF token
+        var formData = new FormData(this);
+        var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
         
-        if (!csrfToken) {
-            console.error('CSRF token not found in page');
-            alertContainer.innerHTML = '<div class="alert alert-danger">Security token missing. Please refresh the page and try again.</div>';
-            spinner.classList.add('d-none');
-            btnText.textContent = @json(__('frontend.login'));
-            submitBtn.disabled = false;
-            return;
+        // Create XMLHttpRequest
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', this.action, true);
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        if (csrfToken) {
+            xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
         }
         
-        csrfToken = csrfToken.getAttribute('content');
-        
-        // Create AJAX request
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', loginForm.action, true);
-        xhr.withCredentials = true; // Ensure cookies are sent with request
-        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        xhr.setRequestHeader('Accept', 'application/json');
-        // Don't set Content-Type manually when using FormData - browser sets it automatically with boundary
-        
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                console.log('Request completed with status:', xhr.status);
-                console.log('Response text:', xhr.responseText);
-                console.log('Response headers:', xhr.getAllResponseHeaders());
-                
-                // Reset loading state
-                spinner.classList.add('d-none');
-                btnText.textContent = @json(__('frontend.login'));
-                submitBtn.disabled = false;
-                
-                if (xhr.status === 200) {
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        console.log('Parsed response:', response);
-                        
-                        if (response.status == 100) {
-                            // Successful login
-                            alertContainer.innerHTML = '<div class="alert alert-success">Login successful! Redirecting...</div>';
-                            setTimeout(function() {
-                                window.location.href = response.redirect_url || "{{ url('/dashboard') }}";
-                            }, 1000);
-                        } else if (response.status == 200) {
-                            // Not a customer user
-                            alertContainer.innerHTML = '<div class="alert alert-danger">Access denied. Customer account required.</div>';
-                        } else if (response.status == 300) {
-                            // Invalid credentials
-                            alertContainer.innerHTML = '<div class="alert alert-danger">Invalid email or password. Please try again.</div>';
-                        } else {
-                            alertContainer.innerHTML = '<div class="alert alert-danger">Login failed. Unexpected status: ' + response.status + '</div>';
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse JSON response:', e);
-                        alertContainer.innerHTML = '<div class="alert alert-danger">Invalid response from server. Please try again.</div>';
+        xhr.onload = function() {
+            resetButton();
+            
+            if (xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.status == 100) {
+                        if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-success">Login successful! Redirecting...</div>';
+                        setTimeout(function() {
+                            window.location.href = "{{ url('/dashboard') }}";
+                        }, 1000);
+                    } else if (response.status == 200) {
+                        if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Access denied. Customer account required.</div>';
+                    } else if (response.status == 300) {
+                        if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Invalid email or password. Please try again.</div>';
+                    } else {
+                        if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Login failed. Please try again.</div>';
                     }
-                } else if (xhr.status === 422) {
-                    // Validation errors
-                    try {
-                        var response = JSON.parse(xhr.responseText);
-                        var errorHtml = '<div class="alert alert-danger"><ul class="mb-0">';
-                        if (response.errors) {
-                            for (var field in response.errors) {
-                                response.errors[field].forEach(function(message) {
-                                    errorHtml += '<li style="color:#fff">' + message + '</li>';
-                                });
-                            }
-                        } else if (response.error) {
-                            errorHtml += '<li style="color:#fff">' + response.error + '</li>';
-                        }
-                        errorHtml += '</ul></div>';
-                        alertContainer.innerHTML = errorHtml;
-                    } catch (e) {
-                        alertContainer.innerHTML = '<div class="alert alert-danger">Validation error occurred. Please check your input.</div>';
-                    }
-                } else if (xhr.status === 419) {
-                    alertContainer.innerHTML = '<div class="alert alert-danger">Session expired. Please refresh the page and try again.</div>';
-                } else if (xhr.status >= 500) {
-                    alertContainer.innerHTML = '<div class="alert alert-danger">Server error occurred. Please try again later.</div>';
-                } else {
-                    alertContainer.innerHTML = '<div class="alert alert-danger">An error occurred. Status: ' + xhr.status + ' - ' + xhr.statusText + '</div>';
+                } catch (e) {
+                    if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Invalid response from server.</div>';
                 }
+            } else if (xhr.status === 419) {
+                if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Session expired. Please refresh the page and try again.</div>';
+            } else if (xhr.status === 422) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    var errorHtml = '<div class="alert alert-danger">Validation error: ';
+                    if (response.errors) {
+                        var errorMessages = [];
+                        for (var field in response.errors) {
+                            errorMessages.push(response.errors[field].join(', '));
+                        }
+                        errorHtml += errorMessages.join(', ');
+                    } else {
+                        errorHtml += 'Please check your input';
+                    }
+                    errorHtml += '</div>';
+                    if (alertContainer) alertContainer.innerHTML = errorHtml;
+                } catch (e) {
+                    if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Validation error occurred.</div>';
+                }
+            } else {
+                if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Login failed. Status: ' + xhr.status + '</div>';
             }
         };
         
         xhr.onerror = function() {
-            console.error('Network error occurred');
-            spinner.classList.add('d-none');
-            btnText.textContent = @json(__('frontend.login'));
-            submitBtn.disabled = false;
-            alertContainer.innerHTML = '<div class="alert alert-danger">Network error. Please check your connection and try again.</div>';
+            resetButton();
+            if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Network error. Please check your connection and try again.</div>';
         };
         
         xhr.ontimeout = function() {
-            console.error('Request timeout occurred');
-            spinner.classList.add('d-none');
-            btnText.textContent = @json(__('frontend.login'));
-            submitBtn.disabled = false;
-            alertContainer.innerHTML = '<div class="alert alert-danger">Request timeout. Please try again.</div>';
+            resetButton();
+            if (alertContainer) alertContainer.innerHTML = '<div class="alert alert-danger">Request timeout. Please try again.</div>';
         };
         
+        function resetButton() {
+            if (spinner) spinner.classList.add('d-none');
+            if (btnText) btnText.textContent = @json(__('frontend.login'));
+            submitBtn.disabled = false;
+        }
+        
+        // Set timeout and send
+        xhr.timeout = 30000;
         xhr.send(formData);
     });
-    
-    console.log('Login form initialization completed');
 });
 </script>
 @endsection

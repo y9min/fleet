@@ -464,28 +464,6 @@
     </div>
 </section>
 
-<!-- Brand Logos -->
-<section class="brand-logos">
-    <div class="container">
-        <div class="row justify-content-center align-items-center">
-            <div class="col-6 col-md-2 text-center mb-3">
-                <img src="{{ asset('assets/images/brand1.png') }}" alt="Brand 1" class="img-fluid">
-            </div>
-            <div class="col-6 col-md-2 text-center mb-3">
-                <img src="{{ asset('assets/images/brand2.png') }}" alt="Brand 2" class="img-fluid">
-            </div>
-            <div class="col-6 col-md-2 text-center mb-3">
-                <img src="{{ asset('assets/images/brand3.png') }}" alt="Brand 3" class="img-fluid">
-            </div>
-            <div class="col-6 col-md-2 text-center mb-3">
-                <img src="{{ asset('assets/images/brand4.png') }}" alt="Brand 4" class="img-fluid">
-            </div>
-            <div class="col-6 col-md-2 text-center mb-3">
-                <img src="{{ asset('assets/images/brand5.png') }}" alt="Brand 5" class="img-fluid">
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- Features Section -->
 <section class="features-section" id="features">

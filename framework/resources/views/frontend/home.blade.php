@@ -64,6 +64,9 @@
         align-items: center;
         margin: 0;
         flex-direction: row;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
     }
 
     .navbar-collapse {

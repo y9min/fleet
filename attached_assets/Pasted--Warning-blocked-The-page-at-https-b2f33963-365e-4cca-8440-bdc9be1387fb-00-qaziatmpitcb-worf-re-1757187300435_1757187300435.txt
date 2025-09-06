@@ -1,0 +1,25 @@
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/css/soft-ui-dashboard.css?v=345435. This content was blocked and must be served over HTTPS. (login, line 16)
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/css/style.css?v=1.1234568. This content was blocked and must be served over HTTPS. (login, line 17)
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/main_css/app.css. This content was blocked and must be served over HTTPS. (login, line 18)
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/main_css/app1.css. This content was blocked and must be served over HTTPS. (login, line 19)
+
+[Warning] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/images/pco-flow-logo.png. This content was automatically upgraded and should be served over HTTPS. (login, line 37)
+
+[Warning] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login contains a form which targets an insecure URL http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/user-login. (login, line 378)
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/js/core/popper.min.js. This content was blocked and must be served over HTTPS.
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/js/core/bootstrap.min.js. This content was blocked and must be served over HTTPS.
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/js/plugins/perfect-scrollbar.min.js. This content was blocked and must be served over HTTPS.
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/js/plugins/smooth-scrollbar.min.js. This content was blocked and must be served over HTTPS.
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/js/plugins/chartjs.min.js. This content was blocked and must be served over HTTPS.
+
+[Warning] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/img/svg/pexels-taras-makarenko%201.jpg. This content was automatically upgraded and should be served over HTTPS.
+
+[Warning] [blocked] The page at https://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/login requested insecure content from http://b2f33963-365e-4cca-8440-bdc9be1387fb-00-qaziatmpitcb.worf.replit.dev/assets/customer_dashboard/assets/img/favicon.png. This content was blocked and must be served over HTTPS.

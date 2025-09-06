@@ -30,10 +30,24 @@ class AuthUser {
                     'session_id' => session()->getId()
                 ]);
                 
-                if (Auth::guard('web')->check() && Auth::guard('web')->user()->user_type === 'C') {
-                        return $next($request);
+                // Check if user is authenticated
+                if (!Auth::guard('web')->check()) {
+                    // Not authenticated - redirect to login with intended URL
+                    return redirect()->guest('/user-login');
                 }
-
-                return redirect("/user-login");
+                
+                $user = Auth::guard('web')->user();
+                
+                // Check if user is the correct type (customer)
+                if ($user->user_type === 'C') {
+                    return $next($request);
+                }
+                
+                // Wrong user type - logout and redirect to customer login
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                
+                return redirect()->guest('/user-login')->with('error', 'Please log in as a customer.');
         }
 }

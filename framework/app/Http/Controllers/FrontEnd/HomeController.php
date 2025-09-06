@@ -474,6 +474,7 @@ class HomeController extends Controller {
                 $user->save();
                 Auth::logout();
                 $request->session()->invalidate();
+                $request->session()->regenerateToken();
                 return redirect('/');
         }
         public function user_login(Request $request) {
@@ -517,13 +518,15 @@ class HomeController extends Controller {
                                                 ]);
                                         $user->save();
                                         // return redirect('/');
+                                        // Regenerate session for security (both AJAX and form)
+                                        $request->session()->regenerate();
+                                        $request->session()->regenerateToken();
+                                        
                                         // Check if this is an AJAX request
                                         if ($request->expectsJson() || $request->ajax()) {
                                                 return response()->json(['status'=>100]);
                                         } else {
                                                 // Standard form submission - redirect to dashboard
-                                                $request->session()->regenerate();
-                                                
                                                 return redirect()->intended('/dashboard');
                                         }
                                 } else {

@@ -23,8 +23,10 @@ class AppServiceProvider extends ServiceProvider {
          * @return void
          */
         public function boot() {
-                // Force HTTPS for all URLs to prevent mixed content issues
-                \URL::forceScheme('https');
+                // Force HTTPS only when the request comes from HTTPS (Replit proxy)
+                if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+                    \URL::forceScheme('https');
+                }
         }
 
         /**

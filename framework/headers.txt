@@ -1,0 +1,9 @@
+HTTP/1.1 419 unknown status
+Host: localhost:5000
+Connection: close
+X-Powered-By: PHP/8.2.29
+Cache-Control: no-cache, private
+date: Sat, 06 Sep 2025 18:22:42 GMT
+Content-Type: text/html; charset=UTF-8
+Set-Cookie: pco_flow_session=eyJpdiI6Im0zenZkbFQ1UnIvT0U2cHlpOUZQQWc9PSIsInZhbHVlIjoia2NRTmJtMVh3VjFzVnZTZTBMd2FBVmpwRHdCUnpwbm9LUEJsUGMzSDM0cTZLRDBZZEVUclhEekhha3hUN2ZWYnNiRk84ZmRrTCt3TjA1cUVkZkdMOVJoczB3dlRtRklrR3FPL1hZTmxiNWROS3B6YjJ6Vjg0cFFkTDhIVEVIclAiLCJtYWMiOiIwMGQ5Y2IzYzRjYjM0MmMyNTcxMmNhMTI1ZDdlZjljODc1NzBhYWRjNWFkNjRkYjAyMzlhZTMwZTU3YWMwNGQ2IiwidGFnIjoiIn0%3D; expires=Sat, 06 Sep 2025 20:22:42 GMT; Max-Age=7200; path=/; httponly
+

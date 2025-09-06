@@ -94,4 +94,86 @@
 @endsection
 
 @section('script')
+<script>
+// Wait for jQuery to be loaded before using it
+function waitForJQuery(callback) {
+    if (typeof jQuery !== 'undefined') {
+        callback(jQuery);
+    } else {
+        setTimeout(function() {
+            waitForJQuery(callback);
+        }, 50);
+    }
+}
+
+waitForJQuery(function($) {
+    $(document).ready(function() {
+        console.log('Login page JavaScript loaded successfully with jQuery');
+        
+        // Remove the onsubmit attribute to prevent conflicts
+        $('#loginForm').removeAttr('onsubmit');
+        
+        // Handle login form submission
+        $('#loginForm').on('submit', function(e) {
+            console.log('Form submission triggered');
+            
+            // Show loading spinner
+            $('.hide-1').removeClass('d-none');
+            $('.hide-2').hide();
+            $('.login_btn').prop('disabled', true);
+            
+            // Clear any previous error messages
+            $('.custom-alerts').empty();
+            $('.error-email1, .error-password1').empty().removeClass('text-danger');
+            
+            var email = $('.user-email').val().trim();
+            var password = $('.user-pass').val().trim();
+            
+            // Basic validation
+            if (!email || !password) {
+                showError('Please fill in all required fields.');
+                resetButton();
+                e.preventDefault();
+                return false;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Please enter a valid email address.');
+                resetButton();
+                e.preventDefault();
+                return false;
+            }
+            
+            console.log('Form validation passed, submitting to:', $(this).attr('action'));
+            console.log('Email:', email);
+            console.log('Form method:', $(this).attr('method'));
+            
+            // Allow form to submit normally
+            return true;
+        });
+        
+        function isValidEmail(email) {
+            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailPattern.test(email);
+        }
+        
+        function showError(message) {
+            $('.custom-alerts').html('<div class="alert alert-danger alert-dismissible fade show" role="alert">' + 
+                message + 
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        }
+        
+        function resetButton() {
+            $('.hide-1').addClass('d-none');
+            $('.hide-2').show();
+            $('.login_btn').prop('disabled', false);
+        }
+        
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut();
+        }, 5000);
+    });
+});
+</script>
 @endsection

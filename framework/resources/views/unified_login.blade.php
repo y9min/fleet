@@ -129,30 +129,6 @@
             padding: 12px 16px;
         }
         
-        .user-type-selector {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .user-type-btn {
-            border: 2px solid #e9ecef;
-            background: white;
-            border-radius: 6px;
-            padding: 10px 20px;
-            margin: 4px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .user-type-btn.active,
-        .user-type-btn:hover {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
         
         .spinner-border-sm {
             width: 1rem;
@@ -215,20 +191,10 @@
                                 @endif
                             </div>
 
-                            <!-- User Type Selector -->
-                            <div class="user-type-selector">
-                                <p class="mb-2 text-muted small">I am logging in as:</p>
-                                <div class="d-flex flex-wrap justify-content-center">
-                                    <button type="button" class="user-type-btn" data-type="customer">Customer</button>
-                                    <button type="button" class="user-type-btn" data-type="driver">Driver</button>
-                                    <button type="button" class="user-type-btn active" data-type="admin">Admin</button>
-                                </div>
-                            </div>
 
                             <!-- Login Form -->
                             <form id="unifiedLoginForm" method="POST" action="{{ route('unified.login') }}">
                                 @csrf
-                                <input type="hidden" id="login_type" name="login_type" value="admin">
                                 
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email Address</label>
@@ -264,8 +230,8 @@
                                 </button>
                             </form>
 
-                            <!-- Sign Up Link (for customers only) -->
-                            <div id="signup-link" class="text-center mt-4 d-none">
+                            <!-- Sign Up Link -->
+                            <div class="text-center mt-4">
                                 <p class="mb-0">Don't have an account? 
                                     <a href="{{ route('sign_up') }}" class="forgot-link">Sign Up</a>
                                 </p>
@@ -288,31 +254,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const userTypeButtons = document.querySelectorAll('.user-type-btn');
-            const loginTypeInput = document.getElementById('login_type');
-            const signupLink = document.getElementById('signup-link');
             const loginForm = document.getElementById('unifiedLoginForm');
             
-            // Handle user type selection
-            userTypeButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    userTypeButtons.forEach(btn => btn.classList.remove('active'));
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    const selectedType = this.getAttribute('data-type');
-                    loginTypeInput.value = selectedType;
-                    
-                    // Show/hide signup link for customers
-                    if (selectedType === 'customer') {
-                        signupLink.classList.remove('d-none');
-                    } else {
-                        signupLink.classList.add('d-none');
-                    }
-                });
-            });
-
             // Handle form submission
             loginForm.addEventListener('submit', function(e) {
                 const submitBtn = document.getElementById('loginBtn');

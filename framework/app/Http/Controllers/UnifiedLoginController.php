@@ -32,8 +32,7 @@ class UnifiedLoginController extends Controller
         // Validate the request
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required',
-            'login_type' => 'required|in:customer,driver,admin'
+            'password' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -63,18 +62,6 @@ class UnifiedLoginController extends Controller
                 ->withInput($request->only('email', 'remember'));
         }
 
-        // Determine expected user types based on login type
-        $expectedUserTypes = $this->getExpectedUserTypes($request->login_type);
-        
-        // Check if user type matches the selected login type
-        if (!in_array($user->user_type, $expectedUserTypes)) {
-            $loginTypeText = ucfirst($request->login_type);
-            $actualType = $this->getUserTypeText($user->user_type);
-            
-            return back()
-                ->withErrors(['email' => "This account is registered as {$actualType}. Please select the correct login type or use the appropriate login option."])
-                ->withInput($request->only('email', 'remember'));
-        }
 
         // Additional checks for drivers
         if ($user->user_type == 'D') {
@@ -104,41 +91,6 @@ class UnifiedLoginController extends Controller
             ->withInput($request->only('email', 'remember'));
     }
 
-    /**
-     * Get expected user types for each login type
-     */
-    private function getExpectedUserTypes($loginType)
-    {
-        switch ($loginType) {
-            case 'customer':
-                return ['C']; // Customer
-            case 'driver':
-                return ['D']; // Driver
-            case 'admin':
-                return ['S', 'O']; // Super Admin, Office Admin
-            default:
-                return [];
-        }
-    }
-
-    /**
-     * Get human-readable user type text
-     */
-    private function getUserTypeText($userType)
-    {
-        switch ($userType) {
-            case 'C':
-                return 'Customer';
-            case 'D':
-                return 'Driver';
-            case 'S':
-                return 'Super Admin';
-            case 'O':
-                return 'Office Admin';
-            default:
-                return 'User';
-        }
-    }
 
     /**
      * Redirect user after successful login based on user type

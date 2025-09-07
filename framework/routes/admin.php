@@ -1,6 +1,11 @@
 <?php
 use Illuminate\Support\Facades\Route;
 Auth::routes();
+
+// Redirect admin login to unified login
+Route::get("/admin/login", function () {
+    return redirect("/login");
+})->name("admin.login");
 Route::namespace ('Admin')->group(function () {
     // Route::get('export-events', 'HomeController@export_calendar');
 

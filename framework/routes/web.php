@@ -8,9 +8,9 @@
 Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_enable']], function () {
 
 
-    Route::get('/login', function () {
-        return view('customer_dashboard.log_in');
-    })->name('log_in');
+    Route::get("/login", "UnifiedLoginController@showLoginForm")->name("log_in");
+    Route::post("unified-login", "UnifiedLoginController@login")->name("unified.login");
+    Route::post('unified-login', 'UnifiedLoginController@login')->name('unified.login');
     
     Route::get('/sign_up', function () {
 
@@ -193,3 +193,8 @@ Route::get('sample-payment', function () {
 // });
 
 
+
+# Admin login redirect to unified login
+Route::get('/admin/login', function () {
+    return redirect('/login');
+})->name('admin.login');

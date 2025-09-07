@@ -1,9 +1,15 @@
 <?php
+use Illuminate\Support\Facades\Route;
 Auth::routes();
 Route::namespace ('Admin')->group(function () {
     // Route::get('export-events', 'HomeController@export_calendar');
 
     Route::get('test-login', 'Testcontroller@login');
+    
+    // Test route to verify admin routes work
+    Route::get('test-admin', function () {
+        return '<h1>Admin Routes Working!</h1><p><a href="/admin/login">Go to Admin Login</a></p>';
+    });
 
     Route::get('/migrate', function () {
         \Artisan::call('migrate');

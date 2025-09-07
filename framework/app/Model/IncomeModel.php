@@ -16,18 +16,29 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class IncomeModel extends Model {
-	use SoftDeletes;
-	protected $dates = ['deleted_at'];
-	protected $fillable = [
-		'vehicle_id', 'user_id', 'amount', 'driver_amount', 'income_cat', 'mileage', 'date', 'income_id', 'tax_percent', 'tax_charge_rs',
-	];
-	protected $table = "income";
+        use SoftDeletes;
+        protected $dates = ['deleted_at'];
+        protected $fillable = [
+                'vehicle_id', 'user_id', 'amount', 'driver_amount', 'income_cat', 'mileage', 'income_date', 'income_id', 'tax_percent', 'tax_charge_rs',
+        ];
 
-	public function category() {
-		return $this->hasOne("App\Model\IncCats", "id", "income_cat")->withTrashed();
-	}
+        // Map 'date' attribute to 'income_date' column
+        public function getDateAttribute()
+        {
+                return $this->income_date;
+        }
 
-	public function vehicle() {
-		return $this->hasOne("App\Model\VehicleModel", "id", "vehicle_id")->withTrashed();
-	}
+        public function setDateAttribute($value)
+        {
+                $this->attributes['income_date'] = $value;
+        }
+        protected $table = "income";
+
+        public function category() {
+                return $this->hasOne("App\Model\IncCats", "id", "income_cat")->withTrashed();
+        }
+
+        public function vehicle() {
+                return $this->hasOne("App\Model\VehicleModel", "id", "vehicle_id")->withTrashed();
+        }
 }

@@ -16,25 +16,36 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Expense extends Model {
-	use SoftDeletes;
-	protected $dates = ['deleted_at'];
-	protected $fillable = [
-		'vehicle_id', 'user_id', 'amount', 'driver_amount', 'expense_type', 'comment', 'date', 'exp_id', 'type', 'vendor_id',
-	];
-	protected $table = "expense";
-	public function category() {
-		return $this->hasOne("App\Model\ExpCats", "id", "expense_type")->withTrashed();
-	}
+        use SoftDeletes;
+        protected $dates = ['deleted_at'];
+        protected $fillable = [
+                'vehicle_id', 'user_id', 'amount', 'driver_amount', 'expense_type', 'comment', 'exp_date', 'exp_id', 'type', 'vendor_id',
+        ];
+        // Map 'date' attribute to 'exp_date' column
+        public function getDateAttribute()
+        {
+                return $this->exp_date;
+        }
 
-	public function service() {
-		return $this->hasOne("App\Model\ServiceItemsModel", "id", "expense_type")->withTrashed();
-	}
+        public function setDateAttribute($value)
+        {
+                $this->attributes['exp_date'] = $value;
+        }
+        
+        protected $table = "expense";
+        public function category() {
+                return $this->hasOne("App\Model\ExpCats", "id", "expense_type")->withTrashed();
+        }
 
-	public function vehicle() {
-		return $this->hasOne("App\Model\VehicleModel", "id", "vehicle_id")->withTrashed();
-	}
+        public function service() {
+                return $this->hasOne("App\Model\ServiceItemsModel", "id", "expense_type")->withTrashed();
+        }
 
-	public function vendor() {
-		return $this->hasOne("App\Model\Vendor", "id", "vendor_id")->withTrashed();
-	}
+        public function vehicle() {
+                return $this->hasOne("App\Model\VehicleModel", "id", "vehicle_id")->withTrashed();
+        }
+
+        public function vendor() {
+                return $this->hasOne("App\Model\Vendor", "id", "vendor_id")->withTrashed();
+        }
 }

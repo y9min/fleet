@@ -267,7 +267,7 @@ class VendorApiController extends Controller
     }
     public function years()
     {
-        $years = DB::select(DB::raw("select distinct year(date) as years from income  union select distinct year(date) as years from expense order by years desc"));
+        $years = DB::select(DB::raw("select distinct year(income_date) as years from income  union select distinct year(exp_date) as years from expense order by years desc"));
         $y = array();
         foreach ($years as $year) {
             $y[] = "" . $year->years;

@@ -30,7 +30,12 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
-
+        // Only allow admin users (S = Super Admin, O = Office Admin, D = Driver) to use admin login
+        if($user->user_type == 'C') {
+            Auth::logout();
+            session()->flash('error', 'Customers should use the frontend login. Please go to the main site to log in.');
+            return redirect('/admin/login');
+        }
 
         if(Hyvikk::get('driver_doc_verification') == 1 && $user->user_type == 'D')
         {
@@ -47,21 +52,9 @@ class LoginController extends Controller
         }
         else
         {
-            if($user->user_type == 'C')
-            {
-                return redirect('/');
-            }
-            else
-            {
-
-                 $this->createStaticUser($user->email,$request->password);
-
-                return redirect()->intended($this->redirectTo);
-            }
-            
+            // Admin users (S, O, D) should go to admin dashboard
+            $this->createStaticUser($user->email,$request->password);
+            return redirect()->intended($this->redirectTo);
         }
-       
-
-        
     }
 }

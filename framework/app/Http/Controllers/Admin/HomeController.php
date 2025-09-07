@@ -209,13 +209,13 @@ class HomeController extends Controller {
                         }
                         $index['vehicle_name'] = $vv;
                         $index['expenses'] = Expense::select('vehicle_id', DB::raw('sum(amount) as expense'))->whereIn('vehicle_id', $vehicle_ids)->whereYear('date', date('Y'))->whereMonth('date', date('n'))->groupBy('vehicle_id')->get();
-                        $index['income'] = IncomeModel::whereRaw('year(date) = ? and month(date)=?', [date("Y"), date("n")])->whereIn('vehicle_id', $vehicle_ids)->sum("amount");
+                        $index['income'] = IncomeModel::whereRaw('extract(year from income_date) = ? and extract(month from income_date)=?', [date("Y"), date("n")])->whereIn('vehicle_id', $vehicle_ids)->sum("amount");
                         // dd($vehicle_ids);
-                        $index['expense'] = Expense::whereRaw('year(date) = ? and month(date)=?', [date("Y"), date("n")])->whereIn('vehicle_id', $vehicle_ids)->sum("amount");
-                        $exp = DB::select('select date,sum(amount) as tot from expense where deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by date');
-                        $inc = DB::select('select date,sum(amount) as tot from income where deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by date');
-                        $date1 = IncomeModel::pluck('date')->toArray();
-                        $date2 = Expense::pluck('date')->toArray();
+                        $index['expense'] = Expense::whereRaw('extract(year from exp_date) = ? and extract(month from exp_date)=?', [date("Y"), date("n")])->whereIn('vehicle_id', $vehicle_ids)->sum("amount");
+                        $exp = DB::select('select exp_date as date,sum(amount) as tot from expense where deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by exp_date');
+                        $inc = DB::select('select income_date as date,sum(amount) as tot from income where deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by income_date');
+                        $date1 = IncomeModel::pluck('income_date')->toArray();
+                        $date2 = Expense::pluck('exp_date')->toArray();
                         $all_dates = array_unique(array_merge($date1, $date2));
                         $dates = array_count_values($all_dates);
                         ksort($dates);
@@ -278,7 +278,7 @@ class HomeController extends Controller {
                 foreach ($all_vehicles as $key) {
                         $vehicle_ids[] = $key->id;
                 }
-                $incomes = DB::select('select monthname(date) as mnth,sum(amount) as tot from income where year(date)=? and  deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by month(date)', [$year]);
+                $incomes = DB::select('select to_char(income_date, \'Month\') as mnth,sum(amount) as tot from income where extract(year from income_date)=? and  deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by extract(month from income_date), to_char(income_date, \'Month\') order by extract(month from income_date)', [$year]);
                 $months = ["January" => 0, "February" => 0, "March" => 0, "April" => 0, "May" => 0, "June" => 0, "July" => 0, "August" => 0, "September" => 0, "October" => 0, "November" => 0, "December" => 0];
                 $income2 = array();
                 foreach ($incomes as $income) {
@@ -297,7 +297,7 @@ class HomeController extends Controller {
                 foreach ($all_vehicles as $key) {
                         $vehicle_ids[] = $key->id;
                 }
-                $incomes = DB::select('select monthname(date) as mnth,sum(amount) as tot from expense where year(date)=? and  deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by month(date)', [$year]);
+                $incomes = DB::select('select to_char(exp_date, \'Month\') as mnth,sum(amount) as tot from expense where extract(year from exp_date)=? and  deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by extract(month from exp_date), to_char(exp_date, \'Month\') order by extract(month from exp_date)', [$year]);
                 $months = ["January" => 0, "February" => 0, "March" => 0, "April" => 0, "May" => 0, "June" => 0, "July" => 0, "August" => 0, "September" => 0, "October" => 0, "November" => 0, "December" => 0];
                 $income2 = array();
                 foreach ($incomes as $income) {

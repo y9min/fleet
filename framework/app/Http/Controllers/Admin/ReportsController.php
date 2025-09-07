@@ -215,10 +215,10 @@ class ReportsController extends Controller {
                 $data['month_select'] = date("n");
                 $data['vehicle_select'] = null;
                 $data['years'] = $y;
-                $data['income'] = IncomeModel::select(DB::raw("SUM(amount) as income"))->whereYear('date', $data['year_select'])->whereMonth('date', $data['month_select'])->whereIn('vehicle_id', $vehicle_ids)->get();
-                $data['expenses'] = Expense::select(DB::raw("SUM(amount) as expense"))->whereYear('date', $data['year_select'])->whereMonth('date', $data['month_select'])->whereIn('vehicle_id', $vehicle_ids)->get();
-                $data['expense_by_cat'] = Expense::select("type", "expense_type", DB::raw("sum(amount) as expense"))->whereYear('date', date('Y'))->whereMonth('date', date('n'))->groupBy(['expense_type', 'type'])->whereIn('vehicle_id', $vehicle_ids)->get();
-                $data['income_by_cat'] = IncomeModel::select("income_cat", DB::raw("sum(amount) as amount"))->whereYear('date', date('Y'))->whereMonth('date', date('n'))->groupBy(['income_cat'])->whereIn('vehicle_id', $vehicle_ids)->get();
+                $data['income'] = IncomeModel::select(DB::raw("SUM(amount) as income"))->whereYear('income_date', $data['year_select'])->whereMonth('income_date', $data['month_select'])->whereIn('vehicle_id', $vehicle_ids)->get();
+                $data['expenses'] = Expense::select(DB::raw("SUM(amount) as expense"))->whereYear('exp_date', $data['year_select'])->whereMonth('exp_date', $data['month_select'])->whereIn('vehicle_id', $vehicle_ids)->get();
+                $data['expense_by_cat'] = Expense::select("type", "expense_type", DB::raw("sum(amount) as expense"))->whereYear('exp_date', date('Y'))->whereMonth('exp_date', date('n'))->groupBy(['expense_type', 'type'])->whereIn('vehicle_id', $vehicle_ids)->get();
+                $data['income_by_cat'] = IncomeModel::select("income_cat", DB::raw("sum(amount) as amount"))->whereYear('income_date', date('Y'))->whereMonth('income_date', date('n'))->groupBy(['income_cat'])->whereIn('vehicle_id', $vehicle_ids)->get();
                 $ss = ServiceItemsModel::get();
                 foreach ($ss as $s) {
                         $c[$s->id] = $s->description;

@@ -208,7 +208,7 @@ class HomeController extends Controller {
                                 $vv[$key->id] = $key->make_name . "-" . $key->model_name . "-" . $key->license_plate;
                         }
                         $index['vehicle_name'] = $vv;
-                        $index['expenses'] = Expense::select('vehicle_id', DB::raw('sum(amount) as expense'))->whereIn('vehicle_id', $vehicle_ids)->whereYear('date', date('Y'))->whereMonth('date', date('n'))->groupBy('vehicle_id')->get();
+                        $index['expenses'] = Expense::select('vehicle_id', DB::raw('sum(amount) as expense'))->whereIn('vehicle_id', $vehicle_ids)->whereYear('exp_date', date('Y'))->whereMonth('exp_date', date('n'))->groupBy('vehicle_id')->get();
                         $index['income'] = IncomeModel::whereRaw('extract(year from income_date) = ? and extract(month from income_date)=?', [date("Y"), date("n")])->whereIn('vehicle_id', $vehicle_ids)->sum("amount");
                         // dd($vehicle_ids);
                         $index['expense'] = Expense::whereRaw('extract(year from exp_date) = ? and extract(month from exp_date)=?', [date("Y"), date("n")])->whereIn('vehicle_id', $vehicle_ids)->sum("amount");

@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <title>{{ Hyvikk::get('app_name') }}</title>
     <link rel="icon" href="{{ asset('assets/images/'. Hyvikk::get('icon_img') ) }}" type="icon_img">
 
@@ -17,20 +17,21 @@
     <!-- Custom styles from customer dashboard -->
     <link rel="stylesheet" href="{{asset('assets/customer_dashboard/assets/css/soft-ui-dashboard.css?v=345435')}}">
     <link rel="stylesheet" href="{{asset('assets/customer_dashboard/assets/css/style.css?v=1.1234568')}}">
-    
+
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #032127 0%, #7ed6df 100%);
             min-height: 100vh;
             font-family: 'Open Sans', sans-serif;
+            position: relative; /* Needed for absolute positioning of the back button */
         }
-        
+
         .login-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
         }
-        
+
         .login-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -38,17 +39,17 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
-        
+
         .login-left {
-            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            background: linear-gradient(45deg, rgba(3, 33, 39, 0.1), rgba(126, 214, 223, 0.1));
             padding: 50px 40px;
         }
-        
+
         .login-right {
             background: url('{{ asset('assets/customer_dashboard/assets/img/svg/pexels-taras-makarenko 1.jpg') }}') center/cover;
             position: relative;
         }
-        
+
         .login-right::before {
             content: '';
             position: absolute;
@@ -56,32 +57,32 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+            background: linear-gradient(135deg, rgba(3, 33, 39, 0.8), rgba(126, 214, 223, 0.8));
         }
-        
+
         .logo-container {
             text-align: center;
             margin-bottom: 30px;
         }
-        
+
         .logo-container img {
             max-height: 80px;
             max-width: 300px;
         }
-        
+
         .login-title {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #344767;
+            color: #032127;
             margin-bottom: 10px;
         }
-        
+
         .login-subtitle {
-            color: #67748e;
+            color: #7ed6df;
             font-size: 1.1rem;
             margin-bottom: 40px;
         }
-        
+
         .form-control {
             border: 1px solid #d2d6da;
             border-radius: 8px;
@@ -89,14 +90,14 @@
             font-size: 14px;
             transition: all 0.3s ease;
         }
-        
+
         .form-control:focus {
-            border-color: #cb0c9f;
-            box-shadow: 0 0 0 0.2rem rgba(203, 12, 159, 0.15);
+            border-color: #7ed6df;
+            box-shadow: 0 0 0 0.2rem rgba(126, 214, 223, 0.25);
         }
-        
+
         .btn-login {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #032127, #7ed6df);
             border: none;
             border-radius: 8px;
             padding: 12px 30px;
@@ -106,30 +107,49 @@
             letter-spacing: 0.5px;
             transition: all 0.3s ease;
         }
-        
+
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 25px rgba(3, 33, 39, 0.3);
         }
-        
+
         .forgot-link {
-            color: #667eea;
+            color: #032127;
             text-decoration: none;
             font-weight: 500;
         }
-        
+
         .forgot-link:hover {
-            color: #764ba2;
+            color: #7ed6df;
             text-decoration: underline;
         }
-        
+
         .alert-custom {
             border-radius: 8px;
             border: none;
             padding: 12px 16px;
         }
-        
-        
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ffffff; /* White text for better visibility on gradient background */
+            background-color: rgba(3, 33, 39, 0.7); /* Semi-transparent dark background */
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            z-index: 10; /* Ensure it's above other content */
+        }
+
+        .back-button:hover {
+            background-color: #032127;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
         .spinner-border-sm {
             width: 1rem;
             height: 1rem;
@@ -145,11 +165,20 @@
             .login-title {
                 font-size: 2rem;
             }
+            .back-button {
+                top: 15px;
+                left: 15px;
+                padding: 8px 15px;
+            }
         }
     </style>
 </head>
 
 <body>
+    <a href="{{ url('/') }}" class="back-button">
+        ← Back to Home
+    </a>
+
     <div class="container-fluid login-container">
         <div class="row justify-content-center w-100">
             <div class="col-lg-10 col-xl-9">
@@ -157,9 +186,9 @@
                     <div class="row g-0">
                         <div class="col-md-6 login-left">
                             <div class="logo-container">
-                                <img src="{{ asset('assets/images/'. Hyvikk::get('logo_img') ) }}" alt="Logo" />
+                                <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow Logo">
                             </div>
-                            
+
                             <h2 class="login-title">Welcome Back!</h2>
                             <p class="login-subtitle">Sign in to access your dashboard</p>
 
@@ -195,7 +224,7 @@
                             <!-- Login Form -->
                             <form id="unifiedLoginForm" method="POST" action="{{ route('unified.login') }}">
                                 @csrf
-                                
+
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email Address</label>
                                     <input type="email" class="form-control" name="email" id="email" 
@@ -237,7 +266,7 @@
                                 </p>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6 login-right d-none d-md-block">
                             <!-- Background image handled by CSS -->
                         </div>
@@ -255,13 +284,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const loginForm = document.getElementById('unifiedLoginForm');
-            
+
             // Handle form submission
             loginForm.addEventListener('submit', function(e) {
                 const submitBtn = document.getElementById('loginBtn');
                 const spinner = submitBtn.querySelector('.spinner-border');
                 const btnText = document.getElementById('loginBtnText');
-                
+
                 // Show loading state
                 spinner.classList.remove('d-none');
                 btnText.textContent = 'Signing In...';

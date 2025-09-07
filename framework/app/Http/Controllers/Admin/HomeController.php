@@ -163,7 +163,7 @@ class HomeController extends Controller {
                         } else {
                                 $pass_year = date("Y");
                         }
-                        $years = DB::select("select distinct year(income_date) as years from income  union select distinct year(exp_date) as years from expense order by years desc");
+                        $years = DB::select("select distinct extract(year from income_date) as years from income  union select distinct extract(year from exp_date) as years from expense order by years desc");
                         $y = array();
                         foreach ($years as $year) {
                                 $y[$year->years] = $year->years;

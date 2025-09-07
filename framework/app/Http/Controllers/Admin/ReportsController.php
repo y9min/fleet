@@ -191,7 +191,7 @@ class ReportsController extends Controller {
                 return view('reports.print_income', $data);
         }
         public function monthly() {
-                $years = DB::select("select distinct year(income_date) as years from income  union select distinct year(exp_date) as years from expense order by years desc");
+                $years = DB::select("select distinct extract(year from income_date) as years from income  union select distinct extract(year from exp_date) as years from expense order by years desc");
                 $y = array();
                 $c = array();
                 foreach ($years as $year) {
@@ -355,7 +355,7 @@ class ReportsController extends Controller {
                 return view("reports.delinquent", $data);
         }
         public function monthly_post(Request $request) {
-                $years = DB::select("select distinct year(income_date) as years from income  union select distinct year(exp_date) as years from expense order by years desc");
+                $years = DB::select("select distinct extract(year from income_date) as years from income  union select distinct extract(year from exp_date) as years from expense order by years desc");
                 $y = array();
                 $b = array();
                 $i = array();
@@ -471,7 +471,7 @@ class ReportsController extends Controller {
                 return view('reports.fuel', $data);
         }
         public function yearly() {
-                $years = DB::select("select distinct year(income_date) as years from income  union select distinct year(exp_date) as years from expense order by years desc");
+                $years = DB::select("select distinct extract(year from income_date) as years from income  union select distinct extract(year from exp_date) as years from expense order by years desc");
                 $y = array();
                 $c = array();
                 foreach ($years as $year) {
@@ -517,7 +517,7 @@ class ReportsController extends Controller {
                 return view('reports.yearly', $data);
         }
         public function yearly_post(Request $request) {
-                $years = DB::select("select distinct year(income_date) as years from income  union select distinct year(exp_date) as years from expense order by years desc");
+                $years = DB::select("select distinct extract(year from income_date) as years from income  union select distinct extract(year from exp_date) as years from expense order by years desc");
                 $y = array();
                 $b = array();
                 $i = array();

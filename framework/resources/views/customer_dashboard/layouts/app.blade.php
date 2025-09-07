@@ -67,7 +67,16 @@
     @endif
 
     <!-- Core JS Files -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+        // Fallback to local jQuery if CDN fails
+        if (!window.jQuery) {
+            console.warn('jQuery CDN failed, loading local fallback...');
+            document.write('<script src="{{ asset("assets/customer_dashboard/assets/js/core/jquery.min.js") }}"><\/script>');
+        }
+        // Ensure $ is available globally
+        window.$ = window.jQuery;
+    </script>
     <script src="{{ asset('assets/customer_dashboard/assets/js/core/popper.min.js') }}"></script>
     <script src="{{ asset('assets/customer_dashboard/assets/js/core/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/customer_dashboard/assets/js/plugins/perfect-scrollbar.min.js') }}"></script>

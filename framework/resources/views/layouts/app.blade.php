@@ -239,6 +239,61 @@ input:checked + .slider:before {
   <!-- Ensure jQuery is loaded first -->
   <script src="{{asset('assets/js/jquery.js')}}"></script>
 
+  <!-- Hamburger menu functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const hamburgerToggle = document.getElementById('hamburger-toggle');
+        const adminNavMenu = document.getElementById('admin-nav-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const closeMenu = document.getElementById('close-menu');
+        const submenuToggles = document.querySelectorAll('.submenu-toggle');
+
+        // Toggle hamburger menu
+        hamburgerToggle.addEventListener('click', function() {
+            adminNavMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+        });
+
+        // Close menu when clicking close button
+        closeMenu.addEventListener('click', function() {
+            adminNavMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+
+        // Close menu when clicking overlay
+        mobileMenuOverlay.addEventListener('click', function() {
+            adminNavMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+
+        // Handle submenu toggles
+        submenuToggles.forEach(function(toggle) {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                const parentLi = this.closest('li.has-submenu');
+                
+                // Close other open submenus
+                document.querySelectorAll('.has-submenu.open').forEach(function(openMenu) {
+                    if (openMenu !== parentLi) {
+                        openMenu.classList.remove('open');
+                    }
+                });
+                
+                // Toggle current submenu
+                parentLi.classList.toggle('open');
+            });
+        });
+
+        // Close menu when clicking on regular links
+        document.querySelectorAll('.nav-menu-items a:not(.submenu-toggle)').forEach(function(link) {
+            link.addEventListener('click', function() {
+                adminNavMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+            });
+        });
+    });
+  </script>
+
   <style>
 
     tfoot input {
@@ -415,6 +470,66 @@ input:checked + .slider:before {
         color: #555;
     }
 
+    .has-submenu > .submenu-toggle {
+        position: relative;
+    }
+
+    .has-submenu .arrow {
+        position: absolute;
+        right: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .has-submenu.open .arrow {
+        transform: rotate(180deg);
+    }
+
+    .submenu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background-color: #f8f9fa;
+    }
+
+    .has-submenu.open .submenu {
+        max-height: 300px;
+    }
+
+    .submenu li {
+        margin: 0;
+        padding: 0;
+    }
+
+    .submenu a {
+        padding: 10px 40px;
+        font-size: 0.95em;
+        color: #666;
+        background-color: #f8f9fa;
+    }
+
+    .submenu a:hover {
+        background-color: #e9ecef;
+        color: #333;
+    }
+
+    /* Hide the main sidebar completely */
+    .main-sidebar {
+        display: none !important;
+    }
+
+    /* Adjust content wrapper to full width */
+    .wrapper .content-wrapper {
+        margin-left: 0 !important;
+    }
+
+    /* Hide navbar items except hamburger and user dropdown */
+    .navbar-nav .nav-item:not(.dropdown):not(.hamburger-container) {
+        display: none;
+    }
+
     /* Adjustments for AdminLTE sidebar */
     body.sidebar-collapse .main-sidebar {
         margin-left: -250px; /* Hide sidebar when collapsed */
@@ -454,12 +569,22 @@ input:checked + .slider:before {
 
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-        <!-- Hamburger menu button -->
-        <button class="navbar-toggler hamburger-menu" type="button" id="hamburger-toggle">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item hamburger-container">
+                <!-- Hamburger menu button -->
+                <button class="navbar-toggler hamburger-menu" type="button" id="hamburger-toggle">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- User dropdown and other right-side elements remain here -->
+        </ul>
 
         <!-- Mobile menu overlay -->
         <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
@@ -472,12 +597,76 @@ input:checked + .slider:before {
             </div>
             <ul class="nav-menu-items">
                 <li><a href="{{url('admin/')}}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="{{route('vehicles.index')}}"><i class="fas fa-car"></i> Vehicles</a></li>
-                <li><a href="{{route('drivers.index')}}"><i class="fas fa-users"></i> Drivers</a></li>
-                <li><a href="{{route('bookings.index')}}"><i class="fas fa-calendar-check"></i> Bookings</a></li>
-                <li><a href="{{route('customers.index')}}"><i class="fas fa-user-friends"></i> Customers</a></li>
-                <li><a href="{{route('reports.monthly')}}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                
+                <!-- Vehicles with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        @if (Gate::check('Vehicles add'))
+                        <li><a href="{{route('vehicles.create')}}"><i class="fa fa-plus"></i> Add Vehicle</a></li>
+                        @endif
+                        @if (Gate::check('Vehicles list'))
+                        <li><a href="{{route('vehicles.index')}}"><i class="fa fa-list"></i> Manage Vehicles</a></li>
+                        @endif
+                    </ul>
+                </li>
+                
+                <!-- Bookings with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-calendar-check"></i> Bookings <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        @if (Gate::check('Bookings add'))
+                        <li><a href="{{route('bookings.create')}}"><i class="fa fa-plus"></i> New Booking</a></li>
+                        @endif
+                        @if (Gate::check('Bookings list'))
+                        <li><a href="{{route('bookings.index')}}"><i class="fa fa-list"></i> Manage Bookings</a></li>
+                        @endif
+                        <li><a href="{{url('admin/bookings_calendar')}}"><i class="fa fa-calendar"></i> Calendar</a></li>
+                    </ul>
+                </li>
+                
+                <!-- Customers with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-user-friends"></i> Customers <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        @if (Gate::check('Customer add'))
+                        <li><a href="{{route('customers.create')}}"><i class="fa fa-plus"></i> Add Customer</a></li>
+                        @endif
+                        @if (Gate::check('Customer list'))
+                        <li><a href="{{route('customers.index')}}"><i class="fa fa-list"></i> Manage Customers</a></li>
+                        @endif
+                    </ul>
+                </li>
+                
+                <!-- Drivers with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-users"></i> Drivers <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        @if (Gate::check('Drivers add'))
+                        <li><a href="{{route('drivers.create')}}"><i class="fa fa-plus"></i> Add Driver</a></li>
+                        @endif
+                        @if (Gate::check('Drivers list'))
+                        <li><a href="{{route('drivers.index')}}"><i class="fa fa-list"></i> Manage Drivers</a></li>
+                        @endif
+                    </ul>
+                </li>
+                
+                <!-- Reports with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-chart-bar"></i> Reports <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{route('reports.monthly')}}"><i class="fa fa-calendar"></i> Monthly Report</a></li>
+                        <li><a href="{{route('reports.yearly')}}"><i class="fa fa-calendar-o"></i> Yearly Report</a></li>
+                        @if (Gate::check('Bookings list'))
+                        <li><a href="{{url('admin/reports/booking')}}"><i class="fa fa-book"></i> Booking Report</a></li>
+                        @endif
+                    </ul>
+                </li>
+                
+                <!-- Settings -->
                 <li><a href="{{route('settings.index')}}"><i class="fas fa-cog"></i> Settings</a></li>
+                
+                <!-- Logout -->
                 <li><a href="{{url('admin/logout')}}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </div>

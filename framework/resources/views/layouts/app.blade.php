@@ -694,35 +694,31 @@ input:checked + .slider:before {
         align-items: center;
     }
 
-    /* Logout Button Styling - Fixed to top right corner */
-    .logout-btn {
-        position: fixed !important;
-        top: 20px !important;
-        right: 20px !important;
-        z-index: 9999 !important;
-        background: linear-gradient(to right, #80D7DF, #BDEFCC) !important;
+    /* Logout Menu Button Styling */
+    .logout-menu-btn {
+        background: linear-gradient(to right, #dc3545, #c82333) !important;
         color: white !important;
-        padding: 8px 20px !important;
+        margin: 10px 15px !important;
+        padding: 12px 20px !important;
         border-radius: 25px !important;
         font-weight: 600 !important;
         text-decoration: none !important;
         transition: all 0.3s ease !important;
-        border: none !important;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
     }
 
-    .logout-btn:hover {
-        background: #B7ECCE !important;
-        color: #032127 !important;
+    .logout-menu-btn:hover {
+        background: linear-gradient(to right, #c82333, #a71e2a) !important;
+        color: white !important;
         text-decoration: none !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
+        box-shadow: 0 6px 18px rgba(220, 53, 69, 0.4) !important;
     }
 
-    .logout-btn i {
+    .logout-menu-btn i {
         margin-right: 8px !important;
         font-size: 1rem !important;
     }
@@ -736,11 +732,10 @@ input:checked + .slider:before {
         .main-header .navbar-nav {
             margin-left: auto;
         }
-        .logout-btn {
-            padding: 6px 15px !important;
+        .logout-menu-btn {
+            padding: 10px 15px !important;
             font-size: 0.9rem !important;
-            top: 15px !important;
-            right: 15px !important;
+            margin: 8px 10px !important;
         }
     }
   </style>
@@ -777,16 +772,7 @@ input:checked + .slider:before {
 
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a href="{{ route('logout') }}" 
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
-                   class="nav-link logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
-            </li>
+            <!-- User dropdown and other right-side elements remain here -->
         </ul>
 
         <!-- Hamburger Menu Sidebar -->
@@ -859,6 +845,18 @@ input:checked + .slider:before {
 
                     <a href="{{url('admin/mechanics')}}" class="menu-link"><i class="fas fa-user-cog"></i> Mechanics</a>
                     <a href="{{url('admin/inquiries')}}" class="menu-link"><i class="fas fa-question-circle"></i> Inquiries</a>
+                    
+                    <!-- Logout at bottom of menu -->
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <a href="{{ route('logout') }}" 
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                           class="menu-link logout-menu-btn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

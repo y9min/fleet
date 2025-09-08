@@ -245,43 +245,56 @@
     }
   }
 
-  /* Ensure stats stay in one row on all screen sizes */
+  /* Ensure stats stay in one row on desktop and tablet */
   .stats-container .row {
-    flex-wrap: nowrap !important;
     display: flex !important;
   }
   
-  .stats-container .col-xl-3,
-  .stats-container .col-lg-3,
-  .stats-container .col-md-3,
-  .stats-container .col-sm-3 {
-    flex: 1 !important;
-    max-width: 25% !important;
-    min-width: 0 !important;
-  }
-  
-  /* Responsive adjustments for very small screens */
-  @media (max-width: 576px) {
+  /* Desktop: keep cards in row */
+  @media (min-width: 769px) {
+    .stats-container .row {
+      flex-wrap: nowrap !important;
+    }
+    
     .stats-container .col-xl-3,
     .stats-container .col-lg-3,
     .stats-container .col-md-3,
     .stats-container .col-sm-3 {
       flex: 1 !important;
       max-width: 25% !important;
-      padding: 0 5px !important;
+      min-width: 0 !important;
+    }
+  }
+  
+  /* Mobile: allow cards to stack in column */
+  @media (max-width: 768px) {
+    .stats-container .row {
+      flex-wrap: wrap !important;
+      flex-direction: column !important;
+    }
+    
+    .stats-container .col-xl-3,
+    .stats-container .col-lg-3,
+    .stats-container .col-md-3,
+    .stats-container .col-sm-3 {
+      flex: 1 1 100% !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      margin-bottom: 1rem !important;
     }
     
     .stat-card {
-      padding: 1rem !important;
+      padding: 1.5rem !important;
+      margin-bottom: 0 !important;
     }
     
     .stat-number {
-      font-size: 1.8rem !important;
+      font-size: 2.2rem !important;
     }
     
     .stat-icon {
-      width: 45px !important;
-      height: 45px !important;
+      width: 55px !important;
+      height: 55px !important;
     }
   }
 </style>
@@ -310,7 +323,7 @@
     <!-- Statistics Cards -->
     <div class="stats-container">
       <div class="row d-flex no-gutters">
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-3 d-flex">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon vehicles">
               <i class="fa fa-car"></i>
@@ -323,7 +336,7 @@
           </div>
         </div>
         
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-3 d-flex">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon drivers">
               <i class="fa fa-id-card"></i>
@@ -336,7 +349,7 @@
           </div>
         </div>
         
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-3 d-flex">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon customers">
               <i class="fa fa-users"></i>
@@ -349,7 +362,7 @@
           </div>
         </div>
         
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-3 d-flex">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon bookings">
               <i class="fa fa-address-book"></i>

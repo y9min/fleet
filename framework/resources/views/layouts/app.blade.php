@@ -2875,14 +2875,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (hamburgerToggle) {
-        console.log('Hamburger toggle found, adding click listener');
         hamburgerToggle.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('Hamburger clicked!');
             toggleMenu();
         });
-    } else {
-        console.log('Hamburger toggle element not found!');
     }
 
     if (closeMenu) {

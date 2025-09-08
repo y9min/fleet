@@ -618,10 +618,12 @@ input:checked + .slider:before {
         <ul class="navbar-nav">
             <li class="nav-item hamburger-container">
                 <!-- Hamburger menu button -->
-                <button class="navbar-toggler hamburger-menu" type="button" id="hamburger-toggle" aria-label="Toggle navigation">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
+                <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" onclick="toggleHamburgerMenu()">
+                    <div class="hamburger-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </button>
             </li>
         </ul>
@@ -631,11 +633,10 @@ input:checked + .slider:before {
             <!-- User dropdown and other right-side elements remain here -->
         </ul>
 
-        <!-- Mobile menu overlay -->
-        <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
-
-        <!-- Navigation menu -->
-        <div class="admin-nav-menu" id="admin-nav-menu">
+        <!-- Hamburger Menu Sidebar -->
+        <div class="hamburger-sidebar" id="hamburger-sidebar">
+            <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeHamburgerMenu()"></div>
+            <div class="sidebar-content">
             <div class="menu-header">
                 <h3>Fleet Manager</h3>
                 <button class="close-menu" id="close-menu">&times;</button>

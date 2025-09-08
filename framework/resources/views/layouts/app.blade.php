@@ -544,20 +544,22 @@ input:checked + .slider:before {
 
     /* Enhanced hamburger menu styles */
     .admin-nav-menu {
-        position: fixed;
-        top: 0;
-        left: -320px;
-        width: 320px;
-        height: 100vh;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        box-shadow: 2px 0 15px rgba(0,0,0,0.3);
-        z-index: 1006;
-        transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        overflow-y: auto;
+        position: fixed !important;
+        top: 0 !important;
+        left: -320px !important;
+        width: 320px !important;
+        height: 100vh !important;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+        box-shadow: 2px 0 15px rgba(0,0,0,0.3) !important;
+        z-index: 9999 !important;
+        transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        overflow-y: auto !important;
+        display: block !important;
     }
 
     .admin-nav-menu.active {
-        left: 0;
+        left: 0 !important;
+        display: block !important;
     }
 
     /* Adjustments for AdminLTE sidebar */

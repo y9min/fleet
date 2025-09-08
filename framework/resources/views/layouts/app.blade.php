@@ -2850,7 +2850,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const submenuToggles = document.querySelectorAll('.submenu-toggle');
 
     function toggleMenu() {
-        console.log('Toggle menu called!');
         if (adminNavMenu && hamburgerToggle) {
             hamburgerToggle.classList.toggle('active');
             adminNavMenu.classList.toggle('active');
@@ -2860,9 +2859,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             document.body.style.overflow = adminNavMenu.classList.contains('active') ? 'hidden' : 'auto';
-            console.log('Menu toggled:', adminNavMenu.classList.contains('active') ? 'opened' : 'closed');
-        } else {
-            console.error('Menu elements not found:', {adminNavMenu, hamburgerToggle});
         }
     }
 
@@ -2874,11 +2870,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (hamburgerToggle) {
-        console.log('Hamburger button found, setting up click listener');
         hamburgerToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Hamburger clicked!');
             toggleMenu();
         });
         
@@ -2886,11 +2880,8 @@ document.addEventListener('DOMContentLoaded', function() {
         hamburgerToggle.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Hamburger onclick triggered!');
             toggleMenu();
         };
-    } else {
-        console.error('Hamburger toggle button not found!');
     }
 
     if (closeMenu) {

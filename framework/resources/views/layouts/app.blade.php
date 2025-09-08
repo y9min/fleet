@@ -420,64 +420,87 @@ input:checked + .slider:before {
     }
 
     .menu-header {
+        background: linear-gradient(135deg, #00CC37 0%, #28a745 100%);
+        color: white;
+        padding: 1.5rem 1rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 20px 20px 20px;
-        border-bottom: 1px solid #eee;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
     .menu-header h3 {
         margin: 0;
-        font-size: 1.5em;
-        color: #333;
+        font-size: 1.3rem;
+        font-weight: 700;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        color: white;
     }
 
     .close-menu {
-        background: none;
+        background: rgba(255, 255, 255, 0.2);
         border: none;
-        font-size: 2em;
-        color: #888;
+        color: white;
+        font-size: 1.5rem;
         cursor: pointer;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .close-menu:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
     }
 
     .nav-menu-items {
         list-style: none;
-        padding: 0;
+        padding: 1rem 0;
         margin: 0;
     }
 
     .nav-menu-items li {
-        margin: 0;
-        padding: 0;
+        margin: 0.25rem 0;
     }
 
     .nav-menu-items a {
-        display: block;
-        padding: 15px 20px;
-        color: #333;
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        color: rgba(255, 255, 255, 0.9);
         text-decoration: none;
-        font-size: 1.1em;
-        transition: background-color 0.2s ease;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        border-radius: 0 25px 25px 0;
+        margin-right: 1rem;
     }
 
     .nav-menu-items a:hover {
-        background-color: #f4f4f4;
+        background: linear-gradient(135deg, #00CC37 0%, #28a745 100%);
+        color: white;
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0, 204, 55, 0.3);
     }
 
     .nav-menu-items i {
-        margin-right: 15px;
-        color: #555;
+        margin-right: 1rem;
+        width: 20px;
+        font-size: 1.1rem;
+        text-align: center;
     }
 
     .has-submenu > .submenu-toggle {
         position: relative;
+        justify-content: space-between;
     }
 
     .has-submenu .arrow {
-        position: absolute;
-        right: 20px;
         transition: transform 0.3s ease;
+        font-size: 0.8rem;
     }
 
     .has-submenu.open .arrow {
@@ -485,71 +508,86 @@ input:checked + .slider:before {
     }
 
     .submenu {
-        list-style: none;
-        padding: 0;
-        margin: 0;
         max-height: 0;
         overflow: hidden;
-        transition: max-height 0.3s ease;
-        background-color: #f8f9fa;
+        transition: max-height 0.4s ease;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 0 0 15px 0;
+        margin: 0 1rem 0.5rem 0;
     }
 
     .has-submenu.open .submenu {
-        max-height: 300px;
+        max-height: 600px;
     }
 
     .submenu li {
         margin: 0;
-        padding: 0;
     }
 
     .submenu a {
-        padding: 10px 40px;
-        font-size: 0.95em;
-        color: #666;
-        background-color: #f8f9fa;
+        padding: 0.75rem 1.5rem 0.75rem 3.5rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 0;
+        margin-right: 0;
     }
 
     .submenu a:hover {
-        background-color: #e9ecef;
-        color: #333;
+        background: rgba(0, 204, 55, 0.4);
+        color: white;
+        transform: translateX(3px);
     }
 
-    /* Show the main sidebar on larger screens */
-    @media (min-width: 769px) {
-        .main-sidebar {
-            display: block !important;
-        }
-
-        /* Proper content wrapper margin for sidebar */
-        .wrapper .content-wrapper {
-            margin-left: 250px !important;
-        }
-
-        /* Hide hamburger menu on desktop */
-        .hamburger-menu {
-            display: none !important;
-        }
-
-        /* Hide mobile hamburger menu */
-        .admin-nav-menu {
-            display: none !important;
-        }
+    /* Hide the traditional sidebar completely */
+    .main-sidebar {
+        display: none !important;
     }
 
-    /* Mobile view - keep hamburger menu */
-    @media (max-width: 768px) {
-        .main-sidebar {
-            display: none !important;
-        }
+    /* Adjust content wrapper to full width */
+    .wrapper .content-wrapper {
+        margin-left: 0 !important;
+    }
 
-        .wrapper .content-wrapper {
-            margin-left: 0 !important;
-        }
+    /* Always show hamburger menu */
+    .hamburger-menu {
+        display: flex !important;
+        align-items: center;
+        background: none;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
 
-        .hamburger-menu {
-            display: flex !important;
-        }
+    .hamburger-menu:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .hamburger-menu .hamburger-line {
+        width: 25px;
+        height: 3px;
+        background-color: #fff;
+        margin: 3px 0;
+        transition: 0.3s;
+        border-radius: 2px;
+    }
+
+    /* Enhanced hamburger menu styles */
+    .admin-nav-menu {
+        position: fixed;
+        top: 0;
+        left: -320px;
+        width: 320px;
+        height: 100vh;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        box-shadow: 2px 0 15px rgba(0,0,0,0.3);
+        z-index: 1006;
+        transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow-y: auto;
+    }
+
+    .admin-nav-menu.active {
+        left: 0;
     }
 
     /* Adjustments for AdminLTE sidebar */

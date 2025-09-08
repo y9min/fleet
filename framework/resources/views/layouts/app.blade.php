@@ -637,54 +637,50 @@ input:checked + .slider:before {
         <div class="hamburger-sidebar" id="hamburger-sidebar">
             <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeHamburgerMenu()"></div>
             <div class="sidebar-content">
-            <div class="menu-header">
-                <h3>Fleet Manager</h3>
-                <button class="close-menu" id="close-menu">&times;</button>
-            </div>
-            <ul class="nav-menu-items">
-                <li><a href="{{url('admin/')}}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <div class="menu-header">
+                    <h3>Fleet Manager</h3>
+                    <button class="close-btn" onclick="closeHamburgerMenu()">&times;</button>
+                </div>
+                <div class="menu-items">
+                    <a href="{{url('admin/')}}" class="menu-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    
+                    <div class="menu-group">
+                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down"></i></div>
+                        <div class="submenu-content">
+                            <a href="{{route('drivers.index')}}" class="submenu-link"><i class="fas fa-id-card"></i> Drivers</a>
+                            <a href="{{url('admin/users')}}" class="submenu-link"><i class="fas fa-user-tie"></i> Users(Managers)</a>
+                            <a href="{{route('customers.index')}}" class="submenu-link"><i class="fas fa-user-friends"></i> Customers</a>
+                        </div>
+                    </div>
 
-                <!-- Users with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{route('drivers.index')}}"><i class="fas fa-id-card"></i> Drivers</a></li>
-                        <li><a href="{{url('admin/users')}}"><i class="fas fa-user-tie"></i> Users(Managers)</a></li>
-                        <li><a href="{{route('customers.index')}}"><i class="fas fa-user-friends"></i> Customers</a></li>
-                    </ul>
-                </li>
+                    <div class="menu-group">
+                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down"></i></div>
+                        <div class="submenu-content">
+                            <a href="{{route('vehicles.index')}}" class="submenu-link"><i class="fas fa-list"></i> Manage Vehicles</a>
+                            <a href="{{url('admin/vehicle-types')}}" class="submenu-link"><i class="fas fa-tag"></i> Manage Vehicle Types</a>
+                            <a href="{{url('admin/vehicle-group')}}" class="submenu-link"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a>
+                            <a href="{{url('admin/vehicle-inspection')}}" class="submenu-link"><i class="fas fa-clipboard-check"></i> Vehicle Inspection</a>
+                        </div>
+                    </div>
 
-                <!-- Vehicles with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{route('vehicles.index')}}"><i class="fas fa-list"></i> Manage Vehicles</a></li>
-                        <li><a href="{{url('admin/vehicle-types')}}"><i class="fas fa-tag"></i> Manage Vehicle Types</a></li>
-                        <li><a href="{{url('admin/vehicle-group')}}"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a></li>
-                        <li><a href="{{url('admin/vehicle-inspection')}}"><i class="fas fa-clipboard-check"></i> Vehicle Inspection</a></li>
-                    </ul>
-                </li>
+                    <div class="menu-group">
+                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-exchange-alt"></i> Transactions <i class="fas fa-chevron-down"></i></div>
+                        <div class="submenu-content">
+                            <a href="{{url('admin/income')}}" class="submenu-link"><i class="fas fa-plus-circle"></i> Manage Income</a>
+                            <a href="{{url('admin/expense')}}" class="submenu-link"><i class="fas fa-minus-circle"></i> Manage Expense</a>
+                        </div>
+                    </div>
 
-                <!-- Transactions with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-exchange-alt"></i> Transactions <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/income')}}"><i class="fas fa-plus-circle"></i> Manage Income</a></li>
-                        <li><a href="{{url('admin/expense')}}"><i class="fas fa-minus-circle"></i> Manage Expense</a></li>
-                    </ul>
-                </li>
-
-                <!-- Bookings with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-calendar-check"></i> Bookings <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{route('bookings.create')}}"><i class="fas fa-plus"></i> New Booking</a></li>
-                        <li><a href="{{route('bookings.index')}}"><i class="fas fa-list"></i> Manage Bookings</a></li>
-                        <li><a href="{{url('admin/booking-payments')}}"><i class="fas fa-credit-card"></i> Booking Payments</a></li>
-                        <li><a href="{{route('booking-quotation.index')}}"><i class="fas fa-file-invoice"></i> Booking Quotations</a></li>
-                        <li><a href="{{url('admin/bookings_calendar')}}"><i class="fas fa-calendar"></i> Booking Calendar</a></li>
-                    </ul>
-                </li>
+                    <div class="menu-group">
+                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-calendar-check"></i> Bookings <i class="fas fa-chevron-down"></i></div>
+                        <div class="submenu-content">
+                            <a href="{{route('bookings.create')}}" class="submenu-link"><i class="fas fa-plus"></i> New Booking</a>
+                            <a href="{{route('bookings.index')}}" class="submenu-link"><i class="fas fa-list"></i> Manage Bookings</a>
+                            <a href="{{url('admin/booking-payments')}}" class="submenu-link"><i class="fas fa-credit-card"></i> Booking Payments</a>
+                            <a href="{{route('booking-quotation.index')}}" class="submenu-link"><i class="fas fa-file-invoice"></i> Booking Quotations</a>
+                            <a href="{{url('admin/bookings_calendar')}}" class="submenu-link"><i class="fas fa-calendar"></i> Booking Calendar</a>
+                        </div>
+                    </div>
 
                 <!-- Reports with submenu -->
                 <li class="has-submenu">

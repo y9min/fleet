@@ -112,16 +112,24 @@
   }
 
   .stat-link {
-    color: var(--dark-bg);
+    background: linear-gradient(to right, #80D7DF, #BDEFCC);
+    color: white;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.9rem;
-    transition: var(--transition);
+    padding: 8px 16px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   }
 
   .stat-link:hover {
-    color: var(--primary-color);
+    background: #B7ECCE;
+    color: #032127;
     text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
   }
 
   .action-cards {
@@ -153,27 +161,28 @@
   }
 
   .action-btn {
-    background: linear-gradient(45deg, var(--primary-color), var(--dark-bg));
+    background: linear-gradient(to right, #80D7DF, #BDEFCC);
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 15px 35px;
     border-radius: 50px;
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     margin: 0.25rem;
     font-size: 0.9rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   }
 
   .action-btn:hover {
-    background: linear-gradient(45deg, var(--dark-bg), var(--primary-color));
-    color: white;
+    background: #B7ECCE;
+    color: #032127;
     text-decoration: none;
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(126, 214, 223, 0.4);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
   }
 
   .action-btn i {

@@ -652,16 +652,33 @@ input:checked + .slider:before {
             <ul class="nav-menu-items">
                 <li><a href="{{url('admin/')}}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
 
+                <!-- Users with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{route('drivers.index')}}"><i class="fas fa-id-card"></i> Drivers</a></li>
+                        <li><a href="{{route('users.index')}}"><i class="fas fa-user-tie"></i> Users(Managers)</a></li>
+                        <li><a href="{{route('customers.index')}}"><i class="fas fa-user-friends"></i> Customers</a></li>
+                    </ul>
+                </li>
+
                 <!-- Vehicles with submenu -->
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        @if (Gate::check('Vehicles add'))
-                        <li><a href="{{route('vehicles.create')}}"><i class="fa fa-plus"></i> Add Vehicle</a></li>
-                        @endif
-                        @if (Gate::check('Vehicles list'))
-                        <li><a href="{{route('vehicles.index')}}"><i class="fa fa-list"></i> Manage Vehicles</a></li>
-                        @endif
+                        <li><a href="{{route('vehicles.index')}}"><i class="fas fa-list"></i> Manage Vehicles</a></li>
+                        <li><a href="{{url('admin/vehicle-types')}}"><i class="fas fa-tag"></i> Manage Vehicle Types</a></li>
+                        <li><a href="{{url('admin/vehicle-group')}}"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a></li>
+                        <li><a href="{{url('admin/vehicle-inspection')}}"><i class="fas fa-clipboard-check"></i> Vehicle Inspection</a></li>
+                    </ul>
+                </li>
+
+                <!-- Transactions with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-exchange-alt"></i> Transactions <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{route('income.index')}}"><i class="fas fa-plus-circle"></i> Manage Income</a></li>
+                        <li><a href="{{route('expense.index')}}"><i class="fas fa-minus-circle"></i> Manage Expense</a></li>
                     </ul>
                 </li>
 
@@ -669,39 +686,11 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-calendar-check"></i> Bookings <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        @if (Gate::check('Bookings add'))
-                        <li><a href="{{route('bookings.create')}}"><i class="fa fa-plus"></i> New Booking</a></li>
-                        @endif
-                        @if (Gate::check('Bookings list'))
-                        <li><a href="{{route('bookings.index')}}"><i class="fa fa-list"></i> Manage Bookings</a></li>
-                        @endif
-                        <li><a href="{{url('admin/bookings_calendar')}}"><i class="fa fa-calendar"></i> Calendar</a></li>
-                    </ul>
-                </li>
-
-                <!-- Customers with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-user-friends"></i> Customers <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        @if (Gate::check('Customer add'))
-                        <li><a href="{{route('customers.create')}}"><i class="fa fa-plus"></i> Add Customer</a></li>
-                        @endif
-                        @if (Gate::check('Customer list'))
-                        <li><a href="{{route('customers.index')}}"><i class="fa fa-list"></i> Manage Customers</a></li>
-                        @endif
-                    </ul>
-                </li>
-
-                <!-- Drivers with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-users"></i> Drivers <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        @if (Gate::check('Drivers add'))
-                        <li><a href="{{route('drivers.create')}}"><i class="fa fa-plus"></i> Add Driver</a></li>
-                        @endif
-                        @if (Gate::check('Drivers list'))
-                        <li><a href="{{route('drivers.index')}}"><i class="fa fa-list"></i> Manage Drivers</a></li>
-                        @endif
+                        <li><a href="{{route('bookings.create')}}"><i class="fas fa-plus"></i> New Booking</a></li>
+                        <li><a href="{{route('bookings.index')}}"><i class="fas fa-list"></i> Manage Bookings</a></li>
+                        <li><a href="{{url('admin/booking-payments')}}"><i class="fas fa-credit-card"></i> Booking Payments</a></li>
+                        <li><a href="{{route('booking-quotation.index')}}"><i class="fas fa-file-invoice"></i> Booking Quotations</a></li>
+                        <li><a href="{{url('admin/bookings_calendar')}}"><i class="fas fa-calendar"></i> Booking Calendar</a></li>
                     </ul>
                 </li>
 
@@ -709,16 +698,135 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-chart-bar"></i> Reports <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        <li><a href="{{route('reports.monthly')}}"><i class="fa fa-calendar"></i> Monthly Report</a></li>
-                        <li><a href="{{route('reports.yearly')}}"><i class="fa fa-calendar-o"></i> Yearly Report</a></li>
-                        @if (Gate::check('Bookings list'))
-                        <li><a href="{{url('admin/reports/booking')}}"><i class="fa fa-book"></i> Booking Report</a></li>
-                        @endif
+                        <li><a href="{{route('reports.income')}}"><i class="fas fa-money-check-alt"></i> Income Report</a></li>
+                        <li><a href="{{route('reports.expense')}}"><i class="fas fa-receipt"></i> Expense Report</a></li>
+                        <li><a href="{{url('admin/reports/delinquent')}}"><i class="fas fa-exclamation-triangle"></i> Delinquent Report</a></li>
+                        <li><a href="{{route('reports.monthly')}}"><i class="fas fa-calendar-alt"></i> Monthly Report</a></li>
+                        <li><a href="{{url('admin/reports/booking')}}"><i class="fas fa-book"></i> Booking Report</a></li>
+                        <li><a href="{{url('admin/reports/users')}}"><i class="fas fa-users"></i> Users Report</a></li>
+                        <li><a href="{{url('admin/reports/work-order')}}"><i class="fas fa-clipboard-list"></i> Work Order Report</a></li>
+                        <li><a href="{{url('admin/reports/fuel')}}"><i class="fas fa-gas-pump"></i> Fuel Report</a></li>
+                        <li><a href="{{url('admin/reports/driver')}}"><i class="fas fa-user-tie"></i> Driver Report</a></li>
+                        <li><a href="{{url('admin/reports/customer')}}"><i class="fas fa-user-friends"></i> Customer Report</a></li>
+                        <li><a href="{{url('admin/reports/vendor')}}"><i class="fas fa-store"></i> Vendor Report</a></li>
+                        <li><a href="{{route('reports.yearly')}}"><i class="fas fa-chart-line"></i> Yearly Report</a></li>
+                        <li><a href="{{url('admin/reports/driver-payment')}}"><i class="fas fa-hand-holding-usd"></i> Driver Payment Report</a></li>
                     </ul>
                 </li>
 
-                <!-- Settings -->
-                <li><a href="{{route('settings.index')}}"><i class="fas fa-cog"></i> Settings</a></li>
+                <!-- Fuel with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-gas-pump"></i> Fuel <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{route('fuel.create')}}"><i class="fas fa-plus"></i> Add Fuel</a></li>
+                        <li><a href="{{route('fuel.index')}}"><i class="fas fa-history"></i> Fuel History</a></li>
+                    </ul>
+                </li>
+
+                <!-- Vendors with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-store"></i> Vendors <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{route('vendors.create')}}"><i class="fas fa-plus"></i> Add Vendor</a></li>
+                        <li><a href="{{route('vendors.index')}}"><i class="fas fa-list"></i> Manage Vendor</a></li>
+                    </ul>
+                </li>
+
+                <!-- Parts with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-wrench"></i> Parts <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{route('parts.create')}}"><i class="fas fa-plus"></i> Add Parts</a></li>
+                        <li><a href="{{route('parts.index')}}"><i class="fas fa-list"></i> Manage Parts</a></li>
+                        <li><a href="{{url('admin/parts-category')}}"><i class="fas fa-tags"></i> Manage Parts Category</a></li>
+                    </ul>
+                </li>
+
+                <!-- Work Orders with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-clipboard-list"></i> Work Orders <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{route('work_order.create')}}"><i class="fas fa-plus"></i> Add Work Order</a></li>
+                        <li><a href="{{route('work_order.index')}}"><i class="fas fa-list"></i> Manage Work Order</a></li>
+                        <li><a href="{{url('admin/work-order-history')}}"><i class="fas fa-history"></i> Work Order History</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="{{url('admin/mechanics')}}"><i class="fas fa-user-cog"></i> Mechanics</a></li>
+
+                <!-- Notes with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-sticky-note"></i> Notes <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{url('admin/notes')}}"><i class="fas fa-list"></i> Manage Notes</a></li>
+                        <li><a href="{{url('admin/notes/create')}}"><i class="fas fa-plus"></i> Create Note</a></li>
+                    </ul>
+                </li>
+
+                <!-- Service Reminders with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-bell"></i> Service Reminders <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{route('service-reminder.index')}}"><i class="fas fa-list"></i> Manage Service Reminder</a></li>
+                        <li><a href="{{route('service-reminder.create')}}"><i class="fas fa-plus"></i> Add Service Reminder</a></li>
+                        <li><a href="{{url('admin/service-item')}}"><i class="fas fa-cogs"></i> Service Item</a></li>
+                    </ul>
+                </li>
+
+                <!-- Testimonials with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-star"></i> Testimonials <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{url('admin/testimonials')}}"><i class="fas fa-list"></i> Manage Testimonial</a></li>
+                        <li><a href="{{url('admin/testimonials/create')}}"><i class="fas fa-plus"></i> Add Testimonial</a></li>
+                    </ul>
+                </li>
+
+                <!-- Team with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-users-cog"></i> Team <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{url('admin/team')}}"><i class="fas fa-list"></i> Manage Team</a></li>
+                        <li><a href="{{url('admin/team/create')}}"><i class="fas fa-user-plus"></i> Add Team Member</a></li>
+                    </ul>
+                </li>
+
+                <!-- Settings with submenu -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-cog"></i> Settings <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{url('admin/user-access-management')}}"><i class="fas fa-user-lock"></i> User Access Management</a></li>
+                        <li><a href="{{route('settings.index')}}"><i class="fas fa-wrench"></i> General Settings</a></li>
+                        <li><a href="{{url('admin/api-settings')}}"><i class="fas fa-code"></i> Api Settings</a></li>
+                        <li><a href="{{url('admin/payment-settings')}}"><i class="fas fa-credit-card"></i> Payment Settings</a></li>
+                        <li><a href="{{url('admin/traccar-settings')}}"><i class="fas fa-map-marker-alt"></i> Traccar Settings</a></li>
+                        <li><a href="{{url('admin/twilio-settings')}}"><i class="fas fa-sms"></i> Twilio Settings</a></li>
+                        <li><a href="{{url('admin/chat-settings')}}"><i class="fas fa-comments"></i> Chat Settings</a></li>
+                        <li><a href="{{url('admin/cancellation-reasons')}}"><i class="fas fa-times-circle"></i> Reasons for Cancellation</a></li>
+                        <li><a href="{{url('admin/email-notification')}}"><i class="fas fa-envelope"></i> Email Notification</a></li>
+                        <li><a href="{{url('admin/email-content')}}"><i class="fas fa-edit"></i> Set Email Content</a></li>
+                        <li><a href="{{url('admin/fare-settings')}}"><i class="fas fa-dollar-sign"></i> Fare Settings</a></li>
+                        <li><a href="{{url('admin/expense-categories')}}"><i class="fas fa-list"></i> Expense Categories</a></li>
+                        <li><a href="{{url('admin/income-categories')}}"><i class="fas fa-list"></i> Income Categories</a></li>
+                        <li><a href="{{url('admin/frontend-settings')}}"><i class="fas fa-desktop"></i> Frontend Settings</a></li>
+                        <li><a href="{{url('admin/company-services')}}"><i class="fas fa-briefcase"></i> Company Services</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="{{url('admin/inquiries')}}"><i class="fas fa-question-circle"></i> Inquiries</a></li>
+
+                <!-- Help section -->
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fas fa-life-ring"></i> Help <i class="fas fa-chevron-down arrow"></i></a>
+                    <ul class="submenu">
+                        <li><a href="{{url('admin/renew-registration')}}"><i class="fas fa-file-alt"></i> Renew Registration</a></li>
+                        <li><a href="{{url('admin/renew-insurance')}}"><i class="fas fa-shield-alt"></i> Renew Insurance</a></li>
+                        <li><a href="{{url('admin/renew-licence')}}"><i class="fas fa-id-card"></i> Renew Licence</a></li>
+                        <li><a href="{{url('admin/renew-driving-licence')}}"><i class="fas fa-id-badge"></i> Renew Driving Licence</a></li>
+                        <li><a href="{{route('service-reminder.index')}}"><i class="fas fa-bell"></i> Service Reminders</a></li>
+                        <li><a href="{{url('admin/help-improve')}}"><i class="fas fa-thumbs-up"></i> Help us Improve</a></li>
+                    </ul>
+                </li>
 
                 <!-- Logout -->
                 <li><a href="{{url('admin/logout')}}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
@@ -2767,7 +2875,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (hamburgerToggle) {
-        hamburgerToggle.addEventListener('click', toggleMenu);
+        console.log('Hamburger toggle found, adding click listener');
+        hamburgerToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Hamburger clicked!');
+            toggleMenu();
+        });
+    } else {
+        console.log('Hamburger toggle element not found!');
     }
 
     if (closeMenu) {

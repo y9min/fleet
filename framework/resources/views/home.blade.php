@@ -375,24 +375,42 @@
 
 @section('script')
 <script>
-$(function() {
-    // Dashboard initialization
-    console.log('Fleet Manager Dashboard loaded successfully');
-    
-    // Add smooth hover effects
-    $('.stat-card, .action-card').hover(
-        function() {
-            $(this).addClass('shadow-lg');
-        },
-        function() {
-            $(this).removeClass('shadow-lg');
-        }
-    );
-    
-    // Add click analytics for action buttons
-    $('.action-btn').click(function() {
-        console.log('Action clicked:', $(this).text().trim());
-    });
+// Wait for jQuery to be available
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if jQuery is available
+    if (typeof $ !== 'undefined') {
+        $(function() {
+            // Dashboard initialization
+            console.log('Fleet Manager Dashboard loaded successfully');
+            
+            // Add smooth hover effects
+            $('.stat-card, .action-card').hover(
+                function() {
+                    $(this).addClass('shadow-lg');
+                },
+                function() {
+                    $(this).removeClass('shadow-lg');
+                }
+            );
+            
+            // Add click analytics for action buttons
+            $('.action-btn').click(function() {
+                console.log('Action clicked:', $(this).text().trim());
+            });
+        });
+    } else {
+        console.log('jQuery not available yet, using vanilla JS for hover effects');
+        // Fallback to vanilla JavaScript if jQuery isn't loaded
+        const cards = document.querySelectorAll('.stat-card, .action-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('shadow-lg');
+            });
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('shadow-lg');
+            });
+        });
+    }
 });
 </script>
 @endsection

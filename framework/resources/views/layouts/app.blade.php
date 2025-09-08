@@ -235,9 +235,9 @@ input:checked + .slider:before {
 
 
 
-  <script src="{{asset('assets/push_notification/app.js')}}"></script>
   <!-- Load jQuery first to prevent $ undefined errors -->
   <script src="{{asset('assets/vendor/jquery-3.6.0.min.js')}}"></script>
+  <script src="{{asset('assets/push_notification/app.js')}}"></script>
 
 
   <style>
@@ -2548,7 +2548,9 @@ input:checked + .slider:before {
     }
   </script>
   <script type="text/javascript">
-    $(document).ready(function() {
+    // Wait for both DOM and jQuery to be ready
+    if (typeof $ !== 'undefined') {
+        $(document).ready(function() {
       // $('button').on('click', function() {
       //   if (!$(this).data('clicked')) {
       //     console.log('Button clicked!');

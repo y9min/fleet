@@ -233,7 +233,7 @@ input:checked + .slider:before {
 
   <!-- browser notification -->
 
- 
+
 
   <script src="{{asset('assets/push_notification/app.js')}}"></script>
 
@@ -2055,7 +2055,7 @@ input:checked + .slider:before {
 
                     <a href="{{ route('reports.work_order') }}"
 
-                      class="nav-link @if(Request::is('admin/reports/work-order')) active @endif">
+                      class="nav-link @if(Request::is('admin/reports-work-order')) active @endif">
 
                       <i class="nav-icon fa fa-book"></i>
 
@@ -2619,7 +2619,7 @@ input:checked + .slider:before {
 
 
 
-              
+
 
 
               @if(Request::is('admin/vehicle-breakdown*'))
@@ -2666,7 +2666,7 @@ input:checked + .slider:before {
 
                       class="nav-link @if((Request::is('admin/vehicle-breakdown*') && !(Request::is('admin/vehicle-breakdown/create')))) active @endif">
 
-                      
+
 
                       <p> @lang('fleet.manage_vehicle_breakdown')</p>
 
@@ -2674,7 +2674,7 @@ input:checked + .slider:before {
 
                   </li>
                   @endcan
-                  
+
 
                   @can('VehicleBreakdown add')
 
@@ -2684,7 +2684,7 @@ input:checked + .slider:before {
 
                       class="nav-link @if(Request::is('admin/vehicle-breakdown/create')) active @endif">
 
-                     
+
 
                       <p>@lang('fleet.add_vehicle_breakdown')</p>
 
@@ -2692,7 +2692,7 @@ input:checked + .slider:before {
 
                   </li>
                   @endcan
-       
+
 
                 </ul>
 
@@ -2745,7 +2745,7 @@ input:checked + .slider:before {
 
                       class="nav-link @if((Request::is('admin/driver-alert*') && !(Request::is('admin/driver-alert/create')))) active @endif">
 
-                      
+
 
                       <p> @lang('fleet.manage_driver_alert')</p>
 
@@ -2765,7 +2765,7 @@ input:checked + .slider:before {
 
                       class="nav-link @if(Request::is('admin/driver-alert/create')) active @endif">
 
-                     
+
 
                       <p>@lang('fleet.add_driver_alert')</p>
 
@@ -2773,7 +2773,7 @@ input:checked + .slider:before {
 
                   </li>
                   @endcan
-       
+
 
                 </ul>
 
@@ -3359,9 +3359,9 @@ input:checked + .slider:before {
               <!-- super-admin -->
 
 
-               
+
               @if(in_array(Hyvikk::api('api'),[0,1]) && Hyvikk::api('driver_review') == 1)
-              
+
               <li class="nav-item">
 
                 <a href="{{ url('admin/reviews')}}" class="nav-link @if(Request::is('admin/reviews')) active @endif">
@@ -3379,7 +3379,7 @@ input:checked + .slider:before {
                 </a>
 
               </li>
-              
+
               @endif
 
 
@@ -3552,8 +3552,12 @@ input:checked + .slider:before {
 
   @yield('script2')
 
-  <script src="{{asset('assets/js/plugins-jquery.min.js')}}"></script>
-
+  <!-- jQuery -->
+  <script src="{{ asset('assets/js/plugins-jquery.min.js') }}"></script>
+  <script>
+    // Ensure jQuery is available globally
+    window.$ = window.jQuery = jQuery;
+  </script>
   <script src="{{asset('assets/js/jquery-ui.min.js')}}"></script>
 
   {{-- <script>
@@ -3957,10 +3961,10 @@ input:checked + .slider:before {
         "url": '{{ asset("assets/datatables/")."/".__("fleet.datatable_lang") }}',
 
       },
-      
+
 
       columnDefs: [ { orderable: false, targets: [0] } ],
-     
+
 
       // individual column search
 
@@ -4003,8 +4007,8 @@ input:checked + .slider:before {
             { orderable: false, targets: [0] } // Make the first column not orderable
         ],
         "order": [[3, 'desc']], // Order by the fourth column in descending order (index 3)
-       
-        
+
+
     });
 
     $('[data-toggle="tooltip"]').tooltip();

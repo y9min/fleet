@@ -90,184 +90,24 @@ class HomeController extends Controller {
                 header('Content-Disposition: attachment; filename="cal.ics"');
                 echo $vCalendar->render();
         }
-        public function index() {
-                if (Auth::user()->user_type == "D") {
-                        // $drivers = User::where('user_type', 'D')->get();
-                        // foreach ($drivers as $driver) {
-                        //     $d = User::find($driver->id);
-                        //     $d->givePermissionTo(['Notes add','Notes edit','Notes delete','Notes list','Drivers list']);
-                        // }
-                        $index['data'] = User::whereId(Auth::user()->id)->first();
-                        $index['bookings'] = Bookings::orderBy('id', 'desc')->where('driver_id', Auth::user()->id)->get();
-                        $all_rides = Bookings::whereDriver_id(Auth::user()->id)->get()->count();
-                        $cancel_rides = Bookings::whereDriver_id(Auth::user()->id)->whereMeta('ride_status', 'Cancelled')->get()->count();
-                        // $index['total'] = Bookings::whereDriver_id(Auth::user()->id)->whereMeta('ride_status','!=','Cancelled')->get()->count();
-                        $index['total'] = $all_rides - $cancel_rides;
-                        // $index['vehicle'] = VehicleModel::where('driver_id', Auth::user()->id)->first();
-                        return view("drivers.profile", $index);
-                } elseif (Auth::user()->user_type == "C") {
-                        if (Hyvikk::frontend('enable') == 1) {
-                                return redirect('/');
-                        }
-                        $data['total_kms'] = IncomeModel::select(DB::raw('sum(mileage) as total_kms'))->where('user_id', Auth::id())->get();
-                        $data['income'] = IncomeModel::select(DB::raw('sum(amount) as income'))->where('user_id', Auth::id())->get();
-                        $data['time'] = 0;
-                        $data['travel_time'] = 0;
-                        $bookings = Bookings::where('customer_id', Auth::user()->id)->get();
-                        foreach ($bookings as $b) {
-                                if ($b->status == 1) {
-                                        $data['time'] += $b->getMeta('waiting_time');
-                                        $times = explode(" ", $b->getMeta('driving_time'));
-                                        if (sizeof($times) == 2) {
-                                                if (starts_with($times[1], 'hour')) {
-                                                        $data['travel_time'] += $times[0] * 60;
-                                                }
-                                                if (starts_with($times[1], 'min')) {
-                                                        $data['travel_time'] += $times[0];
-                                                }
-                                                if (starts_with($times[1], 'day')) {
-                                                        $data['travel_time'] += $times[0] * 24 * 60;
-                                                }
-                                        }
-                                        if (sizeof($times) == 4) {
-                                                if (starts_with($times[1], 'hour')) {
-                                                        $data['travel_time'] += $times[0] * 60;
-                                                }
-                                                if (starts_with($times[1], 'day')) {
-                                                        $data['travel_time'] += $times[0] * 24 * 60;
-                                                }
-                                                if (starts_with($times[3], 'hour')) {
-                                                        $data['travel_time'] += $times[2] * 60;
-                                                }
-                                                if (starts_with($times[3], 'min')) {
-                                                        $data['travel_time'] += $times[2];
-                                                }
-                                        }
-                                        if (sizeof($times) == 6) {
-                                                if (starts_with($times[1], 'day')) {
-                                                        $data['travel_time'] += $times[0] * 24 * 60;
-                                                }
-                                                if (starts_with($times[3], 'hour')) {
-                                                        $data['travel_time'] += $times[2] * 60;
-                                                }
-                                                if (starts_with($times[5], 'min')) {
-                                                        $data['travel_time'] += $times[4];
-                                                }
-                                        }
-                                }
-                        }
-                        return view('customers.home', $data);
-                } else {
-                        if (isset($_GET['year'])) {
-                                $pass_year = $_GET['year'];
-                        } else {
-                                $pass_year = date("Y");
-                        }
-                        $years = DB::select("select distinct extract(year from income_date) as years from income  union select distinct extract(year from exp_date) as years from expense order by years desc");
-                        $y = array();
-                        foreach ($years as $year) {
-                                $y[$year->years] = $year->years;
-                        }
-                        if ($years == null) {
-                                $y[date('Y')] = date('Y');
-                        }
-                        $index['year_select'] = $pass_year;
-                        $index['years'] = $y;
-                        $index['drivers'] = User::whereUser_type("D")->get()->count();
-                        $index['reviews'] = ReviewModel::all()->count();
-                        $index['customers'] = User::whereUser_type("C")->get()->count();
-                        $index['users'] = User::whereUser_type("O")->get()->count();
-                        $vehicle_ids = array(0);
-                        if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-                                $index['vehicles'] = VehicleModel::all()->count();
-                                $index['bookings'] = Bookings::all()->count();
-                                $vehicle_ids = VehicleModel::pluck('id')->toArray();
-                                if ($vehicle_ids == null) {
-                                        $vehicle_ids = array(0);
-                                }
-                        } else {
-                                $index['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->count();
-                                $vehicle_ids = VehicleModel::where('group_id', Auth::user()->group_id)->pluck('id')->toArray();
-                                if ($vehicle_ids == null) {
-                                        $vehicle_ids = array(0);
-                                }
-                                $index['bookings'] = Bookings::whereIn('vehicle_id', $vehicle_ids)->count();
-                        }
-                        $index['vendors'] = Vendor::all()->count();
-                        // $index['parts'] = PartsModel::all()->count();
-                        $index['customers'] = User::whereUser_type("C")->get()->count();
-                        $index['yearly_income'] = $this->yearly_income($pass_year);
-                        $index['yearly_expense'] = $this->yearly_expense($pass_year);
-                        $vv = array();
-                        if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-                                $all_vehicles = VehicleModel::get();
-                        } else {
-                                $all_vehicles = VehicleModel::where('group_id', Auth::user()->group_id)->get();
-                        }
-                        foreach ($all_vehicles as $key) {
-                                $vv[$key->id] = $key->make_name . "-" . $key->model_name . "-" . $key->license_plate;
-                        }
-                        $index['vehicle_name'] = $vv;
-                        $index['expenses'] = Expense::select('vehicle_id', DB::raw('sum(amount) as expense'))->whereIn('vehicle_id', $vehicle_ids)->whereYear('exp_date', date('Y'))->whereMonth('exp_date', date('n'))->groupBy('vehicle_id')->get();
-                        $index['income'] = IncomeModel::whereRaw('extract(year from income_date) = ? and extract(month from income_date)=?', [date("Y"), date("n")])->whereIn('vehicle_id', $vehicle_ids)->sum("amount");
-                        // dd($vehicle_ids);
-                        $index['expense'] = Expense::whereRaw('extract(year from exp_date) = ? and extract(month from exp_date)=?', [date("Y"), date("n")])->whereIn('vehicle_id', $vehicle_ids)->sum("amount");
-                        $exp = DB::select('select exp_date as date,sum(amount) as tot from expense where deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by exp_date');
-                        $inc = DB::select('select income_date as date,sum(amount) as tot from income where deleted_at is null and vehicle_id in (' . join(",", $vehicle_ids) . ') group by income_date');
-                        $date1 = IncomeModel::pluck('income_date')->toArray();
-                        $date2 = Expense::pluck('exp_date')->toArray();
-                        $all_dates = array_unique(array_merge($date1, $date2));
-                        $dates = array_count_values($all_dates);
-                        ksort($dates);
-                        $dates = array_slice($dates, -12, 12);
-                        $index['dates'] = $dates;
-                        $temp = array();
-                        foreach ($all_dates as $key) {
-                                $temp[$key] = 0;
-                        }
-                        $income2 = array();
-                        foreach ($inc as $income) {
-                                $income2[$income->date] = $income->tot;
-                        }
-                        $inc_data = array_merge($temp, $income2);
-                        ksort($inc_data);
-                        $index['incomes'] = implode(",", array_slice($inc_data, -12, 12));
-                        $expense2 = array();
-                        foreach ($exp as $e) {
-                                $expense2[$e->date] = $e->tot;
-                        }
-                        $expenses = array_merge($temp, $expense2);
-                        ksort($expenses);
-                        $index['expenses1'] = implode(",", array_slice($expenses, -12, 12));
-
-
-                        $vb=BookingAlert::select('booking_alerts.*')
-                        ->join('bookings', 'bookings.id', '=', 'booking_alerts.booking_id')
-                        ->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-                        ->where('bookings_meta.key', 'ride_status')
-                        ->where('bookings_meta.value', 'Ongoing')
-                        ->where('booking_alerts.status', 'vehicle_breakdown')
-                        ->whereNull('bookings.deleted_at')
-                        ->orderBy('bookings_meta.created_at', 'desc')   
-                        ->get();
-                
-                        $da=BookingAlert::select('booking_alerts.*')
-                        ->join('bookings', 'bookings.id', '=', 'booking_alerts.booking_id')
-                        ->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
-                        ->where('bookings_meta.key', 'ride_status')
-                        ->where('bookings_meta.value', 'Ongoing')
-                        ->where('booking_alerts.status', 'driver_alert')
-                        ->whereNull('bookings.deleted_at')
-                        ->orderBy('bookings_meta.created_at', 'desc')
-                        ->get();
-
-
-                        $index['vehicle_breakdown']=$vb;
-                        $index['driver_alert']=$da;
-                        
-                        return view('home', $index);
-                }
+        public function index()
+    {
+        if (Auth::user()->user_type == "C") {
+            return redirect('customer/dashboard/');
         }
+
+        $data['page_title'] = "Dashboard";
+        $data['page_description'] = "Fleet Management Dashboard";
+        $data['page_keywords'] = "fleet, management, dashboard";
+
+        // Basic dashboard statistics
+        $data['total_vehicles'] = \App\Model\VehicleModel::count();
+        $data['total_drivers'] = \App\Model\User::where('user_type', 'D')->count();
+        $data['total_customers'] = \App\Model\User::where('user_type', 'C')->count();
+        $data['total_bookings'] = \App\Model\Bookings::count();
+
+        return view('home', $data);
+    }
         private function yearly_income($year) {
                 if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
                         $all_vehicles = VehicleModel::get();

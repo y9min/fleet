@@ -570,6 +570,37 @@ input:checked + .slider:before {
         margin: 3px 0;
         transition: 0.3s;
         border-radius: 2px;
+        display: block;
+    }
+
+    /* Professional page styling */
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: 'Source Sans Pro', sans-serif;
+    }
+
+    .main-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-bottom: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .content-wrapper {
+        background: transparent;
+        padding: 1rem;
+    }
+
+    .content {
+        padding: 0;
+    }
+
+    /* Professional card styling for content */
+    .content-wrapper .container-fluid {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin: 0 auto;
     }
 
     /* Enhanced hamburger menu styles */

@@ -423,6 +423,32 @@
         color: #333 !important;
     }
 
+    /* Mobile Login Button Styling */
+    .mobile-login-btn {
+        background: linear-gradient(to right, #80D7DF, #BDEFCC) !important;
+        color: white !important;
+        border: none !important;
+        padding: 8px 20px !important;
+        border-radius: 25px !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        transition: all 0.3s ease !important;
+        white-space: nowrap !important;
+    }
+
+    .mobile-login-btn:hover {
+        background: linear-gradient(to right, #BDEFCC, #80D7DF) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.2) !important;
+    }
+
+    .login-btn-res {
+        display: flex !important;
+        align-items: center !important;
+        margin-right: 15px !important;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .hero-title {
@@ -485,6 +511,16 @@
 
         .navbar-toggler-icon {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .mobile-login-btn {
+            padding: 6px 16px !important;
+            font-size: 13px !important;
+            margin-right: 0 !important;
+        }
+        
+        .login-btn-res {
+            margin-right: 10px !important;
         }
     }
 </style>

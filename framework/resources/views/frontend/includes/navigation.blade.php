@@ -14,12 +14,12 @@
                 <div class="res-collapse d-flex d-sm-flex d-md-flex d-lg-none d-xl-none ">
                     @if (!Auth::guest() && (Auth::user()->user_type == 'C' || Auth::user()->user_type == 'D'))
                         <div class="login-btn-res d-none">
-                            <a href="{{url('/login')}}" style="text-decoration:none;border-radious:2px;"> <button type="button" class="btn " data-bs-toggle="modal"
+                            <a href="{{url('/login')}}" style="text-decoration:none;border-radious:2px;"> <button type="button" class="btn mobile-login-btn" data-bs-toggle="modal"
                                 >@lang('frontend.login')</button></a>
                         </div>
                     @else
                         <div class="login-btn-res">
-                            <a href="{{url('/login')}}" style="text-decoration:none;border-radious:2px;"><button type="button" class="btn " data-bs-toggle="modal"
+                            <a href="{{url('/login')}}" style="text-decoration:none;border-radious:2px;"><button type="button" class="btn mobile-login-btn" data-bs-toggle="modal"
                                >@lang('frontend.login')</button></a>
                         </div>
                     @endif

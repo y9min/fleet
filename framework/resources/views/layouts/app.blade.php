@@ -236,6 +236,8 @@ input:checked + .slider:before {
 
 
   <script src="{{asset('assets/push_notification/app.js')}}"></script>
+  <!-- Ensure jQuery is loaded first -->
+  <script src="{{asset('assets/js/jquery.js')}}"></script>
 
   <style>
 

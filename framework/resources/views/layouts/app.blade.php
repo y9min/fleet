@@ -332,23 +332,6 @@ input:checked + .slider:before {
         transition: all 0.3s linear;
     }
 
-    .admin-nav-menu {
-        position: fixed;
-        top: 0;
-        left: -300px; /* Hidden off-screen */
-        width: 300px;
-        height: 100%;
-        background-color: #ffffff; /* Menu background color */
-        box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-        transition: left 0.3s ease-in-out;
-        z-index: 1010;
-        overflow-y: auto;
-        padding-top: 20px;
-    }
-
-    .admin-nav-menu.active {
-        left: 0; /* Slide in */
-    }
 
     .mobile-menu-overlay {
         position: fixed;
@@ -2798,6 +2781,32 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Escape' && adminNavMenu.classList.contains('active')) {
             closeMenuFunction();
         }
+    });
+
+    // Handle submenu toggles
+    const submenuToggles = document.querySelectorAll('.submenu-toggle');
+    submenuToggles.forEach(function(toggle) {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const parentLi = this.closest('li.has-submenu');
+            
+            // Close other open submenus
+            document.querySelectorAll('.has-submenu.open').forEach(function(openMenu) {
+                if (openMenu !== parentLi) {
+                    openMenu.classList.remove('open');
+                }
+            });
+            
+            // Toggle current submenu
+            parentLi.classList.toggle('open');
+        });
+    });
+
+    // Close menu when clicking on regular links
+    document.querySelectorAll('.nav-menu-items a:not(.submenu-toggle)').forEach(function(link) {
+        link.addEventListener('click', function() {
+            closeMenuFunction();
+        });
     });
 
     // Handle window resize

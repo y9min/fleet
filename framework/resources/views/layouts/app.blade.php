@@ -313,16 +313,19 @@ input:checked + .slider:before {
   <!-- Hamburger Menu Styles -->
   <style>
     .hamburger-menu {
-        display: none; /* Hidden by default */
+        display: flex !important;
         flex-direction: column;
-        justify-content: space-around;
-        width: 30px;
-        height: 25px;
-        background: transparent;
-        border: none;
+        justify-content: center;
+        width: 45px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
         cursor: pointer;
-        padding: 0;
+        padding: 8px;
+        border-radius: 6px;
         z-index: 1000;
+        position: relative;
+        pointer-events: auto;
     }
 
     .hamburger-line {
@@ -2861,10 +2864,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const submenuToggles = document.querySelectorAll('.submenu-toggle');
 
     function toggleMenu() {
-        hamburgerToggle.classList.toggle('active');
-        adminNavMenu.classList.toggle('active');
-        mobileMenuOverlay.style.display = adminNavMenu.classList.contains('active') ? 'block' : 'none';
-        document.body.style.overflow = adminNavMenu.classList.contains('active') ? 'hidden' : 'auto';
+        console.log('Toggle menu called!');
+        if (adminNavMenu && hamburgerToggle) {
+            hamburgerToggle.classList.toggle('active');
+            adminNavMenu.classList.toggle('active');
+            
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.style.display = adminNavMenu.classList.contains('active') ? 'block' : 'none';
+            }
+            
+            document.body.style.overflow = adminNavMenu.classList.contains('active') ? 'hidden' : 'auto';
+            console.log('Menu toggled:', adminNavMenu.classList.contains('active') ? 'opened' : 'closed');
+        } else {
+            console.error('Menu elements not found:', {adminNavMenu, hamburgerToggle});
+        }
     }
 
     function closeMenuFunction() {
@@ -2875,10 +2888,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (hamburgerToggle) {
+        console.log('Hamburger button found, setting up click listener');
         hamburgerToggle.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            console.log('Hamburger clicked!');
             toggleMenu();
         });
+        
+        // Also add a direct onclick as backup
+        hamburgerToggle.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Hamburger onclick triggered!');
+            toggleMenu();
+        };
+    } else {
+        console.error('Hamburger toggle button not found!');
     }
 
     if (closeMenu) {

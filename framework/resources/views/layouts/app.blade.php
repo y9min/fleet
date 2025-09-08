@@ -651,16 +651,29 @@ input:checked + .slider:before {
         margin-left: 0; /* Full width when sidebar is hidden */
     }
 
+    /* Remove conflicting styles */
+    .main-header .navbar-nav .nav-item > a[data-widget="pushmenu"] {
+        display: none !important;
+    }
+
+    /* Override AdminLTE navbar styles that might hide hamburger */
+    .navbar-nav .nav-item {
+        display: block !important;
+    }
+
+    .navbar-nav .nav-item.hamburger-container {
+        display: flex !important;
+        align-items: center;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
-        .main-header .navbar-nav .nav-item > a[data-widget="pushmenu"] {
-            display: none; /* Hide default pushmenu button */
-        }
         .hamburger-menu {
-            display: flex; /* Show hamburger menu */
+            width: 40px;
+            height: 30px;
         }
         .main-header .navbar-nav {
-            margin-left: auto; /* Push user dropdown to the right */
+            margin-left: auto;
         }
     }
   </style>
@@ -680,12 +693,12 @@ input:checked + .slider:before {
   <div class="wrapper">
 
     <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <nav class="main-header navbar navbar-expand">
         <!-- Left navbar links -->
         <ul class="navbar-nav">
             <li class="nav-item hamburger-container">
                 <!-- Hamburger menu button -->
-                <button class="navbar-toggler hamburger-menu" type="button" id="hamburger-toggle">
+                <button class="navbar-toggler hamburger-menu" type="button" id="hamburger-toggle" aria-label="Toggle navigation">
                     <span class="hamburger-line"></span>
                     <span class="hamburger-line"></span>
                     <span class="hamburger-line"></span>

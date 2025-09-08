@@ -542,24 +542,132 @@ input:checked + .slider:before {
         margin: 0 auto;
     }
 
-    /* Enhanced hamburger menu styles */
-    .admin-nav-menu {
-        position: fixed !important;
-        top: 0 !important;
-        left: -320px !important;
-        width: 320px !important;
-        height: 100vh !important;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
-        box-shadow: 2px 0 15px rgba(0,0,0,0.3) !important;
-        z-index: 9999 !important;
-        transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        overflow-y: auto !important;
-        display: block !important;
+    /* Hamburger Menu Styles */
+    .hamburger-btn {
+        background: #28a745;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
     }
 
-    .admin-nav-menu.active {
-        left: 0 !important;
-        display: block !important;
+    .hamburger-icon span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background: white;
+        margin: 4px 0;
+        transition: 0.3s;
+    }
+
+    .hamburger-sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100vh;
+        z-index: 9999;
+        transition: left 0.3s ease;
+    }
+
+    .hamburger-sidebar.active {
+        left: 0;
+    }
+
+    .sidebar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1;
+    }
+
+    .sidebar-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 300px;
+        height: 100%;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        box-shadow: 2px 0 15px rgba(0,0,0,0.3);
+        z-index: 2;
+        overflow-y: auto;
+    }
+
+    .menu-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .menu-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 3px;
+    }
+
+    .close-btn:hover {
+        background: rgba(255,255,255,0.1);
+    }
+
+    .menu-items {
+        padding: 10px 0;
+    }
+
+    .menu-link, .menu-title {
+        display: block;
+        color: #e0e0e0;
+        text-decoration: none;
+        padding: 12px 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+    }
+
+    .menu-link:hover, .menu-title:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        text-decoration: none;
+    }
+
+    .menu-group .submenu-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: rgba(0,0,0,0.2);
+    }
+
+    .menu-group.active .submenu-content {
+        max-height: 500px;
+    }
+
+    .submenu-link {
+        display: block;
+        color: #ccc;
+        text-decoration: none;
+        padding: 8px 40px;
+        font-size: 14px;
+    }
+
+    .submenu-link:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        text-decoration: none;
     }
 
     /* Adjustments for AdminLTE sidebar */
@@ -682,143 +790,29 @@ input:checked + .slider:before {
                         </div>
                     </div>
 
-                <!-- Reports with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-chart-bar"></i> Reports <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/reports/income')}}"><i class="fas fa-money-check-alt"></i> Income Report</a></li>
-                        <li><a href="{{url('admin/reports/expense')}}"><i class="fas fa-receipt"></i> Expense Report</a></li>
-                        <li><a href="{{url('admin/reports/delinquent')}}"><i class="fas fa-exclamation-triangle"></i> Delinquent Report</a></li>
-                        <li><a href="{{route('reports.monthly')}}"><i class="fas fa-calendar-alt"></i> Monthly Report</a></li>
-                        <li><a href="{{url('admin/reports/booking')}}"><i class="fas fa-book"></i> Booking Report</a></li>
-                        <li><a href="{{url('admin/reports/users')}}"><i class="fas fa-users"></i> Users Report</a></li>
-                        <li><a href="{{url('admin/reports/work-order')}}"><i class="fas fa-clipboard-list"></i> Work Order Report</a></li>
-                        <li><a href="{{url('admin/reports/fuel')}}"><i class="fas fa-gas-pump"></i> Fuel Report</a></li>
-                        <li><a href="{{url('admin/reports/driver')}}"><i class="fas fa-user-tie"></i> Driver Report</a></li>
-                        <li><a href="{{url('admin/reports/customer')}}"><i class="fas fa-user-friends"></i> Customer Report</a></li>
-                        <li><a href="{{url('admin/reports/vendor')}}"><i class="fas fa-store"></i> Vendor Report</a></li>
-                        <li><a href="{{route('reports.yearly')}}"><i class="fas fa-chart-line"></i> Yearly Report</a></li>
-                        <li><a href="{{url('admin/reports/driver-payment')}}"><i class="fas fa-hand-holding-usd"></i> Driver Payment Report</a></li>
-                    </ul>
-                </li>
+                    <div class="menu-group">
+                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-chart-bar"></i> Reports <i class="fas fa-chevron-down"></i></div>
+                        <div class="submenu-content">
+                            <a href="{{url('admin/reports/income')}}" class="submenu-link">Income Report</a>
+                            <a href="{{url('admin/reports/expense')}}" class="submenu-link">Expense Report</a>
+                            <a href="{{url('admin/reports/delinquent')}}" class="submenu-link">Delinquent Report</a>
+                            <a href="{{route('reports.monthly')}}" class="submenu-link">Monthly Report</a>
+                            <a href="{{url('admin/reports/booking')}}" class="submenu-link">Booking Report</a>
+                            <a href="{{url('admin/reports/users')}}" class="submenu-link">Users Report</a>
+                            <a href="{{url('admin/reports/work-order')}}" class="submenu-link">Work Order Report</a>
+                            <a href="{{url('admin/reports/fuel')}}" class="submenu-link">Fuel Report</a>
+                            <a href="{{url('admin/reports/driver')}}" class="submenu-link">Driver Report</a>
+                            <a href="{{url('admin/reports/customer')}}" class="submenu-link">Customer Report</a>
+                            <a href="{{url('admin/reports/vendor')}}" class="submenu-link">Vendor Report</a>
+                            <a href="{{route('reports.yearly')}}" class="submenu-link">Yearly Report</a>
+                            <a href="{{url('admin/reports/driver-payment')}}" class="submenu-link">Driver Payment Report</a>
+                        </div>
+                    </div>
 
-                <!-- Fuel with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-gas-pump"></i> Fuel <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/fuel/create')}}"><i class="fas fa-plus"></i> Add Fuel</a></li>
-                        <li><a href="{{url('admin/fuel')}}"><i class="fas fa-history"></i> Fuel History</a></li>
-                    </ul>
-                </li>
-
-                <!-- Vendors with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-store"></i> Vendors <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/vendors/create')}}"><i class="fas fa-plus"></i> Add Vendor</a></li>
-                        <li><a href="{{url('admin/vendors')}}"><i class="fas fa-list"></i> Manage Vendor</a></li>
-                    </ul>
-                </li>
-
-                <!-- Parts with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-wrench"></i> Parts <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/parts/create')}}"><i class="fas fa-plus"></i> Add Parts</a></li>
-                        <li><a href="{{url('admin/parts')}}"><i class="fas fa-list"></i> Manage Parts</a></li>
-                        <li><a href="{{url('admin/parts-category')}}"><i class="fas fa-tags"></i> Manage Parts Category</a></li>
-                    </ul>
-                </li>
-
-                <!-- Work Orders with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-clipboard-list"></i> Work Orders <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/work_order/create')}}"><i class="fas fa-plus"></i> Add Work Order</a></li>
-                        <li><a href="{{url('admin/work_order')}}"><i class="fas fa-list"></i> Manage Work Order</a></li>
-                        <li><a href="{{url('admin/work-order-history')}}"><i class="fas fa-history"></i> Work Order History</a></li>
-                    </ul>
-                </li>
-
-                <li><a href="{{url('admin/mechanics')}}"><i class="fas fa-user-cog"></i> Mechanics</a></li>
-
-                <!-- Notes with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-sticky-note"></i> Notes <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/notes')}}"><i class="fas fa-list"></i> Manage Notes</a></li>
-                        <li><a href="{{url('admin/notes/create')}}"><i class="fas fa-plus"></i> Create Note</a></li>
-                    </ul>
-                </li>
-
-                <!-- Service Reminders with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-bell"></i> Service Reminders <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/service-reminder')}}"><i class="fas fa-list"></i> Manage Service Reminder</a></li>
-                        <li><a href="{{url('admin/service-reminder/create')}}"><i class="fas fa-plus"></i> Add Service Reminder</a></li>
-                        <li><a href="{{url('admin/service-item')}}"><i class="fas fa-cogs"></i> Service Item</a></li>
-                    </ul>
-                </li>
-
-                <!-- Testimonials with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-star"></i> Testimonials <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/testimonials')}}"><i class="fas fa-list"></i> Manage Testimonial</a></li>
-                        <li><a href="{{url('admin/testimonials/create')}}"><i class="fas fa-plus"></i> Add Testimonial</a></li>
-                    </ul>
-                </li>
-
-                <!-- Team with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-users-cog"></i> Team <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/team')}}"><i class="fas fa-list"></i> Manage Team</a></li>
-                        <li><a href="{{url('admin/team/create')}}"><i class="fas fa-user-plus"></i> Add Team Member</a></li>
-                    </ul>
-                </li>
-
-                <!-- Settings with submenu -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-cog"></i> Settings <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/user-access-management')}}"><i class="fas fa-user-lock"></i> User Access Management</a></li>
-                        <li><a href="{{route('settings.index')}}"><i class="fas fa-wrench"></i> General Settings</a></li>
-                        <li><a href="{{url('admin/api-settings')}}"><i class="fas fa-code"></i> Api Settings</a></li>
-                        <li><a href="{{url('admin/payment-settings')}}"><i class="fas fa-credit-card"></i> Payment Settings</a></li>
-                        <li><a href="{{url('admin/traccar-settings')}}"><i class="fas fa-map-marker-alt"></i> Traccar Settings</a></li>
-                        <li><a href="{{url('admin/twilio-settings')}}"><i class="fas fa-sms"></i> Twilio Settings</a></li>
-                        <li><a href="{{url('admin/chat-settings')}}"><i class="fas fa-comments"></i> Chat Settings</a></li>
-                        <li><a href="{{url('admin/cancellation-reasons')}}"><i class="fas fa-times-circle"></i> Reasons for Cancellation</a></li>
-                        <li><a href="{{url('admin/email-notification')}}"><i class="fas fa-envelope"></i> Email Notification</a></li>
-                        <li><a href="{{url('admin/email-content')}}"><i class="fas fa-edit"></i> Set Email Content</a></li>
-                        <li><a href="{{url('admin/fare-settings')}}"><i class="fas fa-dollar-sign"></i> Fare Settings</a></li>
-                        <li><a href="{{url('admin/expense-categories')}}"><i class="fas fa-list"></i> Expense Categories</a></li>
-                        <li><a href="{{url('admin/income-categories')}}"><i class="fas fa-list"></i> Income Categories</a></li>
-                        <li><a href="{{url('admin/frontend-settings')}}"><i class="fas fa-desktop"></i> Frontend Settings</a></li>
-                        <li><a href="{{url('admin/company-services')}}"><i class="fas fa-briefcase"></i> Company Services</a></li>
-                    </ul>
-                </li>
-
-                <li><a href="{{url('admin/inquiries')}}"><i class="fas fa-question-circle"></i> Inquiries</a></li>
-
-                <!-- Help section -->
-                <li class="has-submenu">
-                    <a href="#" class="submenu-toggle"><i class="fas fa-life-ring"></i> Help <i class="fas fa-chevron-down arrow"></i></a>
-                    <ul class="submenu">
-                        <li><a href="{{url('admin/renew-registration')}}"><i class="fas fa-file-alt"></i> Renew Registration</a></li>
-                        <li><a href="{{url('admin/renew-insurance')}}"><i class="fas fa-shield-alt"></i> Renew Insurance</a></li>
-                        <li><a href="{{url('admin/renew-licence')}}"><i class="fas fa-id-card"></i> Renew Licence</a></li>
-                        <li><a href="{{url('admin/renew-driving-licence')}}"><i class="fas fa-id-badge"></i> Renew Driving Licence</a></li>
-                        <li><a href="{{url('admin/service-reminder')}}"><i class="fas fa-bell"></i> Service Reminders</a></li>
-                        <li><a href="{{url('admin/help-improve')}}"><i class="fas fa-thumbs-up"></i> Help us Improve</a></li>
-                    </ul>
-                </li>
-
-                <!-- Logout -->
-                <li><a href="{{url('admin/logout')}}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-            </ul>
+                    <a href="{{url('admin/mechanics')}}" class="menu-link"><i class="fas fa-user-cog"></i> Mechanics</a>
+                    <a href="{{url('admin/inquiries')}}" class="menu-link"><i class="fas fa-question-circle"></i> Inquiries</a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -2841,12 +2835,23 @@ input:checked + .slider:before {
   @yield('script')
   <script> var base_url = '{{ url("/") }}'; </script>
   <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const hamburgerToggle = document.getElementById('hamburger-toggle');
-    const adminNavMenu = document.getElementById('admin-nav-menu');
-    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-    const closeMenu = document.getElementById('close-menu');
-    const submenuToggles = document.querySelectorAll('.submenu-toggle');
+// Simple Hamburger Menu Functions
+function toggleHamburgerMenu() {
+    const sidebar = document.getElementById('hamburger-sidebar');
+    sidebar.classList.toggle('active');
+    document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
+}
+
+function closeHamburgerMenu() {
+    const sidebar = document.getElementById('hamburger-sidebar');
+    sidebar.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function toggleSubmenu(element) {
+    const menuGroup = element.parentElement;
+    menuGroup.classList.toggle('active');
+}
 
     function toggleMenu() {
         if (adminNavMenu && hamburgerToggle) {

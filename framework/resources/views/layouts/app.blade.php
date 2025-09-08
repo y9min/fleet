@@ -309,6 +309,135 @@ input:checked + .slider:before {
 
   @endif
 
+  <!-- Hamburger Menu Styles -->
+  <style>
+    .hamburger-menu {
+        display: none; /* Hidden by default */
+        flex-direction: column;
+        justify-content: space-around;
+        width: 30px;
+        height: 25px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        z-index: 1000;
+    }
+
+    .hamburger-line {
+        width: 30px;
+        height: 3px;
+        background: #000; /* Adjust color as needed */
+        transition: all 0.3s linear;
+    }
+
+    .admin-nav-menu {
+        position: fixed;
+        top: 0;
+        left: -300px; /* Hidden off-screen */
+        width: 300px;
+        height: 100%;
+        background-color: #ffffff; /* Menu background color */
+        box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+        transition: left 0.3s ease-in-out;
+        z-index: 1010;
+        overflow-y: auto;
+        padding-top: 20px;
+    }
+
+    .admin-nav-menu.active {
+        left: 0; /* Slide in */
+    }
+
+    .mobile-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1005;
+        display: none; /* Hidden by default */
+    }
+
+    .mobile-menu-overlay.active {
+        display: block;
+    }
+
+    .menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px 20px 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .menu-header h3 {
+        margin: 0;
+        font-size: 1.5em;
+        color: #333;
+    }
+
+    .close-menu {
+        background: none;
+        border: none;
+        font-size: 2em;
+        color: #888;
+        cursor: pointer;
+    }
+
+    .nav-menu-items {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-menu-items li {
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-menu-items a {
+        display: block;
+        padding: 15px 20px;
+        color: #333;
+        text-decoration: none;
+        font-size: 1.1em;
+        transition: background-color 0.2s ease;
+    }
+
+    .nav-menu-items a:hover {
+        background-color: #f4f4f4;
+    }
+
+    .nav-menu-items i {
+        margin-right: 15px;
+        color: #555;
+    }
+
+    /* Adjustments for AdminLTE sidebar */
+    body.sidebar-collapse .main-sidebar {
+        margin-left: -250px; /* Hide sidebar when collapsed */
+    }
+
+    body.sidebar-collapse .wrapper .content-wrapper {
+        margin-left: 0; /* Full width when sidebar is hidden */
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .main-header .navbar-nav .nav-item > a[data-widget="pushmenu"] {
+            display: none; /* Hide default pushmenu button */
+        }
+        .hamburger-menu {
+            display: flex; /* Show hamburger menu */
+        }
+        .main-header .navbar-nav {
+            margin-left: auto; /* Push user dropdown to the right */
+        }
+    }
+  </style>
+
 </head>
 
 
@@ -324,313 +453,34 @@ input:checked + .slider:before {
   <div class="wrapper">
 
     <!-- Navbar -->
-
-    <nav
-
-      class="main-header navbar navbar-expand  @if(auth()->user()->theme=='dark-mode') navbar-dark @else bg-white navbar-light @endif border-bottom">
-
-      <!-- Left navbar links -->
-
-      <ul class="navbar-nav">
-
-        <li class="nav-item">
-
-          <a class="nav-link" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
-
-        </li>
-
-        <li class="nav-item d-none d-sm-inline-block">
-
-          <a href="https://fleetdocs.hyvikk.space" class="nav-link">@lang('fleet.help')</a>
-
-        </li>
-
-      </ul>
-
-
-
-      <!-- Right navbar links -->
-
-      <ul class="navbar-nav ml-auto">
-
-        <li class="nav-item">
-
-          <a class="nav-link" data-widget="fullscreen" href="#" role="button">
-
-            <i class="fas fa-expand-arrows-alt"></i>
-
-          </a>
-
-        </li>
-
-        <!-- Notifications Dropdown Menu -->
-
-        @if(Auth::user()->user_type=="S")
-
-        @php($r = 0)
-
-        @php($i = 0)
-
-        @php($l = 0)
-
-        @php($d = 0)
-
-        @php($s = 0)
-
-        @php($user= Auth::user())
-
-        @foreach ($user->unreadNotifications as $notification)
-
-        @if($notification->type == "App\Notifications\RenewRegistration")
-
-        @php($r++)
-
-        @elseif($notification->type == "App\Notifications\RenewInsurance")
-
-        @php($i++)
-
-        @elseif($notification->type == "App\Notifications\RenewVehicleLicence")
-
-        @php($l++)
-
-        @elseif($notification->type == "App\Notifications\RenewDriverLicence")
-
-        @php($d++)
-
-        @elseif($notification->type == "App\Notifications\ServiceReminderNotification")
-
-        @php($s++)
-
-        @endif
-
-        @endforeach
-
-        @php($n = $r + $i +$l + $d + $s)
-
-        <li class="nav-item dropdown">
-
-          <a class="nav-link" data-toggle="dropdown" href="#">
-
-            <i class="far fa-bell"></i>
-
-            <span class="badge badge-warning navbar-badge">@if($n>0) {{$n}} @endif</span>
-
-          </a>
-
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-
-            @if($n>0)<span class="dropdown-item dropdown-header"> {{$n}} Notifications </span>
-
-            <div class="dropdown-divider"></div>@endif
-
-            <a href="{{url('admin/vehicle_notification',['type'=>'renew-registrations'])}}" class="dropdown-item">
-
-              <i class="fa fa-newspaper mr-2"></i> @lang('fleet.renew_registration')
-
-              <span class="float-right text-muted text-sm">@if($r>0) {{$r}} @endif</span>
-
-            </a>
-
-            <div class="dropdown-divider"></div>
-
-            <a href="{{url('admin/vehicle_notification',['type'=>'renew-insurance'])}}" class="dropdown-item">
-
-              <i class="fa fa-file-text mr-2"></i> @lang('fleet.renew_insurance')
-
-              <span class="float-right text-muted text-sm">@if($i>0) {{$i}} @endif</span>
-
-            </a>
-
-            <div class="dropdown-divider"></div>
-
-            <a href="{{url('admin/vehicle_notification',['type'=>'renew-licence'])}}" class="dropdown-item">
-
-              <i class="fa fa-file mr-2"></i> @lang('fleet.renew_licence')
-
-              <span class="float-right text-muted text-sm">@if($l>0) {{$l}} @endif</span>
-
-            </a>
-
-            <div class="dropdown-divider"></div>
-
-            <a href="{{url('admin/driver_notification',['type'=>'renew-driving-licence'])}}" class="dropdown-item">
-
-              <i class="fa fa-vcard mr-2"></i> @lang('fleet.renew_driving_licence')
-
-              <span class="float-right text-muted text-sm">@if($d>0) {{$d}} @endif</span>
-
-            </a>
-
-            <div class="dropdown-divider"></div>
-
-            <a href="{{url('admin/reminder',['type'=>'service-reminder'])}}" class="dropdown-item">
-
-              <i class="fa fa-clock-rotate-left mr-2"></i> @lang('fleet.serviceReminders')
-
-              <span class="float-right text-muted text-sm">@if($s>0) {{$s}} @endif</span>
-
-            </a>
-
-          </div>
-
-        </li>
-
-        @endif
-
-        <!-- logout -->
-
-        <li class="nav-item dropdown">
-
-          <a class="nav-link" data-toggle="dropdown" href="#">
-
-            <i class="fa fa-user-circle"></i>
-
-            <span class="badge badge-danger navbar-badge"></span>
-
-          </a>
-
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-
-            <a href="#" class="dropdown-item">
-
-              <!-- Message Start -->
-
-              <div class="media">
-
-                @if(Auth::user()->user_type == 'D' && Auth::user()->getMeta('driver_image') != null)
-
-                @if(starts_with(Auth::user()->getMeta('driver_image'),'http'))
-
-                @php($src = Auth::user()->getMeta('driver_image'))
-
-                @else
-
-                @php($src=asset('uploads/'.Auth::user()->getMeta('driver_image')))
-
-                @endif
-
-                <img src="{{$src}}" class="img-size-50 mr-3 img-circle" alt="User Image">
-
-                @elseif(Auth::user()->user_type == 'S' || Auth::user()->user_type == 'O')
-
-                @if(Auth::user()->getMeta('profile_image') == null)
-
-                <img src="{{ asset("assets/images/no-user.jpg")}}" class="img-size-50 mr-3 img-circle"
-
-                  alt="User Image">
-
-                @else
-
-                <img src="{{asset('uploads/'.Auth::user()->getMeta('profile_image'))}}"
-
-                  class="img-size-50 mr-3 img-circle" alt="User Image">
-
-                @endif
-
-                @elseif(Auth::user()->user_type == 'C' && Auth::user()->getMeta('profile_pic') != null)
-
-                @if(starts_with(Auth::user()->getMeta('profile_pic'),'http'))
-
-                @php($src = Auth::user()->getMeta('profile_pic'))
-
-                @else
-
-                @php($src=asset('uploads/'.Auth::user()->getMeta('profile_pic')))
-
-                @endif
-
-                <img src="{{$src}}" class="img-size-50 mr-3 img-circle" alt="User Image">
-
-                @else
-
-                <img src="{{ asset("assets/images/no-user.jpg")}}" class="img-size-50 mr-3 img-circle"
-
-                  alt="User Image">
-
-                @endif
-
-
-
-                <div class="media-body">
-
-                  <h3 class="dropdown-item-title">
-
-                    {{Auth::user()->name}}
-
-
-
-                    <span class="float-right text-sm text-danger">
-
-
-
-                    </span>
-
-                  </h3>
-
-                  <p class="text-sm text-muted">{{Auth::user()->email}}</p>
-
-                  <p class="text-sm text-muted"></p>
-
-
-
-                </div>
-
-              </div>
-
-            </a>
-
-            <div>
-
-              <div style="margin: 5px;">
-
-                <a href="{{ url('admin/change-details/'.Auth::user()->id)}}" class="btn btn-secondary btn-flat"><i
-
-                    class="fa fa-edit"></i> @lang('fleet.editProfile')</a>
-
-
-
-                <a href="{{ route('logout') }}"
-
-                  onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-
-                  class="btn btn-secondary btn-flat pull-right"> <i class="fa fa-sign-out"></i>
-
-                  @lang('menu.logout')
-
-                </a>
-
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-
-                  {{ csrf_field() }}
-
-                </form>
-
-
-
-              </div>
-
-              <div class="clear"></div>
-
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Hamburger menu button -->
+        <button class="navbar-toggler hamburger-menu" type="button" id="hamburger-toggle">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Mobile menu overlay -->
+        <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+
+        <!-- Navigation menu -->
+        <div class="admin-nav-menu" id="admin-nav-menu">
+            <div class="menu-header">
+                <h3>Fleet Manager</h3>
+                <button class="close-menu" id="close-menu">&times;</button>
             </div>
-
-            <!-- Message End -->
-
-          </div>
-
-        </li>
-
-        {{-- <li class="nav-item">
-
-          <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"><i
-
-              class="fa fa-th-large"></i></a>
-
-        </li> --}}
-
-        <!-- logout -->
-
-      </ul>
-
+            <ul class="nav-menu-items">
+                <li><a href="{{url('admin/')}}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="{{route('vehicles.index')}}"><i class="fas fa-car"></i> Vehicles</a></li>
+                <li><a href="{{route('drivers.index')}}"><i class="fas fa-users"></i> Drivers</a></li>
+                <li><a href="{{route('bookings.index')}}"><i class="fas fa-calendar-check"></i> Bookings</a></li>
+                <li><a href="{{route('customers.index')}}"><i class="fas fa-user-friends"></i> Customers</a></li>
+                <li><a href="{{route('reports.monthly')}}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li><a href="{{route('settings.index')}}"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="{{url('admin/logout')}}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
     </nav>
 
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -4082,7 +3932,54 @@ input:checked + .slider:before {
 
   <script> var base_url = '{{ url("/") }}'; </script>
 
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburgerToggle = document.getElementById('hamburger-toggle');
+    const adminNavMenu = document.getElementById('admin-nav-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const closeMenu = document.getElementById('close-menu');
 
+    function toggleMenu() {
+        hamburgerToggle.classList.toggle('active');
+        adminNavMenu.classList.toggle('active');
+        mobileMenuOverlay.style.display = adminNavMenu.classList.contains('active') ? 'block' : 'none';
+        document.body.style.overflow = adminNavMenu.classList.contains('active') ? 'hidden' : 'auto';
+    }
+
+    function closeMenuFunction() {
+        hamburgerToggle.classList.remove('active');
+        adminNavMenu.classList.remove('active');
+        mobileMenuOverlay.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    if (hamburgerToggle) {
+        hamburgerToggle.addEventListener('click', toggleMenu);
+    }
+
+    if (closeMenu) {
+        closeMenu.addEventListener('click', closeMenuFunction);
+    }
+
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener('click', closeMenuFunction);
+    }
+
+    // Close menu on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && adminNavMenu.classList.contains('active')) {
+            closeMenuFunction();
+        }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeMenuFunction();
+        }
+    });
+});
+</script>
 
 </body>
 

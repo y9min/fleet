@@ -245,16 +245,43 @@
     }
   }
 
-  /* Ensure stats stay in one row on larger screens */
-  @media (min-width: 992px) {
-    .stats-container .row {
-      flex-wrap: nowrap;
+  /* Ensure stats stay in one row on all screen sizes */
+  .stats-container .row {
+    flex-wrap: nowrap !important;
+    display: flex !important;
+  }
+  
+  .stats-container .col-xl-3,
+  .stats-container .col-lg-3,
+  .stats-container .col-md-3,
+  .stats-container .col-sm-3 {
+    flex: 1 !important;
+    max-width: 25% !important;
+    min-width: 0 !important;
+  }
+  
+  /* Responsive adjustments for very small screens */
+  @media (max-width: 576px) {
+    .stats-container .col-xl-3,
+    .stats-container .col-lg-3,
+    .stats-container .col-md-3,
+    .stats-container .col-sm-3 {
+      flex: 1 !important;
+      max-width: 25% !important;
+      padding: 0 5px !important;
     }
     
-    .stats-container .col-xl-3,
-    .stats-container .col-lg-3 {
-      flex: 1;
-      max-width: 25%;
+    .stat-card {
+      padding: 1rem !important;
+    }
+    
+    .stat-number {
+      font-size: 1.8rem !important;
+    }
+    
+    .stat-icon {
+      width: 45px !important;
+      height: 45px !important;
     }
   }
 </style>
@@ -282,8 +309,8 @@
 
     <!-- Statistics Cards -->
     <div class="stats-container">
-      <div class="row d-flex">
-        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 d-flex">
+      <div class="row d-flex no-gutters">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-3 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon vehicles">
               <i class="fa fa-car"></i>
@@ -296,7 +323,7 @@
           </div>
         </div>
         
-        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 d-flex">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-3 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon drivers">
               <i class="fa fa-id-card"></i>
@@ -309,7 +336,7 @@
           </div>
         </div>
         
-        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 d-flex">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-3 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon customers">
               <i class="fa fa-users"></i>
@@ -322,7 +349,7 @@
           </div>
         </div>
         
-        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 d-flex">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col-3 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon bookings">
               <i class="fa fa-address-book"></i>

@@ -236,8 +236,8 @@ input:checked + .slider:before {
 
 
   <script src="{{asset('assets/push_notification/app.js')}}"></script>
-  <!-- Ensure jQuery is loaded first -->
-  <script src="{{asset('assets/js/jquery.js')}}"></script>
+  <!-- Load jQuery first to prevent $ undefined errors -->
+  <script src="{{asset('assets/vendor/jquery-3.6.0.min.js')}}"></script>
 
   <!-- Hamburger menu functionality -->
   <script>
@@ -515,19 +515,41 @@ input:checked + .slider:before {
         color: #333;
     }
 
-    /* Hide the main sidebar completely */
-    .main-sidebar {
-        display: none !important;
+    /* Show the main sidebar on larger screens */
+    @media (min-width: 769px) {
+        .main-sidebar {
+            display: block !important;
+        }
+
+        /* Proper content wrapper margin for sidebar */
+        .wrapper .content-wrapper {
+            margin-left: 250px !important;
+        }
+
+        /* Hide hamburger menu on desktop */
+        .hamburger-menu {
+            display: none !important;
+        }
+
+        /* Hide mobile hamburger menu */
+        .admin-nav-menu {
+            display: none !important;
+        }
     }
 
-    /* Adjust content wrapper to full width */
-    .wrapper .content-wrapper {
-        margin-left: 0 !important;
-    }
+    /* Mobile view - keep hamburger menu */
+    @media (max-width: 768px) {
+        .main-sidebar {
+            display: none !important;
+        }
 
-    /* Hide navbar items except hamburger and user dropdown */
-    .navbar-nav .nav-item:not(.dropdown):not(.hamburger-container) {
-        display: none;
+        .wrapper .content-wrapper {
+            margin-left: 0 !important;
+        }
+
+        .hamburger-menu {
+            display: flex !important;
+        }
     }
 
     /* Adjustments for AdminLTE sidebar */
@@ -2450,9 +2472,7 @@ input:checked + .slider:before {
   </div>
   <!-- ./wrapper -->
   @yield('script2')
-  <!-- jQuery - Load first to avoid $ undefined errors -->
-  <script src="{{asset('assets/js/plugins-jquery.min.js')}}"></script>
-  <script src="{{asset('assets/vendor/jquery-3.6.0.min.js')}}"></script>
+  <!-- jQuery already loaded above -->
   <script src="{{ asset('assets/js/cdn-canvasjs.min.js')}}"></script>
   <script src="{{asset('assets/js/jquery-ui.min.js')}}"></script>
   {{-- <script>

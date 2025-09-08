@@ -485,20 +485,6 @@ input:checked + .slider:before {
         display: block !important;
     }
 
-    .hamburger-menu {
-        display: flex !important;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        padding: 8px;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-        width: 45px;
-        height: 35px;
-        cursor: pointer;
-    }
 
     .hamburger-menu:hover {
         background-color: rgba(255, 255, 255, 0.2);
@@ -506,7 +492,7 @@ input:checked + .slider:before {
         transform: scale(1.05);
     }
 
-    .hamburger-menu .hamburger-line {
+    .hamburger-line {
         width: 22px;
         height: 2px;
         background-color: #fff;

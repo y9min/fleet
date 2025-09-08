@@ -694,6 +694,33 @@ input:checked + .slider:before {
         align-items: center;
     }
 
+    /* Logout Button Styling */
+    .logout-btn {
+        background: linear-gradient(to right, #80D7DF, #BDEFCC) !important;
+        color: white !important;
+        padding: 8px 20px !important;
+        border-radius: 25px !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        transition: all 0.3s ease !important;
+        margin-right: 15px !important;
+        border: none !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+
+    .logout-btn:hover {
+        background: #B7ECCE !important;
+        color: #032127 !important;
+        text-decoration: none !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
+    }
+
+    .logout-btn i {
+        margin-right: 8px !important;
+        font-size: 1rem !important;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .hamburger-menu {
@@ -702,6 +729,11 @@ input:checked + .slider:before {
         }
         .main-header .navbar-nav {
             margin-left: auto;
+        }
+        .logout-btn {
+            padding: 6px 15px !important;
+            font-size: 0.9rem !important;
+            margin-right: 10px !important;
         }
     }
   </style>
@@ -738,7 +770,16 @@ input:checked + .slider:before {
 
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
-            <!-- User dropdown and other right-side elements remain here -->
+            <li class="nav-item">
+                <a href="{{ route('logout') }}" 
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                   class="nav-link logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+            </li>
         </ul>
 
         <!-- Hamburger Menu Sidebar -->

@@ -4064,8 +4064,6 @@ input:checked + .slider:before {
 
   </script>
 
-
-
   <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
@@ -4075,7 +4073,7 @@ input:checked + .slider:before {
   {{-- <script>var google_api = "{{ Hyvikk::api('google_api') }}"; </script>  --}}
 
   <script src="{{ asset('assets/js/pnotify.custom.min.js')}}"></script>
-
+  <script src="{{asset('assets/js/admin-custom.js')}}"></script>
 
 
   @yield('script')

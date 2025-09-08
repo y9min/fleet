@@ -677,8 +677,8 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-exchange-alt"></i> Transactions <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        <li><a href="{{route('income.index')}}"><i class="fas fa-plus-circle"></i> Manage Income</a></li>
-                        <li><a href="{{route('expense.index')}}"><i class="fas fa-minus-circle"></i> Manage Expense</a></li>
+                        <li><a href="{{url('admin/income')}}"><i class="fas fa-plus-circle"></i> Manage Income</a></li>
+                        <li><a href="{{url('admin/expense')}}"><i class="fas fa-minus-circle"></i> Manage Expense</a></li>
                     </ul>
                 </li>
 
@@ -698,8 +698,8 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-chart-bar"></i> Reports <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        <li><a href="{{route('reports.income')}}"><i class="fas fa-money-check-alt"></i> Income Report</a></li>
-                        <li><a href="{{route('reports.expense')}}"><i class="fas fa-receipt"></i> Expense Report</a></li>
+                        <li><a href="{{url('admin/reports/income')}}"><i class="fas fa-money-check-alt"></i> Income Report</a></li>
+                        <li><a href="{{url('admin/reports/expense')}}"><i class="fas fa-receipt"></i> Expense Report</a></li>
                         <li><a href="{{url('admin/reports/delinquent')}}"><i class="fas fa-exclamation-triangle"></i> Delinquent Report</a></li>
                         <li><a href="{{route('reports.monthly')}}"><i class="fas fa-calendar-alt"></i> Monthly Report</a></li>
                         <li><a href="{{url('admin/reports/booking')}}"><i class="fas fa-book"></i> Booking Report</a></li>
@@ -718,8 +718,8 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-gas-pump"></i> Fuel <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        <li><a href="{{route('fuel.create')}}"><i class="fas fa-plus"></i> Add Fuel</a></li>
-                        <li><a href="{{route('fuel.index')}}"><i class="fas fa-history"></i> Fuel History</a></li>
+                        <li><a href="{{url('admin/fuel/create')}}"><i class="fas fa-plus"></i> Add Fuel</a></li>
+                        <li><a href="{{url('admin/fuel')}}"><i class="fas fa-history"></i> Fuel History</a></li>
                     </ul>
                 </li>
 
@@ -727,8 +727,8 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-store"></i> Vendors <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        <li><a href="{{route('vendors.create')}}"><i class="fas fa-plus"></i> Add Vendor</a></li>
-                        <li><a href="{{route('vendors.index')}}"><i class="fas fa-list"></i> Manage Vendor</a></li>
+                        <li><a href="{{url('admin/vendors/create')}}"><i class="fas fa-plus"></i> Add Vendor</a></li>
+                        <li><a href="{{url('admin/vendors')}}"><i class="fas fa-list"></i> Manage Vendor</a></li>
                     </ul>
                 </li>
 
@@ -736,8 +736,8 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-wrench"></i> Parts <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        <li><a href="{{route('parts.create')}}"><i class="fas fa-plus"></i> Add Parts</a></li>
-                        <li><a href="{{route('parts.index')}}"><i class="fas fa-list"></i> Manage Parts</a></li>
+                        <li><a href="{{url('admin/parts/create')}}"><i class="fas fa-plus"></i> Add Parts</a></li>
+                        <li><a href="{{url('admin/parts')}}"><i class="fas fa-list"></i> Manage Parts</a></li>
                         <li><a href="{{url('admin/parts-category')}}"><i class="fas fa-tags"></i> Manage Parts Category</a></li>
                     </ul>
                 </li>

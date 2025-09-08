@@ -613,8 +613,6 @@ input:checked + .slider:before {
 
             <!-- Message End -->
 
-
-
           </div>
 
         </li>
@@ -1752,8 +1750,6 @@ input:checked + .slider:before {
                       <i class="fa fa-newspaper nav-icon"></i>
 
                       <p>@lang('fleet.manage_income')</p>
-
-                      <!-- <i class="fa fa-plus" style="float:right;"></i> -->
 
                     </a>
 
@@ -3548,16 +3544,16 @@ input:checked + .slider:before {
 
   <!-- ./wrapper -->
 
-  <script src="{{ asset('assets/js/cdn-canvasjs.min.js')}}"></script>
+
 
   @yield('script2')
 
-  <!-- jQuery -->
-  <script src="{{ asset('assets/js/plugins-jquery.min.js') }}"></script>
-  <script>
-    // Ensure jQuery is available globally
-    window.$ = window.jQuery = jQuery;
-  </script>
+  <!-- jQuery - Load first to avoid $ undefined errors -->
+  <script src="{{asset('assets/js/plugins-jquery.min.js')}}"></script>
+  <script src="{{asset('assets/vendor/jquery-3.6.0.min.js')}}"></script>
+  <script src="{{ asset('assets/js/cdn-canvasjs.min.js')}}"></script>
+
+
   <script src="{{asset('assets/js/jquery-ui.min.js')}}"></script>
 
   {{-- <script>
@@ -3653,11 +3649,17 @@ input:checked + .slider:before {
     $(document).ready(function() {
 
       // $('button').on('click', function() {
+
       //   if (!$(this).data('clicked')) {
+
       //     console.log('Button clicked!');
+
       //     $(this).data('clicked', true);
+
       //     $(this).prop('disabled', true);
+
       //   }
+
       // });
 
       $('#phone').on('input', function(evt) {

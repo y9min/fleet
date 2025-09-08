@@ -222,9 +222,22 @@
 
 @section('script')
 <script>
-$(function() {
-    // Dashboard initialization
-    console.log('Dashboard loaded successfully');
+$(document).ready(function() {
+    try {
+        // Dashboard initialization
+        console.log('Dashboard loaded successfully');
+        
+        // Add error handling for any AJAX requests
+        $(document).ajaxError(function(event, xhr, settings, error) {
+            console.error('AJAX Error:', error);
+        });
+        
+        // Prevent infinite loops in any polling mechanisms
+        window.dashboardInitialized = true;
+        
+    } catch (error) {
+        console.error('Dashboard initialization error:', error);
+    }
 });
 </script>
 @endsection

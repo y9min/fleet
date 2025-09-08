@@ -337,18 +337,18 @@ input:checked + .slider:before {
 
 
     .mobile-menu-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        z-index: 1005;
-        display: none; /* Hidden by default */
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: rgba(0,0,0,0.5) !important;
+        z-index: 9998 !important;
+        display: none !important;
     }
 
     .mobile-menu-overlay.active {
-        display: block;
+        display: block !important;
     }
 
     .menu-header {
@@ -2845,38 +2845,24 @@ input:checked + .slider:before {
   <script> var base_url = '{{ url("/") }}'; </script>
   <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM Content Loaded - Setting up hamburger menu');
     const hamburgerToggle = document.getElementById('hamburger-toggle');
     const adminNavMenu = document.getElementById('admin-nav-menu');
     const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
     const closeMenu = document.getElementById('close-menu');
     const submenuToggles = document.querySelectorAll('.submenu-toggle');
-    
-    console.log('Elements found:', {
-        hamburgerToggle: !!hamburgerToggle,
-        adminNavMenu: !!adminNavMenu,
-        mobileMenuOverlay: !!mobileMenuOverlay,
-        closeMenu: !!closeMenu
-    });
 
     function toggleMenu() {
-        console.log('toggleMenu called');
         if (adminNavMenu && hamburgerToggle) {
-            console.log('Toggling menu classes');
             hamburgerToggle.classList.toggle('active');
             adminNavMenu.classList.toggle('active');
             
             const isActive = adminNavMenu.classList.contains('active');
-            console.log('Menu is now:', isActive ? 'active' : 'inactive');
             
             if (mobileMenuOverlay) {
                 mobileMenuOverlay.style.display = isActive ? 'block' : 'none';
-                console.log('Overlay display set to:', isActive ? 'block' : 'none');
             }
             
             document.body.style.overflow = isActive ? 'hidden' : 'auto';
-        } else {
-            console.error('Required elements missing for toggle');
         }
     }
 
@@ -2888,9 +2874,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (hamburgerToggle) {
-        console.log('Setting up hamburger click handlers');
         hamburgerToggle.addEventListener('click', function(e) {
-            console.log('Click event fired!');
             e.preventDefault();
             e.stopPropagation();
             toggleMenu();
@@ -2898,13 +2882,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Also add a direct onclick as backup
         hamburgerToggle.onclick = function(e) {
-            console.log('Onclick event fired!');
             e.preventDefault();
             e.stopPropagation();
             toggleMenu();
         };
-    } else {
-        console.error('Hamburger toggle button not found!');
     }
 
     if (closeMenu) {

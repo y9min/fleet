@@ -2624,7 +2624,9 @@ input:checked + .slider:before {
   <script src="{{ asset('assets/js/cdn-Chart.bundle.min.js')}}"></script>
   <script src="{{ asset('assets/js/cdn-ckeditor.js')}}"></script>
   <script>
-    $('[title]').tooltip();
+    if (typeof $ !== 'undefined') {
+        $('[title]').tooltip();
+    }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('{{ asset("web-sw.js?v3") }}', {
         scope: '.' // <--- THIS BIT IS REQUIRED
@@ -2852,92 +2854,6 @@ function toggleSubmenu(element) {
     const menuGroup = element.parentElement;
     menuGroup.classList.toggle('active');
 }
-
-    function toggleMenu() {
-        if (adminNavMenu && hamburgerToggle) {
-            hamburgerToggle.classList.toggle('active');
-            adminNavMenu.classList.toggle('active');
-            
-            const isActive = adminNavMenu.classList.contains('active');
-            
-            if (mobileMenuOverlay) {
-                mobileMenuOverlay.style.display = isActive ? 'block' : 'none';
-            }
-            
-            document.body.style.overflow = isActive ? 'hidden' : 'auto';
-        }
-    }
-
-    function closeMenuFunction() {
-        hamburgerToggle.classList.remove('active');
-        adminNavMenu.classList.remove('active');
-        mobileMenuOverlay.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-
-    if (hamburgerToggle) {
-        hamburgerToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleMenu();
-        });
-        
-        // Also add a direct onclick as backup
-        hamburgerToggle.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleMenu();
-        };
-    }
-
-    if (closeMenu) {
-        closeMenu.addEventListener('click', closeMenuFunction);
-    }
-
-    if (mobileMenuOverlay) {
-        mobileMenuOverlay.addEventListener('click', closeMenuFunction);
-    }
-
-    // Close menu on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && adminNavMenu.classList.contains('active')) {
-            closeMenuFunction();
-        }
-    });
-
-    // Handle submenu toggles
-    const submenuToggles = document.querySelectorAll('.submenu-toggle');
-    submenuToggles.forEach(function(toggle) {
-        toggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            const parentLi = this.closest('li.has-submenu');
-            
-            // Close other open submenus
-            document.querySelectorAll('.has-submenu.open').forEach(function(openMenu) {
-                if (openMenu !== parentLi) {
-                    openMenu.classList.remove('open');
-                }
-            });
-            
-            // Toggle current submenu
-            parentLi.classList.toggle('open');
-        });
-    });
-
-    // Close menu when clicking on regular links
-    document.querySelectorAll('.nav-menu-items a:not(.submenu-toggle)').forEach(function(link) {
-        link.addEventListener('click', function() {
-            closeMenuFunction();
-        });
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            closeMenuFunction();
-        }
-    });
-});
 </script>
 </body>
 </html>

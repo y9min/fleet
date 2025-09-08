@@ -239,60 +239,6 @@ input:checked + .slider:before {
   <!-- Load jQuery first to prevent $ undefined errors -->
   <script src="{{asset('assets/vendor/jquery-3.6.0.min.js')}}"></script>
 
-  <!-- Hamburger menu functionality -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const hamburgerToggle = document.getElementById('hamburger-toggle');
-        const adminNavMenu = document.getElementById('admin-nav-menu');
-        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-        const closeMenu = document.getElementById('close-menu');
-        const submenuToggles = document.querySelectorAll('.submenu-toggle');
-
-        // Toggle hamburger menu
-        hamburgerToggle.addEventListener('click', function() {
-            adminNavMenu.classList.add('active');
-            mobileMenuOverlay.classList.add('active');
-        });
-
-        // Close menu when clicking close button
-        closeMenu.addEventListener('click', function() {
-            adminNavMenu.classList.remove('active');
-            mobileMenuOverlay.classList.remove('active');
-        });
-
-        // Close menu when clicking overlay
-        mobileMenuOverlay.addEventListener('click', function() {
-            adminNavMenu.classList.remove('active');
-            mobileMenuOverlay.classList.remove('active');
-        });
-
-        // Handle submenu toggles
-        submenuToggles.forEach(function(toggle) {
-            toggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                const parentLi = this.closest('li.has-submenu');
-
-                // Close other open submenus
-                document.querySelectorAll('.has-submenu.open').forEach(function(openMenu) {
-                    if (openMenu !== parentLi) {
-                        openMenu.classList.remove('open');
-                    }
-                });
-
-                // Toggle current submenu
-                parentLi.classList.toggle('open');
-            });
-        });
-
-        // Close menu when clicking on regular links
-        document.querySelectorAll('.nav-menu-items a:not(.submenu-toggle)').forEach(function(link) {
-            link.addEventListener('click', function() {
-                adminNavMenu.classList.remove('active');
-                mobileMenuOverlay.classList.remove('active');
-            });
-        });
-    });
-  </script>
 
   <style>
 

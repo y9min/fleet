@@ -2858,15 +2858,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function toggleMenu() {
+        console.log('toggleMenu called');
         if (adminNavMenu && hamburgerToggle) {
+            console.log('Toggling menu classes');
             hamburgerToggle.classList.toggle('active');
             adminNavMenu.classList.toggle('active');
             
+            const isActive = adminNavMenu.classList.contains('active');
+            console.log('Menu is now:', isActive ? 'active' : 'inactive');
+            
             if (mobileMenuOverlay) {
-                mobileMenuOverlay.style.display = adminNavMenu.classList.contains('active') ? 'block' : 'none';
+                mobileMenuOverlay.style.display = isActive ? 'block' : 'none';
+                console.log('Overlay display set to:', isActive ? 'block' : 'none');
             }
             
-            document.body.style.overflow = adminNavMenu.classList.contains('active') ? 'hidden' : 'auto';
+            document.body.style.overflow = isActive ? 'hidden' : 'auto';
+        } else {
+            console.error('Required elements missing for toggle');
         }
     }
 
@@ -2878,7 +2886,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (hamburgerToggle) {
+        console.log('Setting up hamburger click handlers');
         hamburgerToggle.addEventListener('click', function(e) {
+            console.log('Click event fired!');
             e.preventDefault();
             e.stopPropagation();
             toggleMenu();
@@ -2886,10 +2896,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Also add a direct onclick as backup
         hamburgerToggle.onclick = function(e) {
+            console.log('Onclick event fired!');
             e.preventDefault();
             e.stopPropagation();
             toggleMenu();
         };
+    } else {
+        console.error('Hamburger toggle button not found!');
     }
 
     if (closeMenu) {

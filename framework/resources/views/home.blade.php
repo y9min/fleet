@@ -4,16 +4,16 @@
 @section('extra_css')
 <style>
   :root {
-    --primary-color: #00CC37;
-    --dark-bg: #02001C;
-    --light-bg: #f8f9fa;
-    --card-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    --primary-color: #7ED6DF;
+    --dark-bg: #032127;
+    --light-bg: #F7F7F7;
+    --card-shadow: 0 4px 8px rgba(3,33,39,0.1);
     --border-radius: 15px;
     --transition: all 0.3s ease;
   }
 
   .content-header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #28a745 100%);
+    background: linear-gradient(135deg, var(--dark-bg) 0%, var(--primary-color) 100%);
     color: white;
     padding: 2rem 0;
     margin-bottom: 2rem;
@@ -52,12 +52,12 @@
   }
 
   .stat-card {
-    background: white;
+    background: var(--light-bg);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     box-shadow: var(--card-shadow);
     transition: var(--transition);
-    border: none;
+    border: 1px solid rgba(126, 214, 223, 0.2);
     height: 100%;
     position: relative;
     overflow: hidden;
@@ -70,12 +70,12 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--primary-color);
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--dark-bg) 100%);
   }
 
   .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(126, 214, 223, 0.3);
   }
 
   .stat-icon {
@@ -90,10 +90,10 @@
     margin-bottom: 1rem;
   }
 
-  .stat-icon.vehicles { background: linear-gradient(45deg, #17a2b8, #20c997); }
-  .stat-icon.drivers { background: linear-gradient(45deg, #28a745, #00CC37); }
-  .stat-icon.customers { background: linear-gradient(45deg, #ffc107, #fd7e14); }
-  .stat-icon.bookings { background: linear-gradient(45deg, #dc3545, #e83e8c); }
+  .stat-icon.vehicles { background: linear-gradient(45deg, var(--primary-color), var(--dark-bg)); }
+  .stat-icon.drivers { background: linear-gradient(45deg, var(--dark-bg), var(--primary-color)); }
+  .stat-icon.customers { background: linear-gradient(45deg, var(--primary-color), #5BA4B0); }
+  .stat-icon.bookings { background: linear-gradient(45deg, var(--dark-bg), #5BA4B0); }
 
   .stat-number {
     font-size: 2.5rem;
@@ -112,7 +112,7 @@
   }
 
   .stat-link {
-    color: var(--primary-color);
+    color: var(--dark-bg);
     text-decoration: none;
     font-weight: 500;
     font-size: 0.9rem;
@@ -120,7 +120,7 @@
   }
 
   .stat-link:hover {
-    color: #28a745;
+    color: var(--primary-color);
     text-decoration: none;
   }
 
@@ -129,17 +129,18 @@
   }
 
   .action-card {
-    background: white;
+    background: var(--light-bg);
     border-radius: var(--border-radius);
     padding: 2rem;
     box-shadow: var(--card-shadow);
     transition: var(--transition);
     height: 100%;
+    border: 1px solid rgba(126, 214, 223, 0.2);
   }
 
   .action-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(126, 214, 223, 0.3);
   }
 
   .card-title {
@@ -152,7 +153,7 @@
   }
 
   .action-btn {
-    background: linear-gradient(45deg, var(--primary-color), #28a745);
+    background: linear-gradient(45deg, var(--primary-color), var(--dark-bg));
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -168,11 +169,11 @@
   }
 
   .action-btn:hover {
-    background: linear-gradient(45deg, #28a745, var(--primary-color));
+    background: linear-gradient(45deg, var(--dark-bg), var(--primary-color));
     color: white;
     text-decoration: none;
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,204,55,0.3);
+    box-shadow: 0 4px 15px rgba(126, 214, 223, 0.4);
   }
 
   .action-btn i {
@@ -180,11 +181,12 @@
   }
 
   .welcome-section {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
     border-radius: var(--border-radius);
     padding: 2rem;
     margin-bottom: 2rem;
     border-left: 4px solid var(--primary-color);
+    border: 1px solid rgba(126, 214, 223, 0.2);
   }
 
   .welcome-title {
@@ -219,6 +221,10 @@
       font-size: 2rem;
     }
     
+    .stat-card {
+      margin-bottom: 1rem;
+    }
+    
     .action-card {
       margin-bottom: 1rem;
     }
@@ -227,6 +233,19 @@
       width: 100%;
       justify-content: center;
       margin-bottom: 0.5rem;
+    }
+  }
+
+  /* Ensure stats stay in one row on larger screens */
+  @media (min-width: 992px) {
+    .stats-container .row {
+      flex-wrap: nowrap;
+    }
+    
+    .stats-container .col-xl-3,
+    .stats-container .col-lg-3 {
+      flex: 1;
+      max-width: 25%;
     }
   }
 </style>
@@ -265,9 +284,9 @@
 
     <!-- Statistics Cards -->
     <div class="stats-container">
-      <div class="row">
-        <div class="col-lg-3 col-md-6 col-sm-6">
-          <div class="stat-card">
+      <div class="row d-flex">
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 d-flex">
+          <div class="stat-card w-100">
             <div class="stat-icon vehicles">
               <i class="fa fa-car"></i>
             </div>
@@ -279,8 +298,8 @@
           </div>
         </div>
         
-        <div class="col-lg-3 col-md-6 col-sm-6">
-          <div class="stat-card">
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 d-flex">
+          <div class="stat-card w-100">
             <div class="stat-icon drivers">
               <i class="fa fa-id-card"></i>
             </div>
@@ -292,8 +311,8 @@
           </div>
         </div>
         
-        <div class="col-lg-3 col-md-6 col-sm-6">
-          <div class="stat-card">
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 d-flex">
+          <div class="stat-card w-100">
             <div class="stat-icon customers">
               <i class="fa fa-users"></i>
             </div>
@@ -305,8 +324,8 @@
           </div>
         </div>
         
-        <div class="col-lg-3 col-md-6 col-sm-6">
-          <div class="stat-card">
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 d-flex">
+          <div class="stat-card w-100">
             <div class="stat-icon bookings">
               <i class="fa fa-address-book"></i>
             </div>

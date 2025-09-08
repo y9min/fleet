@@ -657,7 +657,7 @@ input:checked + .slider:before {
                     <a href="#" class="submenu-toggle"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
                         <li><a href="{{route('drivers.index')}}"><i class="fas fa-id-card"></i> Drivers</a></li>
-                        <li><a href="{{route('users.index')}}"><i class="fas fa-user-tie"></i> Users(Managers)</a></li>
+                        <li><a href="{{url('admin/users')}}"><i class="fas fa-user-tie"></i> Users(Managers)</a></li>
                         <li><a href="{{route('customers.index')}}"><i class="fas fa-user-friends"></i> Customers</a></li>
                     </ul>
                 </li>
@@ -746,8 +746,8 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-clipboard-list"></i> Work Orders <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        <li><a href="{{route('work_order.create')}}"><i class="fas fa-plus"></i> Add Work Order</a></li>
-                        <li><a href="{{route('work_order.index')}}"><i class="fas fa-list"></i> Manage Work Order</a></li>
+                        <li><a href="{{url('admin/work_order/create')}}"><i class="fas fa-plus"></i> Add Work Order</a></li>
+                        <li><a href="{{url('admin/work_order')}}"><i class="fas fa-list"></i> Manage Work Order</a></li>
                         <li><a href="{{url('admin/work-order-history')}}"><i class="fas fa-history"></i> Work Order History</a></li>
                     </ul>
                 </li>
@@ -767,8 +767,8 @@ input:checked + .slider:before {
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle"><i class="fas fa-bell"></i> Service Reminders <i class="fas fa-chevron-down arrow"></i></a>
                     <ul class="submenu">
-                        <li><a href="{{route('service-reminder.index')}}"><i class="fas fa-list"></i> Manage Service Reminder</a></li>
-                        <li><a href="{{route('service-reminder.create')}}"><i class="fas fa-plus"></i> Add Service Reminder</a></li>
+                        <li><a href="{{url('admin/service-reminder')}}"><i class="fas fa-list"></i> Manage Service Reminder</a></li>
+                        <li><a href="{{url('admin/service-reminder/create')}}"><i class="fas fa-plus"></i> Add Service Reminder</a></li>
                         <li><a href="{{url('admin/service-item')}}"><i class="fas fa-cogs"></i> Service Item</a></li>
                     </ul>
                 </li>
@@ -823,7 +823,7 @@ input:checked + .slider:before {
                         <li><a href="{{url('admin/renew-insurance')}}"><i class="fas fa-shield-alt"></i> Renew Insurance</a></li>
                         <li><a href="{{url('admin/renew-licence')}}"><i class="fas fa-id-card"></i> Renew Licence</a></li>
                         <li><a href="{{url('admin/renew-driving-licence')}}"><i class="fas fa-id-badge"></i> Renew Driving Licence</a></li>
-                        <li><a href="{{route('service-reminder.index')}}"><i class="fas fa-bell"></i> Service Reminders</a></li>
+                        <li><a href="{{url('admin/service-reminder')}}"><i class="fas fa-bell"></i> Service Reminders</a></li>
                         <li><a href="{{url('admin/help-improve')}}"><i class="fas fa-thumbs-up"></i> Help us Improve</a></li>
                     </ul>
                 </li>

@@ -694,8 +694,12 @@ input:checked + .slider:before {
         align-items: center;
     }
 
-    /* Logout Button Styling */
+    /* Logout Button Styling - Fixed to top right corner */
     .logout-btn {
+        position: fixed !important;
+        top: 20px !important;
+        right: 20px !important;
+        z-index: 9999 !important;
         background: linear-gradient(to right, #80D7DF, #BDEFCC) !important;
         color: white !important;
         padding: 8px 20px !important;
@@ -703,9 +707,11 @@ input:checked + .slider:before {
         font-weight: 600 !important;
         text-decoration: none !important;
         transition: all 0.3s ease !important;
-        margin-right: 15px !important;
         border: none !important;
         box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     .logout-btn:hover {
@@ -733,7 +739,8 @@ input:checked + .slider:before {
         .logout-btn {
             padding: 6px 15px !important;
             font-size: 0.9rem !important;
-            margin-right: 10px !important;
+            top: 15px !important;
+            right: 15px !important;
         }
     }
   </style>

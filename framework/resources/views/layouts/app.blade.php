@@ -2843,11 +2843,19 @@ input:checked + .slider:before {
   <script> var base_url = '{{ url("/") }}'; </script>
   <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Setting up hamburger menu');
     const hamburgerToggle = document.getElementById('hamburger-toggle');
     const adminNavMenu = document.getElementById('admin-nav-menu');
     const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
     const closeMenu = document.getElementById('close-menu');
     const submenuToggles = document.querySelectorAll('.submenu-toggle');
+    
+    console.log('Elements found:', {
+        hamburgerToggle: !!hamburgerToggle,
+        adminNavMenu: !!adminNavMenu,
+        mobileMenuOverlay: !!mobileMenuOverlay,
+        closeMenu: !!closeMenu
+    });
 
     function toggleMenu() {
         if (adminNavMenu && hamburgerToggle) {

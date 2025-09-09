@@ -79,9 +79,9 @@
   }
 
   .stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -90,10 +90,10 @@
     margin-bottom: 1rem;
   }
 
-  .stat-icon.vehicles { background: linear-gradient(45deg, var(--primary-color), var(--dark-bg)); }
-  .stat-icon.drivers { background: linear-gradient(45deg, var(--dark-bg), var(--primary-color)); }
-  .stat-icon.customers { background: linear-gradient(45deg, var(--primary-color), #5BA4B0); }
-  .stat-icon.bookings { background: linear-gradient(45deg, var(--dark-bg), #5BA4B0); }
+  .stat-icon.vehicles { background: #8B5CF6; }
+  .stat-icon.drivers { background: #10B981; }
+  .stat-icon.customers { background: #EF4444; }
+  .stat-icon.bookings { background: #F59E0B; }
 
   .stat-number {
     font-size: 2.5rem;
@@ -112,24 +112,24 @@
   }
 
   .stat-link {
-    background: linear-gradient(to right, #80D7DF, #BDEFCC);
+    background: #6B7280;
     color: white;
     text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 500;
+    font-size: 0.85rem;
     padding: 8px 16px;
-    border-radius: 50px;
+    border-radius: 6px;
     transition: all 0.3s ease;
     display: inline-block;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
 
   .stat-link:hover {
-    background: #B7ECCE;
-    color: #032127;
+    background: #4B5563;
+    color: white;
     text-decoration: none;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   }
 
   .action-cards {
@@ -161,12 +161,12 @@
   }
 
   .action-btn {
-    background: linear-gradient(to right, #80D7DF, #BDEFCC);
+    background: #6B7280;
     color: white;
     border: none;
-    padding: 15px 35px;
-    border-radius: 50px;
-    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 500;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -174,15 +174,15 @@
     transition: all 0.3s ease;
     margin: 0.25rem;
     font-size: 0.9rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
 
   .action-btn:hover {
-    background: #B7ECCE;
-    color: #032127;
+    background: #4B5563;
+    color: white;
     text-decoration: none;
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   }
 
   .action-btn i {
@@ -300,13 +300,6 @@
 </style>
 @endsection
 
-@section('heading')
-@lang('fleet.dashboard')
-@endsection
-
-@section('breadcrumb')
-@lang('fleet.dashboard')
-@endsection
 
 @section('content')
 
@@ -315,8 +308,8 @@
     
     <!-- Welcome Section -->
     <div class="welcome-section">
-      <h2 class="welcome-title">Welcome to Fleet Manager</h2>
-      <p class="welcome-text">Manage your fleet operations efficiently with our comprehensive dashboard.</p>
+      <h2 class="welcome-title">Welcome to PCO Flow Fleet Manager</h2>
+      <p class="welcome-text">Here's the health overview of your fleet at a glance.</p>
       <p class="last-login">Last login: {{ Auth::user()->updated_at->format('M d, Y H:i A') }}</p>
     </div>
 

@@ -757,10 +757,10 @@ input:checked + .slider:before {
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand">
         <!-- Left navbar links -->
-        <ul class="navbar-nav d-flex align-items-center">
+        <ul class="navbar-nav" style="display: flex; align-items: center; flex-direction: row;">
             <li class="nav-item hamburger-container">
                 <!-- Hamburger menu button -->
-                <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" onclick="toggleHamburgerMenu()">
+                <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" onclick="toggleHamburgerMenu()" style="display: flex; align-items: center; justify-content: center;">
                     <div class="hamburger-icon">
                         <span></span>
                         <span></span>
@@ -768,9 +768,9 @@ input:checked + .slider:before {
                     </div>
                 </button>
             </li>
-            <li class="nav-item d-flex align-items-center ml-3">
-                <img src="{{ asset('assets/images/logo.png') }}" alt="PCO Flow" style="height: 40px; margin-right: 15px;">
-                <h4 style="color: white; margin: 0; font-weight: 600; font-size: 1.2rem;">Dashboard</h4>
+            <li class="nav-item" style="display: flex; align-items: center; margin-left: 15px;">
+                <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow" style="height: 35px; margin-right: 12px;">
+                <h4 style="color: white; margin: 0; font-weight: 600; font-size: 1.2rem; line-height: 1;">Dashboard</h4>
             </li>
         </ul>
 

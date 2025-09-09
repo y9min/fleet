@@ -300,9 +300,7 @@
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon vehicles">
-              <svg width="24" height="24" viewBox="0 0 640 512" fill="currentColor">
-                <path d="M171.3 96H224l35.2 123.7c2.5 8.8 10.9 14.9 20.1 14.9H424c21.3 0 39.4-15.4 43-36.2L499.7 96H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H171.3c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-17.9 96L124 96H96c-17.7 0-32 14.3-32 32s14.3 32 32 32h57.4zM96 224c-17.7 0-32 14.3-32 32v128c0 17.7 14.3 32 32 32h32c0 53 43 96 96 96s96-43 96-96h128c0 53 43 96 96 96s96-43 96-96h32c17.7 0 32-14.3 32-32V288h-64V224c0-17.7-14.3-32-32-32H416l-35.2-123.7C375.4 54.8 358.7 44 340.1 44H171.3C141.1 44 114.6 66.6 96 99.2V224zM224 400c0 26.5-21.5 48-48 48s-48-21.5-48-48s21.5-48 48-48s48 21.5 48 48zm288 48c-26.5 0-48-21.5-48-48s21.5-48 48-48s48 21.5 48 48s-21.5 48-48 48z"/>
-              </svg>
+              <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow" style="width: 30px; height: auto; filter: brightness(0) saturate(100%) invert(72%) sepia(63%) saturate(315%) hue-rotate(145deg) brightness(103%) contrast(95%);">
             </div>
             <h3 class="stat-number">{{ $total_vehicles ?? 0 }}</h3>
             <p class="stat-label">@lang('fleet.vehicles')</p>

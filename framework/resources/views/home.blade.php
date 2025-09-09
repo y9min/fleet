@@ -1,257 +1,432 @@
+
 @extends('layouts.app')
 
 @section('extra_css')
-<link rel="stylesheet" href="{{asset('assets/css/bootstrap-datepicker.min.css')}}">
-<style type="text/css">
-  .dropdown-menu>li>a {
-    color: #212529 !important;
+<style>
+  :root {
+    --primary-color: #7ED6DF;
+    --dark-bg: #032127;
+    --light-bg: #F7F7F7;
+    --card-shadow: 0 4px 8px rgba(3,33,39,0.1);
+    --border-radius: 15px;
+    --transition: all 0.3s ease;
   }
 
-  /* Simple dashboard styling */
-  .dashboard-welcome {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 30px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  .content-header {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, var(--primary-color) 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: var(--border-radius);
   }
 
-  .dashboard-welcome h2 {
-    color: #2c3e50;
-    font-size: 24px;
+  .content-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
     margin: 0;
-    font-weight: 500;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
   }
 
-  .simple-info-box {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    transition: transform 0.2s ease;
+  .breadcrumb {
+    background: transparent;
+    margin: 0;
+    padding: 0;
   }
 
-  .simple-info-box:hover {
-    transform: translateY(-2px);
+  .breadcrumb-item a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: var(--transition);
   }
 
-  .simple-info-box .icon {
-    font-size: 32px;
+  .breadcrumb-item a:hover {
+    color: white;
+  }
+
+  .breadcrumb-item.active {
+    color: white;
+  }
+
+  .stats-container {
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--light-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    border: 1px solid rgba(126, 214, 223, 0.2);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--dark-bg) 100%);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(126, 214, 223, 0.3);
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 1rem;
+  }
+
+  .stat-icon.vehicles { background: linear-gradient(45deg, var(--primary-color), var(--dark-bg)); }
+  .stat-icon.drivers { background: linear-gradient(45deg, var(--dark-bg), var(--primary-color)); }
+  .stat-icon.customers { background: linear-gradient(45deg, var(--primary-color), #5BA4B0); }
+  .stat-icon.bookings { background: linear-gradient(45deg, var(--dark-bg), #5BA4B0); }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--dark-bg);
+    margin: 0;
+    line-height: 1;
+  }
+
+  .stat-label {
     color: #6c757d;
-    margin-bottom: 10px;
-  }
-
-  .simple-info-box .title {
-    font-size: 14px;
-    color: #6c757d;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 5px;
   }
 
-  .simple-info-box .number {
-    font-size: 24px;
+  .stat-link {
+    background: linear-gradient(to right, #80D7DF, #BDEFCC);
+    color: white;
+    text-decoration: none;
     font-weight: 600;
-    color: #2c3e50;
-  }
-
-  .btn-simple {
-    background: #6c757d !important;
-    border: none !important;
-    color: white !important;
+    font-size: 0.9rem;
     padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 500;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   }
 
-  .btn-simple:hover {
-    background: #5a6268 !important;
-    color: white !important;
+  .stat-link:hover {
+    background: #B7ECCE;
+    color: #032127;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
   }
 
-  /* Updated styles for action cards */
+  .action-cards {
+    margin-top: 2rem;
+  }
+
   .action-card {
-      background-color: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+    background: var(--light-bg);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    height: 100%;
+    border: 1px solid rgba(126, 214, 223, 0.2);
   }
 
-  .action-card .card-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #2c3e50;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e0e0e0;
+  .action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(126, 214, 223, 0.3);
+  }
+
+  .card-title {
+    color: var(--dark-bg);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
   }
 
   .action-btn {
-      background: #6c757d;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: 500;
-      font-size: 14px;
-      margin: 5px;
-      transition: background 0.2s ease;
-      display: inline-block;
+    background: linear-gradient(to right, #80D7DF, #BDEFCC);
+    color: white;
+    border: none;
+    padding: 15px 35px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    margin: 0.25rem;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   }
 
   .action-btn:hover {
-      background: #5a6268;
-      color: white;
-      text-decoration: none;
+    background: #B7ECCE;
+    color: #032127;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
   }
 
   .action-btn i {
-      margin-right: 8px;
+    font-size: 1rem;
+  }
+
+  .welcome-section {
+    background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--primary-color);
+    border: 1px solid rgba(126, 214, 223, 0.2);
+  }
+
+  .welcome-title {
+    color: var(--dark-bg);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .welcome-text {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+  }
+
+  .last-login {
+    color: #6c757d;
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  .container-fluid {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .content-header h1 {
+      font-size: 2rem;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+    }
+    
+    .stat-card {
+      margin-bottom: 1rem;
+    }
+    
+    .action-card {
+      margin-bottom: 1rem;
+    }
+    
+    .action-btn {
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  /* Ensure stats stay in one row on desktop and tablet */
+  .stats-container .row {
+    display: flex !important;
+  }
+  
+  /* Desktop: keep cards in row */
+  @media (min-width: 769px) {
+    .stats-container .row {
+      flex-wrap: nowrap !important;
+    }
+    
+    .stats-container .col-xl-3,
+    .stats-container .col-lg-3,
+    .stats-container .col-md-3,
+    .stats-container .col-sm-3 {
+      flex: 1 !important;
+      max-width: 25% !important;
+      min-width: 0 !important;
+    }
+  }
+  
+  /* Mobile: allow cards to stack in column */
+  @media (max-width: 768px) {
+    .stats-container .row {
+      flex-wrap: wrap !important;
+      flex-direction: column !important;
+    }
+    
+    .stats-container .col-xl-3,
+    .stats-container .col-lg-3,
+    .stats-container .col-md-3,
+    .stats-container .col-sm-3 {
+      flex: 1 1 100% !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      margin-bottom: 1rem !important;
+    }
+    
+    .stat-card {
+      padding: 1.5rem !important;
+      margin-bottom: 0 !important;
+    }
+    
+    .stat-number {
+      font-size: 2.2rem !important;
+    }
+    
+    .stat-icon {
+      width: 55px !important;
+      height: 55px !important;
+    }
   }
 </style>
 @endsection
-@section('breadcrumb')
+
+@section('heading')
+@lang('fleet.dashboard')
 @endsection
+
+@section('breadcrumb')
+@lang('fleet.dashboard')
+@endsection
+
 @section('content')
 
-<div class="row">
-  <div class="col-md-12">
-    <div class="dashboard-welcome">
-      <h2>Welcome to PCO Flow Fleet Manager</h2>
+<section class="content">
+  <div class="container-fluid">
+    
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <h2 class="welcome-title">Welcome to Fleet Manager</h2>
+      <p class="welcome-text">Manage your fleet operations efficiently with our comprehensive dashboard.</p>
+      <p class="last-login">Last login: {{ Auth::user()->updated_at->format('M d, Y H:i A') }}</p>
     </div>
-  </div>
-</div>
 
-<div class="row">
-  <div class="col-md-12">
-    <div class="card card-success">
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-3 col-sm-6 col-xs-12">
-            <div class="simple-info-box">
-              <div class="icon">
-                <i class="fa fa-users"></i>
-              </div>
-              <div class="title">@lang('fleet.customers')</div>
-              <div class="number">{{$customers}}</div>
+    <!-- Statistics Cards -->
+    <div class="stats-container">
+      <div class="row d-flex no-gutters">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100">
+            <div class="stat-icon vehicles">
+              <i class="fa fa-car"></i>
+            </div>
+            <h3 class="stat-number">{{ $total_vehicles ?? 0 }}</h3>
+            <p class="stat-label">@lang('fleet.vehicles')</p>
+            <a href="{{url('admin/vehicles')}}" class="stat-link">
+              View All <i class="fa fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100">
+            <div class="stat-icon drivers">
+              <i class="fa fa-id-card"></i>
+            </div>
+            <h3 class="stat-number">{{ $total_drivers ?? 0 }}</h3>
+            <p class="stat-label">@lang('fleet.drivers')</p>
+            <a href="{{url('admin/drivers')}}" class="stat-link">
+              View All <i class="fa fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100">
+            <div class="stat-icon customers">
+              <i class="fa fa-users"></i>
+            </div>
+            <h3 class="stat-number">{{ $total_customers ?? 0 }}</h3>
+            <p class="stat-label">@lang('fleet.customers')</p>
+            <a href="{{url('admin/customers')}}" class="stat-link">
+              View All <i class="fa fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100">
+            <div class="stat-icon bookings">
+              <i class="fa fa-address-book"></i>
+            </div>
+            <h3 class="stat-number">{{ $total_bookings ?? 0 }}</h3>
+            <p class="stat-label">@lang('fleet.bookings')</p>
+            <a href="{{url('admin/bookings')}}" class="stat-link">
+              View All <i class="fa fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="action-cards">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="action-card">
+            <h3 class="card-title">
+              <i class="fa fa-plus-circle"></i> Quick Actions
+            </h3>
+            <div class="d-flex flex-wrap">
+              <a href="{{url('admin/vehicles/create')}}" class="action-btn">
+                <i class="fa fa-plus"></i> Add Vehicle
+              </a>
+              <a href="{{url('admin/drivers/create')}}" class="action-btn">
+                <i class="fa fa-plus"></i> Add Driver
+              </a>
+              <a href="{{url('admin/customers/create')}}" class="action-btn">
+                <i class="fa fa-plus"></i> Add Customer
+              </a>
+              <a href="{{url('admin/bookings/create')}}" class="action-btn">
+                <i class="fa fa-plus"></i> New Booking
+              </a>
             </div>
           </div>
-
-          <div class="col-md-3 col-sm-6 col-xs-12">
-            <div class="simple-info-box">
-              <div class="icon">
-                <i class="fa fa-car"></i>
-              </div>
-              <div class="title">@lang('fleet.vehicles')</div>
-              <div class="number">{{$vehicles}}</div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6 col-xs-12">
-            <div class="simple-info-box">
-              <div class="icon">
-                <i class="fa fa-calendar-check-o"></i>
-              </div>
-              <div class="title">@lang('fleet.bookings')</div>
-              <div class="number">{{$bookings}}</div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6 col-xs-12">
-            <div class="simple-info-box">
-              <div class="icon">
-                <i class="fa fa-money"></i>
-              </div>
-              <div class="title">@lang('fleet.income')</div>
-              <div class="number">{{Hyvikk::get('currency')}} {{$income}}</div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="action-card">
+            <h3 class="card-title">
+              <i class="fa fa-chart-line"></i> Reports & Analytics
+            </h3>
+            <div class="d-flex flex-wrap">
+              <a href="{{url('admin/reports/monthly')}}" class="action-btn">
+                <i class="fa fa-chart-bar"></i> Monthly Report
+              </a>
+              <a href="{{url('admin/reports/yearly')}}" class="action-btn">
+                <i class="fa fa-chart-line"></i> Yearly Report
+              </a>
+              <a href="{{url('admin/reports/fuel')}}" class="action-btn">
+                <i class="fa fa-gas-pump"></i> Fuel Report
+              </a>
+              <a href="{{url('admin/reports/vehicle')}}" class="action-btn">
+                <i class="fa fa-car"></i> Vehicle Report
+              </a>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div class="row">
-  <div class="col-md-6">
-    <div class="action-card">
-      <h3 class="card-title">
-        <i class="fa fa-plus-circle"></i> Quick Actions
-      </h3>
-      <div class="d-flex flex-wrap">
-        <a href="{{url('admin/vehicles/create')}}" class="action-btn">
-          <i class="fa fa-plus"></i> Add Vehicle
-        </a>
-        <a href="{{url('admin/drivers/create')}}" class="action-btn">
-          <i class="fa fa-plus"></i> Add Driver
-        </a>
-        <a href="{{url('admin/customers/create')}}" class="action-btn">
-          <i class="fa fa-plus"></i> Add Customer
-        </a>
-        <a href="{{url('admin/bookings/create')}}" class="action-btn">
-          <i class="fa fa-plus"></i> New Booking
-        </a>
-      </div>
-    </div>
   </div>
-
-  <div class="col-md-6">
-    <div class="action-card">
-      <h3 class="card-title">
-        <i class="fa fa-chart-line"></i> Reports & Analytics
-      </h3>
-      <div class="d-flex flex-wrap">
-        <a href="{{url('admin/reports/monthly')}}" class="action-btn">
-          <i class="fa fa-chart-bar"></i> Monthly Report
-        </a>
-        <a href="{{url('admin/reports/yearly')}}" class="action-btn">
-          <i class="fa fa-chart-line"></i> Yearly Report
-        </a>
-        <a href="{{url('admin/reports/fuel')}}" class="action-btn">
-          <i class="fa fa-gas-pump"></i> Fuel Report
-        </a>
-        <a href="{{url('admin/reports/vehicle')}}" class="action-btn">
-          <i class="fa fa-car"></i> Vehicle Report
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">@lang('fleet.incomeByMonth')</h3>
-        <div class="card-tools">
-          <button class="btn btn-simple btn-sm" data-widget="collapse"><i class="fa fa-minus"></i></button>
-        </div>
-      </div>
-      <div class="card-body">
-        <canvas id="incomeChart" style="height: 230px; width: 100%;"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">@lang('fleet.bookingByMonth')</h3>
-        <div class="card-tools">
-          <button class="btn btn-simple btn-sm" data-widget="collapse"><i class="fa fa-minus"></i></button>
-        </div>
-      </div>
-      <div class="card-body">
-        <canvas id="bookingChart" style="height: 230px; width: 100%;"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-</div>
 </section>
 @endsection
 
@@ -264,9 +439,9 @@ document.addEventListener('DOMContentLoaded', function() {
         $(function() {
             // Dashboard initialization
             console.log('Fleet Manager Dashboard loaded successfully');
-
+            
             // Add smooth hover effects
-            $('.simple-info-box, .action-card').hover(
+            $('.stat-card, .action-card').hover(
                 function() {
                     $(this).addClass('shadow-lg');
                 },
@@ -274,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     $(this).removeClass('shadow-lg');
                 }
             );
-
+            
             // Add click analytics for action buttons
             $('.action-btn').click(function() {
                 console.log('Action clicked:', $(this).text().trim());
@@ -283,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.log('jQuery not available yet, using vanilla JS for hover effects');
         // Fallback to vanilla JavaScript if jQuery isn't loaded
-        const cards = document.querySelectorAll('.simple-info-box, .action-card');
+        const cards = document.querySelectorAll('.stat-card, .action-card');
         cards.forEach(card => {
             card.addEventListener('mouseenter', function() {
                 this.classList.add('shadow-lg');

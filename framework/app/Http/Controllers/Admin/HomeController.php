@@ -101,13 +101,10 @@ class HomeController extends Controller {
         $data['page_keywords'] = "fleet, management, dashboard";
 
         // Basic dashboard statistics
-        $data['vehicles'] = \App\Model\VehicleModel::count();
-        $data['drivers'] = \App\Model\User::where('user_type', 'D')->count();
-        $data['customers'] = \App\Model\User::where('user_type', 'C')->count();
-        $data['bookings'] = \App\Model\Bookings::count();
-        $data['income'] = \App\Model\IncomeModel::whereMonth('income_date', date('m'))
-                                              ->whereYear('income_date', date('Y'))
-                                              ->sum('amount');
+        $data['total_vehicles'] = \App\Model\VehicleModel::count();
+        $data['total_drivers'] = \App\Model\User::where('user_type', 'D')->count();
+        $data['total_customers'] = \App\Model\User::where('user_type', 'C')->count();
+        $data['total_bookings'] = \App\Model\Bookings::count();
 
         return view('home', $data);
     }

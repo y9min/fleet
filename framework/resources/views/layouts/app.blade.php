@@ -764,8 +764,10 @@ input:checked + .slider:before {
         <!-- Left navbar links -->
         <ul class="navbar-nav" style="display: flex; align-items: center; flex-direction: row;">
             <li class="nav-item hamburger-container">
-                <!-- Hamburger menu button -->
-                <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" style="display: flex; align-items: center; justify-content: center;">
+                <!-- Hamburger menu button with inline onclick -->
+                <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" 
+                        onclick="window.toggleHamburgerMenu(); return false;"
+                        style="display: flex; align-items: center; justify-content: center;">
                     <div class="hamburger-icon">
                         <span></span>
                         <span></span>
@@ -2676,8 +2678,8 @@ input:checked + .slider:before {
     }
   </script>
   <script type="text/javascript">
-    // Hamburger Menu Functions - Vanilla JavaScript
-    function toggleHamburgerMenu() {
+    // Hamburger Menu Functions - UNIVERSAL SOLUTION
+    window.toggleHamburgerMenu = function() {
         const sidebar = document.getElementById('hamburger-sidebar');
         if (sidebar) {
             sidebar.classList.toggle('active');
@@ -2685,7 +2687,7 @@ input:checked + .slider:before {
         }
     }
 
-    function closeHamburgerMenu() {
+    window.closeHamburgerMenu = function() {
         const sidebar = document.getElementById('hamburger-sidebar');
         if (sidebar) {
             sidebar.classList.remove('active');
@@ -2693,89 +2695,56 @@ input:checked + .slider:before {
         }
     }
 
-    function toggleSubmenu(element) {
+    window.toggleSubmenu = function(element) {
         const menuGroup = element.parentElement;
         if (menuGroup) {
             menuGroup.classList.toggle('active');
         }
     }
     
-    // Universal hamburger menu initialization
-    function initHamburgerMenu() {
-        // Use both direct event delegation and element-specific listeners
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('#hamburger-btn') || e.target.closest('.hamburger-btn')) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleHamburgerMenu();
-            }
-            
-            if (e.target.closest('#sidebar-overlay')) {
-                closeHamburgerMenu();
-            }
-            
-            if (e.target.closest('#close-sidebar-btn')) {
-                closeHamburgerMenu();
-            }
-        });
-        
-        // Also try direct element binding as fallback
-        const hamburgerBtn = document.getElementById('hamburger-btn');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-        
-        if (hamburgerBtn && !hamburgerBtn.hasAttribute('data-listener')) {
-            hamburgerBtn.setAttribute('data-listener', 'true');
-            hamburgerBtn.onclick = function(e) {
-                e.preventDefault();
-                toggleHamburgerMenu();
-            };
-        }
-        
-        if (sidebarOverlay && !sidebarOverlay.hasAttribute('data-listener')) {
-            sidebarOverlay.setAttribute('data-listener', 'true');
-            sidebarOverlay.onclick = function(e) {
-                closeHamburgerMenu();
-            };
-        }
-        
-        if (closeSidebarBtn && !closeSidebarBtn.hasAttribute('data-listener')) {
-            closeSidebarBtn.setAttribute('data-listener', 'true');
-            closeSidebarBtn.onclick = function(e) {
-                closeHamburgerMenu();
-            };
-        }
-    }
-
-    // Initialize immediately and on page changes
+    // BULLETPROOF hamburger menu initialization
     (function() {
-        initHamburgerMenu();
+        let initialized = false;
         
-        // Re-initialize on any DOM changes (for dynamic content)
-        if (typeof MutationObserver !== 'undefined') {
-            const observer = new MutationObserver(function(mutations) {
-                let shouldReinit = false;
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                        for (let node of mutation.addedNodes) {
-                            if (node.nodeType === 1 && (node.id === 'hamburger-btn' || node.querySelector('#hamburger-btn'))) {
-                                shouldReinit = true;
-                                break;
-                            }
-                        }
+        function setupHamburger() {
+            if (initialized) return;
+            
+            // Global click handler - catches ALL clicks
+            document.body.addEventListener('click', function(e) {
+                // Check if click is on hamburger button or its children
+                let target = e.target;
+                while (target && target !== document.body) {
+                    if (target.id === 'hamburger-btn' || target.classList && target.classList.contains('hamburger-btn')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.toggleHamburgerMenu();
+                        return;
                     }
-                });
-                if (shouldReinit) {
-                    setTimeout(initHamburgerMenu, 100);
+                    if (target.id === 'sidebar-overlay') {
+                        window.closeHamburgerMenu();
+                        return;
+                    }
+                    if (target.id === 'close-sidebar-btn') {
+                        window.closeHamburgerMenu();
+                        return;
+                    }
+                    target = target.parentElement;
                 }
-            });
-            observer.observe(document.body, { childList: true, subtree: true });
+            }, true); // Use capture phase
+            
+            initialized = true;
         }
+        
+        // Setup immediately
+        setupHamburger();
+        
+        // Also setup on various events to be absolutely sure
+        document.addEventListener('DOMContentLoaded', setupHamburger);
+        window.addEventListener('load', setupHamburger);
+        setTimeout(setupHamburger, 0);
+        setTimeout(setupHamburger, 100);
+        setTimeout(setupHamburger, 500);
     })();
-    
-    // Also initialize on standard events
-    document.addEventListener('DOMContentLoaded', initHamburgerMenu);
-    window.addEventListener('load', initHamburgerMenu);
 
     // jQuery backup initialization (when jQuery is available)
     if (typeof $ !== 'undefined') {

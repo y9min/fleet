@@ -197,14 +197,14 @@ class VehiclesController extends Controller {
                 }
                 // $index['types'] = VehicleTypeModel::all();
                 $index['types'] = VehicleTypeModel::where('isenable', 1)->get();
-                $index['makes'] = VehicleModel::groupBy('make_name')->get()->pluck('make_name')->toArray();
-                $index['models'] = VehicleModel::groupBy('model_name')->get()->pluck('model_name')->toArray();
-                $index['colors'] = VehicleModel::groupBy('color_name')->get()->pluck('color_name')->toArray();
+                $index['makes'] = VehicleModel::select('make_name')->distinct()->whereNotNull('make_name')->pluck('make_name')->toArray();
+                $index['models'] = VehicleModel::select('model_name')->distinct()->whereNotNull('model_name')->pluck('model_name')->toArray();
+                $index['colors'] = VehicleModel::select('color_name')->distinct()->whereNotNull('color_name')->pluck('color_name')->toArray();
                 $index['drivers'] = User::whereUser_type("D")->get();
                 return view("vehicles.create", $index);
         }
         public function get_models($name) {
-                $makes = VehicleModel::groupBy('make_name')->where('make_name', $name)->get();
+                $makes = VehicleModel::select('model_name')->distinct()->where('make_name', $name)->whereNotNull('model_name')->get();
                 $data = array();
                 foreach ($makes as $make) {
                         array_push($data, array("id" => $make->model_name, "text" => $make->model_name));
@@ -240,10 +240,9 @@ class VehiclesController extends Controller {
                 $vehicle = VehicleModel::findOrFail($id);
                 $vehicle->load('drivers');
                 $udfs = unserialize($vehicle->getMeta('udf'));
-                $makes = VehicleModel::groupBy('make_name')->get()->pluck('make_name')->toArray();
-                $models = VehicleModel::groupBy('model_name')->get()->pluck('model_name')->toArray();
-                // dd($makes,$models);
-                $colors = VehicleModel::groupBy('color_name')->get()->pluck('color_name')->toArray();
+                $makes = VehicleModel::select('make_name')->distinct()->whereNotNull('make_name')->pluck('make_name')->toArray();
+                $models = VehicleModel::select('model_name')->distinct()->whereNotNull('model_name')->pluck('model_name')->toArray();
+                $colors = VehicleModel::select('color_name')->distinct()->whereNotNull('color_name')->pluck('color_name')->toArray();
                 // $types = VehicleTypeModel::all();
                 $types = VehicleTypeModel::where('isenable', 1)->get();
                 return view("vehicles.edit", compact('vehicle', 'groups', 'drivers', 'udfs', 'types', 'makes', 'models', 'colors'));

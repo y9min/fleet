@@ -1,13 +1,61 @@
 @extends('layouts.app')
 @section('extra_css')
     <style type="text/css">
+        .page-header {
+            background: #7FD7E1;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .page-header h1 {
+            color: white;
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .btn-toolbar {
+            margin-bottom: 1rem;
+        }
+        
+        .vehicles-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+            padding: 1rem 0.75rem;
+        }
+        
+        .table td {
+            padding: 0.75rem;
+            vertical-align: middle;
+        }
+        
+        .vehicle-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
         .modal {
             overflow: auto;
             overflow-y: hidden;
         }
-        /* .modal-open {
-            margin-left: -250px
-        } */
 
         .custom_padding {
             padding: .3rem !important;
@@ -26,6 +74,18 @@
             font-size: 20px;
             color: #555;
         }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #7FD7E1 !important;
+            border: 1px solid #7FD7E1 !important;
+            color: white !important;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #6BC5D2 !important;
+            border: 1px solid #6BC5D2 !important;
+            color: white !important;
+        }
     </style>
 @endsection
 @section('breadcrumb')
@@ -33,64 +93,67 @@
 @endsection
 
 @section('content')
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card card-info">
-                <div class="card-header">
-                    <h3 class="card-title">@lang('fleet.manageVehicles') &nbsp; @can('Vehicles add')
-                            <a href="{{ route('vehicles.create') }}" class="btn btn-success" title="@lang('fleet.addNew')"><i
-                                    class="fa fa-plus"></i></a>
-                        @endcan
-                        {{-- @can('Vehicles import')<button data-toggle="modal" data-target="#import" class="btn btn-warning">@lang('fleet.import')</button>@endcan --}}
-                    </h3>
-                </div>
-
-                <div class="card-body table-responsive">
-                    <table class="table" id="ajax_data_table" style="padding-bottom: 25px">
-                        <thead class="thead-inverse">
-                            <tr>
-                                <th>
-                                    <input type="checkbox" id="chk_all">
-                                </th>
-                                <th>#</th>
-                                <th>@lang('fleet.vehicleImage')</th>
-                                <th>@lang('fleet.make')</th>
-                                <th>@lang('fleet.model')</th>
-                                <th>@lang('fleet.type')</th>
-                                <th>@lang('fleet.color')</th>
-                                <th>@lang('fleet.licensePlate')</th>
-                                <th>@lang('fleet.group')</th>
-                                <th>@lang('fleet.service')</th>
-                                <th>@lang('fleet.assigned_driver')</th> 
-                                <th>@lang('fleet.action')</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th>
-
-                                    @can('Vehicles delete')
-                                        <button class="btn btn-danger" id="bulk_delete" data-toggle="modal"
-                                            data-target="#bulkModal" disabled title="@lang('fleet.delete')"><i
-                                                class="fa fa-trash"></i></button>
-                                    @endcan
-                                </th>
-                                <th>#</th>
-                                <th>@lang('fleet.vehicleImage')</th>
-                                <th>@lang('fleet.make')</th>
-                                <th>@lang('fleet.model')</th>
-                                <th>@lang('fleet.type')</th>
-                                <th>@lang('fleet.color')</th>
-                                <th>@lang('fleet.licensePlate')</th>
-                                <th>@lang('fleet.group')</th>
-                                <th>@lang('fleet.service')</th>
-                                <th>@lang('fleet.assigned_driver')</th>
-                                <th>@lang('fleet.action')</th>
-                            </tr>
-                        </tfoot>
-                    </table>
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header d-flex justify-content-between align-items-center">
+            <h1>@lang('fleet.manageVehicles')</h1>
+            @can('Vehicles add')
+                <a href="{{ route('vehicles.create') }}" class="btn" style="background: #32CD32; color: white; border-radius: 50px; padding: 0.5rem 1rem;" title="@lang('fleet.addNew')">
+                    <i class="fa fa-plus"></i>
+                </a>
+            @endcan
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="vehicles-table">
+                    <div class="table-responsive">
+                        <table class="table" id="ajax_data_table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="chk_all">
+                                    </th>
+                                    <th>#</th>
+                                    <th>@lang('fleet.vehicleImage')</th>
+                                    <th>@lang('fleet.make')</th>
+                                    <th>@lang('fleet.model')</th>
+                                    <th>@lang('fleet.type')</th>
+                                    <th>@lang('fleet.color')</th>
+                                    <th>@lang('fleet.licensePlate')</th>
+                                    <th>@lang('fleet.group')</th>
+                                    <th>@lang('fleet.service')</th>
+                                    <th>@lang('fleet.assigned_driver')</th> 
+                                    <th>@lang('fleet.action')</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th>
+                                        @can('Vehicles delete')
+                                            <button class="btn btn-danger btn-sm" id="bulk_delete" data-toggle="modal"
+                                                data-target="#bulkModal" disabled title="@lang('fleet.delete')">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        @endcan
+                                    </th>
+                                    <th>#</th>
+                                    <th>@lang('fleet.vehicleImage')</th>
+                                    <th>@lang('fleet.make')</th>
+                                    <th>@lang('fleet.model')</th>
+                                    <th>@lang('fleet.type')</th>
+                                    <th>@lang('fleet.color')</th>
+                                    <th>@lang('fleet.licensePlate')</th>
+                                    <th>@lang('fleet.group')</th>
+                                    <th>@lang('fleet.service')</th>
+                                    <th>@lang('fleet.assigned_driver')</th>
+                                    <th>@lang('fleet.action')</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

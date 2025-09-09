@@ -544,11 +544,16 @@ input:checked + .slider:before {
 
     /* Hamburger Menu Styles */
     .hamburger-btn {
-        background: #28a745;
+        background: #7FD7E1;
         border: none;
         padding: 8px 12px;
         border-radius: 5px;
         cursor: pointer;
+    }
+
+    .hamburger-btn:hover {
+        background: #6BC5D2;
+        transform: scale(1.05);
     }
 
     .hamburger-icon span {

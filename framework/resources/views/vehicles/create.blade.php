@@ -74,12 +74,8 @@
             <div class="form-group row">
               <label class="col-sm-4 col-form-label">Make <span class="required">*</span></label>
               <div class="col-sm-8">
-                <select name="make_name" class="form-control" required id="make_name">
-                  <option value="">Select Vehicle Make</option>
-                  @foreach($makes as $make)
-                  <option value="{{$make}}" @if(old('make_name')==$make) selected @endif>{{$make}}</option>
-                  @endforeach
-                </select>
+                <input type="text" name="make_name" class="form-control" required 
+                       placeholder="e.g., Toyota, Ford, BMW" value="{{ old('make_name') }}">
               </div>
             </div>
             
@@ -87,12 +83,8 @@
             <div class="form-group row">
               <label class="col-sm-4 col-form-label">Model <span class="required">*</span></label>
               <div class="col-sm-8">
-                <select name="model_name" class="form-control" required id="model_name">
-                  <option value="">Select Vehicle Model</option>
-                  @foreach ($models as $model)
-                  <option value="{{$model}}" @if(old('model_name')==$model) selected @endif>{{$model}}</option>
-                  @endforeach
-                </select>
+                <input type="text" name="model_name" class="form-control" required 
+                       placeholder="e.g., Camry, Focus, X3" value="{{ old('model_name') }}">
               </div>
             </div>
             
@@ -242,27 +234,6 @@
 @section('script')
 <script type="text/javascript">
 $(document).ready(function() {
-    // Make and Model dependency
-    $('#make_name').on('change', function() {
-        var make = $(this).val();
-        if (make) {
-            $.ajax({
-                url: "{{ url('admin/get_models') }}/" + make,
-                type: "GET",
-                success: function(data) {
-                    $('#model_name').empty();
-                    $('#model_name').append('<option value="">Select Vehicle Model</option>');
-                    $.each(data, function(key, value) {
-                        $('#model_name').append('<option value="' + value.id + '">' + value.text + '</option>');
-                    });
-                }
-            });
-        } else {
-            $('#model_name').empty();
-            $('#model_name').append('<option value="">Select Vehicle Model</option>');
-        }
-    });
-
     // Form validation
     $('#vehicleForm').on('submit', function(e) {
         var isValid = true;

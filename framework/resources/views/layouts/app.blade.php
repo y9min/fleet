@@ -514,7 +514,7 @@ input:checked + .slider:before {
     }
 
     .main-header {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+        background: #032127 !important;
         border-bottom: none !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
         padding: 0.5rem 1rem !important;
@@ -595,14 +595,14 @@ input:checked + .slider:before {
         left: 0;
         width: 300px;
         height: 100%;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        background: #032127;
         box-shadow: 2px 0 15px rgba(0,0,0,0.3);
         z-index: 2;
         overflow-y: auto;
     }
 
     .menu-header {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        background: #032127;
         color: white;
         padding: 15px;
         display: flex;

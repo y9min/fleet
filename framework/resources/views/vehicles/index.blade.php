@@ -272,15 +272,16 @@
 
 @section('script')
     <script type="text/javascript">
-        $("#del_btn").on("click", function() {
-            var id = $(this).data("submit");
-            $("#form_" + id).submit();
-        });
+        $(document).ready(function() {
+            $("#del_btn").on("click", function() {
+                var id = $(this).data("submit");
+                $("#form_" + id).submit();
+            });
 
-        $('#myModal').on('show.bs.modal', function(e) {
-            var id = e.relatedTarget.dataset.id;
-            $("#del_btn").attr("data-submit", id);
-        });
+            $('#myModal').on('show.bs.modal', function(e) {
+                var id = e.relatedTarget.dataset.id;
+                $("#del_btn").attr("data-submit", id);
+            });
 
         // $(document).on('click', '.openBtn', function() {
         //     // alert($(this).data("id"));
@@ -312,8 +313,6 @@
             });
         });
 
-
-        $(function() {
 
             var table = $('#ajax_data_table').DataTable({
                 dom: 'Bfrtip',
@@ -418,8 +417,8 @@
                     });
                 }
             });
-        });
-        $(document).on('click', 'input[type="checkbox"]', function() {
+
+            $(document).on('click', 'input[type="checkbox"]', function() {
             if (this.checked) {
                 $('#bulk_delete').prop('disabled', false);
 
@@ -484,7 +483,6 @@
             }
         }
 
-        $(document).ready(function() {
             $('#myTable tfoot th').each(function() {
                 if ($(this).index() != 0 && $(this).index() != $('#data_table tfoot th').length - 1) {
                     var title = $(this).text();
@@ -529,6 +527,6 @@
                     });
                 }
             });
-        });
+        }); // End of document.ready
     </script>
 @endsection

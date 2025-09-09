@@ -97,11 +97,18 @@
         <!-- Page Header -->
         <div class="page-header d-flex justify-content-between align-items-center">
             <h1>@lang('fleet.manageVehicles')</h1>
-            @can('Vehicles add')
-                <a href="{{ route('vehicles.create') }}" class="btn" style="background: #32CD32; color: white; border-radius: 50px; padding: 0.5rem 1rem;" title="@lang('fleet.addNew')">
-                    <i class="fa fa-plus"></i>
-                </a>
-            @endcan
+            <div class="d-flex gap-2">
+                @can('Vehicles add')
+                    <a href="{{ route('vehicles.create') }}" class="btn" style="background: #7FD7E1; color: white; border-radius: 6px; padding: 0.6rem 1.2rem; margin-right: 8px;" title="Add Vehicle">
+                        <i class="fa fa-plus"></i> Add Vehicle
+                    </a>
+                @endcan
+                @can('Vehicles import')
+                    <button class="btn" style="background: #6BC5D2; color: white; border-radius: 6px; padding: 0.6rem 1.2rem;" data-toggle="modal" data-target="#import" title="Import Vehicles">
+                        <i class="fa fa-upload"></i> Import
+                    </button>
+                @endcan
+            </div>
         </div>
         
         <div class="row">
@@ -114,17 +121,16 @@
                                     <th style="width: 40px;">
                                         <input type="checkbox" id="chk_all">
                                     </th>
-                                    <th>#</th>
-                                    <th>@lang('fleet.vehicleImage')</th>
-                                    <th>@lang('fleet.make')</th>
-                                    <th>@lang('fleet.model')</th>
-                                    <th>@lang('fleet.type')</th>
-                                    <th>@lang('fleet.color')</th>
-                                    <th>@lang('fleet.licensePlate')</th>
-                                    <th>@lang('fleet.group')</th>
-                                    <th>@lang('fleet.service')</th>
-                                    <th>@lang('fleet.assigned_driver')</th> 
-                                    <th>@lang('fleet.action')</th>
+                                    <th>Vehicle ID</th>
+                                    <th>Registration Plate</th>
+                                    <th>Make</th>
+                                    <th>Model</th>
+                                    <th>Fuel Type</th>
+                                    <th>Status</th>
+                                    <th>Assigned Driver</th>
+                                    <th>Telematics</th>
+                                    <th>View</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -139,17 +145,16 @@
                                             </button>
                                         @endcan
                                     </th>
-                                    <th>#</th>
-                                    <th>@lang('fleet.vehicleImage')</th>
-                                    <th>@lang('fleet.make')</th>
-                                    <th>@lang('fleet.model')</th>
-                                    <th>@lang('fleet.type')</th>
-                                    <th>@lang('fleet.color')</th>
-                                    <th>@lang('fleet.licensePlate')</th>
-                                    <th>@lang('fleet.group')</th>
-                                    <th>@lang('fleet.service')</th>
-                                    <th>@lang('fleet.assigned_driver')</th>
-                                    <th>@lang('fleet.action')</th>
+                                    <th>Vehicle ID</th>
+                                    <th>Registration Plate</th>
+                                    <th>Make</th>
+                                    <th>Model</th>
+                                    <th>Fuel Type</th>
+                                    <th>Status</th>
+                                    <th>Assigned Driver</th>
+                                    <th>Telematics</th>
+                                    <th>View</th>
+                                    <th>Actions</th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -243,31 +248,48 @@
     </div>
     <!-- Modal -->
 
-    <!--model 2 -->
-    <div id="myModal2" class="modal  fade" role="dialog" tabindex="-1">
+    <!-- View Modal -->
+    <div id="viewModal" class="modal fade" role="dialog" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">@lang('fleet.vehicle')</h4>
+                    <h4 class="modal-title">Vehicle Details</h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-
                     <div id="loader">
-                        Loading data...
+                        <div class="text-center">
+                            <i class="fa fa-spinner fa-spin"></i> Loading vehicle details...
+                        </div>
                     </div>
-
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">
-                        @lang('fleet.close')
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    <!--model 2 -->
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Confirm Delete</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this vehicle? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="confirmDelete" class="btn btn-danger" type="button">Delete Vehicle</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('script')
@@ -292,31 +314,64 @@
         //         });
         //     });
         // });
+        // View Modal
         $(document).on('click', '.openBtn', function() {
             var id = $(this).attr("data-id");
-            $('#myModal2 .modal-body').html('<div id="loader">Loading data...</div>');
-            $('#myModal2').modal({
+            $('#viewModal .modal-body').html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading vehicle details...</div>');
+            $('#viewModal').modal({
                 show: true
             });
             $.ajax({
                 url: '{{ url('admin/vehicle/event') }}/' + id,
                 type: 'GET',
                 success: function(result) {
-                    $('#myModal2 .modal-body').html(result);
+                    $('#viewModal .modal-body').html(result);
                 },
                 error: function() {
-                    $('#myModal2 .modal-body').html('Error loading data.');
-                },
-                complete: function() {
-                    $('#loader').hide();
+                    $('#viewModal .modal-body').html('<div class="alert alert-danger">Error loading vehicle details.</div>');
                 }
             });
         });
 
+        // Delete functionality
+        var deleteId = null;
+        function setDeleteId(id) {
+            deleteId = id;
+        }
+        
+        $(document).on('click', '#confirmDelete', function() {
+            if (deleteId) {
+                $('#form_' + deleteId).submit();
+                $('#deleteModal').modal('hide');
+            }
+        });
+
 
             var table = $('#ajax_data_table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ url('admin/vehicles-fetch') }}',
+                    type: 'POST',
+                    data: function(d) {
+                        d._token = '{{ csrf_token() }}';
+                    }
+                },
+                columns: [
+                    { data: 'check', name: 'check', orderable: false, searchable: false },
+                    { data: 'vehicle_id', name: 'vehicle_id', orderable: true },
+                    { data: 'license_plate', name: 'license_plate', orderable: true },
+                    { data: 'make', name: 'make', orderable: true },
+                    { data: 'model', name: 'model', orderable: true },
+                    { data: 'fuel_type', name: 'fuel_type', orderable: true },
+                    { data: 'status', name: 'status', orderable: true },
+                    { data: 'assigned_driver', name: 'assigned_driver', orderable: false },
+                    { data: 'telematics', name: 'telematics', orderable: false, searchable: false },
+                    { data: 'view', name: 'view', orderable: false, searchable: false },
+                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                ],
                 dom: 'Bfrtip',
-      buttons: [
+                buttons: [
           {
         extend: 'print',
         text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',

@@ -765,7 +765,7 @@ input:checked + .slider:before {
         <ul class="navbar-nav" style="display: flex; align-items: center; flex-direction: row;">
             <li class="nav-item hamburger-container">
                 <!-- Hamburger menu button -->
-                <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" onclick="toggleHamburgerMenu()" style="display: flex; align-items: center; justify-content: center;">
+                <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" style="display: flex; align-items: center; justify-content: center;">
                     <div class="hamburger-icon">
                         <span></span>
                         <span></span>
@@ -786,11 +786,11 @@ input:checked + .slider:before {
 
         <!-- Hamburger Menu Sidebar -->
         <div class="hamburger-sidebar" id="hamburger-sidebar">
-            <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeHamburgerMenu()"></div>
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
             <div class="sidebar-content">
                 <div class="menu-header">
                     <h3>Fleet Manager</h3>
-                    <button class="close-btn" onclick="closeHamburgerMenu()">&times;</button>
+                    <button class="close-btn" id="close-sidebar-btn">&times;</button>
                 </div>
                 <div class="menu-items">
                     <a href="{{url('admin/')}}" class="menu-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -2676,9 +2676,45 @@ input:checked + .slider:before {
     }
   </script>
   <script type="text/javascript">
+    // Hamburger Menu Functions - Vanilla JavaScript
+    function toggleHamburgerMenu() {
+        const sidebar = document.getElementById('hamburger-sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
+        }
+    }
+
+    function closeHamburgerMenu() {
+        const sidebar = document.getElementById('hamburger-sidebar');
+        if (sidebar) {
+            sidebar.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    function toggleSubmenu(element) {
+        const menuGroup = element.parentElement;
+        if (menuGroup) {
+            menuGroup.classList.toggle('active');
+        }
+    }
+    
     // Wait for both DOM and jQuery to be ready
     if (typeof $ !== 'undefined') {
         $(document).ready(function() {
+            // Add event listeners for hamburger menu
+            $('#hamburger-btn').on('click', function() {
+                toggleHamburgerMenu();
+            });
+            
+            $('#sidebar-overlay').on('click', function() {
+                closeHamburgerMenu();
+            });
+            
+            $('#close-sidebar-btn').on('click', function() {
+                closeHamburgerMenu();
+            });
       // $('button').on('click', function() {
       //   if (!$(this).data('clicked')) {
       //     console.log('Button clicked!');
@@ -2872,24 +2908,5 @@ input:checked + .slider:before {
   <script src="{{asset('assets/js/admin-custom.js')}}"></script>
   @yield('script')
   <script> var base_url = '{{ url("/") }}'; </script>
-  <script>
-// Simple Hamburger Menu Functions
-function toggleHamburgerMenu() {
-    const sidebar = document.getElementById('hamburger-sidebar');
-    sidebar.classList.toggle('active');
-    document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
-}
-
-function closeHamburgerMenu() {
-    const sidebar = document.getElementById('hamburger-sidebar');
-    sidebar.classList.remove('active');
-    document.body.style.overflow = 'auto';
-}
-
-function toggleSubmenu(element) {
-    const menuGroup = element.parentElement;
-    menuGroup.classList.toggle('active');
-}
-</script>
 </body>
 </html>

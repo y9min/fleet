@@ -2594,25 +2594,6 @@ input:checked + .slider:before {
     </aside>
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
-      <!-- Content Header (Page header) -->
-      <div class="content-header" style="background: linear-gradient(135deg, #032127 0%, #7ED6DF 100%); padding: 2rem 0; margin-bottom: 2rem; border-radius: 15px;">
-        <div class="container-fluid">
-          <div class="row mb-2">
-            <div class="col-sm-6">
-              <h1 class="m-0" style="color: white; font-size: 2.5rem; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">@yield('heading') </h1>
-            </div><!-- /.col -->
-            <div class="col-sm-6">
-              <ol class="breadcrumb float-sm-right" style="background: transparent;">
-                @if(!(Request::is('admin')))
-                <li class="breadcrumb-item"><a href="{{ url('admin/')}}" style="color: rgba(255,255,255,0.8);">@lang('fleet.home')</a></li>
-                @endif
-                <li class="breadcrumb-item active" style="color: white;">@yield('breadcrumb')</li>
-              </ol>
-            </div><!-- /.col -->
-          </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
-      </div>
-      <!-- /.content-header -->
       <!-- Main content -->
       <section class="content">
         <div class="container-fluid">

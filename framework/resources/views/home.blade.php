@@ -306,12 +306,6 @@
 <section class="content">
   <div class="container-fluid">
     
-    <!-- Welcome Section -->
-    <div class="welcome-section">
-      <h2 class="welcome-title">Welcome to PCO Flow Fleet Manager</h2>
-      <p class="welcome-text">Here's the health overview of your fleet at a glance.</p>
-      <p class="last-login">Last login: {{ Auth::user()->updated_at->format('M d, Y H:i A') }}</p>
-    </div>
 
     <!-- Statistics Cards -->
     <div class="stats-container">

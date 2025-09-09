@@ -2700,37 +2700,47 @@ input:checked + .slider:before {
         }
     }
     
-    // Initialize hamburger menu functionality immediately
-    (function() {
-        function initHamburgerMenu() {
-            const hamburgerBtn = document.getElementById('hamburger-btn');
-            const sidebarOverlay = document.getElementById('sidebar-overlay');
-            const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-            
-            if (hamburgerBtn) {
-                hamburgerBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleHamburgerMenu();
-                });
-            }
-            
-            if (sidebarOverlay) {
-                sidebarOverlay.addEventListener('click', closeHamburgerMenu);
-            }
-            
-            if (closeSidebarBtn) {
-                closeSidebarBtn.addEventListener('click', closeHamburgerMenu);
-            }
+    // Initialize hamburger menu functionality with multiple attempts
+    function initHamburgerMenu() {
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        
+        console.log('Initializing hamburger menu...', {hamburgerBtn, sidebarOverlay, closeSidebarBtn});
+        
+        if (hamburgerBtn) {
+            // Remove any existing listeners first
+            hamburgerBtn.removeEventListener('click', toggleHamburgerMenu);
+            hamburgerBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Hamburger button clicked');
+                toggleHamburgerMenu();
+            });
+            console.log('Hamburger button listener attached');
         }
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.removeEventListener('click', closeHamburgerMenu);
+            sidebarOverlay.addEventListener('click', closeHamburgerMenu);
+            console.log('Sidebar overlay listener attached');
+        }
+        
+        if (closeSidebarBtn) {
+            closeSidebarBtn.removeEventListener('click', closeHamburgerMenu);
+            closeSidebarBtn.addEventListener('click', closeHamburgerMenu);
+            console.log('Close button listener attached');
+        }
+    }
 
-        // Try to initialize immediately if DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initHamburgerMenu);
-        } else {
-            initHamburgerMenu();
-        }
-    })();
+    // Multiple initialization attempts
+    document.addEventListener('DOMContentLoaded', initHamburgerMenu);
+    window.addEventListener('load', initHamburgerMenu);
+    
+    // Immediate attempt if DOM is already ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(initHamburgerMenu, 100);
+    }
 
     // Wait for both DOM and jQuery to be ready
     if (typeof $ !== 'undefined') {

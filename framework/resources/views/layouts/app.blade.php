@@ -660,6 +660,14 @@ input:checked + .slider:before {
     .menu-group.active .submenu-content {
         max-height: 500px;
     }
+    
+    .menu-title .fa-chevron-down {
+        transition: transform 0.3s ease;
+    }
+    
+    .menu-group.active .menu-title .fa-chevron-down {
+        transform: rotate(180deg);
+    }
 
     .submenu-link {
         display: block;
@@ -795,67 +803,67 @@ input:checked + .slider:before {
                     <button class="close-btn" id="close-sidebar-btn" onclick="(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}})(); return false;">&times;</button>
                 </div>
                 <div class="menu-items">
-                    <a href="{{url('admin/')}}" class="menu-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="{{url('admin/')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                     
                     <div class="menu-group">
-                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down"></i></div>
+                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
-                            <a href="{{route('drivers.index')}}" class="submenu-link"><i class="fas fa-id-card"></i> Drivers</a>
-                            <a href="{{url('admin/users')}}" class="submenu-link"><i class="fas fa-user-tie"></i> Users(Managers)</a>
-                            <a href="{{route('customers.index')}}" class="submenu-link"><i class="fas fa-user-friends"></i> Customers</a>
+                            <a href="{{route('drivers.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-id-card"></i> Drivers</a>
+                            <a href="{{url('admin/users')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Users(Managers)</a>
+                            <a href="{{route('customers.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-friends"></i> Customers</a>
                         </div>
                     </div>
 
                     <div class="menu-group">
-                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down"></i></div>
+                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
-                            <a href="{{route('vehicles.index')}}" class="submenu-link"><i class="fas fa-list"></i> Manage Vehicles</a>
-                            <a href="{{url('admin/vehicle-types')}}" class="submenu-link"><i class="fas fa-tag"></i> Manage Vehicle Types</a>
-                            <a href="{{url('admin/vehicle-group')}}" class="submenu-link"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a>
-                            <a href="{{url('admin/vehicle-inspection')}}" class="submenu-link"><i class="fas fa-clipboard-check"></i> Vehicle Inspection</a>
+                            <a href="{{route('vehicles.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Vehicles</a>
+                            <a href="{{url('admin/vehicle-types')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-tag"></i> Manage Vehicle Types</a>
+                            <a href="{{url('admin/vehicle-group')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a>
+                            <a href="{{url('admin/vehicle-inspection')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-clipboard-check"></i> Vehicle Inspection</a>
                         </div>
                     </div>
 
                     <div class="menu-group">
-                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-exchange-alt"></i> Transactions <i class="fas fa-chevron-down"></i></div>
+                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-exchange-alt"></i> Transactions <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
-                            <a href="{{url('admin/income')}}" class="submenu-link"><i class="fas fa-plus-circle"></i> Manage Income</a>
-                            <a href="{{url('admin/expense')}}" class="submenu-link"><i class="fas fa-minus-circle"></i> Manage Expense</a>
+                            <a href="{{url('admin/income')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-plus-circle"></i> Manage Income</a>
+                            <a href="{{url('admin/expense')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-minus-circle"></i> Manage Expense</a>
                         </div>
                     </div>
 
                     <div class="menu-group">
-                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-calendar-check"></i> Bookings <i class="fas fa-chevron-down"></i></div>
+                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-calendar-check"></i> Bookings <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
-                            <a href="{{route('bookings.create')}}" class="submenu-link"><i class="fas fa-plus"></i> New Booking</a>
-                            <a href="{{route('bookings.index')}}" class="submenu-link"><i class="fas fa-list"></i> Manage Bookings</a>
-                            <a href="{{url('admin/booking-payments')}}" class="submenu-link"><i class="fas fa-credit-card"></i> Booking Payments</a>
-                            <a href="{{route('booking-quotation.index')}}" class="submenu-link"><i class="fas fa-file-invoice"></i> Booking Quotations</a>
-                            <a href="{{url('admin/bookings_calendar')}}" class="submenu-link"><i class="fas fa-calendar"></i> Booking Calendar</a>
+                            <a href="{{route('bookings.create')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-plus"></i> New Booking</a>
+                            <a href="{{route('bookings.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Bookings</a>
+                            <a href="{{url('admin/booking-payments')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-credit-card"></i> Booking Payments</a>
+                            <a href="{{route('booking-quotation.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-file-invoice"></i> Booking Quotations</a>
+                            <a href="{{url('admin/bookings_calendar')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-calendar"></i> Booking Calendar</a>
                         </div>
                     </div>
 
                     <div class="menu-group">
-                        <div class="menu-title" onclick="toggleSubmenu(this)"><i class="fas fa-chart-bar"></i> Reports <i class="fas fa-chevron-down"></i></div>
+                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-chart-bar"></i> Reports <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
-                            <a href="{{url('admin/reports/income')}}" class="submenu-link">Income Report</a>
-                            <a href="{{url('admin/reports/expense')}}" class="submenu-link">Expense Report</a>
-                            <a href="{{url('admin/reports/delinquent')}}" class="submenu-link">Delinquent Report</a>
-                            <a href="{{route('reports.monthly')}}" class="submenu-link">Monthly Report</a>
-                            <a href="{{url('admin/reports/booking')}}" class="submenu-link">Booking Report</a>
-                            <a href="{{url('admin/reports/users')}}" class="submenu-link">Users Report</a>
-                            <a href="{{url('admin/reports/work-order')}}" class="submenu-link">Work Order Report</a>
-                            <a href="{{url('admin/reports/fuel')}}" class="submenu-link">Fuel Report</a>
-                            <a href="{{url('admin/reports/driver')}}" class="submenu-link">Driver Report</a>
-                            <a href="{{url('admin/reports/customer')}}" class="submenu-link">Customer Report</a>
-                            <a href="{{url('admin/reports/vendor')}}" class="submenu-link">Vendor Report</a>
-                            <a href="{{route('reports.yearly')}}" class="submenu-link">Yearly Report</a>
-                            <a href="{{url('admin/reports/driver-payment')}}" class="submenu-link">Driver Payment Report</a>
+                            <a href="{{url('admin/reports/income')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Income Report</a>
+                            <a href="{{url('admin/reports/expense')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Expense Report</a>
+                            <a href="{{url('admin/reports/delinquent')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Delinquent Report</a>
+                            <a href="{{route('reports.monthly')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Monthly Report</a>
+                            <a href="{{url('admin/reports/booking')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Booking Report</a>
+                            <a href="{{url('admin/reports/users')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Users Report</a>
+                            <a href="{{url('admin/reports/work-order')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Work Order Report</a>
+                            <a href="{{url('admin/reports/fuel')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Fuel Report</a>
+                            <a href="{{url('admin/reports/driver')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Driver Report</a>
+                            <a href="{{url('admin/reports/customer')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Customer Report</a>
+                            <a href="{{url('admin/reports/vendor')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Vendor Report</a>
+                            <a href="{{route('reports.yearly')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Yearly Report</a>
+                            <a href="{{url('admin/reports/driver-payment')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Driver Payment Report</a>
                         </div>
                     </div>
 
-                    <a href="{{url('admin/mechanics')}}" class="menu-link"><i class="fas fa-user-cog"></i> Mechanics</a>
-                    <a href="{{url('admin/inquiries')}}" class="menu-link"><i class="fas fa-question-circle"></i> Inquiries</a>
+                    <a href="{{url('admin/mechanics')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-cog"></i> Mechanics</a>
+                    <a href="{{url('admin/inquiries')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-question-circle"></i> Inquiries</a>
                     
                     <!-- Logout at bottom of menu -->
                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">

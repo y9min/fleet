@@ -193,10 +193,16 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  {!! Form::label('engine_type', __('fleet.engine'), ['class' => 'col-xs-5 control-label']) !!}
+                  {!! Form::label('engine_type', 'Fuel Type', ['class' => 'col-xs-5 control-label']) !!}
                   <div class="col-xs-6">
-                    {!! Form::select('engine_type',["Petrol"=>__('fleet.petrol'),"Diesel"=>__('fleet.diesel')],null,['class' =>
-                    'form-control','required']) !!}
+                    {!! Form::select('engine_type',[
+                      "Petrol"=>"Petrol",
+                      "Diesel"=>"Diesel",
+                      "Electric"=>"Electric",
+                      "Hybrid"=>"Hybrid",
+                      "CNG"=>"CNG",
+                      "LPG"=>"LPG"
+                    ],null,['class' => 'form-control','required']) !!}
                   </div>
                 </div>
                 <div class="form-group">
@@ -220,16 +226,38 @@
                 </div>
 
                 <div class="form-group">
-                  {!! Form::label('driver_id',__('fleet.selectDriver'), ['class' => 'form-label']) !!}
-                  <select id="driver_id" name="driver_id" class="form-control w-100"  required>
-                    {{-- <option value="">@lang('fleet.selectDriver')</option> --}}
-                    @foreach($drivers as $driver)
-                      <option value="{{$driver->id}}">
-                        {{$driver->name}}@if($driver->getMeta('is_active') != 1)
-                        ( @lang('fleet.in_active') ) @endif
-                      </option>
-                    @endforeach
-                  </select>
+                  <label class="col-xs-5 control-label">Vehicle Status</label>
+                  <div class="col-xs-6">
+                    <select name="vehicle_status" class="form-control" required>
+                      <option value="Available" selected>Available</option>
+                      <option value="Rented">Rented</option>
+                      <option value="Workshop">Workshop</option>
+                      <option value="Disabled">Disabled</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  {!! Form::label('driver_id',__('fleet.selectDriver'), ['class' => 'col-xs-5 control-label']) !!}
+                  <div class="col-xs-6">
+                    <select id="driver_id" name="driver_id" class="form-control">
+                      <option value="">@lang('fleet.selectDriver')</option>
+                      @foreach($drivers as $driver)
+                        <option value="{{$driver->id}}">
+                          {{$driver->name}}@if($driver->getMeta('is_active') != 1)
+                          ( @lang('fleet.in_active') ) @endif
+                        </option>
+                      @endforeach
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="col-xs-5 control-label">Telematics Link</label>
+                  <div class="col-xs-6">
+                    <input type="url" name="telematics_link" class="form-control" placeholder="https://telematics.example.com/vehicle/123">
+                    <small class="text-muted">Optional: Link to vehicle's telematics dashboard</small>
+                  </div>
                 </div>
                 <div class="form-group">
                   @if(Hyvikk::get('dis_format') == "km")

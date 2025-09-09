@@ -2700,63 +2700,104 @@ input:checked + .slider:before {
         }
     }
     
-    // Initialize hamburger menu functionality with multiple attempts
+    // Universal hamburger menu initialization
     function initHamburgerMenu() {
+        // Use both direct event delegation and element-specific listeners
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('#hamburger-btn') || e.target.closest('.hamburger-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleHamburgerMenu();
+            }
+            
+            if (e.target.closest('#sidebar-overlay')) {
+                closeHamburgerMenu();
+            }
+            
+            if (e.target.closest('#close-sidebar-btn')) {
+                closeHamburgerMenu();
+            }
+        });
+        
+        // Also try direct element binding as fallback
         const hamburgerBtn = document.getElementById('hamburger-btn');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
         const closeSidebarBtn = document.getElementById('close-sidebar-btn');
         
-        console.log('Initializing hamburger menu...', {hamburgerBtn, sidebarOverlay, closeSidebarBtn});
-        
-        if (hamburgerBtn) {
-            // Remove any existing listeners first
-            hamburgerBtn.removeEventListener('click', toggleHamburgerMenu);
-            hamburgerBtn.addEventListener('click', function(e) {
+        if (hamburgerBtn && !hamburgerBtn.hasAttribute('data-listener')) {
+            hamburgerBtn.setAttribute('data-listener', 'true');
+            hamburgerBtn.onclick = function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-                console.log('Hamburger button clicked');
                 toggleHamburgerMenu();
-            });
-            console.log('Hamburger button listener attached');
+            };
         }
         
-        if (sidebarOverlay) {
-            sidebarOverlay.removeEventListener('click', closeHamburgerMenu);
-            sidebarOverlay.addEventListener('click', closeHamburgerMenu);
-            console.log('Sidebar overlay listener attached');
+        if (sidebarOverlay && !sidebarOverlay.hasAttribute('data-listener')) {
+            sidebarOverlay.setAttribute('data-listener', 'true');
+            sidebarOverlay.onclick = function(e) {
+                closeHamburgerMenu();
+            };
         }
         
-        if (closeSidebarBtn) {
-            closeSidebarBtn.removeEventListener('click', closeHamburgerMenu);
-            closeSidebarBtn.addEventListener('click', closeHamburgerMenu);
-            console.log('Close button listener attached');
+        if (closeSidebarBtn && !closeSidebarBtn.hasAttribute('data-listener')) {
+            closeSidebarBtn.setAttribute('data-listener', 'true');
+            closeSidebarBtn.onclick = function(e) {
+                closeHamburgerMenu();
+            };
         }
     }
 
-    // Multiple initialization attempts
+    // Initialize immediately and on page changes
+    (function() {
+        initHamburgerMenu();
+        
+        // Re-initialize on any DOM changes (for dynamic content)
+        if (typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(function(mutations) {
+                let shouldReinit = false;
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        for (let node of mutation.addedNodes) {
+                            if (node.nodeType === 1 && (node.id === 'hamburger-btn' || node.querySelector('#hamburger-btn'))) {
+                                shouldReinit = true;
+                                break;
+                            }
+                        }
+                    }
+                });
+                if (shouldReinit) {
+                    setTimeout(initHamburgerMenu, 100);
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+    })();
+    
+    // Also initialize on standard events
     document.addEventListener('DOMContentLoaded', initHamburgerMenu);
     window.addEventListener('load', initHamburgerMenu);
-    
-    // Immediate attempt if DOM is already ready
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(initHamburgerMenu, 100);
-    }
 
-    // Wait for both DOM and jQuery to be ready
+    // jQuery backup initialization (when jQuery is available)
     if (typeof $ !== 'undefined') {
         $(document).ready(function() {
-            // Add jQuery event listeners for hamburger menu (backup)
-            $('#hamburger-btn').off('click').on('click', function(e) {
+            // Event delegation for hamburger menu (works even if elements are added later)
+            $(document).off('click.hamburger').on('click.hamburger', '#hamburger-btn, .hamburger-btn', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 toggleHamburgerMenu();
             });
             
-            $('#sidebar-overlay').off('click').on('click', function() {
+            $(document).off('click.overlay').on('click.overlay', '#sidebar-overlay', function() {
                 closeHamburgerMenu();
             });
             
-            $('#close-sidebar-btn').off('click').on('click', function() {
+            $(document).off('click.close').on('click.close', '#close-sidebar-btn', function() {
                 closeHamburgerMenu();
+            });
+            
+            // Additional safety check - reinitialize on page transitions
+            $(document).on('ready', function() {
+                setTimeout(initHamburgerMenu, 200);
             });
       // $('button').on('click', function() {
       //   if (!$(this).data('clicked')) {

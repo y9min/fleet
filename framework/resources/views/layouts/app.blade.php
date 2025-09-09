@@ -237,7 +237,7 @@ input:checked + .slider:before {
 
   <!-- Load jQuery first to prevent $ undefined errors -->
   <script src="{{asset('assets/vendor/jquery-3.6.0.min.js')}}"></script>
-  <script src="{{asset('assets/push_notification/app.js')}}"></script>
+  {{-- <script src="{{asset('assets/push_notification/app.js')}}"></script> --}}
 
 
   <style>
@@ -877,7 +877,7 @@ input:checked + .slider:before {
 
       <a href="{{ url('admin/')}}" class="brand-link">
 
-        <img src="{{ asset('assets/images/'. Hyvikk::get('icon_img') ) }}" alt="Fleet Logo" class="brand-image"
+        <img src="{{ asset('assets/images/' . Hyvikk::get('icon_img')) }}" alt="Fleet Logo" class="brand-image"
 
           style="opacity: .8">
 

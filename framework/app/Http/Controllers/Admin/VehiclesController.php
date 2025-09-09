@@ -388,6 +388,8 @@ class VehiclesController extends Controller {
                         'assign_driver_id' => $request->driver_id,
                         'luggage'=>$request->luggage,
                         'price'=>$request->price,
+                        'vehicle_status' => $request->vehicle_status ?? 'Available',
+                        'telematics_link' => $request->telematics_link,
                 ]);
                 $meta->udf = serialize($request->get('udf'));
                 $meta->average = $request->average;

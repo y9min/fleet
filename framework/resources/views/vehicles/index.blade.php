@@ -164,43 +164,86 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Import Modal -->
     <div id="import" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">@lang('fleet.importVehicles')</h4>
+                    <h4 class="modal-title"><i class="fa fa-upload"></i> Import Vehicles</h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-                    {!! Form::open(['url' => 'admin/import-vehicles', 'method' => 'POST', 'files' => true]) !!}
-                    <div class="form-group">
-                        {!! Form::label('excel', __('fleet.importVehicles'), ['class' => 'form-label']) !!}
-                        {!! Form::file('excel', ['class' => 'form-control', 'required']) !!}
+                    {!! Form::open(['url' => 'admin/import-vehicles', 'method' => 'POST', 'files' => true, 'id' => 'importForm']) !!}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="form-label"><i class="fa fa-file-excel"></i> Select File (Excel/CSV)</label>
+                                {!! Form::file('excel', ['class' => 'form-control', 'required', 'accept' => '.xlsx,.xls,.csv']) !!}
+                                <small class="text-muted">Supported formats: .xlsx, .xls, .csv</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Options</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="skipDuplicates" name="skip_duplicates" value="1" checked>
+                                    <label class="form-check-label" for="skipDuplicates">
+                                        Skip vehicles with duplicate registration plates
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="validateData" name="validate_data" value="1" checked>
+                                    <label class="form-check-label" for="validateData">
+                                        Validate data before importing
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="fa fa-info-circle"></i> Required Columns</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled small">
+                                        <li><strong>registration_plate</strong> (Required)</li>
+                                        <li><strong>make_name</strong> (Required)</li>
+                                        <li><strong>model_name</strong> (Required)</li>
+                                        <li>engine_type (Fuel Type)</li>
+                                        <li>year</li>
+                                        <li>color_name</li>
+                                        <li>vin</li>
+                                        <li>mileage</li>
+                                    </ul>
+                                    <a href="{{ asset('assets/samples/vehicles.xlsx') }}" class="btn btn-sm btn-outline-success">
+                                        <i class="fa fa-download"></i> Sample File
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <a href="{{ asset('assets/samples/vehicles.xlsx') }}">@lang('fleet.downloadSampleExcel')</a>
-                    </div>
-                    <div class="form-group">
-                        <h6 class="text-muted">@lang('fleet.note'):</h6>
-                        <ul class="text-muted">
-                            <li>@lang('fleet.vehicleImportNote1')</li>
-                            <li>@lang('fleet.vehicleImportNote2')</li>
-                            <li>@lang('fleet.excelNote')</li>
-                            <li>@lang('fleet.fileTypeNote')</li>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fa fa-info-circle"></i> Import Notes:</h6>
+                        <ul class="mb-0">
+                            <li>System automatically validates duplicate registration plates</li>
+                            <li>Missing required fields will be highlighted in preview</li>
+                            <li>You can preview data before final import</li>
+                            <li>Maximum file size: 5MB</li>
                         </ul>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-warning" type="submit">@lang('fleet.import')</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">@lang('fleet.close')</button>
+                    <button class="btn" style="background: #7FD7E1; color: white;" type="submit">
+                        <i class="fa fa-upload"></i> Import Vehicles
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fa fa-times"></i> Cancel
+                    </button>
                 </div>
                 {!! Form::close() !!}
             </div>
         </div>
     </div>
-    <!-- Modal -->
 
     <!-- Modal -->
     <div id="bulkModal" class="modal fade" role="dialog">

@@ -757,7 +757,7 @@ input:checked + .slider:before {
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand">
         <!-- Left navbar links -->
-        <ul class="navbar-nav">
+        <ul class="navbar-nav d-flex align-items-center">
             <li class="nav-item hamburger-container">
                 <!-- Hamburger menu button -->
                 <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" onclick="toggleHamburgerMenu()">
@@ -767,6 +767,10 @@ input:checked + .slider:before {
                         <span></span>
                     </div>
                 </button>
+            </li>
+            <li class="nav-item d-flex align-items-center ml-3">
+                <img src="{{ asset('assets/images/logo.png') }}" alt="PCO Flow" style="height: 40px; margin-right: 15px;">
+                <h4 style="color: white; margin: 0; font-weight: 600; font-size: 1.2rem;">Dashboard</h4>
             </li>
         </ul>
 

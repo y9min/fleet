@@ -63,15 +63,6 @@
     overflow: hidden;
   }
 
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color) 0%, var(--dark-bg) 100%);
-  }
 
   .stat-card:hover {
     transform: translateY(-5px);
@@ -86,14 +77,10 @@
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    color: white;
+    color: #7FD7E1;
+    background: transparent;
     margin-bottom: 1rem;
   }
-
-  .stat-icon.vehicles { background: #8B5CF6; }
-  .stat-icon.drivers { background: #10B981; }
-  .stat-icon.customers { background: #EF4444; }
-  .stat-icon.bookings { background: #F59E0B; }
 
   .stat-number {
     font-size: 2.5rem;
@@ -313,7 +300,9 @@
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon vehicles">
-              <i class="fa fa-car"></i>
+              <svg width="24" height="24" viewBox="0 0 640 512" fill="currentColor">
+                <path d="M171.3 96H224l35.2 123.7c2.5 8.8 10.9 14.9 20.1 14.9H424c21.3 0 39.4-15.4 43-36.2L499.7 96H544c17.7 0 32-14.3 32-32s-14.3-32-32-32H171.3c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-17.9 96L124 96H96c-17.7 0-32 14.3-32 32s14.3 32 32 32h57.4zM96 224c-17.7 0-32 14.3-32 32v128c0 17.7 14.3 32 32 32h32c0 53 43 96 96 96s96-43 96-96h128c0 53 43 96 96 96s96-43 96-96h32c17.7 0 32-14.3 32-32V288h-64V224c0-17.7-14.3-32-32-32H416l-35.2-123.7C375.4 54.8 358.7 44 340.1 44H171.3C141.1 44 114.6 66.6 96 99.2V224zM224 400c0 26.5-21.5 48-48 48s-48-21.5-48-48s21.5-48 48-48s48 21.5 48 48zm288 48c-26.5 0-48-21.5-48-48s21.5-48 48-48s48 21.5 48 48s-21.5 48-48 48z"/>
+              </svg>
             </div>
             <h3 class="stat-number">{{ $total_vehicles ?? 0 }}</h3>
             <p class="stat-label">@lang('fleet.vehicles')</p>
@@ -326,7 +315,9 @@
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon drivers">
-              <i class="fa fa-id-card"></i>
+              <svg width="24" height="24" viewBox="0 0 448 512" fill="currentColor">
+                <path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0S96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/>
+              </svg>
             </div>
             <h3 class="stat-number">{{ $total_drivers ?? 0 }}</h3>
             <p class="stat-label">@lang('fleet.drivers')</p>
@@ -339,7 +330,9 @@
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon customers">
-              <i class="fa fa-users"></i>
+              <svg width="24" height="24" viewBox="0 0 640 512" fill="currentColor">
+                <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM609.3 512H471.4c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8c2.4-.1 4.7-.2 7.1-.2h61.4C567.8 320 640 392.2 640 481.3c0 17-13.8 30.7-30.7 30.7zM432 256c-31 0-59-12.6-79.3-32.9C372.4 196.5 384 163.6 384 128c0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112z"/>
+              </svg>
             </div>
             <h3 class="stat-number">{{ $total_customers ?? 0 }}</h3>
             <p class="stat-label">@lang('fleet.customers')</p>
@@ -352,7 +345,9 @@
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon bookings">
-              <i class="fa fa-address-book"></i>
+              <svg width="24" height="24" viewBox="0 0 448 512" fill="currentColor">
+                <path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/>
+              </svg>
             </div>
             <h3 class="stat-number">{{ $total_bookings ?? 0 }}</h3>
             <p class="stat-label">@lang('fleet.bookings')</p>

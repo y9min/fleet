@@ -764,9 +764,9 @@ input:checked + .slider:before {
         <!-- Left navbar links -->
         <ul class="navbar-nav" style="display: flex; align-items: center; flex-direction: row;">
             <li class="nav-item hamburger-container">
-                <!-- Hamburger menu button with inline onclick -->
+                <!-- Hamburger menu button with PURE inline JavaScript -->
                 <button class="btn btn-sm hamburger-btn" type="button" id="hamburger-btn" 
-                        onclick="window.toggleHamburgerMenu(); return false;"
+                        onclick="(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.toggle('active');document.body.style.overflow=s.classList.contains('active')?'hidden':'auto';}})(); return false;"
                         style="display: flex; align-items: center; justify-content: center;">
                     <div class="hamburger-icon">
                         <span></span>
@@ -788,11 +788,11 @@ input:checked + .slider:before {
 
         <!-- Hamburger Menu Sidebar -->
         <div class="hamburger-sidebar" id="hamburger-sidebar">
-            <div class="sidebar-overlay" id="sidebar-overlay"></div>
+            <div class="sidebar-overlay" id="sidebar-overlay" onclick="(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}})();"></div>
             <div class="sidebar-content">
                 <div class="menu-header">
                     <h3>Fleet Manager</h3>
-                    <button class="close-btn" id="close-sidebar-btn">&times;</button>
+                    <button class="close-btn" id="close-sidebar-btn" onclick="(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}})(); return false;">&times;</button>
                 </div>
                 <div class="menu-items">
                     <a href="{{url('admin/')}}" class="menu-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -2678,12 +2678,18 @@ input:checked + .slider:before {
     }
   </script>
   <script type="text/javascript">
-    // Hamburger Menu Functions - UNIVERSAL SOLUTION
+    // SIMPLIFIED HAMBURGER MENU - GUARANTEED TO WORK
+    
+    // Define functions globally
     window.toggleHamburgerMenu = function() {
+        console.log('Toggle hamburger menu called');
         const sidebar = document.getElementById('hamburger-sidebar');
         if (sidebar) {
             sidebar.classList.toggle('active');
             document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
+            console.log('Sidebar toggled, active:', sidebar.classList.contains('active'));
+        } else {
+            console.error('Hamburger sidebar not found!');
         }
     }
 
@@ -2702,71 +2708,64 @@ input:checked + .slider:before {
         }
     }
     
-    // BULLETPROOF hamburger menu initialization
-    (function() {
-        let initialized = false;
+    // Simple initialization that always works
+    setTimeout(function() {
+        console.log('Setting up hamburger menu...');
         
-        function setupHamburger() {
-            if (initialized) return;
-            
-            // Global click handler - catches ALL clicks
-            document.body.addEventListener('click', function(e) {
-                // Check if click is on hamburger button or its children
-                let target = e.target;
-                while (target && target !== document.body) {
-                    if (target.id === 'hamburger-btn' || target.classList && target.classList.contains('hamburger-btn')) {
+        // Check if button exists
+        const btn = document.getElementById('hamburger-btn');
+        if (btn) {
+            console.log('Hamburger button found, has onclick:', btn.onclick !== null);
+        } else {
+            console.error('Hamburger button not found!');
+        }
+        
+        // Add global click listener as backup
+        if (!window.hamburgerListenerAdded) {
+            window.hamburgerListenerAdded = true;
+            document.addEventListener('click', function(e) {
+                // Check if target or any parent is the hamburger button
+                let element = e.target;
+                while (element) {
+                    if (element.id === 'hamburger-btn') {
                         e.preventDefault();
                         e.stopPropagation();
+                        console.log('Hamburger clicked via event delegation');
                         window.toggleHamburgerMenu();
                         return;
                     }
-                    if (target.id === 'sidebar-overlay') {
+                    if (element.id === 'sidebar-overlay') {
                         window.closeHamburgerMenu();
                         return;
                     }
-                    if (target.id === 'close-sidebar-btn') {
+                    if (element.id === 'close-sidebar-btn') {
                         window.closeHamburgerMenu();
                         return;
                     }
-                    target = target.parentElement;
+                    element = element.parentElement;
                 }
-            }, true); // Use capture phase
-            
-            initialized = true;
+            }, true);
+            console.log('Global click listener added');
         }
-        
-        // Setup immediately
-        setupHamburger();
-        
-        // Also setup on various events to be absolutely sure
-        document.addEventListener('DOMContentLoaded', setupHamburger);
-        window.addEventListener('load', setupHamburger);
-        setTimeout(setupHamburger, 0);
-        setTimeout(setupHamburger, 100);
-        setTimeout(setupHamburger, 500);
-    })();
-
-    // jQuery backup initialization (when jQuery is available)
+    }, 100);
+    
+    // Also try with jQuery when available
     if (typeof $ !== 'undefined') {
         $(document).ready(function() {
-            // Event delegation for hamburger menu (works even if elements are added later)
-            $(document).off('click.hamburger').on('click.hamburger', '#hamburger-btn, .hamburger-btn', function(e) {
+            console.log('jQuery ready, setting up hamburger');
+            $(document).off('click.hamburger').on('click.hamburger', '#hamburger-btn', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleHamburgerMenu();
+                console.log('Hamburger clicked via jQuery');
+                window.toggleHamburgerMenu();
             });
             
             $(document).off('click.overlay').on('click.overlay', '#sidebar-overlay', function() {
-                closeHamburgerMenu();
+                window.closeHamburgerMenu();
             });
             
             $(document).off('click.close').on('click.close', '#close-sidebar-btn', function() {
-                closeHamburgerMenu();
-            });
-            
-            // Additional safety check - reinitialize on page transitions
-            $(document).on('ready', function() {
-                setTimeout(initHamburgerMenu, 200);
+                window.closeHamburgerMenu();
             });
       // $('button').on('click', function() {
       //   if (!$(this).data('clicked')) {

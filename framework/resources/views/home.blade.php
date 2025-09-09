@@ -114,7 +114,6 @@
 </style>
 @endsection
 @section('breadcrumb')
-<li class="breadcrumb-item active">Dashboard</li>
 @endsection
 @section('content')
 
@@ -137,7 +136,7 @@
                 <i class="fa fa-users"></i>
               </div>
               <div class="title">@lang('fleet.customers')</div>
-              <div class="number">{{$data['customers']}}</div>
+              <div class="number">{{$customers}}</div>
             </div>
           </div>
 
@@ -147,7 +146,7 @@
                 <i class="fa fa-car"></i>
               </div>
               <div class="title">@lang('fleet.vehicles')</div>
-              <div class="number">{{$data['vehicles']}}</div>
+              <div class="number">{{$vehicles}}</div>
             </div>
           </div>
 
@@ -157,7 +156,7 @@
                 <i class="fa fa-calendar-check-o"></i>
               </div>
               <div class="title">@lang('fleet.bookings')</div>
-              <div class="number">{{$data['bookings']}}</div>
+              <div class="number">{{$bookings}}</div>
             </div>
           </div>
 
@@ -167,7 +166,7 @@
                 <i class="fa fa-money"></i>
               </div>
               <div class="title">@lang('fleet.income')</div>
-              <div class="number">{{Hyvikk::get('currency')}} {{$data['income']}}</div>
+              <div class="number">{{Hyvikk::get('currency')}} {{$income}}</div>
             </div>
           </div>
         </div>

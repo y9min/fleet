@@ -2700,19 +2700,39 @@ input:checked + .slider:before {
         }
     }
     
+    // Add vanilla JavaScript event listeners as backup
+    document.addEventListener('DOMContentLoaded', function() {
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', toggleHamburgerMenu);
+        }
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', closeHamburgerMenu);
+        }
+        
+        if (closeSidebarBtn) {
+            closeSidebarBtn.addEventListener('click', closeHamburgerMenu);
+        }
+    });
+
     // Wait for both DOM and jQuery to be ready
     if (typeof $ !== 'undefined') {
         $(document).ready(function() {
-            // Add event listeners for hamburger menu
-            $('#hamburger-btn').on('click', function() {
+            // Add jQuery event listeners for hamburger menu (backup)
+            $('#hamburger-btn').off('click').on('click', function(e) {
+                e.preventDefault();
                 toggleHamburgerMenu();
             });
             
-            $('#sidebar-overlay').on('click', function() {
+            $('#sidebar-overlay').off('click').on('click', function() {
                 closeHamburgerMenu();
             });
             
-            $('#close-sidebar-btn').on('click', function() {
+            $('#close-sidebar-btn').off('click').on('click', function() {
                 closeHamburgerMenu();
             });
       // $('button').on('click', function() {

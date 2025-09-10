@@ -243,12 +243,6 @@
                      placeholder="Select Vehicle Make" value="{{ old('make_name') }}" required>
             </div>
             
-            <!-- Select Vehicle Color -->
-            <div class="form-field">
-              <label>Select Vehicle Color <i class="fa fa-question-circle help-icon" title="Vehicle color"></i></label>
-              <input type="text" name="color_name" class="form-control-modern" 
-                     placeholder="Select Vehicle Color" value="{{ old('color_name') }}">
-            </div>
             
             <!-- Select Vehicle Model -->
             <div class="form-field">
@@ -268,32 +262,8 @@
               </select>
             </div>
             
-            <!-- Vehicle Engine Type -->
-            <div class="form-field">
-              <label>Vehicle Engine Type</label>
-              <select name="engine_type" class="form-control-modern" required>
-                <option value="petrol" @if(old('engine_type')=='petrol') selected @endif>Petrol</option>
-                <option value="Diesel" @if(old('engine_type')=='Diesel') selected @endif>Diesel</option>
-                <option value="Electric" @if(old('engine_type')=='Electric') selected @endif>Electric</option>
-                <option value="Hybrid" @if(old('engine_type')=='Hybrid') selected @endif>Hybrid</option>
-                <option value="CNG" @if(old('engine_type')=='CNG') selected @endif>CNG</option>
-                <option value="LPG" @if(old('engine_type')=='LPG') selected @endif>LPG</option>
-              </select>
-            </div>
             
-            <!-- Vehicle Horse Power -->
-            <div class="form-field">
-              <label>Vehicle Horse Power</label>
-              <input type="number" name="horse_power" class="form-control-modern" 
-                     placeholder="" value="{{ old('horse_power') }}">
-            </div>
             
-            <!-- VIN -->
-            <div class="form-field">
-              <label>VIN</label>
-              <input type="text" name="vin" class="form-control-modern" 
-                     placeholder="" value="{{ old('vin') }}">
-            </div>
             
             <!-- License Plate -->
             <div class="form-field">
@@ -302,12 +272,6 @@
                      placeholder="" value="{{ old('license_plate') }}" required>
             </div>
             
-            <!-- License Expiry Date -->
-            <div class="form-field">
-              <label>License Expiry Date</label>
-              <input type="date" name="lic_exp_date" class="form-control-modern" 
-                     value="{{ old('lic_exp_date') }}">
-            </div>
             
             <!-- Vehicle Year -->
             <div class="form-field">
@@ -334,12 +298,6 @@
               </select>
             </div>
             
-            <!-- Luggage -->
-            <div class="form-field">
-              <label>Luggage</label>
-              <input type="text" name="luggage" class="form-control-modern" 
-                     placeholder="" value="{{ old('luggage') }}">
-            </div>
             
             <!-- Select Driver -->
             <div class="form-field">
@@ -354,12 +312,6 @@
               </select>
             </div>
             
-            <!-- Traccar Device Id -->
-            <div class="form-field">
-              <label>Traccar Device Id</label>
-              <input type="text" name="traccar_device_id" class="form-control-modern" 
-                     placeholder="" value="{{ old('traccar_device_id') }}">
-            </div>
             
             <!-- Initial Mileage(km) -->
             <div class="form-field">
@@ -368,40 +320,10 @@
                      placeholder="" value="{{ old('int_mileage') }}">
             </div>
             
-            <!-- Is Active? -->
-            <div class="form-field">
-              <label>Is Active?</label>
-              <div class="toggle-switch" onclick="toggleActive(this)">
-                <div class="toggle-slider"></div>
-                <input type="hidden" name="in_service" value="1">
-              </div>
-            </div>
             
-            <!-- Registration Expiry Date -->
-            <div class="form-field">
-              <label>Registration Expiry Date</label>
-              <input type="date" name="reg_exp_date" class="form-control-modern" 
-                     value="{{ old('reg_exp_date') }}">
-            </div>
             
-            <!-- Average(Km Per Gallon) -->
-            <div class="form-field">
-              <label>Average(Km Per Gallon)</label>
-              <input type="number" name="average" class="form-control-modern" 
-                     placeholder="" value="{{ old('average') }}" step="0.01">
-            </div>
             
-            <!-- Vehicle Image -->
-            <div class="form-field">
-              <label>Vehicle Image (275px * 183px)</label>
-              <input type="file" name="vehicle_image" class="form-control-modern" accept="image/*">
-            </div>
             
-            <!-- Icon Image -->
-            <div class="form-field">
-              <label>Icon Image (43px * 107px)</label>
-              <input type="file" name="icon" class="form-control-modern" accept="image/*">
-            </div>
           </div>
           
           <!-- User Defined Fields -->

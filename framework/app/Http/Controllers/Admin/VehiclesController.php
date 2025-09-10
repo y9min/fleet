@@ -71,7 +71,8 @@ class VehiclesController extends Controller {
         public function fetch_data(Request $request) {
                 if ($request->ajax()) {
                         $user = Auth::user();
-                        if ($user->group_id == null || $user->user_type == "S") {
+                        // Super admin (user_type = 'S') can see all vehicles, others filtered by group
+                        if ($user->user_type == "S") {
                                 $vehicles = VehicleModel::select('vehicles.*', 'users.name as name');
                         } else {
                                 $vehicles = VehicleModel::select('vehicles.*')->where('vehicles.group_id', $user->group_id);

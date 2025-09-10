@@ -235,7 +235,8 @@
 <script type="text/javascript">
 $(document).ready(function() {
     // Form validation
-    $('#vehicleForm').on('submit', function(e) {
+    if (typeof $ !== 'undefined') {
+        $('#vehicleForm').on('submit', function(e) {
         var isValid = true;
         
         // Check required fields
@@ -260,6 +261,9 @@ $(document).ready(function() {
             $(this).removeClass('is-invalid');
         }
     });
+    } else {
+        console.log('jQuery not available for vehicle form validation');
+    }
 });
 </script>
 @endsection

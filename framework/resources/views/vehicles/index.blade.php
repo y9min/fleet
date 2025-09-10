@@ -347,10 +347,11 @@
 
 @section('script')
     <script type="text/javascript">
-        // Wait for jQuery to be available
-        document.addEventListener('DOMContentLoaded', function() {
+        // Ensure jQuery is loaded before initializing DataTable
+        function initializeVehiclesTable() {
             if (typeof jQuery === 'undefined') {
-                console.error('jQuery is not loaded');
+                console.log('jQuery not loaded, retrying...');
+                setTimeout(initializeVehiclesTable, 100);
                 return;
             }
             
@@ -406,61 +407,80 @@
             }
         });
 
-
-            var table = $('#ajax_data_table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '{{ url('admin/vehicles-fetch') }}',
-                    type: 'POST',
-                    data: function(d) {
-                        d._token = '{{ csrf_token() }}';
-                    }
+        // Vanilla JavaScript function to load vehicles
+        function loadVehiclesData() {
+            console.log('Loading vehicles data...');
+            fetch('{{ url('admin/vehicles-fetch') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 },
-                columns: [
-                    { data: 'check', name: 'check', orderable: false, searchable: false },
-                    { data: 'vehicle_id', name: 'vehicle_id' },
-                    { data: 'license_plate', name: 'license_plate' },
-                    { data: 'make', name: 'make' },
-                    { data: 'model', name: 'model' },
-                    { data: 'fuel_type', name: 'fuel_type' },
-                    { data: 'status', name: 'status' },
-                    { data: 'assigned_driver', name: 'assigned_driver', orderable: false },
-                    { data: 'telematics', name: 'telematics', orderable: false, searchable: false },
-                    { data: 'view', name: 'view', orderable: false, searchable: false },
-                    { data: 'action', name: 'action', orderable: false, searchable: false }
-                ],
-                order: [[1, 'desc']],
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        extend: 'print',
-                        text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
-                        exportOptions: {
-                           columns: [1,2,3,4,5,6,7,8,9]
-                        }
-                    },
-                    {
-                        extend: 'excel',
-                        text: '<i class="fa fa-file-excel-o"></i> Excel',
-                        exportOptions: {
-                            columns: [1, 2, 3, 4, 5, 6, 7,8,9]
-                        }
-                    }
-                ],
-                "language": {
-                    "url": '{{ asset('assets/datatables/') . '/' . __('fleet.datatable_lang') }}',
-                },
-                "initComplete": function() {
-                    table.columns().every(function() {
-                        var that = this;
-                        $('input', this.footer()).on('keyup change', function() {
-                            // console.log($(this).parent().index());
-                            that.search(this.value).draw();
-                        });
-                    });
-                }
+                body: JSON.stringify({
+                    _token: '{{ csrf_token() }}',
+                    start: 0,
+                    length: 100,
+                    draw: 1
+                })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Vehicles data received:', data);
+                populateVehiclesTable(data.data || []);
+            })
+            .catch(error => {
+                console.error('Error loading vehicles:', error);
+                document.getElementById('ajax_data_table').innerHTML = '<tr><td colspan="11" class="text-center text-danger">Error loading vehicles. Please refresh the page.</td></tr>';
             });
+        }
+
+        function populateVehiclesTable(vehicles) {
+            const tbody = document.querySelector('#ajax_data_table tbody');
+            if (!tbody) {
+                console.error('Table tbody not found');
+                return;
+            }
+
+            if (vehicles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center">No vehicles found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = vehicles.map(vehicle => `
+                <tr>
+                    <td><input type="checkbox" name="ids[]" value="${vehicle.id}" class="checkbox"></td>
+                    <td>VEH-${String(vehicle.id).padStart(4, '0')}</td>
+                    <td><span class="badge badge-primary">${vehicle.license_plate || 'N/A'}</span></td>
+                    <td>${vehicle.make_name || 'N/A'}</td>
+                    <td>${vehicle.model_name || 'N/A'}</td>
+                    <td>${vehicle.engine_type ? vehicle.engine_type.charAt(0).toUpperCase() + vehicle.engine_type.slice(1) : 'N/A'}</td>
+                    <td>
+                        ${vehicle.in_service == 1 
+                            ? '<span class="badge badge-success">Available</span>' 
+                            : '<span class="badge badge-secondary">Disabled</span>'}
+                    </td>
+                    <td><span class="text-muted">-</span></td>
+                    <td><span class="text-muted">N/A</span></td>
+                    <td><button class="btn btn-sm btn-outline-primary openBtn" data-id="${vehicle.id}" data-toggle="modal" data-target="#viewModal"><i class="fa fa-eye"></i> View</button></td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" class="btn btn-sm btn-warning" title="Edit">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <button class="btn btn-sm btn-danger" onclick="setDeleteId(${vehicle.id})" data-toggle="modal" data-target="#deleteModal" title="Delete">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            console.log(`Populated table with ${vehicles.length} vehicles`);
+        }
 
             $(document).on('click', 'input[type="checkbox"]', function() {
             if (this.checked) {
@@ -535,6 +555,9 @@
             });
 
         }); // End of document.ready
-        }); // End of DOMContentLoaded
+        } // End of initializeVehiclesTable
+        
+        // Start initialization
+        initializeVehiclesTable();
     </script>
 @endsection

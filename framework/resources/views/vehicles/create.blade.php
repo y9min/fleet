@@ -200,6 +200,82 @@
                 </div>
               </div>
             </div>
+            
+            <!-- Financial Information -->
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <!-- Initial Cost -->
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Cost</label>
+                  <div class="col-sm-8">
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">£</span>
+                      </div>
+                      <input type="number" name="initial_cost" class="form-control" 
+                             placeholder="e.g., 25000" value="{{ old('initial_cost') }}" min="0" step="0.01">
+                    </div>
+                    <small class="text-muted">Initial cost of the vehicle</small>
+                  </div>
+                </div>
+                
+                <!-- Initial Mileage -->
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Initial Mileage</label>
+                  <div class="col-sm-8">
+                    <div class="input-group">
+                      <input type="number" name="int_mileage" class="form-control" 
+                             placeholder="e.g., 15000" value="{{ old('int_mileage') }}" min="0">
+                      <div class="input-group-append">
+                        <span class="input-group-text">Miles</span>
+                      </div>
+                    </div>
+                    <small class="text-muted">Vehicle mileage when acquired</small>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <!-- Scheme -->
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Scheme</label>
+                  <div class="col-sm-8">
+                    <select name="vehicle_scheme" class="form-control">
+                      <option value="">Select Scheme</option>
+                      <option value="Rental" @if(old('vehicle_scheme')=='Rental') selected @endif>Rental</option>
+                      <option value="Rent To Buy" @if(old('vehicle_scheme')=='Rent To Buy') selected @endif>Rent To Buy</option>
+                      <option value="Other" @if(old('vehicle_scheme')=='Other') selected @endif>Other</option>
+                    </select>
+                    <small class="text-muted">Vehicle acquisition scheme</small>
+                  </div>
+                </div>
+                
+                <!-- Price -->
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Price</label>
+                  <div class="col-sm-8">
+                    <div class="row">
+                      <div class="col-8">
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text">£</span>
+                          </div>
+                          <input type="number" name="vehicle_price" class="form-control" 
+                                 placeholder="e.g., 450" value="{{ old('vehicle_price') }}" min="0" step="0.01">
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <select name="price_period" class="form-control">
+                          <option value="monthly" @if(old('price_period')=='monthly' || old('price_period')==null) selected @endif>Monthly</option>
+                          <option value="weekly" @if(old('price_period')=='weekly') selected @endif>Weekly</option>
+                        </select>
+                      </div>
+                    </div>
+                    <small class="text-muted">Rental or lease price</small>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

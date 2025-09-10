@@ -407,6 +407,10 @@ class VehiclesController extends Controller {
                         'price'=>$request->price,
                         'vehicle_status' => $request->vehicle_status ?? 'Available',
                         'telematics_link' => $request->telematics_link,
+                        'initial_cost' => $request->initial_cost,
+                        'vehicle_scheme' => $request->vehicle_scheme,
+                        'vehicle_price' => $request->vehicle_price,
+                        'price_period' => $request->price_period,
                 ]);
                 $meta->udf = serialize($request->get('udf'));
                 $meta->average = $request->average;

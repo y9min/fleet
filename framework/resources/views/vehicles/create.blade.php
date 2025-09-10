@@ -260,9 +260,6 @@
       <h4>Add Vehicle</h4>
     </div>
     
-    <div class="form-tabs">
-      <div class="form-tab">General Information</div>
-    </div>
     
     <div class="form-content">
       {!! Form::open(['route' => 'vehicles.store', 'method' => 'post', 'enctype' => 'multipart/form-data', 'id' => 'vehicleForm']) !!}
@@ -272,49 +269,13 @@
         <!-- Column 1 -->
         <div class="form-field">
           <label class="required">Select Vehicle Make</label>
-          <select name="make_name" class="form-control" required>
-            <option value="">Select Vehicle Make</option>
-            <option value="Toyota" @if(old('make_name')=='Toyota') selected @endif>Toyota</option>
-            <option value="Ford" @if(old('make_name')=='Ford') selected @endif>Ford</option>
-            <option value="BMW" @if(old('make_name')=='BMW') selected @endif>BMW</option>
-            <option value="Mercedes-Benz" @if(old('make_name')=='Mercedes-Benz') selected @endif>Mercedes-Benz</option>
-            <option value="Volkswagen" @if(old('make_name')=='Volkswagen') selected @endif>Volkswagen</option>
-            <option value="Audi" @if(old('make_name')=='Audi') selected @endif>Audi</option>
-            <option value="Honda" @if(old('make_name')=='Honda') selected @endif>Honda</option>
-            <option value="Nissan" @if(old('make_name')=='Nissan') selected @endif>Nissan</option>
-            <option value="Hyundai" @if(old('make_name')=='Hyundai') selected @endif>Hyundai</option>
-            <option value="Kia" @if(old('make_name')=='Kia') selected @endif>Kia</option>
-          </select>
+          <input type="text" name="make_name" class="form-control" required value="{{ old('make_name') }}" placeholder="Enter vehicle make">
         </div>
         
-        <div class="form-field">
-          <label>Select Vehicle Color</label>
-          <select name="color_name" class="form-control">
-            <option value="">Select Vehicle Color</option>
-            <option value="White" @if(old('color_name')=='White') selected @endif>White</option>
-            <option value="Black" @if(old('color_name')=='Black') selected @endif>Black</option>
-            <option value="Silver" @if(old('color_name')=='Silver') selected @endif>Silver</option>
-            <option value="Red" @if(old('color_name')=='Red') selected @endif>Red</option>
-            <option value="Blue" @if(old('color_name')=='Blue') selected @endif>Blue</option>
-            <option value="Green" @if(old('color_name')=='Green') selected @endif>Green</option>
-            <option value="Yellow" @if(old('color_name')=='Yellow') selected @endif>Yellow</option>
-            <option value="Grey" @if(old('color_name')=='Grey') selected @endif>Grey</option>
-          </select>
-        </div>
         
         <div class="form-field">
-          <label>Select Vehicle Model</label>
-          <select name="model_name" class="form-control" required>
-            <option value="">Select Vehicle Model</option>
-            <option value="Camry" @if(old('model_name')=='Camry') selected @endif>Camry</option>
-            <option value="Corolla" @if(old('model_name')=='Corolla') selected @endif>Corolla</option>
-            <option value="Focus" @if(old('model_name')=='Focus') selected @endif>Focus</option>
-            <option value="Fiesta" @if(old('model_name')=='Fiesta') selected @endif>Fiesta</option>
-            <option value="3 Series" @if(old('model_name')=='3 Series') selected @endif>3 Series</option>
-            <option value="X3" @if(old('model_name')=='X3') selected @endif>X3</option>
-            <option value="C-Class" @if(old('model_name')=='C-Class') selected @endif>C-Class</option>
-            <option value="E-Class" @if(old('model_name')=='E-Class') selected @endif>E-Class</option>
-          </select>
+          <label class="required">Select Vehicle Model</label>
+          <input type="text" name="model_name" class="form-control" required value="{{ old('model_name') }}" placeholder="Enter vehicle model">
         </div>
         
         <div class="form-field">
@@ -328,7 +289,7 @@
         </div>
         
         <div class="form-field">
-          <label class="required">Vehicle Engine Type</label>
+          <label class="required">Fuel Type</label>
           <select name="engine_type" class="form-control" required>
             <option value="">petrol</option>
             <option value="Petrol" @if(old('engine_type')=='Petrol') selected @endif>Petrol</option>
@@ -340,25 +301,13 @@
           </select>
         </div>
         
-        <div class="form-field">
-          <label>Vehicle Horse Power</label>
-          <input type="text" name="horse_power" class="form-control" value="{{ old('horse_power') }}" placeholder="e.g., 150HP">
-        </div>
+        
         
         <div class="form-field">
-          <label>VIN</label>
-          <input type="text" name="vin" class="form-control" value="{{ old('vin') }}" placeholder="Vehicle Identification Number">
-        </div>
-        
-        <div class="form-field">
-          <label class="required">License Plate</label>
+          <label class="required">Registration Plate</label>
           <input type="text" name="license_plate" class="form-control" required value="{{ old('license_plate') }}" placeholder="License Plate Number">
         </div>
         
-        <div class="form-field">
-          <label>License Expiry Date</label>
-          <input type="date" name="lic_exp_date" class="form-control" value="{{ old('lic_exp_date') }}">
-        </div>
         
         <div class="form-field">
           <label>Vehicle Year</label>
@@ -386,10 +335,6 @@
           </select>
         </div>
         
-        <div class="form-field">
-          <label>Luggage</label>
-          <input type="text" name="luggage" class="form-control" value="{{ old('luggage') }}" placeholder="Luggage capacity">
-        </div>
         
         <div class="form-field">
           <label>Select Driver</label>
@@ -403,13 +348,9 @@
           </select>
         </div>
         
-        <div class="form-field">
-          <label>Traccar Device Id</label>
-          <input type="text" name="traccar_device_id" class="form-control" value="{{ old('traccar_device_id') }}" placeholder="Device ID">
-        </div>
         
         <div class="form-field">
-          <label>Initial Mileage(km)</label>
+          <label>Initial Mileage(miles)</label>
           <input type="number" name="int_mileage" class="form-control" value="{{ old('int_mileage') }}" min="0" placeholder="0">
         </div>
         
@@ -421,37 +362,13 @@
           </div>
         </div>
         
-        <div class="form-field">
-          <label>Average(Km Per Gallon)</label>
-          <input type="number" name="average" class="form-control" value="{{ old('average') }}" step="0.1" placeholder="0">
-        </div>
         
-        <div class="form-field">
-          <label>Registration Expiry Date</label>
-          <input type="date" name="reg_exp_date" class="form-control" value="{{ old('reg_exp_date') }}">
-        </div>
         
-        <div class="form-field">
-          <label>Vehicle Image (275px * 183px)</label>
-          <div class="file-upload-area" onclick="document.getElementById('vehicle_image').click()">
-            <div>Choose File</div>
-            <small>no file selected</small>
-            <input type="file" id="vehicle_image" name="vehicle_image" accept="image/*">
-          </div>
-        </div>
         
-        <div class="form-field">
-          <label>Icon Image (133px * 107px)</label>
-          <div class="file-upload-area" onclick="document.getElementById('icon_image').click()">
-            <div>Choose File</div>
-            <small>no file selected</small>
-            <input type="file" id="icon_image" name="icon" accept="image/*">
-          </div>
-        </div>
 
         <!-- Additional existing fields to preserve -->
         <div class="form-field">
-          <label>Cost</label>
+          <label>Initial Cost</label>
           <input type="number" name="initial_cost" class="form-control" value="{{ old('initial_cost') }}" min="0" step="0.01" placeholder="Initial cost">
         </div>
         
@@ -480,30 +397,10 @@
           <input type="url" name="telematics_link" class="form-control" value="{{ old('telematics_link') }}" placeholder="Telematics dashboard URL">
         </div>
         
-        <div class="form-field">
-          <label>Traccar Vehicle Id</label>
-          <input type="text" name="traccar_vehicle_id" class="form-control" value="{{ old('traccar_vehicle_id') }}" placeholder="Vehicle ID">
-        </div>
         
-        <div class="form-field">
-          <label>Height</label>
-          <input type="number" name="height" class="form-control" value="{{ old('height') }}" step="0.01" placeholder="Height in meters">
-        </div>
         
-        <div class="form-field">
-          <label>Length</label>
-          <input type="number" name="length" class="form-control" value="{{ old('length') }}" step="0.01" placeholder="Length in meters">
-        </div>
         
-        <div class="form-field">
-          <label>Breadth</label>
-          <input type="number" name="breadth" class="form-control" value="{{ old('breadth') }}" step="0.01" placeholder="Breadth in meters">
-        </div>
         
-        <div class="form-field">
-          <label>Weight</label>
-          <input type="number" name="weight" class="form-control" value="{{ old('weight') }}" step="0.01" placeholder="Weight in kg">
-        </div>
       </div>
       
       <!-- User Defined Fields Section -->

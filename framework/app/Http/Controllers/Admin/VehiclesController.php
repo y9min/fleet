@@ -66,7 +66,24 @@ class VehiclesController extends Controller {
                 return back();
         }
         public function index() {
-                return view("vehicles.index");
+                $user = Auth::user();
+                // Get vehicles data for initial load
+                if ($user->user_type == "S") {
+                    $vehicles = VehicleModel::select('vehicles.*', 'users.name as driver_name')
+                        ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
+                        ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
+                        ->groupBy('vehicles.id')
+                        ->get();
+                } else {
+                    $vehicles = VehicleModel::select('vehicles.*', 'users.name as driver_name')
+                        ->where('vehicles.group_id', $user->group_id)
+                        ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
+                        ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
+                        ->groupBy('vehicles.id')
+                        ->get();
+                }
+                
+                return view("vehicles.index", compact('vehicles'));
         }
         public function fetch_data(Request $request) {
                 if ($request->ajax()) {

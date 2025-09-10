@@ -235,8 +235,18 @@ input:checked + .slider:before {
 
 
 
-  <!-- Load jQuery first to prevent $ undefined errors -->
-  <script src="{{asset('assets/vendor/jquery-3.6.0.min.js')}}"></script>
+  <!-- Load jQuery from CDN as fallback -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" 
+          integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" 
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    // jQuery availability check
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery failed to load!');
+    } else {
+        console.log('jQuery loaded successfully');
+    }
+  </script>
   {{-- <script src="{{asset('assets/push_notification/app.js')}}"></script> --}}
 
 
@@ -2852,33 +2862,38 @@ input:checked + .slider:before {
         //     $(".nav-sidebar li").show();
         //   }
         // });
-      $.ajaxSetup({
-        headers: {
-          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
+      // Ensure jQuery is loaded before executing
+      $(document).ready(function() {
+        $.ajaxSetup({
+          headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+          }
+        });
+        $('#data_table tfoot th').each( function () {
+          // console.log($('#data_table tfoot th').length);
+          if($(this).index() != 0 && $(this).index() != $('#data_table tfoot th').length - 1) {
+            var title = $(this).text();
+            $(this).html( '<input type="text" placeholder="'+title+'" />' );
+          }
+        });
+        $('#ajax_data_table tfoot th').each( function () {
+          // console.log($('#data_table tfoot th').length);
+          if($(this).index() != 0 && $(this).index() != $('#data_table tfoot th').length - 1) {
+            var title = $(this).text();
+            $(this).html( '<input type="text" placeholder="'+title+'" />' );
+          }
+        });
       });
-      $('#data_table tfoot th').each( function () {
-        // console.log($('#data_table tfoot th').length);
-        if($(this).index() != 0 && $(this).index() != $('#data_table tfoot th').length - 1) {
-          var title = $(this).text();
-          $(this).html( '<input type="text" placeholder="'+title+'" />' );
-        }
-      });
-      $('#ajax_data_table tfoot th').each( function () {
-        // console.log($('#data_table tfoot th').length);
-        if($(this).index() != 0 && $(this).index() != $('#data_table tfoot th').length - 1) {
-          var title = $(this).text();
-          $(this).html( '<input type="text" placeholder="'+title+'" />' );
-        }
-      });
-      $('#data_table1 tfoot th').each( function () {
-        // console.log($(this).index());
-        if($(this).index() != 0 && $(this).index() != $('#data_table1 tfoot th').length - 1){
-          var title = $(this).text();
-          $(this).html( '<input type="text" placeholder="'+title+'" />' );
-        }
-      });
-      var table1 = $('#data_table1').DataTable({
+      
+      $(document).ready(function() {
+        $('#data_table1 tfoot th').each( function () {
+          // console.log($(this).index());
+          if($(this).index() != 0 && $(this).index() != $('#data_table1 tfoot th').length - 1){
+            var title = $(this).text();
+            $(this).html( '<input type="text" placeholder="'+title+'" />' );
+          }
+        });
+        var table1 = $('#data_table1').DataTable({
       dom: 'Bfrtip',
       buttons: [
           {
@@ -2929,18 +2944,19 @@ input:checked + .slider:before {
               });
             }
       });
-      $('[data-toggle="tooltip"]').tooltip();
-    });
-    var table11 = $('#data_table11').DataTable({
-        "language": {
-            "url": '{{ asset("assets/datatables/")."/".__("fleet.datatable_lang") }}',
-        },
-        "columnDefs": [
-            { orderable: false, targets: [0] } // Make the first column not orderable
-        ],
-        "order": [[3, 'desc']], // Order by the fourth column in descending order (index 3)
-    });
-    $('[data-toggle="tooltip"]').tooltip();
+        $('[data-toggle="tooltip"]').tooltip();
+        
+        var table11 = $('#data_table11').DataTable({
+            "language": {
+                "url": '{{ asset("assets/datatables/")."/".__("fleet.datatable_lang") }}',
+            },
+            "columnDefs": [
+                { orderable: false, targets: [0] } // Make the first column not orderable
+            ],
+            "order": [[3, 'desc']], // Order by the fourth column in descending order (index 3)
+        });
+        $('[data-toggle="tooltip"]').tooltip();
+      });  // Close document.ready
   </script>
   <script> // Routes and Labels
     // Bookings

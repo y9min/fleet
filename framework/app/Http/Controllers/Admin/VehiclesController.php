@@ -67,15 +67,15 @@ class VehiclesController extends Controller {
         }
         public function index() {
                 $user = Auth::user();
-                // Get vehicles data for initial load
+                // Get vehicles data for initial load - fix PostgreSQL GROUP BY issue
                 if ($user->user_type == "S") {
-                    $vehicles = VehicleModel::select('vehicles.*', 'users.name as driver_name')
+                    $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'))
                         ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                         ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
                         ->groupBy('vehicles.id')
                         ->get();
                 } else {
-                    $vehicles = VehicleModel::select('vehicles.*', 'users.name as driver_name')
+                    $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'))
                         ->where('vehicles.group_id', $user->group_id)
                         ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                         ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')

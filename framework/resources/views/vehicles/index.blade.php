@@ -347,6 +347,13 @@
 
 @section('script')
     <script type="text/javascript">
+        // Wait for jQuery to be available
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery is not loaded');
+                return;
+            }
+            
         $(document).ready(function() {
             $("#del_btn").on("click", function() {
                 var id = $(this).data("submit");
@@ -412,111 +419,38 @@
                 },
                 columns: [
                     { data: 'check', name: 'check', orderable: false, searchable: false },
-                    { data: 'vehicle_id', name: 'vehicle_id', orderable: true },
-                    { data: 'license_plate', name: 'license_plate', orderable: true },
-                    { data: 'make', name: 'make', orderable: true },
-                    { data: 'model', name: 'model', orderable: true },
-                    { data: 'fuel_type', name: 'fuel_type', orderable: true },
-                    { data: 'status', name: 'status', orderable: true },
+                    { data: 'vehicle_id', name: 'vehicle_id' },
+                    { data: 'license_plate', name: 'license_plate' },
+                    { data: 'make', name: 'make' },
+                    { data: 'model', name: 'model' },
+                    { data: 'fuel_type', name: 'fuel_type' },
+                    { data: 'status', name: 'status' },
                     { data: 'assigned_driver', name: 'assigned_driver', orderable: false },
                     { data: 'telematics', name: 'telematics', orderable: false, searchable: false },
                     { data: 'view', name: 'view', orderable: false, searchable: false },
                     { data: 'action', name: 'action', orderable: false, searchable: false }
                 ],
+                order: [[1, 'desc']],
                 dom: 'Bfrtip',
                 buttons: [
-          {
-        extend: 'print',
-        text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
-
-        exportOptions: {
-           columns: ([1,2,3,4,5,6,7,8,9]),
-        },
-        customize: function ( win ) {
-                
-                $(win.document.body).find( 'table' )
-                    .addClass( 'table-bordered' );
-                // $(win.document.body).find( 'td' ).css( 'font-size', '10pt' );
-
-            },
-            
-          },
-          {
-            extend: 'excel',
-            text: '<i class="fa fa-file-excel-o"></i> Excel',
-            exportOptions: {
-                columns: [1, 2, 3, 4, 5, 6, 7,8,9]
-            }
-        }
-    ],
-
+                    {
+                        extend: 'print',
+                        text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
+                        exportOptions: {
+                           columns: [1,2,3,4,5,6,7,8,9]
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<i class="fa fa-file-excel-o"></i> Excel',
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5, 6, 7,8,9]
+                        }
+                    }
+                ],
                 "language": {
                     "url": '{{ asset('assets/datatables/') . '/' . __('fleet.datatable_lang') }}',
                 },
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: "{{ url('admin/vehicles-fetch') }}",
-                    type: 'POST',
-                    data: {
-                        "_token": "{{ csrf_token() }}"
-                    }
-                },
-                columns: [{
-                        data: 'check',
-                        name: 'check',
-                        searchable: false,
-                        orderable: false
-                    },
-                    {
-                        data: 'id',
-                        name: 'id'
-                    },
-                    {
-                        data: 'vehicle_image',
-                        name: 'vehicle_image',
-                        searchable: false,
-                        orderable: false
-                    },
-                    {
-                        data: 'make',
-                        name: 'vehicles.make_name'
-                    },
-                    {
-                        data: 'model',
-                        name: 'vehicles.model_name'
-                    },
-                    {
-                        data: 'displayname',
-                        name: 'types.displayname'
-                    },
-                    {
-                        data: 'color',
-                        name: 'vehicles.color_name'
-                    },
-                    {
-                        data: 'license_plate',
-                        name: 'license_plate'
-                    },
-                    {
-                        data: 'group',
-                        name: 'group.name'
-                    },
-                    {
-                        data: 'in_service',
-                        name: 'in_service'
-                    },
-                    {data: 'assigned_driver', name: 'assigned_driver'},
-                    {
-                        data: 'action',
-                        name: 'action',
-                        searchable: false,
-                        orderable: false
-                    }
-                ],
-                order: [
-                    [1, 'desc']
-                ],
                 "initComplete": function() {
                     table.columns().every(function() {
                         var that = this;
@@ -601,5 +535,6 @@
             });
 
         }); // End of document.ready
+        }); // End of DOMContentLoaded
     </script>
 @endsection

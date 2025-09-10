@@ -393,10 +393,18 @@ class VehiclesController extends Controller {
                 $meta->udf = serialize($request->get('udf'));
                 $meta->average = $request->average;
                 $meta->save();
-                $meta->drivers()->sync($request->driver_id);
-                DriverLogsModel::create(['driver_id' => $request->driver_id, 'vehicle_id' => $meta->id, 'date' => date('Y-m-d H:i:s')]);
-                $vehicle_id = $vehicle;
-                return redirect("admin/vehicles/" . $vehicle_id . "/edit?tab=vehicle");
+                // Only sync driver if a driver is assigned
+                if ($request->driver_id) {
+                        $meta->drivers()->sync($request->driver_id);
+                        DriverLogsModel::create(['driver_id' => $request->driver_id, 'vehicle_id' => $meta->id, 'date' => date('Y-m-d H:i:s')]);
+                }
+                
+                // Set default in_service status based on vehicle_status
+                $status = $request->vehicle_status ?? 'Available';
+                $meta->in_service = ($status === 'Available' || $status === 'Rented') ? 1 : 0;
+                $meta->save();
+                
+                return redirect()->route('vehicles.index')->with('success', 'Vehicle created successfully!');
         }
         public function store_insurance(InsuranceRequest $request) {
                 $vehicle = VehicleModel::find($request->get('vehicle_id'));

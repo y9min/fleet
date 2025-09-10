@@ -94,6 +94,16 @@
 
 @section('content')
     <div class="container-fluid">
+        <!-- Success Message -->
+        @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        @endif
+        
         <!-- Page Header -->
         <div class="page-header d-flex justify-content-between align-items-center">
             <h1>@lang('fleet.manageVehicles')</h1>

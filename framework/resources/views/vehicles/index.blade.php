@@ -145,28 +145,6 @@
                             </thead>
                             <tbody>
                             </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th>
-                                        @can('Vehicles delete')
-                                            <button class="btn btn-danger btn-sm" id="bulk_delete" data-toggle="modal"
-                                                data-target="#bulkModal" disabled title="@lang('fleet.delete')">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
-                                        @endcan
-                                    </th>
-                                    <th>Vehicle ID</th>
-                                    <th>Registration Plate</th>
-                                    <th>Make</th>
-                                    <th>Model</th>
-                                    <th>Fuel Type</th>
-                                    <th>Status</th>
-                                    <th>Assigned Driver</th>
-                                    <th>Telematics</th>
-                                    <th>View</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>

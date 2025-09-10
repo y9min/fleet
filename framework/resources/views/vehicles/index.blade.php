@@ -458,7 +458,9 @@
                 ajax: {
                     url: "{{ url('admin/vehicles-fetch') }}",
                     type: 'POST',
-                    data: {}
+                    data: {
+                        "_token": "{{ csrf_token() }}"
+                    }
                 },
                 columns: [{
                         data: 'check',
@@ -597,44 +599,7 @@
                     $(this).html('<input type="text" placeholder="' + title + '" />');
                 }
             });
-            var myTable = $('#myTable').DataTable({
-                dom: 'Bfrtip',
-                buttons: [{
-                    extend: 'collection',
-                    text: 'Export',
-                    buttons: [{
-                            extend: 'excel',
-                            exportOptions: {
-                                columns: [2, 3, 4, 5, 6, 7, 8, 9]
-                            },
-                        },
-                        {
-                            extend: 'csv',
-                            exportOptions: {
-                                columns: [2, 3, 4, 5, 6, 7, 8, 9]
-                            },
-                        },
-                        {
-                            extend: 'pdf',
-                            exportOptions: {
-                                columns: [2, 3, 4, 5, 6, 7, 8, 9]
-                            },
-                        }
-                    ]
-                }],
-                "language": {
-                    "url": '{{ asset('assets/datatables/') . '/' . __('fleet.datatable_lang') }}',
-                },
-                // individual column search
-                "initComplete": function() {
-                    myTable.columns().every(function() {
-                        var that = this;
-                        $('input', this.footer()).on('keyup change', function() {
-                            that.search(this.value).draw();
-                        });
-                    });
-                }
-            });
+
         }); // End of document.ready
     </script>
 @endsection

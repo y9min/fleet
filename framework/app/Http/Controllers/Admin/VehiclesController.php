@@ -89,24 +89,39 @@ class VehiclesController extends Controller {
         public function show($id) {
                 $vehicle = VehicleModel::with(['group', 'types', 'drivers'])->findOrFail($id);
                 
-                // Get complete vehicle data including all metadata
+                // Build purchase info from individual metadata fields to ensure display
                 $purchaseInfo = [];
-                $purchaseInfoRaw = $vehicle->getMeta('purchase_info');
-                if ($purchaseInfoRaw) {
-                        try {
-                                // Try JSON first (preferred secure method)
-                                $purchaseInfo = json_decode($purchaseInfoRaw, true);
-                                if (json_last_error() !== JSON_ERROR_NONE) {
-                                        // Fallback to unserialize for legacy data (with validation)
-                                        if (is_string($purchaseInfoRaw) && strpos($purchaseInfoRaw, 'a:') === 0) {
-                                                $purchaseInfo = @unserialize($purchaseInfoRaw);
-                                                if ($purchaseInfo === false) {
-                                                        $purchaseInfo = [];
+                
+                // Check if we have individual metadata fields and build purchase info
+                $vehiclePrice = $vehicle->getMeta('vehicle_price');
+                $initialCost = $vehicle->getMeta('initial_cost');
+                
+                if ($vehiclePrice || $initialCost) {
+                        $purchaseInfo = [
+                                'price' => $vehiclePrice ?: 0,
+                                'initial_cost' => $initialCost ?: 0,
+                                'price_period' => $vehicle->getMeta('price_period') ?: 'monthly',
+                                'scheme' => $vehicle->getMeta('vehicle_scheme') ?: 'Not Set'
+                        ];
+                } else {
+                        // Fallback to check legacy purchase_info metadata
+                        $purchaseInfoRaw = $vehicle->getMeta('purchase_info');
+                        if ($purchaseInfoRaw) {
+                                try {
+                                        // Try JSON first (preferred secure method)
+                                        $purchaseInfo = json_decode($purchaseInfoRaw, true);
+                                        if (json_last_error() !== JSON_ERROR_NONE) {
+                                                // Fallback to unserialize for legacy data (with validation)
+                                                if (is_string($purchaseInfoRaw) && strpos($purchaseInfoRaw, 'a:') === 0) {
+                                                        $purchaseInfo = @unserialize($purchaseInfoRaw);
+                                                        if ($purchaseInfo === false) {
+                                                                $purchaseInfo = [];
+                                                        }
                                                 }
                                         }
+                                } catch (Exception $e) {
+                                        $purchaseInfo = [];
                                 }
-                        } catch (Exception $e) {
-                                $purchaseInfo = [];
                         }
                 }
                 

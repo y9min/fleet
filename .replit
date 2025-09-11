@@ -10,6 +10,10 @@ packages = ["php82", "php82Extensions.pdo_mysql", "php82Extensions.mbstring", "p
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 34563
+externalPort = 3000
+
 [workflows]
 runButton = "Project"
 

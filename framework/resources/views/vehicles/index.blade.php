@@ -304,15 +304,31 @@
             padding-left: 1.5rem;
         }
         
-        .vehicle-actions {
-            display: flex;
-            gap: 0.25rem;
-        }
-        
         .btn-action {
             padding: 0.25rem 0.5rem;
             font-size: 0.8rem;
             border-radius: 4px;
+        }
+        
+        /* Dropdown Styling */
+        .dropdown-menu {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .dropdown-item.text-danger:hover {
+            background-color: #f5c6cb;
+            color: #721c24 !important;
         }
         
         .delete-confirmation {
@@ -336,10 +352,55 @@
         
         .vehicle-details {
             font-size: 0.9rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            animation: slideDown 0.3s ease-out;
         }
         
         .vehicle-details strong {
             color: #495057;
+        }
+        
+        .details-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .details-section h6 {
+            color: #7FD7E1;
+            border-bottom: 2px solid #7FD7E1;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .details-expanded {
+            background-color: #f0fdff !important;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-expired {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
         }
         
         /* Checkbox Enhancements */
@@ -621,18 +682,24 @@ function loadVehiclesSimple() {
             </td>
             <td><span class="text-muted">-</span></td>
             <td>
-                <button class="btn btn-sm btn-outline-info btn-action" onclick="showVehicleDetails(${vehicle.id})" title="View Details">
-                    <i class="fas fa-info-circle"></i>
+                <button class="btn btn-sm btn-outline-info btn-action" onclick="toggleVehicleDetails(${vehicle.id})" title="View Details" id="details-btn-${vehicle.id}">
+                    <i class="fas fa-info-circle"></i> Details
                 </button>
             </td>
             <td>
-                <div class="vehicle-actions">
-                    <a href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" class="btn btn-sm btn-outline-warning btn-action" title="Edit Vehicle">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="confirmDeleteVehicle(${vehicle.id}, '${vehicle.license_plate || 'N/A'}', '${vehicle.make_name || 'N/A'}', '${vehicle.model_name || 'N/A'}')" title="Delete Vehicle">
-                        <i class="fas fa-trash-alt"></i>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle btn-action" type="button" id="actionsDropdown${vehicle.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-cogs"></i> Actions
                     </button>
+                    <div class="dropdown-menu" aria-labelledby="actionsDropdown${vehicle.id}">
+                        <a class="dropdown-item" href="{{ url('admin/vehicles') }}/${vehicle.id}/edit">
+                            <i class="fas fa-edit text-warning"></i> Edit Vehicle
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" href="#" onclick="confirmDeleteVehicle(${vehicle.id}, '${vehicle.license_plate || 'N/A'}', '${vehicle.make_name || 'N/A'}', '${vehicle.model_name || 'N/A'}'); return false;">
+                            <i class="fas fa-trash-alt"></i> Delete Vehicle
+                        </a>
+                    </div>
                 </div>
             </td>
         </tr>
@@ -642,44 +709,129 @@ function loadVehiclesSimple() {
 }
 
 // Global functions for vehicle operations
-window.showVehicleDetails = function(id) {
+window.toggleVehicleDetails = function(id) {
     const row = document.getElementById(`vehicle-row-${id}`);
-    if (!row) return;
+    const detailsBtn = document.getElementById(`details-btn-${id}`);
     
-    const existingDetails = row.querySelector('.vehicle-details-row');
+    if (!row || !detailsBtn) return;
+    
+    // Check if details are currently open
+    const existingDetails = document.getElementById(`vehicle-details-${id}`);
+    
     if (existingDetails) {
+        // Close details
         existingDetails.remove();
+        row.classList.remove('details-expanded');
+        detailsBtn.innerHTML = '<i class="fas fa-info-circle"></i> Details';
+        detailsBtn.classList.remove('btn-info');
+        detailsBtn.classList.add('btn-outline-info');
         return;
     }
     
-    // Create details row
+    // Get vehicle data from the original data source
+    const vehiclesData = @json($vehicles ?? []);
+    const vehicle = vehiclesData.find(v => v.id == id);
+    
+    if (!vehicle) {
+        console.error('Vehicle data not found for ID:', id);
+        return;
+    }
+    
+    // Open details
+    row.classList.add('details-expanded');
+    detailsBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
+    detailsBtn.classList.remove('btn-outline-info');
+    detailsBtn.classList.add('btn-info');
+    
+    // Create comprehensive details row
     const detailsRow = document.createElement('tr');
+    detailsRow.id = `vehicle-details-${id}`;
     detailsRow.className = 'vehicle-details-row';
     detailsRow.innerHTML = `
         <td colspan="10">
-            <div class="vehicle-details p-3 bg-light border">
+            <div class="vehicle-details p-4">
                 <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="text-primary mb-2"><i class="fas fa-car"></i> Vehicle Information</h6>
-                        <p class="mb-1"><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
-                        <p class="mb-1"><strong>Year:</strong> 2022</p>
-                        <p class="mb-1"><strong>Color:</strong> White</p>
-                        <p class="mb-1"><strong>VIN:</strong> 1234567890ABCDEF</p>
-                        <p class="mb-0"><strong>Mileage:</strong> 25,000 miles</p>
+                    <!-- Basic Vehicle Information -->
+                    <div class="col-md-4">
+                        <div class="details-section">
+                            <h6><i class="fas fa-car"></i> Vehicle Information</h6>
+                            <p class="mb-2"><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
+                            <p class="mb-2"><strong>Registration:</strong> <span class="badge badge-primary">${vehicle.license_plate || 'N/A'}</span></p>
+                            <p class="mb-2"><strong>Make:</strong> ${vehicle.make_name || 'N/A'}</p>
+                            <p class="mb-2"><strong>Model:</strong> ${vehicle.model_name || 'N/A'}</p>
+                            <p class="mb-2"><strong>Year:</strong> ${vehicle.year || 'N/A'}</p>
+                            <p class="mb-2"><strong>Color:</strong> ${vehicle.color_name || 'N/A'}</p>
+                            <p class="mb-2"><strong>Fuel Type:</strong> ${vehicle.engine_type ? vehicle.engine_type.charAt(0).toUpperCase() + vehicle.engine_type.slice(1) : 'N/A'}</p>
+                            <p class="mb-2"><strong>VIN:</strong> ${vehicle.vin || 'Not Available'}</p>
+                            <p class="mb-0"><strong>Mileage:</strong> ${vehicle.mileage ? vehicle.mileage.toLocaleString() + ' miles' : 'Not Available'}</p>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <h6 class="text-info mb-2"><i class="fas fa-cogs"></i> Service Information</h6>
-                        <p class="mb-1"><strong>Last Service:</strong> 2 months ago</p>
-                        <p class="mb-1"><strong>Next Service:</strong> Due in 1 month</p>
-                        <p class="mb-1"><strong>Insurance:</strong> <span class="badge badge-success">Valid</span></p>
-                        <p class="mb-0"><strong>MOT:</strong> <span class="badge badge-warning">Due Soon</span></p>
+                    
+                    <!-- Status & Service Information -->
+                    <div class="col-md-4">
+                        <div class="details-section">
+                            <h6><i class="fas fa-cogs"></i> Status & Service</h6>
+                            <p class="mb-2">
+                                <strong>Service Status:</strong> 
+                                ${vehicle.in_service == 1 
+                                    ? '<span class="status-badge status-active">Available</span>' 
+                                    : '<span class="status-badge status-expired">Disabled</span>'}
+                            </p>
+                            <p class="mb-2"><strong>Last Service:</strong> ${vehicle.last_service || 'No records'}</p>
+                            <p class="mb-2"><strong>Next Service:</strong> ${vehicle.next_service || 'Not scheduled'}</p>
+                            <p class="mb-2">
+                                <strong>Insurance:</strong> 
+                                <span class="status-badge status-active">Valid</span>
+                            </p>
+                            <p class="mb-2">
+                                <strong>MOT Status:</strong> 
+                                <span class="status-badge status-warning">Due Soon</span>
+                            </p>
+                            <p class="mb-0"><strong>Tax Status:</strong> <span class="status-badge status-active">Valid</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Information -->
+                    <div class="col-md-4">
+                        <div class="details-section">
+                            <h6><i class="fas fa-info-circle"></i> Additional Info</h6>
+                            <p class="mb-2"><strong>Purchase Date:</strong> ${vehicle.purchase_date || 'N/A'}</p>
+                            <p class="mb-2"><strong>Purchase Price:</strong> ${vehicle.purchase_price ? '£' + Number(vehicle.purchase_price).toLocaleString() : 'N/A'}</p>
+                            <p class="mb-2"><strong>Assigned Driver:</strong> ${vehicle.assigned_driver || 'None'}</p>
+                            <p class="mb-2"><strong>Current Location:</strong> ${vehicle.current_location || 'Unknown'}</p>
+                            <p class="mb-2"><strong>Telematics:</strong> ${vehicle.telematics_enabled ? 'Enabled' : 'Disabled'}</p>
+                            <p class="mb-0"><strong>Created:</strong> ${vehicle.created_at ? new Date(vehicle.created_at).toLocaleDateString() : 'N/A'}</p>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="mt-3">
+                            <a href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" class="btn btn-sm btn-outline-warning mr-2">
+                                <i class="fas fa-edit"></i> Edit Vehicle
+                            </a>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="toggleVehicleDetails(${id})">
+                                <i class="fas fa-eye-slash"></i> Hide Details
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="mt-3">
-                    <button class="btn btn-sm btn-outline-secondary" onclick="showVehicleDetails(${id})">
-                        <i class="fas fa-times"></i> Close Details
-                    </button>
-                </div>
+                
+                <!-- Custom Fields Section (if any) -->
+                ${vehicle.meta_data ? `
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="details-section">
+                                <h6><i class="fas fa-tags"></i> Additional Fields</h6>
+                                <div class="row">
+                                    ${Object.entries(JSON.parse(vehicle.meta_data || '{}')).map(([key, value]) => `
+                                        <div class="col-md-4">
+                                            <p class="mb-2"><strong>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</strong> ${value || 'N/A'}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
             </div>
         </td>
     `;

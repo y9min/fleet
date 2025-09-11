@@ -689,15 +689,15 @@ function loadVehiclesSimple() {
             <td>
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown${vehicle.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Vehicle Actions">
-                        <i class="fas fa-cog"></i>
+                        ⚙
                     </button>
                     <div class="dropdown-menu" aria-labelledby="actionsDropdown${vehicle.id}">
                         <a class="dropdown-item" href="{{ url('admin/vehicles') }}/${vehicle.id}/edit">
-                            <i class="fas fa-edit text-warning"></i> Edit Vehicle
+                            Edit Vehicle
                         </a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger" href="#" onclick="confirmDeleteVehicle(${vehicle.id}, '${vehicle.license_plate || 'N/A'}', '${vehicle.make_name || 'N/A'}', '${vehicle.model_name || 'N/A'}'); return false;">
-                            <i class="fas fa-trash-alt"></i> Delete Vehicle
+                            Delete Vehicle
                         </a>
                     </div>
                 </div>

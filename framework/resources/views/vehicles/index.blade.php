@@ -283,19 +283,73 @@
             border-radius: 4px;
         }
         
-        /* Delete Modal Warning */
-        .delete-warning {
+        /* Bulk Actions Toolbar */
+        .bulk-actions-toolbar {
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Enhanced Table Styling */
+        .custom-control {
+            padding-left: 1.5rem;
+        }
+        
+        .vehicle-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+        
+        .delete-confirmation {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
-            border-radius: 6px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            font-size: 0.85rem;
         }
         
         .delete-warning-icon {
             color: #f39c12;
-            font-size: 1.2rem;
-            margin-right: 0.5rem;
+            margin-right: 0.25rem;
+        }
+        
+        .confirm-delete-row {
+            background-color: #fff3cd !important;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .vehicle-details {
+            font-size: 0.9rem;
+        }
+        
+        .vehicle-details strong {
+            color: #495057;
+        }
+        
+        /* Checkbox Enhancements */
+        .table .custom-control-input:checked ~ .custom-control-label::before {
+            background-color: #7FD7E1;
+            border-color: #7FD7E1;
+        }
+        
+        .row-selected {
+            background-color: #f0fdff !important;
         }
     </style>
 @endsection
@@ -332,6 +386,24 @@
             </div>
         </div>
         
+        <!-- Bulk Actions Toolbar -->
+        <div class="bulk-actions-toolbar" id="bulkToolbar" style="display: none;">
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light border rounded mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-check-circle text-success mr-2"></i>
+                    <span id="selectedCount">0</span> vehicle(s) selected
+                </div>
+                <div class="bulk-actions">
+                    <button class="btn btn-sm btn-outline-secondary mr-2" onclick="clearSelection()">
+                        <i class="fas fa-times"></i> Clear Selection
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="bulkDeleteVehicles()">
+                        <i class="fas fa-trash-alt"></i> Delete Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-12">
                 <div class="vehicles-table">
@@ -340,7 +412,10 @@
                             <thead>
                                 <tr>
                                     <th style="width: 40px;">
-                                        <input type="checkbox" id="chk_all">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="chk_all">
+                                            <label class="custom-control-label" for="chk_all"></label>
+                                        </div>
                                     </th>
                                     <th>Vehicle ID</th>
                                     <th>Registration Plate</th>
@@ -349,9 +424,8 @@
                                     <th>Fuel Type</th>
                                     <th>Status</th>
                                     <th>Assigned Driver</th>
-                                    <th>Telematics</th>
-                                    <th>View</th>
-                                    <th>Actions</th>
+                                    <th>Details</th>
+                                    <th style="width: 120px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -501,141 +575,11 @@
         </div>
     </div>
 
-    <!-- Enhanced Bulk Delete Modal -->
-    <div id="bulkModal" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title"><i class="fas fa-trash-alt"></i> Bulk Delete Vehicles</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    {!! Form::open(['url' => 'admin/delete-vehicles', 'method' => 'POST', 'id' => 'form_delete']) !!}
-                    <div id="bulk_hidden"></div>
-                    <div class="delete-warning">
-                        <i class="fas fa-exclamation-triangle delete-warning-icon"></i>
-                        <strong>Warning:</strong> This action cannot be undone!
-                    </div>
-                    <p>Are you sure you want to delete <strong id="deleteCount">0</strong> selected vehicle(s)?</p>
-                    <div id="selectedVehicles" class="mt-3">
-                        <!-- Selected vehicles will be listed here -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="bulk_action" class="btn btn-danger-custom" type="submit" data-submit="">
-                        <i class="fas fa-trash-alt"></i> Delete Selected Vehicles
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                </div>
-                {!! Form::close() !!}
-            </div>
-        </div>
-    </div>
     <!-- Modal -->
 
-    <!-- Enhanced Single Delete Modal -->
-    <div id="myModal" class="modal fade" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title"><i class="fas fa-trash-alt"></i> Delete Vehicle</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="delete-warning">
-                        <i class="fas fa-exclamation-triangle delete-warning-icon"></i>
-                        <strong>Warning:</strong> This action cannot be undone!
-                    </div>
-                    <p>Are you sure you want to permanently delete this vehicle?</p>
-                    <div id="vehicleDetails" class="mt-3">
-                        <!-- Vehicle details will be shown here -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="del_btn" class="btn btn-danger-custom" type="button" data-submit="">
-                        <i class="fas fa-trash-alt"></i> Delete Vehicle
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
     <!-- Modal -->
 
-    <!-- Enhanced View Modal -->
-    <div id="viewModal" class="modal fade" role="dialog" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title"><i class="fas fa-car"></i> Vehicle Details</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div id="loader">
-                        <div class="text-center py-5">
-                            <div class="loading-spinner mb-3"></div>
-                            <h5 class="text-muted">Loading vehicle details...</h5>
-                            <p class="text-muted">Please wait while we fetch the information</p>
-                        </div>
-                    </div>
-                    <div id="vehicleContent" style="display: none;">
-                        <!-- Vehicle details will be loaded here -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary-custom" id="editVehicle" style="display: none;">
-                        <i class="fas fa-edit"></i> Edit Vehicle
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times"></i> Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Enhanced Delete Confirmation Modal -->
-    <div id="deleteModal" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirm Vehicle Deletion</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="delete-warning">
-                        <i class="fas fa-exclamation-triangle delete-warning-icon"></i>
-                        <strong>Permanent Action:</strong> This cannot be undone!
-                    </div>
-                    <p>Are you absolutely sure you want to delete this vehicle?</p>
-                    <div class="alert alert-danger">
-                        <h6><i class="fas fa-info-circle"></i> This will also delete:</h6>
-                        <ul class="mb-0">
-                            <li>All associated maintenance records</li>
-                            <li>Booking history</li>
-                            <li>Driver assignments</li>
-                            <li>Vehicle documents</li>
-                        </ul>
-                    </div>
-                    <div id="confirmVehicleDetails" class="mt-3">
-                        <!-- Vehicle info will be displayed here -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="confirmDelete" class="btn btn-danger-custom" type="button">
-                        <i class="fas fa-trash-alt"></i> Yes, Delete Vehicle
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @section('script')
@@ -653,14 +597,19 @@ function loadVehiclesSimple() {
 
     if (!vehiclesData || vehiclesData.length === 0) {
         console.log('No vehicles data found');
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">No vehicles found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center">No vehicles found</td></tr>';
         return;
     }
 
     tbody.innerHTML = vehiclesData.map(vehicle => `
-        <tr>
-            <td><input type="checkbox" name="ids[]" value="${vehicle.id}" class="checkbox"></td>
-            <td>VEH-${String(vehicle.id).padStart(4, '0')}</td>
+        <tr id="vehicle-row-${vehicle.id}">
+            <td>
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input vehicle-checkbox" id="checkbox-${vehicle.id}" name="ids[]" value="${vehicle.id}" onchange="updateSelection()">
+                    <label class="custom-control-label" for="checkbox-${vehicle.id}"></label>
+                </div>
+            </td>
+            <td><strong>VEH-${String(vehicle.id).padStart(4, '0')}</strong></td>
             <td><span class="badge badge-primary">${vehicle.license_plate || 'N/A'}</span></td>
             <td>${vehicle.make_name || 'N/A'}</td>
             <td>${vehicle.model_name || 'N/A'}</td>
@@ -671,15 +620,18 @@ function loadVehiclesSimple() {
                     : '<span class="badge badge-secondary">Disabled</span>'}
             </td>
             <td><span class="text-muted">-</span></td>
-            <td><span class="text-muted">N/A</span></td>
-            <td><button class="btn btn-sm btn-outline-primary" onclick="viewVehicle(${vehicle.id})"><i class="fa fa-eye"></i> View</button></td>
             <td>
-                <div class="btn-group" role="group">
-                    <a href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" class="btn btn-sm btn-warning" title="Edit">
-                        <i class="fa fa-edit"></i>
+                <button class="btn btn-sm btn-outline-info btn-action" onclick="showVehicleDetails(${vehicle.id})" title="View Details">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </td>
+            <td>
+                <div class="vehicle-actions">
+                    <a href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" class="btn btn-sm btn-outline-warning btn-action" title="Edit Vehicle">
+                        <i class="fas fa-edit"></i>
                     </a>
-                    <button class="btn btn-sm btn-danger" onclick="setDeleteId(${vehicle.id})" data-toggle="modal" data-target="#deleteModal" title="Delete">
-                        <i class="fa fa-trash"></i>
+                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="confirmDeleteVehicle(${vehicle.id}, '${vehicle.license_plate || 'N/A'}', '${vehicle.make_name || 'N/A'}', '${vehicle.model_name || 'N/A'}')" title="Delete Vehicle">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
             </td>
@@ -690,78 +642,199 @@ function loadVehiclesSimple() {
 }
 
 // Global functions for vehicle operations
-window.setDeleteId = function(id) {
-    window.currentDeleteId = id;
-}
-
-window.viewVehicle = function(id) {
-    const modal = document.getElementById('viewModal');
-    const loader = document.getElementById('loader');
-    const content = document.getElementById('vehicleContent');
-    const editBtn = document.getElementById('editVehicle');
+window.showVehicleDetails = function(id) {
+    const row = document.getElementById(`vehicle-row-${id}`);
+    if (!row) return;
     
-    if (!modal) return;
-    
-    // Show modal and loader
-    if (typeof $ !== 'undefined') {
-        $(modal).modal('show');
-    } else {
-        modal.style.display = 'block';
-        modal.classList.add('show');
+    const existingDetails = row.querySelector('.vehicle-details-row');
+    if (existingDetails) {
+        existingDetails.remove();
+        return;
     }
-    loader.style.display = 'block';
-    content.style.display = 'none';
-    editBtn.style.display = 'none';
     
-    // Simulate loading vehicle details
-    setTimeout(() => {
-        loader.style.display = 'none';
-        content.style.display = 'block';
-        editBtn.style.display = 'inline-block';
-        
-        // Mock vehicle content (replace with actual AJAX call)
-        content.innerHTML = `
-            <div class="row">
-                <div class="col-md-8">
-                    <h5 class="text-primary mb-3"><i class="fas fa-car"></i> Vehicle Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
-                            <p><strong>Registration:</strong> <span class="badge badge-primary">ABC-123</span></p>
-                            <p><strong>Make:</strong> Toyota</p>
-                            <p><strong>Model:</strong> Camry</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Fuel Type:</strong> Petrol</p>
-                            <p><strong>Year:</strong> 2022</p>
-                            <p><strong>Status:</strong> <span class="badge badge-success">Available</span></p>
-                            <p><strong>Mileage:</strong> 25,000 miles</p>
-                        </div>
+    // Create details row
+    const detailsRow = document.createElement('tr');
+    detailsRow.className = 'vehicle-details-row';
+    detailsRow.innerHTML = `
+        <td colspan="10">
+            <div class="vehicle-details p-3 bg-light border">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-2"><i class="fas fa-car"></i> Vehicle Information</h6>
+                        <p class="mb-1"><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
+                        <p class="mb-1"><strong>Year:</strong> 2022</p>
+                        <p class="mb-1"><strong>Color:</strong> White</p>
+                        <p class="mb-1"><strong>VIN:</strong> 1234567890ABCDEF</p>
+                        <p class="mb-0"><strong>Mileage:</strong> 25,000 miles</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info mb-2"><i class="fas fa-cogs"></i> Service Information</h6>
+                        <p class="mb-1"><strong>Last Service:</strong> 2 months ago</p>
+                        <p class="mb-1"><strong>Next Service:</strong> Due in 1 month</p>
+                        <p class="mb-1"><strong>Insurance:</strong> <span class="badge badge-success">Valid</span></p>
+                        <p class="mb-0"><strong>MOT:</strong> <span class="badge badge-warning">Due Soon</span></p>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h6 class="mb-0"><i class="fas fa-info-circle"></i> Quick Stats</h6>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text small">
-                                <strong>Last Service:</strong> 2 months ago<br>
-                                <strong>Next Service:</strong> Due soon<br>
-                                <strong>Insurance:</strong> Valid<br>
-                                <strong>MOT:</strong> 8 months left
-                            </p>
-                        </div>
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="showVehicleDetails(${id})">
+                        <i class="fas fa-times"></i> Close Details
+                    </button>
+                </div>
+            </div>
+        </td>
+    `;
+    
+    row.parentNode.insertBefore(detailsRow, row.nextSibling);
+}
+
+window.confirmDeleteVehicle = function(id, plate, make, model) {
+    const row = document.getElementById(`vehicle-row-${id}`);
+    if (!row) return;
+    
+    const existingConfirm = row.querySelector('.delete-confirmation-row');
+    if (existingConfirm) {
+        existingConfirm.remove();
+        row.classList.remove('confirm-delete-row');
+        return;
+    }
+    
+    // Highlight the row
+    row.classList.add('confirm-delete-row');
+    
+    // Create confirmation row
+    const confirmRow = document.createElement('tr');
+    confirmRow.className = 'delete-confirmation-row';
+    confirmRow.innerHTML = `
+        <td colspan="10">
+            <div class="delete-confirmation">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <i class="fas fa-exclamation-triangle delete-warning-icon"></i>
+                        <strong>Confirm Deletion:</strong> Are you sure you want to delete <strong>${plate} (${make} ${model})</strong>?
+                        <br><small class="text-muted">This will permanently delete the vehicle and all associated records.</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-danger mr-2" onclick="deleteVehicle(${id})">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="cancelDelete(${id})">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
                     </div>
                 </div>
             </div>
-        `;
+        </td>
+    `;
+    
+    row.parentNode.insertBefore(confirmRow, row.nextSibling);
+}
+
+window.cancelDelete = function(id) {
+    const row = document.getElementById(`vehicle-row-${id}`);
+    if (!row) return;
+    
+    const confirmRow = row.querySelector('.delete-confirmation-row');
+    if (confirmRow) {
+        confirmRow.remove();
+    }
+    row.classList.remove('confirm-delete-row');
+}
+
+window.deleteVehicle = function(id) {
+    // Create and submit delete form
+    const deleteForm = document.createElement('form');
+    deleteForm.action = '{{ url("admin/vehicles") }}/' + id;
+    deleteForm.method = 'POST';
+    deleteForm.innerHTML = `
+        @csrf
+        @method('DELETE')
+    `;
+    document.body.appendChild(deleteForm);
+    deleteForm.submit();
+}
+
+window.bulkDeleteVehicles = function() {
+    const selectedCheckboxes = document.querySelectorAll('.vehicle-checkbox:checked');
+    if (selectedCheckboxes.length === 0) {
+        alert('Please select at least one vehicle to delete.');
+        return;
+    }
+    
+    const vehicleNames = Array.from(selectedCheckboxes).map(checkbox => {
+        const row = checkbox.closest('tr');
+        const plate = row.querySelector('.badge').textContent;
+        return plate;
+    }).join(', ');
+    
+    if (confirm(`Are you sure you want to delete ${selectedCheckboxes.length} vehicle(s)?\n\nVehicles: ${vehicleNames}\n\nThis action cannot be undone and will delete all associated records.`)) {
+        // Create bulk delete form
+        const form = document.createElement('form');
+        form.action = '{{ url("admin/delete-vehicles") }}';
+        form.method = 'POST';
         
-        // Set edit button action
-        editBtn.onclick = function() {
-            window.location.href = '{{ url("admin/vehicles") }}/' + id + '/edit';
-        };
-    }, 1500);
+        let formHtml = '@csrf';
+        selectedCheckboxes.forEach(checkbox => {
+            formHtml += `<input type="hidden" name="ids[]" value="${checkbox.value}">`;
+        });
+        
+        form.innerHTML = formHtml;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+window.updateSelection = function() {
+    const checkboxes = document.querySelectorAll('.vehicle-checkbox');
+    const checkedBoxes = document.querySelectorAll('.vehicle-checkbox:checked');
+    const selectAllCheckbox = document.getElementById('chk_all');
+    const bulkToolbar = document.getElementById('bulkToolbar');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    // Update select all checkbox state
+    if (checkedBoxes.length === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+    } else if (checkedBoxes.length === checkboxes.length) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+    } else {
+        selectAllCheckbox.indeterminate = true;
+    }
+    
+    // Show/hide bulk toolbar
+    if (checkedBoxes.length > 0) {
+        bulkToolbar.style.display = 'block';
+        selectedCount.textContent = checkedBoxes.length;
+        
+        // Highlight selected rows
+        checkboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            if (cb.checked) {
+                row.classList.add('row-selected');
+            } else {
+                row.classList.remove('row-selected');
+            }
+        });
+    } else {
+        bulkToolbar.style.display = 'none';
+        // Remove all row highlights
+        checkboxes.forEach(cb => {
+            cb.closest('tr').classList.remove('row-selected');
+        });
+    }
+}
+
+window.clearSelection = function() {
+    const checkboxes = document.querySelectorAll('.vehicle-checkbox');
+    const selectAllCheckbox = document.getElementById('chk_all');
+    
+    checkboxes.forEach(cb => {
+        cb.checked = false;
+    });
+    selectAllCheckbox.checked = false;
+    selectAllCheckbox.indeterminate = false;
+    
+    updateSelection();
 }
 
 // Enhanced functionality
@@ -781,6 +854,11 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('About to load vehicles...');
     loadVehiclesSimple();
     console.log('Vehicle loading function called');
+    
+    // Initialize selection handlers
+    setTimeout(() => {
+        updateSelection();
+    }, 500);
 });
 
 // Drag and Drop functionality
@@ -978,32 +1056,15 @@ function initializeDeleteModals() {
         });
     }
     
-    // Enhanced bulk delete
-    const bulkActionBtn = document.getElementById('bulk_action');
-    if (bulkActionBtn) {
-        bulkActionBtn.addEventListener('click', function() {
-            const selectedCheckboxes = document.querySelectorAll('input[name="ids[]"]:checked');
-            if (selectedCheckboxes.length === 0) {
-                alert('Please select at least one vehicle to delete');
-                return false;
-            }
-            
-            // Update delete count
-            const deleteCount = document.getElementById('deleteCount');
-            if (deleteCount) {
-                deleteCount.textContent = selectedCheckboxes.length;
-            }
-        });
-    }
-    
     // Check all functionality
     const checkAll = document.getElementById('chk_all');
     if (checkAll) {
         checkAll.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('input[name="ids[]"]');
+            const checkboxes = document.querySelectorAll('.vehicle-checkbox');
             checkboxes.forEach(cb => {
                 cb.checked = this.checked;
             });
+            updateSelection();
         });
     }
 }

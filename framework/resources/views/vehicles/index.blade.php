@@ -685,7 +685,7 @@ function loadVehiclesSimple() {
             </td>
             <td><span class="text-muted">-</span></td>
             <td>
-                <button class="btn btn-sm btn-outline-info btn-action" onclick="toggleVehicleDetails(${vehicle.id})" title="View Details" id="details-btn-${vehicle.id}">
+                <button class="btn btn-sm btn-outline-info btn-action" onclick="toggleVehicleDetails(${vehicle.id}, ${JSON.stringify(vehicle).replace(/"/g, '&quot;')})" title="View Details" id="details-btn-${vehicle.id}">
                     ⓘ Details
                 </button>
             </td>
@@ -712,7 +712,7 @@ function loadVehiclesSimple() {
 }
 
 // Global functions for vehicle operations
-window.toggleVehicleDetails = function(id) {
+window.toggleVehicleDetails = function(id, vehicleData = null) {
     console.log('Toggle details called for ID:', id);
     
     const row = document.getElementById(`vehicle-row-${id}`);
@@ -747,15 +747,18 @@ window.toggleVehicleDetails = function(id) {
         return;
     }
     
-    // Get vehicle data from the global data source
-    console.log('Global vehicles data:', window.vehiclesGlobalData);
-    const vehiclesData = window.vehiclesGlobalData || [];
-    const vehicle = vehiclesData.find(v => v.id == id);
+    // Use passed vehicle data or get from global data source as fallback
+    let vehicle = vehicleData;
+    if (!vehicle) {
+        console.log('No vehicle data passed, trying global data source');
+        const vehiclesData = window.vehiclesGlobalData || [];
+        vehicle = vehiclesData.find(v => v.id == id);
+    }
     
     console.log('Found vehicle data:', vehicle);
     
     if (!vehicle) {
-        console.error('Vehicle data not found for ID:', id, 'Available vehicles:', vehiclesData.length);
+        console.error('Vehicle data not found for ID:', id);
         alert('Error: Cannot find vehicle data for ID ' + id);
         return;
     }
@@ -777,33 +780,25 @@ window.toggleVehicleDetails = function(id) {
     detailsCell.setAttribute('colspan', '10');
     detailsCell.style.padding = '20px';
     
+    // Start with a loading indicator
     detailsCell.innerHTML = `
-        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
-            <h5 style="color: #7FD7E1; margin-bottom: 15px;">🚗 Vehicle Details</h5>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                <div>
-                    <h6>Basic Information</h6>
-                    <p><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
-                    <p><strong>Registration:</strong> ${vehicle.license_plate || 'N/A'}</p>
-                    <p><strong>Make:</strong> ${vehicle.make_name || 'N/A'}</p>
-                    <p><strong>Model:</strong> ${vehicle.model_name || 'N/A'}</p>
-                    <p><strong>Year:</strong> ${vehicle.year || 'N/A'}</p>
-                </div>
-                <div>
-                    <h6>Status & Service</h6>
-                    <p><strong>Status:</strong> ${vehicle.in_service == 1 ? 'Available' : 'Disabled'}</p>
-                    <p><strong>Fuel Type:</strong> ${vehicle.engine_type || 'N/A'}</p>
-                    <p><strong>Color:</strong> ${vehicle.color_name || 'N/A'}</p>
-                    <p><strong>VIN:</strong> ${vehicle.vin || 'Not Available'}</p>
-                </div>
-                <div>
-                    <h6>Actions</h6>
-                    <a href="/admin/vehicles/${vehicle.id}/edit" class="btn btn-sm btn-warning" style="margin-right: 10px;">✏️ Edit</a>
-                    <button class="btn btn-sm btn-secondary" onclick="toggleVehicleDetails(${id})">✕ Hide Details</button>
-                </div>
+        <div style="background: white; padding: 30px; border-radius: 8px; border: 1px solid #ddd; text-align: center;">
+            <div style="color: #7FD7E1; font-size: 18px; margin-bottom: 10px;">
+                <i class="fas fa-spinner fa-spin"></i> Loading Complete Vehicle Details...
             </div>
+            <p style="color: #666; margin: 0;">Fetching purchase information, metadata, and comprehensive vehicle data...</p>
         </div>
     `;
+    
+    // Fetch complete vehicle data including metadata via AJAX
+    fetchCompleteVehicleData(id).then(completeVehicle => {
+        console.log('Complete vehicle data received:', completeVehicle);
+        detailsCell.innerHTML = generateCompleteVehicleDetails(id, vehicle, completeVehicle);
+    }).catch(error => {
+        console.error('Error fetching complete vehicle data:', error);
+        // Enhanced fallback with more basic vehicle data
+        detailsCell.innerHTML = generateEnhancedBasicVehicleDetails(id, vehicle);
+    });
     
     detailsRow.appendChild(detailsCell);
     
@@ -817,6 +812,202 @@ window.toggleVehicleDetails = function(id) {
         console.error('Error inserting details row:', error);
         alert('Error inserting details row: ' + error.message);
     }
+}
+
+// Helper function to fetch complete vehicle data including metadata
+async function fetchCompleteVehicleData(id) {
+    try {
+        const response = await fetch(`{{ url('admin/vehicles') }}/${id}/complete-data`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching complete vehicle data:', error);
+        throw error;
+    }
+}
+
+// Generate comprehensive vehicle details HTML
+function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
+    const purchaseInfo = completeVehicle.purchase_info || [];
+    const totalAcquisitionCost = purchaseInfo.reduce((total, item) => total + parseFloat(item.exp_amount || 0), 0);
+    
+    return `
+        <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd;">
+            <h5 style="color: #7FD7E1; margin-bottom: 20px; border-bottom: 2px solid #7FD7E1; padding-bottom: 10px;">
+                🚗 Complete Vehicle Details - ${vehicle.license_plate || 'N/A'}
+            </h5>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-bottom: 25px;">
+                <!-- Basic Information -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">📋 Basic Information</h6>
+                    <p><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
+                    <p><strong>Registration:</strong> ${vehicle.license_plate || 'N/A'}</p>
+                    <p><strong>Make:</strong> ${vehicle.make_name || 'N/A'}</p>
+                    <p><strong>Model:</strong> ${vehicle.model_name || 'N/A'}</p>
+                    <p><strong>Year:</strong> ${vehicle.year || 'N/A'}</p>
+                    <p><strong>Color:</strong> ${vehicle.color_name || 'N/A'}</p>
+                    <p><strong>VIN:</strong> ${vehicle.vin || 'Not Available'}</p>
+                </div>
+                
+                <!-- Technical Specifications -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">🔧 Technical Specs</h6>
+                    <p><strong>Engine Type:</strong> ${vehicle.engine_type || 'N/A'}</p>
+                    <p><strong>Horse Power:</strong> ${vehicle.horse_power || 'N/A'}</p>
+                    <p><strong>Vehicle Type:</strong> ${completeVehicle.vehicle_type || 'N/A'}</p>
+                    <p><strong>Mileage:</strong> ${vehicle.mileage || 'N/A'}</p>
+                    <p><strong>Initial Mileage:</strong> ${vehicle.int_mileage || 'N/A'}</p>
+                    <p><strong>Group:</strong> ${completeVehicle.group_name || 'Not Assigned'}</p>
+                </div>
+                
+                <!-- Status & Service -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">⚡ Status & Service</h6>
+                    <p><strong>Service Status:</strong> <span style="color: ${vehicle.in_service == 1 ? '#28a745' : '#dc3545'};">${vehicle.in_service == 1 ? '✅ Available' : '❌ Disabled'}</span></p>
+                    <p><strong>Assigned Driver:</strong> ${completeVehicle.driver_name || 'Not Assigned'}</p>
+                    <p><strong>Insurance Number:</strong> ${vehicle.insurance_number || 'N/A'}</p>
+                    <p><strong>Created:</strong> ${completeVehicle.created_at ? new Date(completeVehicle.created_at).toLocaleDateString() : 'N/A'}</p>
+                    <p><strong>Last Updated:</strong> ${completeVehicle.updated_at ? new Date(completeVehicle.updated_at).toLocaleDateString() : 'N/A'}</p>
+                </div>
+                
+                <!-- Dates & Expiry -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">📅 Important Dates</h6>
+                    <p><strong>Registration Exp:</strong> ${vehicle.reg_exp_date ? new Date(vehicle.reg_exp_date).toLocaleDateString() : 'N/A'}</p>
+                    <p><strong>License Exp:</strong> ${vehicle.lic_exp_date ? new Date(vehicle.lic_exp_date).toLocaleDateString() : 'N/A'}</p>
+                    <p><strong>Insurance Exp:</strong> ${vehicle.exp_date ? new Date(vehicle.exp_date).toLocaleDateString() : 'N/A'}</p>
+                    <p><strong>Insurance Exp (Meta):</strong> ${completeVehicle.ins_exp_date ? new Date(completeVehicle.ins_exp_date).toLocaleDateString() : 'N/A'}</p>
+                </div>
+            </div>
+            
+            <!-- Purchase/Acquisition Information -->
+            ${purchaseInfo.length > 0 ? `
+                <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                    <h6 style="color: #28a745; margin-bottom: 15px;">💰 Purchase & Acquisition Costs</h6>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        ${purchaseInfo.map(item => `
+                            <div style="background: white; padding: 12px; border-radius: 4px; border: 1px solid #d4edda;">
+                                <p style="margin: 0;"><strong>${item.exp_name}:</strong></p>
+                                <p style="margin: 5px 0 0 0; font-size: 1.1em; color: #28a745; font-weight: bold;">
+                                    {{ Hyvikk::get('currency') }} ${parseFloat(item.exp_amount || 0).toLocaleString()}
+                                </p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 4px; border: 2px solid #28a745;">
+                        <p style="margin: 0; font-size: 1.2em;"><strong>Total Acquisition Cost: 
+                            <span style="color: #28a745;">{{ Hyvikk::get('currency') }} ${totalAcquisitionCost.toLocaleString()}</span>
+                        </strong></p>
+                    </div>
+                </div>
+            ` : `
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0; color: #856404;"><strong>💰 Purchase Information:</strong> No acquisition costs recorded for this vehicle.</p>
+                </div>
+            `}
+            
+            <!-- Additional Metadata -->
+            ${completeVehicle.additional_meta && Object.keys(completeVehicle.additional_meta).length > 0 ? `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h6 style="color: #7FD7E1; margin-bottom: 15px;">📊 Additional Information</h6>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        ${Object.entries(completeVehicle.additional_meta).map(([key, value]) => `
+                            <p><strong>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</strong> ${value || 'N/A'}</p>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 15px; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid #ddd;">
+                <div>
+                    <a href="/admin/vehicles/${vehicle.id}/edit" class="btn btn-warning" style="margin-right: 10px; padding: 10px 20px;">
+                        ✏️ Edit Vehicle
+                    </a>
+                    <a href="/admin/vehicles/${vehicle.id}" class="btn btn-info" style="margin-right: 10px; padding: 10px 20px;">
+                        👁️ View Full Details
+                    </a>
+                </div>
+                <button class="btn btn-secondary" onclick="toggleVehicleDetails(${id})" style="padding: 10px 20px;">
+                    ✕ Hide Details
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Enhanced fallback function when AJAX fails
+function generateEnhancedBasicVehicleDetails(id, vehicle) {
+    return `
+        <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd;">
+            <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <p style="margin: 0; color: #856404;"><strong>⚠️ Note:</strong> Complete vehicle data could not be loaded. Showing available basic information only.</p>
+            </div>
+            
+            <h5 style="color: #7FD7E1; margin-bottom: 20px; border-bottom: 2px solid #7FD7E1; padding-bottom: 10px;">
+                🚗 Vehicle Details - ${vehicle.license_plate || 'N/A'}
+            </h5>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 25px;">
+                <!-- Basic Information -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">📋 Basic Information</h6>
+                    <p><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
+                    <p><strong>Registration:</strong> ${vehicle.license_plate || 'N/A'}</p>
+                    <p><strong>Make:</strong> ${vehicle.make_name || 'N/A'}</p>
+                    <p><strong>Model:</strong> ${vehicle.model_name || 'N/A'}</p>
+                    <p><strong>Year:</strong> ${vehicle.year || 'N/A'}</p>
+                    <p><strong>Color:</strong> ${vehicle.color_name || 'N/A'}</p>
+                    <p><strong>VIN:</strong> ${vehicle.vin || 'Not Available'}</p>
+                </div>
+                
+                <!-- Technical Specifications -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">🔧 Technical Specs</h6>
+                    <p><strong>Engine Type:</strong> ${vehicle.engine_type || 'N/A'}</p>
+                    <p><strong>Horse Power:</strong> ${vehicle.horse_power || 'N/A'}</p>
+                    <p><strong>Mileage:</strong> ${vehicle.mileage || 'N/A'}</p>
+                    <p><strong>Initial Mileage:</strong> ${vehicle.int_mileage || 'N/A'}</p>
+                    <p><strong>Insurance Number:</strong> ${vehicle.insurance_number || 'N/A'}</p>
+                </div>
+                
+                <!-- Status & Dates -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">⚡ Status & Dates</h6>
+                    <p><strong>Service Status:</strong> <span style="color: ${vehicle.in_service == 1 ? '#28a745' : '#dc3545'};">${vehicle.in_service == 1 ? '✅ Available' : '❌ Disabled'}</span></p>
+                    <p><strong>Registration Exp:</strong> ${vehicle.reg_exp_date ? new Date(vehicle.reg_exp_date).toLocaleDateString() : 'N/A'}</p>
+                    <p><strong>License Exp:</strong> ${vehicle.lic_exp_date ? new Date(vehicle.lic_exp_date).toLocaleDateString() : 'N/A'}</p>
+                    <p><strong>Insurance Exp:</strong> ${vehicle.exp_date ? new Date(vehicle.exp_date).toLocaleDateString() : 'N/A'}</p>
+                </div>
+            </div>
+            
+            <!-- Purchase Information Notice -->
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <p style="margin: 0; color: #856404;"><strong>💰 Purchase Information:</strong> Complete pricing and acquisition data requires full data access. Please refresh the page or check your connection.</p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 15px; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid #ddd;">
+                <div>
+                    <a href="/admin/vehicles/${vehicle.id}/edit" class="btn btn-warning" style="margin-right: 10px; padding: 10px 20px;">
+                        ✏️ Edit Vehicle
+                    </a>
+                    <a href="/admin/vehicles/${vehicle.id}" class="btn btn-info" style="margin-right: 10px; padding: 10px 20px;">
+                        👁️ View Full Details
+                    </a>
+                    <button class="btn btn-outline-info" onclick="location.reload()" style="margin-right: 10px; padding: 10px 20px;">
+                        🔄 Refresh Page
+                    </button>
+                </div>
+                <button class="btn btn-secondary" onclick="toggleVehicleDetails(${id})" style="padding: 10px 20px;">
+                    ✕ Hide Details
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 window.confirmDeleteVehicle = function(id, plate, make, model) {

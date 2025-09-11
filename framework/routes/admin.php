@@ -240,6 +240,7 @@ Route::namespace ('Admin')->group(function () {
         Route::resource('/drivers', 'DriversController');
         Route::resource('/parts', 'PartsController');
         Route::post('/vehicles-fetch', 'VehiclesController@fetch_data');
+        Route::get('/vehicles/{id}/complete-data', 'VehiclesController@getCompleteData')->name('vehicles.complete')->whereNumber('id');
         Route::resource('/vehicles', 'VehiclesController');
         Route::get("/vehicles/enable/{id}", 'VehiclesController@enable');
         Route::get("/vehicles/disable/{id}", 'VehiclesController@disable');

@@ -89,6 +89,12 @@ class VehiclesController extends Controller {
         public function show($id) {
                 $vehicle = VehicleModel::with(['group', 'types', 'drivers'])->findOrFail($id);
                 
+                // Debug: Direct database query to verify metadata
+                $directMeta = DB::table('vehicles_meta')
+                    ->where('vehicle_id', $id)
+                    ->whereIn('key', ['vehicle_price', 'initial_cost', 'price_period', 'vehicle_scheme'])
+                    ->pluck('value', 'key');
+                
                 // Build purchase info from individual metadata fields to ensure display
                 $purchaseInfo = [];
                 
@@ -96,13 +102,31 @@ class VehiclesController extends Controller {
                 $vehiclePrice = $vehicle->getMeta('vehicle_price');
                 $initialCost = $vehicle->getMeta('initial_cost');
                 
-                if ($vehiclePrice || $initialCost) {
-                        $purchaseInfo = [
-                                'price' => $vehiclePrice ?: 0,
-                                'initial_cost' => $initialCost ?: 0,
-                                'price_period' => $vehicle->getMeta('price_period') ?: 'monthly',
-                                'scheme' => $vehicle->getMeta('vehicle_scheme') ?: 'Not Set'
-                        ];
+                // Use direct database values if getMeta() fails
+                if (!$vehiclePrice && isset($directMeta['vehicle_price'])) {
+                    $vehiclePrice = $directMeta['vehicle_price'];
+                }
+                if (!$initialCost && isset($directMeta['initial_cost'])) {
+                    $initialCost = $directMeta['initial_cost'];
+                }
+                
+                // Build purchase info as array of items (expected by view)
+                $purchaseItems = [];
+                if ($vehiclePrice) {
+                    $purchaseItems[] = [
+                        'exp_name' => 'Vehicle Price (' . ($vehicle->getMeta('price_period') ?: $directMeta['price_period'] ?: 'Monthly') . ')',
+                        'exp_amount' => (float)$vehiclePrice
+                    ];
+                }
+                if ($initialCost) {
+                    $purchaseItems[] = [
+                        'exp_name' => 'Initial Cost',
+                        'exp_amount' => (float)$initialCost
+                    ];
+                }
+                
+                if (count($purchaseItems) > 0) {
+                        $purchaseInfo = $purchaseItems;
                 } else {
                         // Fallback to check legacy purchase_info metadata
                         $purchaseInfoRaw = $vehicle->getMeta('purchase_info');

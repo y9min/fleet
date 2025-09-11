@@ -9,7 +9,7 @@
   }
   
   .vehicle-form-header {
-    background: #28a745;
+    background: #7FD7E1;
     color: white;
     padding: 1rem 1.5rem;
     margin: 0;
@@ -192,7 +192,7 @@
   }
   
   .submit-btn {
-    background: #28a745;
+    background: #7FD7E1;
     color: white;
     border: none;
     padding: 0.75rem 2rem;
@@ -203,7 +203,7 @@
   }
   
   .submit-btn:hover {
-    background: #218838;
+    background: #6bc4ce;
   }
   
   .cancel-btn {

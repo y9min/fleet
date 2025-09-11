@@ -687,16 +687,16 @@ function loadVehiclesSimple() {
                 </button>
             </td>
             <td>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown${vehicle.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Vehicle Actions">
+                <div class="dropdown position-relative">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleDropdown(${vehicle.id})" title="Vehicle Actions">
                         ⚙
                     </button>
-                    <div class="dropdown-menu" aria-labelledby="actionsDropdown${vehicle.id}">
-                        <a class="dropdown-item" href="{{ url('admin/vehicles') }}/${vehicle.id}/edit">
+                    <div class="dropdown-menu" id="dropdown-${vehicle.id}" style="display: none; position: absolute; top: 100%; right: 0; z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 120px;">
+                        <a class="dropdown-item" href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" style="display: block; padding: 8px 12px; text-decoration: none; color: #333;">
                             Edit Vehicle
                         </a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-danger" href="#" onclick="confirmDeleteVehicle(${vehicle.id}, '${vehicle.license_plate || 'N/A'}', '${vehicle.make_name || 'N/A'}', '${vehicle.model_name || 'N/A'}'); return false;">
+                        <div style="border-top: 1px solid #eee; margin: 4px 0;"></div>
+                        <a class="dropdown-item text-danger" href="#" onclick="confirmDeleteVehicle(${vehicle.id}, '${vehicle.license_plate || 'N/A'}', '${vehicle.make_name || 'N/A'}', '${vehicle.model_name || 'N/A'}'); return false;" style="display: block; padding: 8px 12px; text-decoration: none; color: #dc3545;">
                             Delete Vehicle
                         </a>
                     </div>
@@ -903,6 +903,29 @@ window.deleteVehicle = function(id) {
     `;
     document.body.appendChild(deleteForm);
     deleteForm.submit();
+}
+
+window.toggleDropdown = function(vehicleId) {
+    const dropdown = document.getElementById(`dropdown-${vehicleId}`);
+    const isVisible = dropdown.style.display === 'block';
+    
+    // Close all other dropdowns first
+    document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+        d.style.display = 'none';
+    });
+    
+    // Toggle the current dropdown
+    dropdown.style.display = isVisible ? 'none' : 'block';
+    
+    // Close dropdown when clicking outside
+    if (dropdown.style.display === 'block') {
+        document.addEventListener('click', function closeDropdown(e) {
+            if (!dropdown.contains(e.target) && !e.target.closest(`[onclick="toggleDropdown(${vehicleId})"]`)) {
+                dropdown.style.display = 'none';
+                document.removeEventListener('click', closeDropdown);
+            }
+        });
+    }
 }
 
 window.bulkDeleteVehicles = function() {

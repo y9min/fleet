@@ -670,11 +670,11 @@ input:checked + .slider:before {
     .menu-group.active .submenu-content {
         max-height: 500px;
     }
-
+    
     .menu-title .fa-chevron-down {
         transition: transform 0.3s ease;
     }
-
+    
     .menu-group.active .menu-title .fa-chevron-down {
         transform: rotate(180deg);
     }
@@ -814,7 +814,7 @@ input:checked + .slider:before {
                 </div>
                 <div class="menu-items">
                     <a href="{{url('admin/')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-
+                    
                     <div class="menu-group">
                         <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
@@ -874,7 +874,7 @@ input:checked + .slider:before {
 
                     <a href="{{url('admin/mechanics')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-cog"></i> Mechanics</a>
                     <a href="{{url('admin/inquiries')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-question-circle"></i> Inquiries</a>
-
+                    
                     <!-- Logout at bottom of menu -->
                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
                         <a href="{{ route('logout') }}" 
@@ -1694,16 +1694,10 @@ input:checked + .slider:before {
                   <li class="nav-item">
                     <a href="{{ route('drivers.index')}}"
                       class="nav-link @if(Request::is('admin/drivers*')) active @endif">
-                      <i class="nav-icon fa fa-id-card"></i>
-                      <p>@lang('fleet.drivers')</p>
+                      <i class="fa fa-id-card nav-icon"></i>
+                      <p>@lang('menu.drivers')</p>
                     </a>
                   </li>
-                  <li class="nav-item">
-                  <a href="{{ route('admin.onboarding.index') }}" class="nav-link {{ (request()->is('admin/onboarding*')) ? 'active' : '' }}">
-                    <i class="nav-icon fa fa-user-plus"></i>
-                    <p>Driver Onboarding</p>
-                  </a>
-                </li>
                   @endcan
                   @can('Users list')
                   <li class="nav-item">
@@ -2703,7 +2697,7 @@ input:checked + .slider:before {
   </script>
   <script type="text/javascript">
     // SIMPLIFIED HAMBURGER MENU - GUARANTEED TO WORK
-
+    
     // Define functions globally
     window.toggleHamburgerMenu = function() {
         console.log('Toggle hamburger menu called');
@@ -2731,11 +2725,11 @@ input:checked + .slider:before {
             menuGroup.classList.toggle('active');
         }
     }
-
+    
     // Simple initialization that always works
     setTimeout(function() {
         console.log('Setting up hamburger menu...');
-
+        
         // Check if button exists
         const btn = document.getElementById('hamburger-btn');
         if (btn) {
@@ -2743,7 +2737,7 @@ input:checked + .slider:before {
         } else {
             console.error('Hamburger button not found!');
         }
-
+        
         // Add global click listener as backup
         if (!window.hamburgerListenerAdded) {
             window.hamburgerListenerAdded = true;
@@ -2772,7 +2766,7 @@ input:checked + .slider:before {
             console.log('Global click listener added');
         }
     }, 100);
-
+    
     // Also try with jQuery when available
     if (typeof $ !== 'undefined') {
         $(document).ready(function() {
@@ -2783,11 +2777,11 @@ input:checked + .slider:before {
                 console.log('Hamburger clicked via jQuery');
                 window.toggleHamburgerMenu();
             });
-
+            
             $(document).off('click.overlay').on('click.overlay', '#sidebar-overlay', function() {
                 window.closeHamburgerMenu();
             });
-
+            
             $(document).off('click.close').on('click.close', '#close-sidebar-btn', function() {
                 window.closeHamburgerMenu();
             });
@@ -2890,7 +2884,7 @@ input:checked + .slider:before {
           }
         });
       });
-
+      
       $(document).ready(function() {
         $('#data_table1 tfoot th').each( function () {
           // console.log($(this).index());
@@ -2951,7 +2945,7 @@ input:checked + .slider:before {
             }
       });
         $('[data-toggle="tooltip"]').tooltip();
-
+        
         var table11 = $('#data_table11').DataTable({
             "language": {
                 "url": '{{ asset("assets/datatables/")."/".__("fleet.datatable_lang") }}',
@@ -2964,7 +2958,27 @@ input:checked + .slider:before {
         $('[data-toggle="tooltip"]').tooltip();
       });  // Close document.ready
   </script>
-  <script> var current_route = "{{Route::current()->getName() ?? '' }}"; </script>
+  <script> // Routes and Labels
+    // Bookings
+    var getDriverRoute='{{ url("admin/get_driver") }}';
+    var getVehicleRoute='{{ url("admin/get_vehicle") }}';
+    var prevAddress='{{ url("admin/prev-address") }}';
+    var selectDriver="@lang('fleet.selectDriver')";
+    var selectCustomer="@lang('fleet.selectCustomer')";
+    var selectVehicle="@lang('fleet.selectVehicle')";
+    var addCustomer="@lang('fleet.add_customer')";
+    var prevAddressLang="@lang('fleet.prev_addr')";
+    var fleet_email_already_taken="@lang('fleet.email_already_taken')";
+    // Driver
+    var driver_comission_amount="@lang('fleet.enter_amount')";
+    var driver_comission_percentage="@lang('fleet.enter_percent')";
+    // Users
+    var group_id_label="@lang('fleet.selectGroup')";
+    var role_id_label="@lang('fleet.role')";
+  </script>
+  <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
+  <script>var current_route = "{{Route::current()->getName() ?? '' }}"; </script>
   {{-- <script>var google_api = "{{ Hyvikk::api('google_api') }}"; </script>  --}}
   <script src="{{ asset('assets/js/pnotify.custom.min.js')}}"></script>
   <script src="{{asset('assets/js/admin-custom.js')}}"></script>

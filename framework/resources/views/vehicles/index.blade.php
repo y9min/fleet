@@ -686,12 +686,12 @@ function loadVehiclesSimple() {
                     <i class="fas fa-info-circle"></i> Details
                 </button>
             </td>
-            <td>
-                <div class="dropdown position-relative">
-                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleDropdown(${vehicle.id})" title="Vehicle Actions">
+            <td class="text-center">
+                <div class="dropdown" style="position: relative; display: inline-block;">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleDropdown(${vehicle.id})" title="Vehicle Actions" style="font-size: 16px; padding: 8px 10px;">
                         ⚙
                     </button>
-                    <div class="dropdown-menu" id="dropdown-${vehicle.id}" style="display: none; position: absolute; top: 100%; right: 0; z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 120px;">
+                    <div class="dropdown-menu" id="dropdown-${vehicle.id}" style="display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 130px; margin-top: 2px;">
                         <a class="dropdown-item" href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" style="display: block; padding: 8px 12px; text-decoration: none; color: #333;">
                             Edit Vehicle
                         </a>

@@ -722,9 +722,9 @@ window.toggleVehicleDetails = function(id) {
     }
     
     // Check if details are currently open
-    const existingDetails = document.getElementById(`vehicle-details-${id}`);
+    const existingDetails = row.nextElementSibling;
     
-    if (existingDetails) {
+    if (existingDetails && existingDetails.id === `vehicle-details-${id}`) {
         // Close details
         existingDetails.remove();
         row.classList.remove('details-expanded');
@@ -760,7 +760,7 @@ window.toggleVehicleDetails = function(id) {
                     <!-- Basic Vehicle Information -->
                     <div class="col-md-4">
                         <div class="details-section">
-                            <h6><i class="fas fa-car"></i> Vehicle Information</h6>
+                            <h6>🚗 Vehicle Information</h6>
                             <p class="mb-2"><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
                             <p class="mb-2"><strong>Registration:</strong> <span class="badge badge-primary">${vehicle.license_plate || 'N/A'}</span></p>
                             <p class="mb-2"><strong>Make:</strong> ${vehicle.make_name || 'N/A'}</p>
@@ -776,31 +776,31 @@ window.toggleVehicleDetails = function(id) {
                     <!-- Status & Service Information -->
                     <div class="col-md-4">
                         <div class="details-section">
-                            <h6><i class="fas fa-cogs"></i> Status & Service</h6>
+                            <h6>⚙️ Status & Service</h6>
                             <p class="mb-2">
                                 <strong>Service Status:</strong> 
                                 ${vehicle.in_service == 1 
-                                    ? '<span class="status-badge status-active">Available</span>' 
-                                    : '<span class="status-badge status-expired">Disabled</span>'}
+                                    ? '<span class="badge badge-success">Available</span>' 
+                                    : '<span class="badge badge-secondary">Disabled</span>'}
                             </p>
                             <p class="mb-2"><strong>Last Service:</strong> ${vehicle.last_service || 'No records'}</p>
                             <p class="mb-2"><strong>Next Service:</strong> ${vehicle.next_service || 'Not scheduled'}</p>
                             <p class="mb-2">
                                 <strong>Insurance:</strong> 
-                                <span class="status-badge status-active">Valid</span>
+                                <span class="badge badge-success">Valid</span>
                             </p>
                             <p class="mb-2">
                                 <strong>MOT Status:</strong> 
-                                <span class="status-badge status-warning">Due Soon</span>
+                                <span class="badge badge-warning">Due Soon</span>
                             </p>
-                            <p class="mb-0"><strong>Tax Status:</strong> <span class="status-badge status-active">Valid</span></p>
+                            <p class="mb-0"><strong>Tax Status:</strong> <span class="badge badge-success">Valid</span></p>
                         </div>
                     </div>
                     
                     <!-- Additional Information -->
                     <div class="col-md-4">
                         <div class="details-section">
-                            <h6><i class="fas fa-info-circle"></i> Additional Info</h6>
+                            <h6>ℹ️ Additional Info</h6>
                             <p class="mb-2"><strong>Purchase Date:</strong> ${vehicle.purchase_date || 'N/A'}</p>
                             <p class="mb-2"><strong>Purchase Price:</strong> ${vehicle.purchase_price ? '£' + Number(vehicle.purchase_price).toLocaleString() : 'N/A'}</p>
                             <p class="mb-2"><strong>Assigned Driver:</strong> ${vehicle.assigned_driver || 'None'}</p>
@@ -812,21 +812,21 @@ window.toggleVehicleDetails = function(id) {
                         <!-- Quick Actions -->
                         <div class="mt-3">
                             <a href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" class="btn btn-sm btn-outline-warning mr-2">
-                                <i class="fas fa-edit"></i> Edit Vehicle
+                                ✏️ Edit Vehicle
                             </a>
                             <button class="btn btn-sm btn-outline-secondary" onclick="toggleVehicleDetails(${id})">
-                                <i class="fas fa-eye-slash"></i> Hide Details
+                                ✕ Hide Details
                             </button>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Custom Fields Section (if any) -->
-                ${vehicle.meta_data ? `
+                ${vehicle.meta_data && vehicle.meta_data !== '{}' ? `
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="details-section">
-                                <h6><i class="fas fa-tags"></i> Additional Fields</h6>
+                                <h6>🏷️ Additional Fields</h6>
                                 <div class="row">
                                     ${Object.entries(JSON.parse(vehicle.meta_data || '{}')).map(([key, value]) => `
                                         <div class="col-md-4">
@@ -842,7 +842,12 @@ window.toggleVehicleDetails = function(id) {
         </td>
     `;
     
-    row.parentNode.insertBefore(detailsRow, row.nextSibling);
+    // Insert the details row directly after the current vehicle row
+    if (row.nextSibling) {
+        row.parentNode.insertBefore(detailsRow, row.nextSibling);
+    } else {
+        row.parentNode.appendChild(detailsRow);
+    }
 }
 
 window.confirmDeleteVehicle = function(id, plate, make, model) {

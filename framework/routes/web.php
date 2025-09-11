@@ -122,6 +122,10 @@ Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_e
 
 });
 
+// Public onboarding routes
+Route::get('onboarding/{link}', 'Admin\OnboardingController@showForm')->name('onboarding.form');
+Route::post('onboarding/{link}', 'Admin\OnboardingController@submitForm')->name('onboarding.submit');
+
 // Route::get('/', 'FrontendController@index')->middleware('IsInstalled');
 // if (env('front_enable') == 'no') {
 //     Route::get('/', function () {

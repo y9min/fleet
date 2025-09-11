@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('extra_css')
@@ -212,19 +211,19 @@
     .content-header h1 {
       font-size: 2rem;
     }
-    
+
     .stat-number {
       font-size: 2rem;
     }
-    
+
     .stat-card {
       margin-bottom: 1rem;
     }
-    
+
     .action-card {
       margin-bottom: 1rem;
     }
-    
+
     .action-btn {
       width: 100%;
       justify-content: center;
@@ -236,13 +235,13 @@
   .stats-container .row {
     display: flex !important;
   }
-  
+
   /* Desktop: keep cards in row */
   @media (min-width: 769px) {
     .stats-container .row {
       flex-wrap: nowrap !important;
     }
-    
+
     .stats-container .col-xl-3,
     .stats-container .col-lg-3,
     .stats-container .col-md-3,
@@ -252,14 +251,14 @@
       min-width: 0 !important;
     }
   }
-  
+
   /* Mobile: allow cards to stack in column */
   @media (max-width: 768px) {
     .stats-container .row {
       flex-wrap: wrap !important;
       flex-direction: column !important;
     }
-    
+
     .stats-container .col-xl-3,
     .stats-container .col-lg-3,
     .stats-container .col-md-3,
@@ -269,16 +268,16 @@
       width: 100% !important;
       margin-bottom: 1rem !important;
     }
-    
+
     .stat-card {
       padding: 1.5rem !important;
       margin-bottom: 0 !important;
     }
-    
+
     .stat-number {
       font-size: 2.2rem !important;
     }
-    
+
     .stat-icon {
       width: 55px !important;
       height: 55px !important;
@@ -292,7 +291,7 @@
 
 <section class="content">
   <div class="container-fluid">
-    
+
 
     <!-- Statistics Cards -->
     <div class="stats-container">
@@ -311,7 +310,7 @@
             </a>
           </div>
         </div>
-        
+
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon drivers">
@@ -326,7 +325,7 @@
             </a>
           </div>
         </div>
-        
+
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon customers">
@@ -341,12 +340,12 @@
             </a>
           </div>
         </div>
-        
+
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon bookings">
               <svg width="24" height="24" viewBox="0 0 448 512" fill="currentColor">
-                <path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/>
+                <path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/>
               </svg>
             </div>
             <h3 class="stat-number">{{ $total_bookings ?? 0 }}</h3>
@@ -355,6 +354,21 @@
               View All <i class="fa fa-arrow-right"></i>
             </a>
           </div>
+        </div>
+
+        <!-- Onboarding Card -->
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+            <a href="{{ route('admin.onboarding.index') }}" class="text-decoration-none">
+                <div class="stat-card w-100">
+                    <div class="stat-icon">
+                      <svg width="24" height="24" viewBox="0 0 448 512" fill="currentColor">
+                        <path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0S96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/>
+                      </svg>
+                    </div>
+                    <h3 class="stat-number" id="onboardingCount">0</h3>
+                    <p class="stat-label">In Onboarding</p>
+                </div>
+            </a>
         </div>
       </div>
     </div>
@@ -383,7 +397,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="col-md-6">
           <div class="action-card">
             <h3 class="card-title">
@@ -421,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
         $(function() {
             // Dashboard initialization
             console.log('Fleet Manager Dashboard loaded successfully');
-            
+
             // Add smooth hover effects
             $('.stat-card, .action-card').hover(
                 function() {
@@ -431,10 +445,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     $(this).removeClass('shadow-lg');
                 }
             );
-            
+
             // Add click analytics for action buttons
             $('.action-btn').click(function() {
                 console.log('Action clicked:', $(this).text().trim());
+            });
+
+            // Fetch onboarding count and update the dashboard
+            $.ajax({
+                url: '{{ route("admin.onboarding.count") }}', // Assuming you have a route for this
+                method: 'GET',
+                success: function(response) {
+                    $('#onboardingCount').text(response.count);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Failed to fetch onboarding count:', textStatus, errorThrown);
+                }
             });
         });
     } else {
@@ -449,6 +475,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.remove('shadow-lg');
             });
         });
+
+        // Fetch onboarding count and update the dashboard using vanilla JS
+        fetch('{{ route("admin.onboarding.count") }}')
+            .then(response => response.json())
+            .then(data => {
+                const onboardingCountElement = document.getElementById('onboardingCount');
+                if (onboardingCountElement) {
+                    onboardingCountElement.textContent = data.count;
+                }
+            })
+            .catch(error => {
+                console.error('Failed to fetch onboarding count:', error);
+            });
     }
 });
 </script>

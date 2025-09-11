@@ -86,6 +86,100 @@ class VehiclesController extends Controller {
                 return view("vehicles.index", compact('vehicles'));
         }
         
+        public function show($id) {
+                $vehicle = VehicleModel::with(['group', 'types', 'drivers', 'vehicle_make', 'vehicle_model'])->findOrFail($id);
+                
+                // Get complete vehicle data including all metadata
+                $purchaseInfo = [];
+                $purchaseInfoRaw = $vehicle->getMeta('purchase_info');
+                if ($purchaseInfoRaw) {
+                        try {
+                                // Try JSON first (preferred secure method)
+                                $purchaseInfo = json_decode($purchaseInfoRaw, true);
+                                if (json_last_error() !== JSON_ERROR_NONE) {
+                                        // Fallback to unserialize for legacy data (with validation)
+                                        if (is_string($purchaseInfoRaw) && strpos($purchaseInfoRaw, 'a:') === 0) {
+                                                $purchaseInfo = @unserialize($purchaseInfoRaw);
+                                                if ($purchaseInfo === false) {
+                                                        $purchaseInfo = [];
+                                                }
+                                        }
+                                }
+                        } catch (Exception $e) {
+                                $purchaseInfo = [];
+                        }
+                }
+                
+                // Ensure purchaseInfo is always an array
+                if (!is_array($purchaseInfo)) {
+                        $purchaseInfo = [];
+                }
+                
+                // Get vehicle type properly
+                $vehicleType = 'Not Selected';
+                if ($vehicle->types && $vehicle->types->vehicletype) {
+                        $vehicleType = $vehicle->types->vehicletype;
+                } else {
+                        // Check metadata for vehicle type
+                        $metaVehicleType = $vehicle->getMeta('vehicle_type');
+                        if ($metaVehicleType) {
+                                $vehicleType = $metaVehicleType;
+                        }
+                }
+                
+                // Get driver information
+                $driverName = 'Not Assigned';
+                $driverId = $vehicle->getMeta('assign_driver_id');
+                if ($driverId) {
+                        $driver = User::find($driverId);
+                        $driverName = $driver ? $driver->name : 'Driver Not Found';
+                } else if ($vehicle->drivers && $vehicle->drivers->isNotEmpty()) {
+                        $driverName = $vehicle->drivers->first()->name;
+                }
+                
+                // Get group name properly
+                $groupName = 'Not Selected';
+                if ($vehicle->group && $vehicle->group->name) {
+                        $groupName = $vehicle->group->name;
+                }
+                
+                // Get all additional metadata
+                $additionalMeta = [
+                        'scheme' => $vehicle->getMeta('scheme') ?: $vehicle->getMeta('vehicle_scheme'),
+                        'telematics_link' => $vehicle->getMeta('telematics_link'),
+                        'gps_number' => $vehicle->getMeta('gps_number'),
+                        'rc_number' => $vehicle->getMeta('rc_number'),
+                        'permit_number' => $vehicle->getMeta('permit_number'),
+                        'permit_validity' => $vehicle->getMeta('permit_validity'),
+                        'driving_license' => $vehicle->getMeta('driving_license'),
+                        'ecocert' => $vehicle->getMeta('ecocert'),
+                        'tax_token_number' => $vehicle->getMeta('tax_token_number'),
+                        'tax_token_validity' => $vehicle->getMeta('tax_token_validity'),
+                        'fitness_cert' => $vehicle->getMeta('fitness_cert'),
+                        'fitness_validity' => $vehicle->getMeta('fitness_validity'),
+                        'pollution_cert' => $vehicle->getMeta('pollution_cert'),
+                        'pollution_validity' => $vehicle->getMeta('pollution_validity'),
+                        'national_permit' => $vehicle->getMeta('national_permit'),
+                        'national_permit_validity' => $vehicle->getMeta('national_permit_validity'),
+                ];
+                
+                // Filter out null/empty metadata
+                $additionalMeta = array_filter($additionalMeta, function($value) {
+                        return !is_null($value) && $value !== '';
+                });
+                
+                $data = [
+                        'vehicle' => $vehicle,
+                        'vehicle_type' => $vehicleType,
+                        'group_name' => $groupName,
+                        'driver_name' => $driverName,
+                        'purchase_info' => $purchaseInfo,
+                        'additional_meta' => $additionalMeta
+                ];
+                
+                return view('vehicles.show', $data);
+        }
+
         public function getCompleteData($id) {
                 $vehicle = VehicleModel::with(['group', 'types', 'drivers', 'vehicle_make', 'vehicle_model'])->find($id);
                 

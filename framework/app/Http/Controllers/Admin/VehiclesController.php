@@ -506,19 +506,31 @@ class VehiclesController extends Controller {
                 unset($form_data['vehicle_image']);
                 unset($form_data['documents']);
                 unset($form_data['udf']);
+                // Remove metadata fields that should not be mass-assigned
+                unset($form_data['vehicle_price']);
+                unset($form_data['initial_cost']);
+                unset($form_data['price_period']);
+                unset($form_data['vehicle_scheme']);
+                unset($form_data['telematics_link']);
                 $vehicle->update($form_data);
                 $vehicle->setMeta([
                         'traccar_device_id' => $request->traccar_device_id,
                         'traccar_vehicle_id' => $request->traccar_vehicle_id,
                         'luggage'=>$request->luggage,
-                        'price'=>$request->price,
+                        'price'=>$request->vehicle_price, // Fixed: map vehicle_price to price
+                        'vehicle_status' => $request->vehicle_status ?? 'Available',
+                        'telematics_link' => $request->telematics_link,
+                        'initial_cost' => $request->initial_cost,
+                        'vehicle_scheme' => $request->vehicle_scheme,
+                        'vehicle_price' => $request->vehicle_price, // Ensure metadata persistence
+                        'price_period' => $request->price_period,
                 ]);
                 if ($request->get("in_service")) {
                         $vehicle->in_service = 1;
                 } else {
                         $vehicle->in_service = 0;
                 }
-                $vehicle->int_mileage = $request->get("int_mileage");
+                $vehicle->int_mileage = $request->get("int_mileage") ? (int) $request->get("int_mileage") : null;
                 $vehicle->lic_exp_date = $request->get('lic_exp_date');
                 $vehicle->reg_exp_date = $request->get('reg_exp_date');
                 $vehicle->udf = serialize($request->get('udf'));
@@ -556,7 +568,7 @@ class VehiclesController extends Controller {
                         'color_name' => $request->get("color_name"),
                         'vin' => $request->get("vin"),
                         'license_plate' => $request->get("license_plate"),
-                        'int_mileage' => $request->get("int_mileage"),
+                        'int_mileage' => $request->get("int_mileage") ? (int) $request->get("int_mileage") : null,
                         'group_id' => $request->get('group_id'),
                         'user_id' => $request->get('user_id'),
                         'lic_exp_date' => $request->get('lic_exp_date'),
@@ -599,12 +611,12 @@ class VehiclesController extends Controller {
                         'traccar_vehicle_id' => $request->traccar_vehicle_id,
                         'assign_driver_id' => $request->driver_id,
                         'luggage'=>$request->luggage,
-                        'price'=>$request->price,
+                        'price'=>$request->vehicle_price, // Fixed: map vehicle_price to price
                         'vehicle_status' => $request->vehicle_status ?? 'Available',
                         'telematics_link' => $request->telematics_link,
                         'initial_cost' => $request->initial_cost,
                         'vehicle_scheme' => $request->vehicle_scheme,
-                        'vehicle_price' => $request->vehicle_price,
+                        'vehicle_price' => $request->vehicle_price, // Ensure metadata persistence
                         'price_period' => $request->price_period,
                 ]);
                 $meta->udf = serialize($request->get('udf'));

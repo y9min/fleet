@@ -208,7 +208,7 @@
                             <label class="field-label">Initial Mileage</label>
                             <div class="field-value">
                                 @if($vehicle->int_mileage)
-                                    {{ number_format($vehicle->int_mileage, 2) }} miles
+                                    {{ number_format((int)$vehicle->int_mileage) }} miles
                                 @else
                                     Not Set
                                 @endif
@@ -224,7 +224,7 @@
                         
                         <div class="field-item">
                             <label class="field-label">Scheme</label>
-                            <div class="field-value">{{ $additional_meta['scheme'] ?? 'Not Set' }}</div>
+                            <div class="field-value">{{ $vehicle->getMeta('vehicle_scheme') ?: $vehicle->getMeta('scheme') ?: 'Not Set' }}</div>
                         </div>
                         
                         <div class="field-item">
@@ -303,12 +303,27 @@
                     <div class="field-group">
                         <div class="field-item">
                             <label class="field-label">Price</label>
-                            <div class="field-value">Not Set</div>
+                            <div class="field-value">
+                                @if($vehicle->getMeta('vehicle_price'))
+                                    {{ Hyvikk::get('currency') }}{{ number_format($vehicle->getMeta('vehicle_price'), 2) }}
+                                    @if($vehicle->getMeta('price_period'))
+                                        ({{ ucfirst($vehicle->getMeta('price_period')) }})
+                                    @endif
+                                @else
+                                    Not Set
+                                @endif
+                            </div>
                         </div>
                         
                         <div class="field-item">
                             <label class="field-label">Initial Cost</label>
-                            <div class="field-value">Not Set</div>
+                            <div class="field-value">
+                                @if($vehicle->getMeta('initial_cost'))
+                                    {{ Hyvikk::get('currency') }}{{ number_format($vehicle->getMeta('initial_cost'), 2) }}
+                                @else
+                                    Not Set
+                                @endif
+                            </div>
                         </div>
                     </div>
                     <div style="background: #fff3cd; padding: 1rem; border-radius: 6px; border-left: 4px solid #ffc107; margin-top: 1rem;">

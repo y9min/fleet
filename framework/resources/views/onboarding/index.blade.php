@@ -102,7 +102,7 @@
 
 <section class="content">
     <div class="container-fluid">
-        
+
         <!-- Statistics Cards -->
         <div class="row">
             <div class="col-md-3">
@@ -180,7 +180,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Dropdown Options (hidden by default) -->
                                 <div id="dropdownOptionsSection" style="display: none;">
                                     <label>Dropdown Options</label>
@@ -334,7 +334,7 @@ $(document).ready(function() {
     $('#customFieldForm').on('submit', function(e) {
         e.preventDefault();
         var formData = new FormData(this);
-        
+
         $.ajax({
             url: '{{ url("admin/onboarding/store-field") }}',
             type: 'POST',
@@ -362,6 +362,16 @@ $(document).ready(function() {
         } else {
             $('#dropdownOptionsSection').hide();
         }
+    });
+
+    // Generate link button click
+    $('#generateLinkBtn').click(function() {
+        generateLink();
+    });
+
+    // Fix button click handler
+    $(document).on('click', '#generateLinkBtn', function() {
+        generateLink();
     });
 });
 
@@ -408,99 +418,57 @@ function deleteField(fieldId) {
     }
 }
 
-// View driver details
+// Add missing functions
+function approveDriver(driverId) {
+    if (confirm('Are you sure you want to approve this driver?')) {
+        $.ajax({
+            url: '{{ url("admin/onboarding") }}/' + driverId + '/approve',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    $('#onboardingTable').DataTable().ajax.reload();
+                }
+            }
+        });
+    }
+}
+
+function rejectDriver(driverId) {
+    if (confirm('Are you sure you want to reject this driver application?')) {
+        $.ajax({
+            url: '{{ url("admin/onboarding") }}/' + driverId + '/reject',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    $('#onboardingTable').DataTable().ajax.reload();
+                }
+            }
+        });
+    }
+}
+
 function viewDriver(driverId) {
     $.ajax({
         url: '{{ url("admin/onboarding") }}/' + driverId,
         type: 'GET',
         success: function(response) {
             if (response.success) {
-                var content = '<div class="row">';
-                content += '<div class="col-md-6"><strong>Name:</strong> ' + response.driver.name + '</div>';
-                content += '<div class="col-md-6"><strong>Email:</strong> ' + response.driver.email + '</div>';
-                content += '<div class="col-md-6"><strong>Phone:</strong> ' + response.driver.phone + '</div>';
-                content += '<div class="col-md-6"><strong>License Number:</strong> ' + response.driver.license_number + '</div>';
-                content += '<div class="col-md-6"><strong>Status:</strong> ' + response.driver.status + '</div>';
-                content += '<div class="col-md-6"><strong>Applied:</strong> ' + new Date(response.driver.created_at).toLocaleDateString() + '</div>';
-                
-                if (response.driver.custom_data) {
-                    content += '<div class="col-md-12"><hr><h6>Custom Fields:</h6>';
-                    for (var key in response.driver.custom_data) {
-                        content += '<div><strong>' + key + ':</strong> ' + response.driver.custom_data[key] + '</div>';
-                    }
-                    content += '</div>';
-                }
-                
-                content += '</div>';
-                
-                $('#driverDetailsContent').html(content);
+                // Populate modal with driver details
+                $('#driverDetailsContent').html(JSON.stringify(response.driver, null, 2));
                 $('#driverDetailsModal').modal('show');
             }
         }
     });
 }
 
-// Approve driver
-function approveDriver(driverId) {
-    if (confirm('Are you sure you want to approve this driver?')) {
-        $.ajax({
-            url: '{{ url("admin/onboarding/approve") }}/' + driverId,
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    $('#onboardingTable').DataTable().ajax.reload();
-                }
-            }
-        });
-    }
-}
-
-// Reject driver
-function rejectDriver(driverId) {
-    if (confirm('Are you sure you want to reject this driver?')) {
-        $.ajax({
-            url: '{{ url("admin/onboarding/reject") }}/' + driverId,
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    $('#onboardingTable').DataTable().ajax.reload();
-                }
-            }
-        });
-    }
-}
-
-// Delete driver
-function deleteDriver(driverId) {
-    if (confirm('Are you sure you want to delete this driver record?')) {
-        $.ajax({
-            url: '{{ url("admin/onboarding") }}/' + driverId,
-            type: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    $('#onboardingTable').DataTable().ajax.reload();
-                }
-            }
-        });
-    }
-}
-
-// Generate link button click
-$('#generateLinkBtn').click(function() {
-    generateLink();
-});
 
 // Dropdown options management
 function addDropdownOption() {

@@ -10,13 +10,13 @@ Route::namespace ('Admin')->group(function () {
     // Route::get('export-events', 'HomeController@export_calendar');
 
     Route::get('test-login', 'Testcontroller@login');
-    
+
     // Test route to verify admin routes work
     Route::get('test-admin', function () {
         return '<h1>Admin Routes Working!</h1><p><a href="/admin/login">Go to Admin Login</a></p>';
     });
 
-    Route::get('/migrate', function () {
+    Route::get("/migrate", function () {
         \Artisan::call('migrate');
     });
 
@@ -36,7 +36,7 @@ Route::namespace ('Admin')->group(function () {
      Route::get('/get-user-info/{id}', 'DriversController@get_driver_info');
 
       Route::post('/get-availability-status', 'DriversController@get_availability_status');
-    
+
       Route::get('test11111', function () {
 
       dd(date('Y-m-d H:i:s'));
@@ -56,7 +56,7 @@ Route::namespace ('Admin')->group(function () {
     Route::group(['middleware' => ['lang_check', 'auth', 'officeadmin', 'IsInstalled']], function () {
 
 
-       
+
 
 
 
@@ -64,7 +64,7 @@ Route::namespace ('Admin')->group(function () {
 
         Route::get('/drivers/verify-driver/{id}', 'DriversController@verify_driver');
         Route::post('/drivers/update_verify_driver', 'DriversController@update_verify_driver')->name('update_verify_driver');
-        
+
         Route::resource('/vehicle-breakdown', 'VehicleBreakdownController');
 
         Route::post('delete-vehicle-breakdown', 'VehicleBreakdownController@bulk_delete');
@@ -207,10 +207,10 @@ Route::namespace ('Admin')->group(function () {
         Route::get('reviews', 'ReviewRatings@index');
 
         Route::post('delete-inquiry/{id}', 'ContactUs@destroy');
-        
+
         // Route for bulk deletion
         Route::post('delete-inquiries', 'ContactUs@bulkDelete');
-        
+
         Route::get('messages', 'ContactUs@index');
         Route::get('api-settings', 'SettingsController@api_settings');
         Route::post('api-settings', 'SettingsController@store_settings');
@@ -334,7 +334,7 @@ Route::namespace ('Admin')->group(function () {
 
     Route::group(['middleware' => ['lang_check', 'auth']], function () {
 
-        
+
 
         // chat routes:
         Route::get('chat', 'MessagesController@index')->name('chat.index');

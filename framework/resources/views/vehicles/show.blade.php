@@ -118,7 +118,7 @@
 
 @section('breadcrumb')
 <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{ route('admin.home') }}">@lang('menu.home')</a></li>
+    <li class="breadcrumb-item"><a href="{{ url('admin/') }}">@lang('menu.home')</a></li>
     <li class="breadcrumb-item"><a href="{{ url('admin/vehicles') }}">@lang('fleet.vehicles')</a></li>
     <li class="breadcrumb-item active">{{ $vehicle->license_plate ?? 'Vehicle Details' }}</li>
 </ol>

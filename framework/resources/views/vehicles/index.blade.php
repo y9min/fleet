@@ -688,8 +688,8 @@ function loadVehiclesSimple() {
             </td>
             <td>
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle btn-action" type="button" id="actionsDropdown${vehicle.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-cogs"></i> Actions
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown${vehicle.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Vehicle Actions">
+                        <i class="fas fa-cog"></i>
                     </button>
                     <div class="dropdown-menu" aria-labelledby="actionsDropdown${vehicle.id}">
                         <a class="dropdown-item" href="{{ url('admin/vehicles') }}/${vehicle.id}/edit">

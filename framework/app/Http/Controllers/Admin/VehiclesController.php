@@ -87,7 +87,7 @@ class VehiclesController extends Controller {
         }
         
         public function show($id) {
-                $vehicle = VehicleModel::with(['group', 'types', 'drivers', 'vehicle_make', 'vehicle_model'])->findOrFail($id);
+                $vehicle = VehicleModel::with(['group', 'types', 'drivers'])->findOrFail($id);
                 
                 // Get complete vehicle data including all metadata
                 $purchaseInfo = [];
@@ -181,7 +181,7 @@ class VehiclesController extends Controller {
         }
 
         public function getCompleteData($id) {
-                $vehicle = VehicleModel::with(['group', 'types', 'drivers', 'vehicle_make', 'vehicle_model'])->find($id);
+                $vehicle = VehicleModel::with(['group', 'types', 'drivers'])->find($id);
                 
                 if (!$vehicle) {
                         return response()->json(['error' => 'Vehicle not found'], 404);

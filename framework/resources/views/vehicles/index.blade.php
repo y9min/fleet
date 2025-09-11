@@ -828,98 +828,69 @@ async function fetchCompleteVehicleData(id) {
     }
 }
 
-// Generate comprehensive vehicle details HTML
+// Generate vehicle creation fields details HTML
 function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
     const purchaseInfo = completeVehicle.purchase_info || [];
-    const totalAcquisitionCost = purchaseInfo.reduce((total, item) => total + parseFloat(item.exp_amount || 0), 0);
+    const totalPrice = purchaseInfo.find(item => item.exp_name && item.exp_name.toLowerCase().includes('price'))?.exp_amount || 
+                      purchaseInfo.find(item => item.exp_name && item.exp_name.toLowerCase().includes('cost'))?.exp_amount || 0;
+    const initialCost = purchaseInfo.find(item => item.exp_name && item.exp_name.toLowerCase().includes('initial'))?.exp_amount || 0;
     
     return `
         <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd;">
             <h5 style="color: #7FD7E1; margin-bottom: 20px; border-bottom: 2px solid #7FD7E1; padding-bottom: 10px;">
-                🚗 Complete Vehicle Details - ${vehicle.license_plate || 'N/A'}
+                🚗 Vehicle Creation Details - ${vehicle.license_plate || 'N/A'}
             </h5>
             
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-bottom: 25px;">
-                <!-- Basic Information -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 25px;">
+                <!-- Vehicle Information -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">📋 Basic Information</h6>
-                    <p><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
-                    <p><strong>Registration:</strong> ${vehicle.license_plate || 'N/A'}</p>
-                    <p><strong>Make:</strong> ${vehicle.make_name || 'N/A'}</p>
-                    <p><strong>Model:</strong> ${vehicle.model_name || 'N/A'}</p>
-                    <p><strong>Year:</strong> ${vehicle.year || 'N/A'}</p>
-                    <p><strong>Color:</strong> ${vehicle.color_name || 'N/A'}</p>
-                    <p><strong>VIN:</strong> ${vehicle.vin || 'Not Available'}</p>
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">🚗 Vehicle Information</h6>
+                    <p><strong>Vehicle Make:</strong> ${vehicle.make_name || 'Not Selected'}</p>
+                    <p><strong>Vehicle Model:</strong> ${vehicle.model_name || 'Not Selected'}</p>
+                    <p><strong>Vehicle Type:</strong> ${completeVehicle.vehicle_type || 'Not Selected'}</p>
+                    <p><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</p>
+                    <p><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</p>
+                    <p><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</p>
                 </div>
                 
-                <!-- Technical Specifications -->
+                <!-- Pricing & Group -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">🔧 Technical Specs</h6>
-                    <p><strong>Engine Type:</strong> ${vehicle.engine_type || 'N/A'}</p>
-                    <p><strong>Horse Power:</strong> ${vehicle.horse_power || 'N/A'}</p>
-                    <p><strong>Vehicle Type:</strong> ${completeVehicle.vehicle_type || 'N/A'}</p>
-                    <p><strong>Mileage:</strong> ${vehicle.mileage || 'N/A'}</p>
-                    <p><strong>Initial Mileage:</strong> ${vehicle.int_mileage || 'N/A'}</p>
-                    <p><strong>Group:</strong> ${completeVehicle.group_name || 'Not Assigned'}</p>
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">💰 Pricing & Assignment</h6>
+                    <p><strong>Price:</strong> ${totalPrice ? ('{{ Hyvikk::get("currency") }} ' + parseFloat(totalPrice).toLocaleString()) : 'Not Set'}</p>
+                    <p><strong>Vehicle Group:</strong> ${completeVehicle.group_name || 'Not Selected'}</p>
+                    <p><strong>Driver:</strong> ${completeVehicle.driver_name || 'Not Selected'}</p>
+                    <p><strong>Initial Mileage:</strong> ${vehicle.int_mileage ? (vehicle.int_mileage + ' miles') : 'Not Set'}</p>
+                    <p><strong>Initial Cost:</strong> ${initialCost ? ('{{ Hyvikk::get("currency") }} ' + parseFloat(initialCost).toLocaleString()) : 'Not Set'}</p>
                 </div>
                 
-                <!-- Status & Service -->
+                <!-- Status & Settings -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">⚡ Status & Service</h6>
-                    <p><strong>Service Status:</strong> <span style="color: ${vehicle.in_service == 1 ? '#28a745' : '#dc3545'};">${vehicle.in_service == 1 ? '✅ Available' : '❌ Disabled'}</span></p>
-                    <p><strong>Assigned Driver:</strong> ${completeVehicle.driver_name || 'Not Assigned'}</p>
-                    <p><strong>Insurance Number:</strong> ${vehicle.insurance_number || 'N/A'}</p>
-                    <p><strong>Created:</strong> ${completeVehicle.created_at ? new Date(completeVehicle.created_at).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>Last Updated:</strong> ${completeVehicle.updated_at ? new Date(completeVehicle.updated_at).toLocaleDateString() : 'N/A'}</p>
-                </div>
-                
-                <!-- Dates & Expiry -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">📅 Important Dates</h6>
-                    <p><strong>Registration Exp:</strong> ${vehicle.reg_exp_date ? new Date(vehicle.reg_exp_date).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>License Exp:</strong> ${vehicle.lic_exp_date ? new Date(vehicle.lic_exp_date).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>Insurance Exp:</strong> ${vehicle.exp_date ? new Date(vehicle.exp_date).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>Insurance Exp (Meta):</strong> ${completeVehicle.ins_exp_date ? new Date(completeVehicle.ins_exp_date).toLocaleDateString() : 'N/A'}</p>
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">⚡ Status & Settings</h6>
+                    <p><strong>Is Active:</strong> <span style="color: ${vehicle.in_service == 1 ? '#28a745' : '#dc3545'};">${vehicle.in_service == 1 ? '✅ Yes' : '❌ No'}</span></p>
+                    <p><strong>Scheme:</strong> ${completeVehicle.additional_meta?.scheme || 'Not Set'}</p>
+                    <p><strong>Vehicle Status:</strong> ${vehicle.in_service == 1 ? 'Active' : 'Inactive'}</p>
+                    <p><strong>Telematics Link:</strong> ${completeVehicle.additional_meta?.telematics_link ? 
+                        `<a href="${completeVehicle.additional_meta.telematics_link}" target="_blank" style="color: #7FD7E1;">View Link</a>` : 
+                        'Not Set'}</p>
                 </div>
             </div>
             
-            <!-- Purchase/Acquisition Information -->
-            ${purchaseInfo.length > 0 ? `
-                <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
-                    <h6 style="color: #28a745; margin-bottom: 15px;">💰 Purchase & Acquisition Costs</h6>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                        ${purchaseInfo.map(item => `
-                            <div style="background: white; padding: 12px; border-radius: 4px; border: 1px solid #d4edda;">
-                                <p style="margin: 0;"><strong>${item.exp_name}:</strong></p>
-                                <p style="margin: 5px 0 0 0; font-size: 1.1em; color: #28a745; font-weight: bold;">
-                                    {{ Hyvikk::get('currency') }} ${parseFloat(item.exp_amount || 0).toLocaleString()}
-                                </p>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 4px; border: 2px solid #28a745;">
-                        <p style="margin: 0; font-size: 1.2em;"><strong>Total Acquisition Cost: 
-                            <span style="color: #28a745;">{{ Hyvikk::get('currency') }} ${totalAcquisitionCost.toLocaleString()}</span>
-                        </strong></p>
-                    </div>
+            <!-- Creation Summary -->
+            <div style="background: #e8f4fd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #7FD7E1;">
+                <h6 style="color: #7FD7E1; margin-bottom: 15px;">📋 Creation Summary</h6>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <p><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
+                    <p><strong>Created Date:</strong> ${completeVehicle.created_at ? new Date(completeVehicle.created_at).toLocaleDateString() : 'Not Available'}</p>
+                    <p><strong>Total Fields Set:</strong> ${[
+                        vehicle.make_name, vehicle.model_name, completeVehicle.vehicle_type, 
+                        vehicle.engine_type, vehicle.license_plate, vehicle.year,
+                        totalPrice, completeVehicle.group_name, completeVehicle.driver_name,
+                        vehicle.int_mileage, vehicle.in_service, initialCost,
+                        completeVehicle.additional_meta?.scheme, completeVehicle.additional_meta?.telematics_link
+                    ].filter(field => field && field !== 'Not Selected' && field !== 'Not Set').length} / 14</p>
+                    <p><strong>Last Updated:</strong> ${completeVehicle.updated_at ? new Date(completeVehicle.updated_at).toLocaleDateString() : 'Not Available'}</p>
                 </div>
-            ` : `
-                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-                    <p style="margin: 0; color: #856404;"><strong>💰 Purchase Information:</strong> No acquisition costs recorded for this vehicle.</p>
-                </div>
-            `}
-            
-            <!-- Additional Metadata -->
-            ${completeVehicle.additional_meta && Object.keys(completeVehicle.additional_meta).length > 0 ? `
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 15px;">📊 Additional Information</h6>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                        ${Object.entries(completeVehicle.additional_meta).map(([key, value]) => `
-                            <p><strong>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</strong> ${value || 'N/A'}</p>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
+            </div>
             
             <!-- Action Buttons -->
             <div style="display: flex; gap: 15px; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid #ddd;">
@@ -939,54 +910,53 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
     `;
 }
 
-// Enhanced fallback function when AJAX fails
+// Basic vehicle creation fields fallback when AJAX fails
 function generateEnhancedBasicVehicleDetails(id, vehicle) {
     return `
         <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd;">
             <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-                <p style="margin: 0; color: #856404;"><strong>⚠️ Note:</strong> Complete vehicle data could not be loaded. Showing available basic information only.</p>
+                <p style="margin: 0; color: #856404;"><strong>⚠️ Note:</strong> Complete creation data could not be loaded. Showing available basic creation fields only.</p>
             </div>
             
             <h5 style="color: #7FD7E1; margin-bottom: 20px; border-bottom: 2px solid #7FD7E1; padding-bottom: 10px;">
-                🚗 Vehicle Details - ${vehicle.license_plate || 'N/A'}
+                🚗 Vehicle Creation Details - ${vehicle.license_plate || 'N/A'}
             </h5>
             
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 25px;">
-                <!-- Basic Information -->
+                <!-- Vehicle Information -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">📋 Basic Information</h6>
-                    <p><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
-                    <p><strong>Registration:</strong> ${vehicle.license_plate || 'N/A'}</p>
-                    <p><strong>Make:</strong> ${vehicle.make_name || 'N/A'}</p>
-                    <p><strong>Model:</strong> ${vehicle.model_name || 'N/A'}</p>
-                    <p><strong>Year:</strong> ${vehicle.year || 'N/A'}</p>
-                    <p><strong>Color:</strong> ${vehicle.color_name || 'N/A'}</p>
-                    <p><strong>VIN:</strong> ${vehicle.vin || 'Not Available'}</p>
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">🚗 Vehicle Information</h6>
+                    <p><strong>Vehicle Make:</strong> ${vehicle.make_name || 'Not Selected'}</p>
+                    <p><strong>Vehicle Model:</strong> ${vehicle.model_name || 'Not Selected'}</p>
+                    <p><strong>Vehicle Type:</strong> Not Available</p>
+                    <p><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</p>
+                    <p><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</p>
+                    <p><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</p>
                 </div>
                 
-                <!-- Technical Specifications -->
+                <!-- Pricing & Group -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">🔧 Technical Specs</h6>
-                    <p><strong>Engine Type:</strong> ${vehicle.engine_type || 'N/A'}</p>
-                    <p><strong>Horse Power:</strong> ${vehicle.horse_power || 'N/A'}</p>
-                    <p><strong>Mileage:</strong> ${vehicle.mileage || 'N/A'}</p>
-                    <p><strong>Initial Mileage:</strong> ${vehicle.int_mileage || 'N/A'}</p>
-                    <p><strong>Insurance Number:</strong> ${vehicle.insurance_number || 'N/A'}</p>
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">💰 Pricing & Assignment</h6>
+                    <p><strong>Price:</strong> Not Available</p>
+                    <p><strong>Vehicle Group:</strong> Not Available</p>
+                    <p><strong>Driver:</strong> Not Available</p>
+                    <p><strong>Initial Mileage:</strong> ${vehicle.int_mileage ? (vehicle.int_mileage + ' miles') : 'Not Set'}</p>
+                    <p><strong>Initial Cost:</strong> Not Available</p>
                 </div>
                 
-                <!-- Status & Dates -->
+                <!-- Status & Settings -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">⚡ Status & Dates</h6>
-                    <p><strong>Service Status:</strong> <span style="color: ${vehicle.in_service == 1 ? '#28a745' : '#dc3545'};">${vehicle.in_service == 1 ? '✅ Available' : '❌ Disabled'}</span></p>
-                    <p><strong>Registration Exp:</strong> ${vehicle.reg_exp_date ? new Date(vehicle.reg_exp_date).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>License Exp:</strong> ${vehicle.lic_exp_date ? new Date(vehicle.lic_exp_date).toLocaleDateString() : 'N/A'}</p>
-                    <p><strong>Insurance Exp:</strong> ${vehicle.exp_date ? new Date(vehicle.exp_date).toLocaleDateString() : 'N/A'}</p>
+                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">⚡ Status & Settings</h6>
+                    <p><strong>Is Active:</strong> <span style="color: ${vehicle.in_service == 1 ? '#28a745' : '#dc3545'};">${vehicle.in_service == 1 ? '✅ Yes' : '❌ No'}</span></p>
+                    <p><strong>Scheme:</strong> Not Available</p>
+                    <p><strong>Vehicle Status:</strong> ${vehicle.in_service == 1 ? 'Active' : 'Inactive'}</p>
+                    <p><strong>Telematics Link:</strong> Not Available</p>
                 </div>
             </div>
             
-            <!-- Purchase Information Notice -->
+            <!-- Data Notice -->
             <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-                <p style="margin: 0; color: #856404;"><strong>💰 Purchase Information:</strong> Complete pricing and acquisition data requires full data access. Please refresh the page or check your connection.</p>
+                <p style="margin: 0; color: #856404;"><strong>📋 Creation Data:</strong> Complete creation field data requires full data access. Please refresh the page or check your connection to see all vehicle creation details including pricing and assignment information.</p>
             </div>
             
             <!-- Action Buttons -->

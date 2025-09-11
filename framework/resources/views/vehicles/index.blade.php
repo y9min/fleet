@@ -645,9 +645,12 @@
 
 @section('script')
 <script type="text/javascript">
+// Store vehicles data globally so other functions can access it
+window.vehiclesGlobalData = @json($vehicles ?? []);
+
 // Simple vanilla JavaScript approach to load vehicles
 function loadVehiclesSimple() {
-    const vehiclesData = @json($vehicles ?? []); // Get vehicles from backend
+    const vehiclesData = window.vehiclesGlobalData; // Get vehicles from global
     console.log('Vehicles data:', vehiclesData); // Debug log
     const tbody = document.querySelector('#ajax_data_table tbody');
     
@@ -683,7 +686,7 @@ function loadVehiclesSimple() {
             <td><span class="text-muted">-</span></td>
             <td>
                 <button class="btn btn-sm btn-outline-info btn-action" onclick="toggleVehicleDetails(${vehicle.id})" title="View Details" id="details-btn-${vehicle.id}">
-                    <i class="fas fa-info-circle"></i> Details
+                    ⓘ Details
                 </button>
             </td>
             <td class="text-center">
@@ -713,7 +716,10 @@ window.toggleVehicleDetails = function(id) {
     const row = document.getElementById(`vehicle-row-${id}`);
     const detailsBtn = document.getElementById(`details-btn-${id}`);
     
-    if (!row || !detailsBtn) return;
+    if (!row || !detailsBtn) {
+        console.error('Row or button not found for ID:', id);
+        return;
+    }
     
     // Check if details are currently open
     const existingDetails = document.getElementById(`vehicle-details-${id}`);
@@ -722,24 +728,24 @@ window.toggleVehicleDetails = function(id) {
         // Close details
         existingDetails.remove();
         row.classList.remove('details-expanded');
-        detailsBtn.innerHTML = '<i class="fas fa-info-circle"></i> Details';
+        detailsBtn.innerHTML = 'ⓘ Details';
         detailsBtn.classList.remove('btn-info');
         detailsBtn.classList.add('btn-outline-info');
         return;
     }
     
-    // Get vehicle data from the original data source
-    const vehiclesData = @json($vehicles ?? []);
+    // Get vehicle data from the global data source
+    const vehiclesData = window.vehiclesGlobalData || [];
     const vehicle = vehiclesData.find(v => v.id == id);
     
     if (!vehicle) {
-        console.error('Vehicle data not found for ID:', id);
+        console.error('Vehicle data not found for ID:', id, 'Available vehicles:', vehiclesData.length);
         return;
     }
     
     // Open details
     row.classList.add('details-expanded');
-    detailsBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
+    detailsBtn.innerHTML = '✕ Hide';
     detailsBtn.classList.remove('btn-outline-info');
     detailsBtn.classList.add('btn-info');
     

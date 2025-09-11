@@ -87,7 +87,7 @@ class VehiclesController extends Controller {
         }
         
         public function getCompleteData($id) {
-                $vehicle = VehicleModel::with(['group', 'types', 'drivers'])->find($id);
+                $vehicle = VehicleModel::with(['group', 'types', 'drivers', 'vehicle_make', 'vehicle_model'])->find($id);
                 
                 if (!$vehicle) {
                         return response()->json(['error' => 'Vehicle not found'], 404);
@@ -126,8 +126,26 @@ class VehiclesController extends Controller {
                 if ($driverId) {
                         $driver = User::find($driverId);
                         $driverName = $driver ? $driver->name : 'Driver Not Found';
-                } else if ($vehicle->drivers->isNotEmpty()) {
+                } else if ($vehicle->drivers && $vehicle->drivers->isNotEmpty()) {
                         $driverName = $vehicle->drivers->first()->name;
+                }
+                
+                // Get vehicle type properly
+                $vehicleType = 'Not Selected';
+                if ($vehicle->types && $vehicle->types->vehicletype) {
+                        $vehicleType = $vehicle->types->vehicletype;
+                } else {
+                        // Check metadata for vehicle type
+                        $metaVehicleType = $vehicle->getMeta('vehicle_type');
+                        if ($metaVehicleType) {
+                                $vehicleType = $metaVehicleType;
+                        }
+                }
+                
+                // Get group name properly
+                $groupName = 'Not Selected';
+                if ($vehicle->group && $vehicle->group->name) {
+                        $groupName = $vehicle->group->name;
                 }
                 
                 // Prepare complete vehicle data
@@ -135,12 +153,13 @@ class VehiclesController extends Controller {
                         'id' => $vehicle->id,
                         'purchase_info' => $purchaseInfo,
                         'driver_name' => $driverName,
-                        'group_name' => $vehicle->group ? $vehicle->group->name : null,
-                        'vehicle_type' => $vehicle->types ? $vehicle->types->vehicletype : null,
+                        'group_name' => $groupName,
+                        'vehicle_type' => $vehicleType,
                         'created_at' => $vehicle->created_at,
                         'updated_at' => $vehicle->updated_at,
                         'ins_exp_date' => $vehicle->getMeta('ins_exp_date'),
                         'additional_meta' => [
+                                'scheme' => $vehicle->getMeta('scheme') ?: $vehicle->getMeta('vehicle_scheme'),
                                 'telematics_link' => $vehicle->getMeta('telematics_link'),
                                 'gps_number' => $vehicle->getMeta('gps_number'),
                                 'rc_number' => $vehicle->getMeta('rc_number'),

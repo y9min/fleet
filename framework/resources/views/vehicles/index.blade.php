@@ -876,19 +876,17 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
             </div>
             
             <!-- Creation Summary -->
-            <div style="background: #e8f4fd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #7FD7E1;">
-                <h6 style="color: #7FD7E1; margin-bottom: 15px;">📋 Creation Summary</h6>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                    <p><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
-                    <p><strong>Created Date:</strong> ${completeVehicle.created_at ? new Date(completeVehicle.created_at).toLocaleDateString() : 'Not Available'}</p>
-                    <p><strong>Total Fields Set:</strong> ${[
+            <div style="background: #e8f4fd; padding: 12px; border-radius: 6px; margin-bottom: 15px; border-left: 3px solid #7FD7E1;">
+                <h6 style="color: #7FD7E1; margin-bottom: 8px; font-size: 0.9em;">📋 Creation Summary</h6>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 0.85em;">
+                    <p style="margin: 0;"><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
+                    <p style="margin: 0;"><strong>Fields Set:</strong> ${[
                         vehicle.make_name, vehicle.model_name, completeVehicle.vehicle_type, 
                         vehicle.engine_type, vehicle.license_plate, vehicle.year,
                         totalPrice, completeVehicle.group_name, completeVehicle.driver_name,
                         vehicle.int_mileage, vehicle.in_service, initialCost,
                         completeVehicle.additional_meta?.scheme, completeVehicle.additional_meta?.telematics_link
                     ].filter(field => field && field !== 'Not Selected' && field !== 'Not Set').length} / 14</p>
-                    <p><strong>Last Updated:</strong> ${completeVehicle.updated_at ? new Date(completeVehicle.updated_at).toLocaleDateString() : 'Not Available'}</p>
                 </div>
             </div>
             

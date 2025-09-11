@@ -15,6 +15,7 @@ use App\Model\ServiceReminderModel;
 use App\Model\User;
 use App\Model\VehicleModel;
 use App\Model\Vendor;
+use App\OnboardingDriver;
 use Auth;
 use DB;
 use Hyvikk;
@@ -105,6 +106,10 @@ class HomeController extends Controller {
         $data['total_drivers'] = \App\Model\User::where('user_type', 'D')->count();
         $data['total_customers'] = \App\Model\User::where('user_type', 'C')->count();
         $data['total_bookings'] = \App\Model\Bookings::count();
+        
+        // Onboarding statistics
+        $data['onboarding_pending'] = OnboardingDriver::submitted()->count();
+        $data['onboarding_total'] = OnboardingDriver::count();
 
         return view('home', $data);
     }

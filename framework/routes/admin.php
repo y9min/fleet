@@ -307,6 +307,19 @@ Route::namespace ('Admin')->group(function () {
 
         Route::get('payment-settings', 'SettingsController@payment_settings');
         Route::post('payment-settings', 'SettingsController@payment_settings_post');
+
+        // Driver Onboarding Routes
+        Route::get('onboarding', 'OnboardingController@index')->name('onboarding.index');
+        Route::post('onboarding/fetch-data', 'OnboardingController@fetchData')->name('onboarding.fetch');
+        Route::post('onboarding/store-field', 'OnboardingController@storeField')->name('onboarding.store_field');
+        Route::delete('onboarding/delete-field/{id}', 'OnboardingController@deleteField')->name('onboarding.delete_field');
+        Route::post('onboarding/generate-link', 'OnboardingController@generateLink')->name('onboarding.generate_link');
+        Route::get('onboarding/{id}', 'OnboardingController@show')->name('onboarding.show');
+        Route::post('onboarding/approve/{id}', 'OnboardingController@approve')->name('onboarding.approve');
+        Route::post('onboarding/reject/{id}', 'OnboardingController@reject')->name('onboarding.reject');
+        Route::delete('onboarding/{id}', 'OnboardingController@destroy')->name('onboarding.destroy');
+        Route::get('onboarding/stats', 'OnboardingController@getStats')->name('onboarding.stats');
+        Route::post('onboarding/update-field-order', 'OnboardingController@updateFieldOrder')->name('onboarding.update_field_order');
     });
 
     Route::group(['middleware' => ['lang_check', 'auth','driver_ride_check']], function () {

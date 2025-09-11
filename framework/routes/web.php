@@ -197,3 +197,9 @@ Route::get('sample-payment', function () {
 Route::get('/admin/login', function () {
     return redirect('/login');
 })->name('admin.login');
+
+// Public Driver Onboarding Routes (no authentication required)
+Route::group(['middleware' => ['web', 'IsInstalled']], function () {
+    Route::get('driver-onboarding/{token?}', 'Admin\OnboardingController@showPublicForm')->name('onboarding.public_form');
+    Route::post('driver-onboarding/submit', 'Admin\OnboardingController@submitPublicForm')->name('onboarding.submit');
+});

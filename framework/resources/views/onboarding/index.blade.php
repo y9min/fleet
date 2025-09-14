@@ -344,9 +344,34 @@
 @endsection
 
 @section('script')
+<!-- Ensure jQuery is loaded -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="{{ asset('assets/js/plugins-dataTables.bootstrap4.min.js') }}"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+
 <script>
+// Wait for everything to load
 $(document).ready(function() {
+    console.log('DOM ready, initializing DataTables...');
+    initializeOnboardingTable();
+});
+
+// Also try with a timeout as fallback
+setTimeout(function() {
+    if (typeof $ !== 'undefined' && $.fn.DataTable) {
+        console.log('Fallback initialization...');
+        initializeOnboardingTable();
+    }
+}, 2000);
+
+function initializeOnboardingTable() {
+    // Prevent double initialization
+    if ($.fn.DataTable.isDataTable('#onboardingTable')) {
+        return;
+    }
+    
+    console.log('Initializing DataTables...');
     // Initialize DataTable
     var table = $('#onboardingTable').DataTable({
         processing: true,
@@ -368,14 +393,20 @@ $(document).ready(function() {
             {data: 'created_at', name: 'created_at'},
             {data: 'actions', name: 'actions', orderable: false, searchable: false}
         ],
-        order: [[0, 'desc']]
+        order: [[0, 'desc']],
+        language: {
+            processing: "Loading driver applications..."
+        }
     });
 
     // Status filter change
     $('#statusFilter').change(function() {
         table.ajax.reload();
     });
+}
 
+// Initialize other form elements after DataTables
+$(document).ready(function() {
     // Custom field form submission
     $('#customFieldForm').on('submit', function(e) {
         e.preventDefault();
@@ -409,20 +440,15 @@ $(document).ready(function() {
             $('#dropdownOptionsSection').hide();
         }
     });
-
-    // Generate link button click
-    $('#generateLinkBtn').click(function() {
-        generateLink();
-    });
-
-    // Fix button click handler
-    $(document).on('click', '#generateLinkBtn', function() {
-        generateLink();
-    });
 });
 
 // Generate onboarding link
 function generateLink() {
+    if (typeof $ === 'undefined') {
+        alert('System is still loading, please wait...');
+        return;
+    }
+    
     $.ajax({
         url: '{{ url("admin/onboarding/generate-link") }}',
         type: 'POST',
@@ -433,9 +459,101 @@ function generateLink() {
             if (response.success) {
                 $('#generatedLink').val(response.link);
                 $('#onboardingLinkSection').show();
+                
+                // Refresh the page to show the new link in the saved links table
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
             }
+        },
+        error: function(xhr) {
+            alert('Error generating link: ' + xhr.responseText);
         }
     });
+}
+
+// Approve driver
+function approveDriver(driverId) {
+    if (confirm('Are you sure you want to approve this driver?')) {
+        $.ajax({
+            url: '{{ url("admin/onboarding/approve") }}/' + driverId,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Driver approved successfully');
+                    $('#onboardingTable').DataTable().ajax.reload();
+                }
+            },
+            error: function(xhr) {
+                alert('Error approving driver');
+            }
+        });
+    }
+}
+
+// Reject driver
+function rejectDriver(driverId) {
+    if (confirm('Are you sure you want to reject this driver?')) {
+        $.ajax({
+            url: '{{ url("admin/onboarding/reject") }}/' + driverId,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Driver rejected successfully');
+                    $('#onboardingTable').DataTable().ajax.reload();
+                }
+            },
+            error: function(xhr) {
+                alert('Error rejecting driver');
+            }
+        });
+    }
+}
+
+// View driver details
+function viewDriver(driverId) {
+    $.ajax({
+        url: '{{ url("admin/onboarding") }}/' + driverId,
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                // Populate modal with driver details
+                $('#driverDetailsContent').html('<pre>' + JSON.stringify(response.driver, null, 2) + '</pre>');
+                $('#driverDetailsModal').modal('show');
+            }
+        },
+        error: function(xhr) {
+            alert('Error loading driver details');
+        }
+    });
+}
+
+// Delete driver
+function deleteDriver(driverId) {
+    if (confirm('Are you sure you want to delete this driver application? This cannot be undone.')) {
+        $.ajax({
+            url: '{{ url("admin/onboarding") }}/' + driverId,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Driver application deleted successfully');
+                    $('#onboardingTable').DataTable().ajax.reload();
+                }
+            },
+            error: function(xhr) {
+                alert('Error deleting driver application');
+            }
+        });
+    }
 }
 
 // Copy link to clipboard

@@ -11,24 +11,33 @@
     border: 2px dashed #dee2e6;
 }
 
-.stats-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
+.card-stats .card-body {
+    padding: 1.5rem;
+}
+
+.icon-shape {
+    display: inline-flex;
+    padding: 12px;
     text-align: center;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
 }
 
-.stats-number {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 5px;
+.bg-warning {
+    background-color: #fb6340 !important;
 }
 
-.stats-label {
-    font-size: 0.9rem;
-    opacity: 0.9;
+.bg-success {
+    background-color: #2dce89 !important;
+}
+
+.bg-danger {
+    background-color: #f5365c !important;
+}
+
+.bg-info {
+    background-color: #11cdef !important;
 }
 
 .field-item {
@@ -104,29 +113,73 @@
     <div class="container-fluid">
 
         <!-- Statistics Cards -->
-        <div class="row">
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">{{ $pending_count }}</div>
-                    <div class="stats-label">Pending Applications</div>
+        <div class="row mb-4">
+            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
+                <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Pending Applications</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ $pending_count }}</span>
+                            </div>
+                            <div class="col-auto">
+                                <div class="icon icon-shape bg-warning text-white rounded-circle shadow">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">{{ $approved_count }}</div>
-                    <div class="stats-label">Approved Drivers</div>
+            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
+                <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Approved Drivers</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ $approved_count }}</span>
+                            </div>
+                            <div class="col-auto">
+                                <div class="icon icon-shape bg-success text-white rounded-circle shadow">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">{{ $rejected_count }}</div>
-                    <div class="stats-label">Rejected Applications</div>
+            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
+                <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Rejected Applications</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ $rejected_count }}</span>
+                            </div>
+                            <div class="col-auto">
+                                <div class="icon icon-shape bg-danger text-white rounded-circle shadow">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="stats-number">{{ $total_count }}</div>
-                    <div class="stats-label">Total Applications</div>
+            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
+                <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="card-title text-uppercase text-muted mb-0">Total Applications</h5>
+                                <span class="h2 font-weight-bold mb-0">{{ $total_count }}</span>
+                            </div>
+                            <div class="col-auto">
+                                <div class="icon icon-shape bg-info text-white rounded-circle shadow">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

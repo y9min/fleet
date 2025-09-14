@@ -561,3 +561,54 @@ function removeDropdownOption(button) {
 }
 </script>
 @endsection
+
+@section('script')
+@parent
+<script>
+// Ensure jQuery is loaded before executing
+$(document).ready(function() {
+    
+    // Wire up the Generate Link button click handler
+    $("#generateLinkBtn").on('click', function(e) {
+        e.preventDefault();
+        generateLink();
+    });
+    
+// Generate onboarding link
+function generateLink() {
+    $.ajax({
+        url: '{{ route("onboarding.generate_link") }}',
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            if (response.success) {
+                $('#generatedLink').val(response.link);
+                $('#onboardingLinkSection').show();
+                
+                // Refresh the page to show the new link in the saved links table
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
+        },
+        error: function(xhr) {
+            alert('Error generating link: ' + xhr.responseText);
+        }
+    });
+}
+
+// Make functions available globally
+window.generateLink = generateLink;
+window.copySavedLink = copySavedLink;
+window.deactivateLink = deactivateLink;
+window.approveDriver = approveDriver;
+window.rejectDriver = rejectDriver;
+window.viewDriver = viewDriver;
+window.addDropdownOption = addDropdownOption;
+window.removeDropdownOption = removeDropdownOption;
+
+}); // End document ready
+</script>
+@endsection

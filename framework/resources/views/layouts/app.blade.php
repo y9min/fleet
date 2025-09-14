@@ -1728,6 +1728,16 @@ input:checked + .slider:before {
                 </ul>
               </li>
               @endcanany
+
+              @can('Drivers list')
+              <li class="nav-item">
+                <a href="{{ route('onboarding.index') }}" class="nav-link @if(Request::is('admin/onboarding*')) active @endif">
+                  <i class="nav-icon fa fa-user-plus"></i>
+                  <p>Onboarding</p>
+                </a>
+              </li>
+              @endcan
+
               @if((Request::is('admin/driver-logs')) || (Request::is('admin/vehicles*')) ||
               (Request::is('admin/vehicle_group*')) ||
               (Request::is('admin/vehicle-reviews*')) || (Request::is('admin/view-vehicle-review*')) ||
@@ -1813,15 +1823,6 @@ input:checked + .slider:before {
                 </ul>
               </li>
             @endcanany
-
-              @can('Drivers list')
-              <li class="nav-item">
-                <a href="{{ route('onboarding.index') }}" class="nav-link @if(Request::is('admin/onboarding*')) active @endif">
-                  <i class="nav-icon fa fa-user-plus"></i>
-                  <p>Onboarding</p>
-                </a>
-              </li>
-              @endcan
 
               @if((Request::is('admin/income')) || (Request::is('admin/expense')) || (Request::is('admin/transaction'))
               || (Request::is('admin/income_records')) || (Request::is('admin/expense_records')) )

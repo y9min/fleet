@@ -16,32 +16,15 @@ Route::namespace ('Admin')->group(function () {
         return '<h1>Admin Routes Working!</h1><p><a href="/admin/login">Go to Admin Login</a></p>';
     });
 
-    Route::get("/migrate", function () {
-        \Artisan::call('migrate');
-    });
+    // SECURITY: Migrate and cache clear routes are commented out for security
+    // These routes should only be accessible via console, not web
+    // Route::get("/migrate", function () { \Artisan::call('migrate'); });
+    // Route::get("/clear_cache", function () { /* Artisan cache commands */ });
 
     Route::post("logout", 'HomeController@logout')->name('logout');
 
-    Route::get("/clear_cache", function () {
-        Artisan::call('optimize:clear');
-        Artisan::call('cache:clear');
-        Artisan::call('view:clear');
-        Artisan::call('route:clear');
-        Artisan::call('config:clear');
-    });
-
-    Route::get('/firebase/token-by-email', 'DriversController@getFirebaseTokenByEmail');
-
-
-     Route::get('/get-user-info/{id}', 'DriversController@get_driver_info');
-
-      Route::post('/get-availability-status', 'DriversController@get_availability_status');
-
-      Route::get('test11111', function () {
-
-      dd(date('Y-m-d H:i:s'));
-
-      });
+    // SECURITY: Dangerous routes moved inside auth middleware for protection
+    // These routes were exposing sensitive data without authentication
 
     // Route::get('add-permission', function () {
     //     $drivers = App\Model\User::where('user_type', 'D')->get();
@@ -64,6 +47,12 @@ Route::namespace ('Admin')->group(function () {
 
         Route::get('/drivers/verify-driver/{id}', 'DriversController@verify_driver');
         Route::post('/drivers/update_verify_driver', 'DriversController@update_verify_driver')->name('update_verify_driver');
+        
+        // SECURITY: Previously unprotected routes now secured inside auth middleware
+        Route::get('/firebase/token-by-email', 'DriversController@getFirebaseTokenByEmail');
+        Route::get('/get-user-info/{id}', 'DriversController@get_driver_info');
+        Route::post('/get-availability-status', 'DriversController@get_availability_status');
+        // Test route disabled in production: Route::get('test11111', function () { dd(date('Y-m-d H:i:s')); });
 
         Route::resource('/vehicle-breakdown', 'VehicleBreakdownController');
 

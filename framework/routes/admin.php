@@ -310,7 +310,7 @@ Route::namespace ('Admin')->group(function () {
 
         // Driver Onboarding Routes
         Route::get('onboarding', 'OnboardingController@index')->name('onboarding.index');
-        Route::post('onboarding/fetch-data', 'OnboardingController@fetchData')->name('onboarding.fetch');
+        Route::get('onboarding/fetch-data', 'OnboardingController@fetchData')->name('onboarding.fetch');
         Route::post('onboarding/store-field', 'OnboardingController@storeField')->name('onboarding.store_field');
         Route::delete('onboarding/delete-field/{id}', 'OnboardingController@deleteField')->name('onboarding.delete_field');
         Route::post('onboarding/generate-link', 'OnboardingController@generateLink')->name('onboarding.generate_link');

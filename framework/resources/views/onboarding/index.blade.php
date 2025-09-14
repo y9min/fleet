@@ -11,33 +11,59 @@
     border: 2px dashed #dee2e6;
 }
 
-.card-stats .card-body {
-    padding: 1.5rem;
+.stats-card-square {
+    height: 180px;
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.icon-shape {
-    display: inline-flex;
-    padding: 12px;
-    text-align: center;
+.stats-card-square:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.stats-card-square .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.icon-circle {
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
+    display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-.bg-warning {
-    background-color: #fb6340 !important;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stats-card-square {
+        height: 160px;
+        margin-bottom: 1rem;
+    }
+    
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .icon-circle i {
+        font-size: 20px !important;
+    }
 }
 
-.bg-success {
-    background-color: #2dce89 !important;
-}
-
-.bg-danger {
-    background-color: #f5365c !important;
-}
-
-.bg-info {
-    background-color: #11cdef !important;
+@media (min-width: 769px) {
+    .row .col-xl-3,
+    .row .col-lg-3,
+    .row .col-md-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
 }
 
 .field-item {
@@ -114,71 +140,47 @@
 
         <!-- Statistics Cards -->
         <div class="row mb-4">
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-                <div class="card card-stats mb-4 mb-xl-0">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col">
-                                <h5 class="card-title text-uppercase text-muted mb-0">Pending Applications</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ $pending_count }}</span>
-                            </div>
-                            <div class="col-auto">
-                                <div class="icon icon-shape bg-warning text-white rounded-circle shadow">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                            </div>
+            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12">
+                <div class="card stats-card-square shadow-sm mb-3">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-circle mx-auto mb-3" style="background-color: #ffc107;">
+                            <i class="fas fa-clock text-white" style="font-size: 24px;"></i>
                         </div>
+                        <h3 class="h2 font-weight-bold text-dark mb-1">{{ $pending_count }}</h3>
+                        <p class="text-muted mb-0 small">Pending Applications</p>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-                <div class="card card-stats mb-4 mb-xl-0">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col">
-                                <h5 class="card-title text-uppercase text-muted mb-0">Approved Drivers</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ $approved_count }}</span>
-                            </div>
-                            <div class="col-auto">
-                                <div class="icon icon-shape bg-success text-white rounded-circle shadow">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                            </div>
+            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12">
+                <div class="card stats-card-square shadow-sm mb-3">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-circle mx-auto mb-3" style="background-color: #28a745;">
+                            <i class="fas fa-check text-white" style="font-size: 24px;"></i>
                         </div>
+                        <h3 class="h2 font-weight-bold text-dark mb-1">{{ $approved_count }}</h3>
+                        <p class="text-muted mb-0 small">Approved Drivers</p>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-                <div class="card card-stats mb-4 mb-xl-0">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col">
-                                <h5 class="card-title text-uppercase text-muted mb-0">Rejected Applications</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ $rejected_count }}</span>
-                            </div>
-                            <div class="col-auto">
-                                <div class="icon icon-shape bg-danger text-white rounded-circle shadow">
-                                    <i class="fas fa-times"></i>
-                                </div>
-                            </div>
+            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12">
+                <div class="card stats-card-square shadow-sm mb-3">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-circle mx-auto mb-3" style="background-color: #dc3545;">
+                            <i class="fas fa-times text-white" style="font-size: 24px;"></i>
                         </div>
+                        <h3 class="h2 font-weight-bold text-dark mb-1">{{ $rejected_count }}</h3>
+                        <p class="text-muted mb-0 small">Rejected Applications</p>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-12">
-                <div class="card card-stats mb-4 mb-xl-0">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col">
-                                <h5 class="card-title text-uppercase text-muted mb-0">Total Applications</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ $total_count }}</span>
-                            </div>
-                            <div class="col-auto">
-                                <div class="icon icon-shape bg-info text-white rounded-circle shadow">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                            </div>
+            <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12">
+                <div class="card stats-card-square shadow-sm mb-3">
+                    <div class="card-body text-center p-4">
+                        <div class="icon-circle mx-auto mb-3" style="background-color: #17a2b8;">
+                            <i class="fas fa-users text-white" style="font-size: 24px;"></i>
                         </div>
+                        <h3 class="h2 font-weight-bold text-dark mb-1">{{ $total_count }}</h3>
+                        <p class="text-muted mb-0 small">Total Applications</p>
                     </div>
                 </div>
             </div>

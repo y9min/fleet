@@ -209,6 +209,52 @@
                             </div>
                         </div>
 
+                        <!-- Saved Links Display -->
+                        <div class="mt-4">
+                            <h5>Generated Onboarding Links</h5>
+                            @if($saved_links->count() > 0)
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Link</th>
+                                                <th>Created By</th>
+                                                <th>Usage Count</th>
+                                                <th>Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($saved_links as $link)
+                                                <tr>
+                                                    <td>
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control form-control-sm" value="{{ $link->link }}" readonly id="savedLink{{ $link->id }}">
+                                                            <div class="input-group-append">
+                                                                <button class="btn btn-outline-secondary btn-sm" onclick="copySavedLink({{ $link->id }})">
+                                                                    <i class="fa fa-copy"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{ $link->createdBy->name ?? 'Unknown' }}</td>
+                                                    <td><span class="badge badge-info">{{ $link->usage_count }}</span></td>
+                                                    <td>{{ $link->created_at->format('M d, Y H:i') }}</td>
+                                                    <td>
+                                                        <button class="btn btn-danger btn-sm" onclick="deactivateLink({{ $link->id }})">
+                                                            <i class="fa fa-trash"></i> Deactivate
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-muted">No onboarding links generated yet. Click "Generate Link" to create one.</p>
+                            @endif
+                        </div>
+
                         <!-- Current Custom Fields -->
                         <div class="mt-4">
                             <h5>Current Custom Fields</h5>
@@ -398,6 +444,36 @@ function copyLink() {
     linkInput.select();
     document.execCommand('copy');
     alert('Link copied to clipboard!');
+}
+
+// Copy saved link to clipboard
+function copySavedLink(linkId) {
+    var linkInput = document.getElementById('savedLink' + linkId);
+    linkInput.select();
+    document.execCommand('copy');
+    alert('Link copied to clipboard!');
+}
+
+// Deactivate saved link
+function deactivateLink(linkId) {
+    if (confirm('Are you sure you want to deactivate this link? This will prevent it from being used for new applications.')) {
+        $.ajax({
+            url: '{{ url("admin/onboarding/deactivate-link") }}/' + linkId,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Link deactivated successfully');
+                    location.reload();
+                }
+            },
+            error: function(xhr) {
+                alert('Error deactivating link');
+            }
+        });
+    }
 }
 
 // Delete custom field

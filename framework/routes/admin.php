@@ -320,6 +320,7 @@ Route::namespace ('Admin')->group(function () {
         Route::delete('onboarding/{id}', 'OnboardingController@destroy')->name('onboarding.destroy');
         Route::get('onboarding/stats', 'OnboardingController@getStats')->name('onboarding.stats');
         Route::post('onboarding/update-field-order', 'OnboardingController@updateFieldOrder')->name('onboarding.update_field_order');
+        Route::post('onboarding/deactivate-link/{id}', 'OnboardingController@deactivateLink')->name('onboarding.deactivate_link');
     });
 
     Route::group(['middleware' => ['lang_check', 'auth','driver_ride_check']], function () {

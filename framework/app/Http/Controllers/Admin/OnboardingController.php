@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\OnboardingDriver;
+use App\OnboardingLink;
 use App\CustomFormField;
 use App\Model\User;
 use Illuminate\Http\Request;
@@ -36,7 +37,8 @@ class OnboardingController extends Controller
             'pending_count' => OnboardingDriver::submitted()->count(),
             'approved_count' => OnboardingDriver::approved()->count(),
             'rejected_count' => OnboardingDriver::rejected()->count(),
-            'total_count' => OnboardingDriver::count()
+            'total_count' => OnboardingDriver::count(),
+            'saved_links' => OnboardingLink::active()->with('createdBy')->orderBy('created_at', 'desc')->get()
         ];
 
         return view('onboarding.index', $data);
@@ -186,10 +188,18 @@ class OnboardingController extends Controller
         $token = Str::random(40);
         $link = url('/driver-onboarding/' . $token);
         
+        // Save the link to database
+        $onboardingLink = OnboardingLink::create([
+            'token' => $token,
+            'link' => $link,
+            'created_by' => Auth::id()
+        ]);
+        
         return response()->json([
             'success' => true,
             'link' => $link,
-            'token' => $token
+            'token' => $token,
+            'id' => $onboardingLink->id
         ]);
     }
 
@@ -199,6 +209,14 @@ class OnboardingController extends Controller
     public function showPublicForm($token = null)
     {
         $customFields = CustomFormField::ordered()->get();
+        
+        // Track link usage if token is provided
+        if ($token) {
+            $onboardingLink = OnboardingLink::where('token', $token)->where('is_active', true)->first();
+            if ($onboardingLink) {
+                $onboardingLink->incrementUsage();
+            }
+        }
         
         return view('onboarding.public_form', [
             'token' => $token,
@@ -436,6 +454,20 @@ class OnboardingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Field order updated successfully'
+        ]);
+    }
+
+    /**
+     * Deactivate onboarding link
+     */
+    public function deactivateLink($id)
+    {
+        $link = OnboardingLink::findOrFail($id);
+        $link->update(['is_active' => false]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Onboarding link deactivated successfully'
         ]);
     }
 }

@@ -17,7 +17,7 @@ class OnboardingController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:Drivers list');
+        $this->middleware('permission:Drivers list')->except(['showPublicForm', 'submitPublicForm']);
         $this->middleware('permission:Drivers add', ['only' => ['store', 'approve']]);
         $this->middleware('permission:Drivers edit', ['only' => ['approve', 'reject']]);
         $this->middleware('permission:Drivers delete', ['only' => ['destroy']]);

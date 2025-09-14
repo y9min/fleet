@@ -138,7 +138,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Form Builder</h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-primary btn-sm" id="generateLinkBtn">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="generateLink()">
                                 <i class="fa fa-link"></i> Generate Onboarding Link
                             </button>
                         </div>
@@ -559,21 +559,7 @@ function addDropdownOption() {
 function removeDropdownOption(button) {
     $(button).closest('.dropdown-option').remove();
 }
-</script>
-@endsection
 
-@section('script')
-@parent
-<script>
-// Ensure jQuery is loaded before executing
-$(document).ready(function() {
-    
-    // Wire up the Generate Link button click handler
-    $("#generateLinkBtn").on('click', function(e) {
-        e.preventDefault();
-        generateLink();
-    });
-    
 // Generate onboarding link
 function generateLink() {
     $.ajax({
@@ -598,17 +584,5 @@ function generateLink() {
         }
     });
 }
-
-// Make functions available globally
-window.generateLink = generateLink;
-window.copySavedLink = copySavedLink;
-window.deactivateLink = deactivateLink;
-window.approveDriver = approveDriver;
-window.rejectDriver = rejectDriver;
-window.viewDriver = viewDriver;
-window.addDropdownOption = addDropdownOption;
-window.removeDropdownOption = removeDropdownOption;
-
-}); // End document ready
 </script>
 @endsection

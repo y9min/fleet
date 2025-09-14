@@ -834,6 +834,8 @@ input:checked + .slider:before {
                         </div>
                     </div>
 
+                    <a href="{{route('onboarding.index')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-plus"></i> Onboarding</a>
+
                     <div class="menu-group">
                         <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-exchange-alt"></i> Transactions <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">

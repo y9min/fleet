@@ -203,3 +203,8 @@ Route::group(['middleware' => ['web', 'IsInstalled']], function () {
     Route::get('driver-onboarding/{token?}', 'Admin\OnboardingController@showPublicForm')->name('onboarding.public_form');
     Route::post('driver-onboarding/submit', 'Admin\OnboardingController@submitPublicForm')->name('onboarding.submit');
 });
+
+// Include test routes (remove in production)
+if (file_exists(__DIR__ . '/test.php')) {
+    require __DIR__ . '/test.php';
+}

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: fleet-php
+    env: php
+    rootDir: framework
+    buildCommand: composer install --no-dev --optimize-autoloader
+    startCommand: heroku-php-apache2 public/
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      # Set these in Render dashboard or add more here as needed:
+      # - key: APP_KEY
+      #   value: <paste output of: php artisan key:generate --show>

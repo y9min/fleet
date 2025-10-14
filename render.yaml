@@ -5,7 +5,3 @@ services:
     rootDir: framework
     buildCommand: composer install --no-dev --optimize-autoloader
     startCommand: heroku-php-apache2 public/
-    preDeployCommand: |
-      php artisan config:cache
-      php artisan route:cache
-      php artisan migrate --force

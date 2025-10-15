@@ -24,10 +24,16 @@ class VehicleModel extends Model {
 	protected $dates = ['deleted_at'];
 	protected $table = "vehicles";
 	protected $metaTable = 'vehicles_meta'; //optional.
-	protected $fillable = ['model_name', 'make_name', 'color_name', 'type', 'year', 'engine_type', 'horse_power', 'vin', 'license_plate', 'mileage', 'int_mileage', 'in_service', 'user_id', 'insurance_number', 'documents', 'vehicle_image', 'exp_date', 'reg_exp_date', 'lic_exp_date', 'group_id', 'type_id'];
+	protected $fillable = ['model_name', 'make_name', 'color_name', 'type', 'year', 'engine_type', 'horse_power', 'vin', 'license_plate', 'mileage', 'int_mileage', 'in_service', 'user_id', 'insurance_number', 'documents', 'vehicle_image', 'exp_date', 'reg_exp_date', 'lic_exp_date', 'group_id', 'company_id', 'type_id', 'height', 'length', 'breadth', 'weight'];
+	
+	protected $appends = ['vehicle_status'];
 
 	protected function getMetaKeyName() {
 		return 'vehicle_id'; // The parent foreign key
+	}
+	
+	public function getVehicleStatusAttribute() {
+		return $this->getMeta('vehicle_status') ?: 'Available';
 	}
 
 	public function driver() {
@@ -63,6 +69,34 @@ class VehicleModel extends Model {
 
 	public function types() {
 		return $this->hasOne("App\Model\VehicleTypeModel", "id", "type_id")->withTrashed();
+	}
+
+	public function company() {
+		return $this->belongsTo(Company::class);
+	}
+
+	/**
+	 * Calculate the price based on insurance selection
+	 * @param string $insuranceSelection 'with_insurance' or 'without_insurance'
+	 * @return float
+	 */
+	public function calculatePrice($insuranceSelection = 'with_insurance') {
+		$basePrice = (float) ($this->getMeta('price') ?: $this->getMeta('vehicle_price') ?: 0);
+		$insuranceDiscount = (float) ($this->getMeta('insurance_discount') ?: 0);
+		
+		if ($insuranceSelection === 'without_insurance' && $insuranceDiscount > 0) {
+			return max(0, $basePrice - $insuranceDiscount);
+		}
+		
+		return $basePrice;
+	}
+
+	/**
+	 * Get the insurance discount amount
+	 * @return float
+	 */
+	public function getInsuranceDiscount() {
+		return (float) ($this->getMeta('insurance_discount') ?: 0);
 	}
 
 }

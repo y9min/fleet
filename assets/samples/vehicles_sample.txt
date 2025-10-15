@@ -1,0 +1,69 @@
+Vehicle Import Sample Template
+=============================
+
+Copy the data below into Excel and save as .xlsx format.
+
+Registration Plate	Make	Model	Year	Color	Vehicle Type	Fuel Type	Mileage	VIN	Horse Power	Fuel Efficiency	Price	Price Period	Initial Cost	Vehicle Scheme	Insurance Discount	Available	Vehicle Status	Vehicle Group	MOT Expiry Day	MOT Expiry Month	MOT Expiry Year	Telematics Link	Assigned Driver First Name	Assigned Driver Last Name
+
+Sample Data:
+BM23 X5A	BMW	X5	2023	Black	SUV	Petrol	15000	WBAFR9C50LC123456	340	25.5	850.00	monthly	65000.00	Rental	50.00	False	Rented	1	15	06	25	https://tracking.example.com/bmwx5	James	Smith
+AU22 A4B	Audi	A4	2022	Silver	Saloon	Diesel	22000	WAUZZZ8V2MA123457	190	45.2	650.00	monthly	45000.00	Rent To Buy	40.00	False	Rented	1	20	08	25	https://tracking.example.com/audia4	Sarah	Johnson
+MB23 CC1	Mercedes-Benz	C-Class	2023	White	Saloon	Hybrid	8500	WDD2050461A123458	255	52.3	750.00	monthly	52000.00	Rental	60.00	False	Rented	1	10	12	25	https://tracking.example.com/mercedes-c	Michael	Brown
+VW22 GOL	Volkswagen	Golf	2022	Blue	Hatchback	Petrol	18500	WVWZZZ1KZ2W123459	150	38.7	115.00	weekly	28000.00	Rent To Buy	15.00	False	Rented	1	05	03	25	https://tracking.example.com/vwgolf	Emma	Davis
+FO23 FOC	Ford	Focus	2023	Red	Hatchback	Electric	3200	WF0EXXGBP3MA123460	143	4.2	140.00	weekly	35000.00	Rental	20.00	False	Rented	1	18	09	26	https://tracking.example.com/fordfocus	David	Wilson
+TO22 PRI	Toyota	Prius	2022	Green	Hatchback	Hybrid	25600	JTDKARFU2N3123461	121	65.7	480.00	monthly	32000.00	Rent To Buy	30.00	False	Rented	1	12	11	25	https://tracking.example.com/toyotaprius	Lisa	Anderson
+NI23 LEA	Nissan	Leaf	2023	White	Hatchback	Electric	1200	1N4AZ1CP5JC123462	147	3.8	520.00	monthly	33000.00	Rental	35.00	True	Available	1	25	07	26	https://tracking.example.com/nissanleaf		
+HO22 CIV	Honda	Civic	2022	Grey	Hatchback	Petrol	19800	1HGCV1F3XLA123463	158	42.2	110.00	weekly	26000.00	Rental	12.00	False	Rented	1	08	04	25	https://tracking.example.com/hondacivic	Robert	Taylor
+HY23 I30	Hyundai	i30	2023	Black	Hatchback	Diesel	7500	KMHDN4AE3NU123464	136	48.7	100.00	weekly	24000.00	Rent To Buy	10.00	False	Rented	1	14	06	26	https://tracking.example.com/hyundaii30	Jennifer	Thomas
+KI22 SPO	Kia	Sportage	2022	Silver	SUV	Petrol	22300	KNDJN2A25N7123465	177	35.8	580.00	monthly	38000.00	Rental	True	Available	1	22	10	25	https://tracking.example.com/kiasportage		
+SK23 OCT	Skoda	Octavia	2023	Blue	Saloon	Diesel	4500	TMBJF7NE3MA123466	150	46.3	490.00	monthly	31000.00	Rent To Buy	False	Rented	1	30	01	26	https://tracking.example.com/skodaoctavia	Christopher	Jackson
+SE22 LEO	SEAT	Leon	2022	Red	Hatchback	Petrol	18700	VSSZZZ5FZ2R123467	150	39.8	115.00	weekly	27000.00	Rental	False	Rented	1	16	05	25	https://tracking.example.com/seatleon	Amanda	White
+PE23 308	Peugeot	308	2023	White	Hatchback	Diesel	3200	VF3LCYHZ0PS123468	130	44.1	460.00	monthly	29000.00	Rental	True	Available	1	03	12	26	https://tracking.example.com/peugeot308		
+RE22 CLI	Renault	Clio	2022	Yellow	Hatchback	Petrol	21400	VF1RJA002123469	100	41.5	90.00	weekly	22000.00	Rent To Buy	False	Rented	1	27	08	25	https://tracking.example.com/renaultclio	Daniel	Harris
+CI23 C3E	Citroen	C3	2023	Orange	Hatchback	Electric	1800	VF7RJA002123470	100	4.1	420.00	monthly	28000.00	Rental	False	Rented	1	11	02	26	https://tracking.example.com/citroenc3	Michelle	Martin
+MA22 CX5	Mazda	CX-5	2022	Grey	SUV	Diesel	19600	JMZKE8E70N1123471	173	43.5	620.00	monthly	40000.00	Rent To Buy	True	Available	1	19	09	25	https://tracking.example.com/mazdacx5		
+SU23 OUT	Subaru	Outback	2023	Green	SUV	Petrol	2800	JF1BSA6L8MG123472	182	32.1	175.00	weekly	45000.00	Rental	False	Rented	1	07	11	26	https://tracking.example.com/subaruoutback	Kevin	Thompson
+VO22 XC6	Volvo	XC60	2022	Black	SUV	Hybrid	15200	YV1LFA0AC2M123473	340	49.6	780.00	monthly	55000.00	Rental	False	Rented	1	13	04	25	https://tracking.example.com/volvoxc60	Laura	Garcia
+JA23 XE1	Jaguar	XE	2023	Silver	Saloon	Petrol	1200	SAJAA2GX3MA123474	300	28.8	185.00	weekly	48000.00	Rent To Buy	True	Available	1	21	07	26	https://tracking.example.com/jaguarxe		
+LR22 DIS	Land Rover	Discovery Sport	2022	White	SUV	Diesel	18900	SALVA2BG2MA123475	240	38.2	850.00	monthly	60000.00	Rental	False	Rented	1	26	03	25	https://tracking.example.com/landroverdiscovery	Steven	Martinez
+MI23 COO	MINI	Cooper	2023	Red	Hatchback	Petrol	800	WMWXX7C05MA123476	136	44.8	125.00	weekly	32000.00	Rental	False	Rented	1	09	10	26	https://tracking.example.com/minicooper	Nicole	Robinson
+SM22 FT2	Smart	ForTwo	2022	Blue	Hatchback	Electric	15600	WME4513321A123477	82	3.2	320.00	monthly	20000.00	Rent To Buy	True	Available	1	17	06	25	https://tracking.example.com/smartfortwo		
+TE23 M3A	Tesla	Model 3	2023	Black	Saloon	Electric	500	5YJ3E1EA4PF123478	283	4.1	950.00	monthly	65000.00	Rental	False	Rented	1	04	01	27	https://tracking.example.com/teslamodel3	Andrew	Clark
+PO22 MAC	Porsche	Macan	2022	Silver	SUV	Petrol	12300	WP1AB2A59MLA123479	375	26.4	305.00	weekly	75000.00	Rent To Buy	True	Available	1	28	12	25	https://tracking.example.com/porschemacan		
+LE23 NX1	Lexus	NX	2023	White	SUV	Hybrid	2200	JTJBARBZ8N2123480	194	51.4	680.00	monthly	45000.00	Rental	False	Rented	1	15	08	26	https://tracking.example.com/lexusnx	Rachel	Rodriguez
+
+Field Descriptions:
+==================
+- Registration Plate: Vehicle registration number (e.g., BM23 X5A)
+- Make: Vehicle manufacturer (BMW, Audi, Mercedes-Benz, etc.)
+- Model: Vehicle model (X5, A4, C-Class, etc.)
+- Year: Manufacturing year (2020, 2021, 2022, etc.)
+- Color: Vehicle color (Black, White, Silver, etc.)
+- Vehicle Type: Convertible, Coupe, Estate, Hatchback, Minibus, MPV, Pickup, Saloon, SUV
+- Fuel Type: Petrol, Diesel, Electric, Hybrid
+- Mileage: Current odometer reading in miles
+- VIN: Vehicle Identification Number (17-character unique identifier)
+- Horse Power: Engine power output in HP
+- Fuel Efficiency: MPG for petrol/diesel, mi/kWh for electric
+- Price: Rental price in £ (with insurance included)
+- Price Period: monthly or weekly
+- Initial Cost: Purchase/acquisition cost in £
+- Vehicle Scheme: Rental or Rent To Buy
+- Insurance Discount: Discount amount in £ when driver chooses without insurance (e.g., if price is £400/week and insurance discount is £50, driver pays £350/week without insurance)
+- Available: True or False (boolean value)
+- Vehicle Status: Available, Rented, Workshop, or Disabled
+- Vehicle Group: Vehicle group identifier (usually 1 for default group)
+- MOT Expiry Day: Day of MOT expiration (1-31)
+- MOT Expiry Month: Month of MOT expiration (1-12)
+- MOT Expiry Year: Year of MOT expiration (e.g., 25 for 2025)
+- Telematics Link: GPS tracking URL
+- Assigned Driver First Name: First name of the assigned driver (leave empty if no driver assigned)
+- Assigned Driver Last Name: Last name of the assigned driver (leave empty if no driver assigned)
+
+Instructions:
+============
+1. Copy the column headers and sample data above
+2. Paste into Excel
+3. Save as .xlsx format
+4. Replace sample data with your actual vehicle information
+5. Import using the vehicle import feature

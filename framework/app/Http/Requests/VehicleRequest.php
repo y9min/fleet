@@ -45,6 +45,15 @@ class VehicleRequest extends FormRequest {
                                 'average' => 'nullable|numeric',
                                 'type_id' => 'nullable|integer',
                                 'traccar_device_id' => 'nullable',
+                                'vehicle_price' => 'nullable|numeric|min:0',
+                                'insurance_discount' => 'nullable|numeric|min:0',
+                                'initial_cost' => 'nullable|numeric|min:0',
+                                'price_period' => 'nullable|in:monthly,weekly',
+                                'vehicle_scheme' => 'nullable|in:Rental,Rent To Buy,Other',
+                                'vehicle_status' => 'nullable|in:Available,Rented,Workshop,Disabled',
+                                'group_id' => 'nullable|integer',
+                                'driver_id' => 'nullable|integer',
+                                'telematics_link' => 'nullable|url',
                         ];
                 }
                 else{
@@ -64,6 +73,15 @@ class VehicleRequest extends FormRequest {
                                 'average' => 'nullable|numeric',
                                 'type_id' => 'nullable|integer',
                                 'traccar_device_id' => 'nullable',
+                                'vehicle_price' => 'nullable|numeric|min:0',
+                                'insurance_discount' => 'nullable|numeric|min:0',
+                                'initial_cost' => 'nullable|numeric|min:0',
+                                'price_period' => 'nullable|in:monthly,weekly',
+                                'vehicle_scheme' => 'nullable|in:Rental,Rent To Buy,Other',
+                                'vehicle_status' => 'nullable|in:Available,Rented,Workshop,Disabled',
+                                'group_id' => 'nullable|integer',
+                                'driver_id' => 'nullable|integer',
+                                'telematics_link' => 'nullable|url',
                         ];
                 }
         }

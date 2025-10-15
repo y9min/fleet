@@ -34,7 +34,7 @@ class LoginController extends Controller
         if($user->user_type == 'C') {
             Auth::logout();
             session()->flash('error', 'Customers should use the frontend login. Please go to the main site to log in.');
-            return redirect('/admin/login');
+            return redirect('/login');
         }
 
         if(Hyvikk::get('driver_doc_verification') == 1 && $user->user_type == 'D')
@@ -47,7 +47,7 @@ class LoginController extends Controller
            {
                Auth::logout(); 
                session()->flash('error', 'Profile is not Verified. Please, Contact Admin !');
-               return redirect('/admin/login');
+               return redirect('/login');
            }
         }
         else

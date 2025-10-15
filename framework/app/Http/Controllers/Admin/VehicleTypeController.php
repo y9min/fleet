@@ -56,11 +56,8 @@ class VehicleTypeController extends Controller {
 		return view('vehicle_types.create');
 	}
 	public function store(VehicleTypeRequest $request) {
-		if ($request->isenable == 1) {
-			$enable = 1;
-		} else {
-			$enable = 0;
-		}
+		// Handle isenable field - checkbox sends "1" when checked, "0" when unchecked (via hidden field)
+		$enable = ($request->isenable == 1) ? 1 : 0;
 		$new = VehicleTypeModel::create([
 			'vehicletype' => $request->vehicletype,
 			'displayname' => $request->displayname,
@@ -96,12 +93,10 @@ class VehicleTypeController extends Controller {
 		return view('vehicle_types.edit', $data);
 	}
 	public function update(VehicleTypeRequest $request) {
-		if ($request->isenable == 1) {
-			$enable = 1;
-		} else {
-			$enable = 0;
-		}
+		// Handle isenable field - checkbox sends "1" when checked, "0" when unchecked (via hidden field)
+		$enable = ($request->isenable == 1) ? 1 : 0;
 		$data = VehicleTypeModel::find($request->get('id'));
+		
 		$data->update([
 			'vehicletype' => $request->vehicletype,
 			'displayname' => $request->displayname,

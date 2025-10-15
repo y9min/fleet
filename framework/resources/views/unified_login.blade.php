@@ -1,314 +1,536 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ Hyvikk::get('app_name') }}</title>
+    <title>Login | {{ Hyvikk::get('app_name') }}</title>
     <link rel="icon" href="{{ asset('assets/images/'. Hyvikk::get('icon_img') ) }}" type="icon_img">
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
-    <!-- Custom styles from customer dashboard -->
-    <link rel="stylesheet" href="{{asset('assets/customer_dashboard/assets/css/soft-ui-dashboard.css?v=345435')}}">
-    <link rel="stylesheet" href="{{asset('assets/customer_dashboard/assets/css/style.css?v=1.1234568')}}">
-
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body {
-            background: linear-gradient(135deg, #032127 0%, #7ed6df 100%);
-            min-height: 100vh;
-            font-family: 'Open Sans', sans-serif;
-            position: relative; /* Needed for absolute positioning of the back button */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .login-container {
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #032127;
             min-height: 100vh;
             display: flex;
             align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        .login-container {
+            max-width: 500px;
+            width: 100%;
+            background: #FFFFFF;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            display: flex;
+            min-height: 600px;
         }
 
-        .login-left {
-            background: linear-gradient(45deg, rgba(3, 33, 39, 0.1), rgba(126, 214, 223, 0.1));
-            padding: 50px 40px;
+        .left-panel {
+            width: 100%;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .login-right {
-            background: url('{{ asset('assets/customer_dashboard/assets/img/svg/pexels-taras-makarenko 1.jpg') }}') center/cover;
-            position: relative;
+        .logo {
+            margin-bottom: 60px;
+            display: flex;
+            justify-content: center;
         }
 
-        .login-right::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(3, 33, 39, 0.8), rgba(126, 214, 223, 0.8));
+        .pco-logo {
+            display: inline-block;
         }
 
-        .logo-container {
-            text-align: center;
-            margin-bottom: 30px;
+        .pco-logo-img {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
         }
 
-        .logo-container img {
-            max-height: 80px;
-            max-width: 300px;
-        }
-
-        .login-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #032127;
-            margin-bottom: 10px;
-        }
-
-        .login-subtitle {
-            color: #7ed6df;
-            font-size: 1.1rem;
-            margin-bottom: 40px;
-        }
-
-        .form-control {
-            border: 1px solid #d2d6da;
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: #7ed6df;
-            box-shadow: 0 0 0 0.2rem rgba(126, 214, 223, 0.25);
-        }
-
-        .btn-login {
-            background: linear-gradient(135deg, #032127, #7ed6df);
-            border: none;
-            border-radius: 8px;
-            padding: 12px 30px;
+        .form-heading {
+            font-size: 28px;
             font-weight: 600;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
+            color: #1a1a1a;
+            margin-bottom: 8px;
         }
 
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(3, 33, 39, 0.3);
+        .form-subheading {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 32px;
+        }
+
+        .form-container {
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 48px;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            background: #FFFFFF;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #79D1DC;
+            box-shadow: 0 0 0 3px rgba(121, 209, 220, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid #D1D5DB;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            color: #1a1a1a;
+            cursor: pointer;
         }
 
         .forgot-link {
-            color: #032127;
-            text-decoration: none;
+            color: #79D1DC;
+            font-size: 14px;
             font-weight: 500;
+            text-decoration: none;
         }
 
         .forgot-link:hover {
-            color: #7ed6df;
             text-decoration: underline;
         }
 
-        .alert-custom {
-            border-radius: 8px;
+        .login-button {
+            width: 100%;
+            height: 48px;
+            background: #79D1DC;
+            color: #FFFFFF;
             border: none;
-            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .login-button:hover {
+            background: #5fc0cc;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(121, 209, 220, 0.3);
+        }
+
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+
+        .form-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .signup-link {
+            color: #79D1DC;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .signup-link:hover {
+            text-decoration: underline;
+        }
+
+        .back-to-dashboard {
+            text-align: center;
+            margin-top: 20px;
         }
 
         .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #ffffff; /* White text for better visibility on gradient background */
-            background-color: rgba(3, 33, 39, 0.7); /* Semi-transparent dark background */
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6B7280;
+            font-size: 14px;
             font-weight: 500;
-            transition: all 0.3s ease;
-            z-index: 10; /* Ensure it's above other content */
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
         }
 
         .back-button:hover {
-            background-color: #032127;
-            color: #ffffff;
-            transform: translateY(-2px);
+            color: #79D1DC;
+            background: rgba(121, 209, 220, 0.1);
+            text-decoration: none;
         }
 
-        .spinner-border-sm {
-            width: 1rem;
-            height: 1rem;
+        .back-button svg {
+            transition: transform 0.2s ease;
         }
 
+        .back-button:hover svg {
+            transform: translateX(-2px);
+        }
+
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .alert-danger {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .alert ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .login-card {
-                margin: 20px;
+            body {
+                padding: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
             }
-            .login-left {
+
+            .login-container {
+                max-width: 100%;
+                width: 100%;
+                margin: 0 auto;
+                min-height: auto;
+            }
+
+            .left-panel {
+                padding: 40px 30px;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .logo {
+                margin-bottom: 40px;
+                text-align: center;
+            }
+
+            .form-container {
+                max-width: 100%;
+                width: 100%;
+                text-align: center;
+            }
+
+            .form-heading {
+                font-size: 24px;
+                text-align: center;
+                margin-bottom: 8px;
+            }
+
+            .form-subheading {
+                text-align: center;
+                margin-bottom: 32px;
+            }
+
+            .form-group {
+                text-align: left;
+                margin-bottom: 20px;
+            }
+
+            .form-label {
+                text-align: left;
+                display: block;
+            }
+
+            .form-input {
+                text-align: left;
+            }
+
+            .form-options {
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .login-button {
+                margin: 0 auto;
+            }
+
+            .form-footer {
+                text-align: center;
+            }
+
+            .back-to-dashboard {
+                text-align: center;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .left-panel {
                 padding: 30px 20px;
             }
-            .login-title {
-                font-size: 2rem;
+
+            .form-heading {
+                font-size: 22px;
             }
-            .back-button {
-                top: 15px;
-                left: 15px;
-                padding: 8px 15px;
+
+            .form-subheading {
+                font-size: 13px;
+            }
+
+            .form-input {
+                height: 44px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .login-button {
+                height: 44px;
+                font-size: 16px;
+            }
+
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .forgot-link {
+                align-self: flex-end;
             }
         }
     </style>
 </head>
-
 <body>
-    <a href="{{ url('/') }}" class="back-button">
-        ← Back to Home
-    </a>
+    <div class="login-container">
+        <!-- Left Panel - Login Form -->
+        <div class="left-panel">
+            <div class="logo">
+                <div class="pco-logo">
+                    <img src="{{ asset('assets/images/pco-flow-logo-black.png') }}" alt="PCO Flow" class="pco-logo-img">
+                </div>
+            </div>
 
-    <div class="container-fluid login-container">
-        <div class="row justify-content-center w-100">
-            <div class="col-lg-10 col-xl-9">
-                <div class="login-card">
-                    <div class="row g-0">
-                        <div class="col-md-6 login-left">
-                            <div class="logo-container">
-                                <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow Logo">
-                            </div>
+            <div class="form-container">
+                <h1 class="form-heading">Log in to your account</h1>
+                <p class="form-subheading">Welcome back! Please enter your details.</p>
 
-                            <h2 class="login-title">Welcome Back!</h2>
-                            <p class="login-subtitle">Sign in to access your dashboard</p>
-
-                            <!-- Alert Messages -->
-                            <div id="alert-container">
-                                @if(Session::has('error'))
-                                <div class="alert alert-danger alert-custom alert-dismissible fade show" role="alert">
-                                    {{ Session::get('error') }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                                @endif
-
-                                @if(Session::has('success'))
-                                <div class="alert alert-success alert-custom alert-dismissible fade show" role="alert">
-                                    {{ Session::get('success') }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                                @endif
-
-                                @if (isset($errors) && $errors->any())
-                                <div class="alert alert-danger alert-custom alert-dismissible fade show">
-                                    <ul class="mb-0">
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                                @endif
-                            </div>
-
-
-                            <!-- Login Form -->
-                            <form id="unifiedLoginForm" method="POST" action="{{ route('unified.login') }}">
-                                @csrf
-
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" name="email" id="email" 
-                                           value="{{ old('email') }}" placeholder="Enter your email address" 
-                                           autocomplete="email" autofocus required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" name="password" id="password" 
-                                           placeholder="Enter your password" autocomplete="current-password" required>
-                                </div>
-
-                                <div class="row align-items-center mb-3">
-                                    <div class="col">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="remember" 
-                                                   id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="remember">
-                                                Remember me
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <a href="{{ route('password.request') }}" class="forgot-link">Forgot Password?</a>
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="btn btn-login btn-primary w-100" id="loginBtn">
-                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                    <span id="loginBtnText">Sign In</span>
-                                </button>
-                            </form>
-
-                            <!-- Sign Up Link -->
-                            <div class="text-center mt-4">
-                                <p class="mb-0">Don't have an account? 
-                                    <a href="{{ route('sign_up') }}" class="forgot-link">Sign Up</a>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 login-right d-none d-md-block">
-                            <!-- Background image handled by CSS -->
-                        </div>
+                @if (session('success'))
+                    <div class="alert alert-success">
+                        {{ session('success') }}
                     </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-danger">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if (isset($errors) && $errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('unified.login') }}" id="loginForm">
+                    @csrf
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email</label>
+                        <input type="email" 
+                               class="form-input" 
+                               id="email" 
+                               name="email" 
+                               value="{{ old('email') }}" 
+                               placeholder="Enter your email" 
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <input type="password" 
+                               class="form-input" 
+                               id="password" 
+                               name="password" 
+                               placeholder="••••••••" 
+                               required>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="checkbox-group">
+                            <input type="checkbox" class="checkbox" name="remember" id="remember">
+                            <label class="checkbox-label" for="remember">Remember</label>
+                        </div>
+                        <a href="{{ url('forgot-password') }}" class="forgot-link">Forgot password</a>
+                    </div>
+
+                    <button type="submit" class="login-button" id="loginButton">
+                        Login
+                    </button>
+                </form>
+
+                {{-- Login footer sign-up link hidden intentionally (backend route retained) --}}
+
+                <div class="back-to-dashboard">
+                    <a href="{{ url('/') }}" class="back-button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-6-6 6-6"/>
+                        </svg>
+                        Back
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</body>
+</html>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('unifiedLoginForm');
-
-            // Handle form submission
+            const loginForm = document.getElementById('loginForm');
+            
+            if (!loginForm) return;
+            
             loginForm.addEventListener('submit', function(e) {
-                const submitBtn = document.getElementById('loginBtn');
-                const spinner = submitBtn.querySelector('.spinner-border');
-                const btnText = document.getElementById('loginBtnText');
-
-                // Show loading state
-                spinner.classList.remove('d-none');
-                btnText.textContent = 'Signing In...';
-                submitBtn.disabled = true;
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                // Basic validation
+                if (!email || !password) {
+                    showError('Please fill in all required fields.');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                if (!isValidEmail(email)) {
+                    showError('Please enter a valid email address.');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Form is valid, allow submission
+                return true;
             });
-
-            // Auto-hide alerts after 5 seconds
+            
+            function isValidEmail(email) {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailPattern.test(email);
+            }
+            
+            function showError(message) {
+                // Create error alert
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger';
+                alertDiv.innerHTML = message;
+                
+                // Insert before form
+                const formContainer = document.querySelector('.form-container');
+                const form = document.getElementById('loginForm');
+                formContainer.insertBefore(alertDiv, form);
+                
+                // Auto-hide after 5 seconds
+                setTimeout(function() {
+                    alertDiv.style.transition = 'opacity 0.5s';
+                    alertDiv.style.opacity = '0';
+                    setTimeout(function() {
+                        if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
+                    }, 500);
+                }, 5000);
+            }
+            
+            
+            // Auto-hide existing alerts after 5 seconds
             setTimeout(function() {
                 const alerts = document.querySelectorAll('.alert');
                 alerts.forEach(function(alert) {
-                    if (!alert.classList.contains('alert-permanent')) {
-                        const bsAlert = new bootstrap.Alert(alert);
-                        bsAlert.close();
-                    }
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        if (alert.parentNode) alert.parentNode.removeChild(alert);
+                    }, 500);
                 });
             }, 5000);
+            
         });
     </script>
 </body>
-
 </html>

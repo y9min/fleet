@@ -11,9 +11,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>{{ trans('installer_messages.title') }}</title>
-    <link rel="icon" href="{{ asset('assets/images/logo-40.png') }}"  type="icon_img">
-    <link rel="icon"  href="{{ asset('assets/images/logo-40.png') }}" type="icon_img">
-    <link rel="icon"  href="{{ asset('assets/images/logo-40.png') }}" type="icon_img">
+    <link rel="icon" href="{{ asset('assets/images/pco-flow-favicon.png') }}"  type="icon_img" sizes="32x32">
+    <link rel="icon"  href="{{ asset('assets/images/pco-flow-favicon.png') }}" type="icon_img" sizes="32x32">
+    <link rel="icon"  href="{{ asset('assets/images/pco-flow-favicon.png') }}" type="icon_img" sizes="32x32">
 
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -26,7 +26,7 @@
 <div class="master">
     <div class="box" style="width: 50% !important;">
         <div class="header">
-            <img src="{{ asset('/assets/images/pco-flow-logo.png') }}" height="55px" alt="PCO Flow 2">
+            <img src="{{ asset('/assets/images/pco-flow-logo.png') }}" style="height: 120px; width: auto; object-fit: contain;" alt="PCO Flow">
             <h1 class="header__title">@yield('title')</h1>
         </div>
 

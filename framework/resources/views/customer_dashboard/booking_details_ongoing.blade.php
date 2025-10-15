@@ -101,7 +101,7 @@
                                     <div class="distance_map_content">
                                         <p class="distance_map_title">@lang('frontend.Distance')</p>
                                         <p class="distance_map_count">
-                                            {{ $data->getMeta('total_kms') ? $data->getMeta('total_kms') . ' Kms' : 'NA' }}
+                                            {{ $data->getMeta('total_kms') ? $data->getMeta('total_kms') . ' Miles' : 'NA' }}
                                         </p>
                                     </div>
                                 </div>
@@ -164,7 +164,7 @@
                                             <div class="count_distance">
                                                 <p class="count_distance-title">@lang('frontend.Distance')</p>
                                                 <p class="count_numbers">
-                                                    {{ $data->getMeta('total_kms') ? $data->getMeta('total_kms') . ' Kms' : 'NA' }}
+                                                    {{ $data->getMeta('total_kms') ? $data->getMeta('total_kms') . ' Miles' : 'NA' }}
                                                 </p>
                                             </div>
                                         </div>
@@ -220,7 +220,7 @@
                                 <div class="col-12 ">
                                     <div class="booking_fare_details">
                                         <div class="booking_fare_title">
-                                            <p class="fare_title">@lang('frontend.Mileage')(Km)</p>
+                                            <p class="fare_title">@lang('frontend.Mileage')(Miles)</p>
                                             <p class="fare_detail">
                                                 {{ isset($data->mileage) ? ($data->mileage??'-') . ' km' : '-' }}</p>
                                         </div>
@@ -230,7 +230,7 @@
                                     <div class="booking_fare_details">
                                         <div class="booking_fare_title">
                                             <p class="fare_title">@lang('frontend.Total_Tax') (%)</p>
-                                            <p class="fare_detail">{{ Hyvikk::get('currency') }}
+                                            <p class="fare_detail">£
                                                 {{ $data->total_tax_charge_rs ?? 0 }}</p>
                                         </div>
                                     </div>
@@ -243,7 +243,7 @@
                                     <div class="booking_fare_details">
                                         <div class="booking_fare_title">
                                             <p class="fare_title">@lang('frontend.Amount')</p>
-                                            <p class="fare_detail">{{ Hyvikk::get('currency') }}
+                                            <p class="fare_detail">£
                                                 {{ $data->total ?? 0 }}</p>
                                         </div>
                                     </div>
@@ -252,7 +252,7 @@
                                     <div class="booking_fare_details">
                                         <div class="booking_fare_title">
                                             <p class="fare_title">@lang('frontend.Fuel_Charges')</p>
-                                            <p class="fare_detail">{{ Hyvikk::get('currency') }}
+                                            <p class="fare_detail">£
                                                 {{ $data->fuel_charges ?? 0 }}</p>
                                         </div>
                                     </div>
@@ -266,7 +266,7 @@
                                         <div class="booking_fare_details ps-0 ps-sm-3 ps-md-3 ps-lg-3 ps-xl-3 ">
                                             <div class="booking_fare_title">
                                                 <p class="fare_title">@lang('frontend.Sub_Total')</p>
-                                                <p class="fare_detail">{{ Hyvikk::get('currency') }}
+                                                <p class="fare_detail">£
                                                     {{ $data->tax_total ?? 0 }}</p>
                                             </div>
                                         </div>
@@ -275,7 +275,7 @@
                                         <div class="booking_fare_details ps-0 ps-sm-3 ps-md-3 ps-lg-3 ps-xl-3 ">
                                             <div class="booking_fare_title">
                                                 <p class="fare_title">@lang('frontend.Total_Amount')</p>
-                                                <p class="fare_detail">{{ Hyvikk::get('currency') }}
+                                                <p class="fare_detail">£
                                                     {{ $data->tax_total ?? 0 }}</p>
                                             </div>
                                         </div>

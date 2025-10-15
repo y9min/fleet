@@ -23,13 +23,13 @@ class ImportRequest extends FormRequest {
 
 	public function rules() {
 		return [
-			'excel' => 'required|mimes:xlsx,xls',
+			'excel' => 'required|mimes:xlsx,xls,csv',
 		];
 	}
 
 	public function messages() {
 		return [
-			'excel.mimes' => 'File type must be Excel.',
+			'excel.mimes' => 'File type must be Excel or CSV.',
 		];
 	}
 }

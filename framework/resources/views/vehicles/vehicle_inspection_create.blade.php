@@ -39,7 +39,7 @@
               <option value="{{$vehicle->vehicle_id}}">{{$vehicle->vehicle->make_name}} - {{$vehicle->vehicle->model_name}} - {{$vehicle->vehicle->license_plate}}</option>
               @endforeach --}}
               @foreach($vehicles as $vehicle)
-              <option value="{{$vehicle->id}}">{{$vehicle->make_name}} - {{$vehicle->model_name}} - {{$vehicle->license_plate}}</option>
+              <option value="{{$vehicle->id}}" @if(isset($selected_vehicle_id) && $selected_vehicle_id == $vehicle->id) selected @endif>{{$vehicle->make_name}} - {{$vehicle->model_name}} - {{$vehicle->license_plate}}</option>
               @endforeach
             </select>
           </div>

@@ -5,6 +5,9 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// Suppress Carbon deprecation warnings for PHP 8.4 compatibility
+error_reporting(E_ALL & ~E_DEPRECATED);
+
 /*
 |--------------------------------------------------------------------------
 | Check If Application Is Under Maintenance

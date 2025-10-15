@@ -59,5 +59,7 @@
   {!! Form::open(['url' => 'admin/drivers/'.$row->id,'method'=>'DELETE','class'=>'form-horizontal','id'=>'form_'.$row->id]) !!}
 
   {!! Form::hidden("id",$row->id) !!}
+  {!! Form::hidden("_method", "DELETE") !!}
+  {!! csrf_field() !!}
 
   {!! Form::close() !!}

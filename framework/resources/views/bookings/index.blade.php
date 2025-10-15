@@ -81,8 +81,8 @@
   <div class="col-md-12">
     <div class="card card-info">
       <div class="card-header with-border">
-        <h3 class="card-title"> @lang('fleet.manage_bookings') &nbsp;
-          @can('Bookings add')<a href="{{route('bookings.create')}}" class="btn btn-success"
+        <h3 class="card-title"> Manage Pickup Invitations &nbsp;
+          @can('Bookings add')<a href="{{route('invitations.create')}}" class="btn btn-success"
             title="@lang('fleet.new_booking')"><i class="fa fa-plus"></i></a>@endcan
         </h3>
       </div>
@@ -95,44 +95,18 @@
                 <th>
                   <input type="checkbox" id="chk_all">
                 </th>
-                <th style="width: 10% !important">@lang('fleet.customer')</th>
-                <th style="width: 10% !important">@lang('fleet.vehicle')</th>
-                <th style="width: 10% !important">@lang('fleet.pickup_addr')</th>
-                <th style="width: 10% !important">@lang('fleet.dropoff_addr')</th>
-                <th style="width: 10% !important">@lang('fleet.pickup')</th>
-                <th style="width: 10% !important">@lang('fleet.dropoff')</th>
-                <th style="width: 10% !important">@lang('fleet.Passengers')</th>
-                <th style="width: 10% !important">@lang('fleet.payment_status')</th>
-                <th style="width: 10% !important">@lang('fleet.booking_status')</th>
-                <th style="width: 10% !important">Booking Type</th>
-                <th style="width: 10% !important">@lang('fleet.amount')</th>
+                <th style="width: 15% !important">@lang('fleet.driver')</th>
+                <th style="width: 20% !important">@lang('fleet.vehicle')</th>
+                <th style="width: 25% !important">@lang('fleet.pickup_addr')</th>
+                <th style="width: 10% !important">Pickup Date</th>
+                <th style="width: 10% !important">Pickup Time</th>
                 <th style="width: 10% !important">@lang('fleet.action')</th>
               </tr>
             </thead>
             <tbody>
 
             </tbody>
-            <tfoot>
-              <tr>
-                <th>
-                  @can('Bookings delete')<button class="btn btn-danger" id="bulk_delete" data-toggle="modal"
-                    data-target="#bulkModal" disabled title="@lang('fleet.delete')"><i
-                      class="fa fa-trash"></i></button>@endcan
-                </th>
-                <th>@lang('fleet.customer')</th>
-                <th>@lang('fleet.vehicle')</th>
-                <th>@lang('fleet.pickup_addr')</th>
-                <th>@lang('fleet.dropoff_addr')</th>
-                <th>@lang('fleet.pickup')</th>
-                <th>@lang('fleet.dropoff')</th>
-                <th>@lang('fleet.Passengers')</th>
-                <th>@lang('fleet.payment_status')</th>
-                <th>@lang('fleet.booking_status')</th>
-                <th>Booking Type</th>
-                <th>@lang('fleet.amount')</th>
-                <th>@lang('fleet.action')</th>
-              </tr>
-            </tfoot>
+            
           </table>
         </div>
       </div>
@@ -140,38 +114,7 @@
   </div>
 </div>
 
-<!-- cancel booking Modal -->
-<div id="cancelBooking" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">@lang('fleet.cancel_booking')</h4>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p>@lang('fleet.confirm_cancel')</p>
-        {!! Form::open(['url'=>url('admin/cancel-booking'),'id'=>'cancel_booking']) !!}
-        <div class="form-group">
-          {!! Form::hidden('cancel_id',null,['id'=>'cancel_id']) !!}
-          {!! Form::label('reason',__('fleet.addReason'),['class'=>"form-label"]) !!}
-          <select name="reason" class="form-control vehicles" required>
-            @foreach($reasons as $reason)
-              <option value="{{ $reason->id }}">{{ $reason->reason }}</option>
-            @endforeach
-          </select>
-          {{-- {!! Form::text('reason',null,['class'=>"form-control",'required']) !!} --}}
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-success">@lang('fleet.submit')</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">@lang('fleet.close')</button>
-      </div>
-      {!! Form::close() !!}
-    </div>
-  </div>
-</div>
-<!-- cancel booking Modal -->
+<!-- cancel booking Modal removed -->
 
 <!-- complete journey Modal -->
 <div id="journeyModal" class="modal fade" role="dialog">
@@ -420,7 +363,7 @@
 <script type="text/javascript">
   $(document).on("click", ".open-AddBookDialog", function () {
     // alert($(this).data('base_km_1'));
-    // window.open("route('bookings.index')/?type="+$(this).data('vehicle-type'));
+    // window.open("route('invitations.index')/?type="+$(this).data('vehicle-type'));
 
     // const query = new URLSearchParams(window.location.search);
     // query.append("type", "true");
@@ -508,13 +451,9 @@
 
   $('#journeyModal').on('show.bs.modal', function(e) {
     var id = e.relatedTarget.dataset.id;
-    $("#journey_btn").attr("href","{{ url('admin/bookings/complete/') }}/"+id);
+    $("#journey_btn").attr("href","{{ url('admin/invitations/complete/') }}/"+id);
   });
 
-    $('#cancelBooking').on('show.bs.modal', function(e) {
-    var id = e.relatedTarget.dataset.id;
-    $("#cancel_id").val(id);
-  });
 </script>
 
 <!-- testing total-->
@@ -617,7 +556,7 @@
         text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
 
         exportOptions: {
-           columns: ([1,2,3,4,5,6,7,8,9,10]),
+           columns: ([1,2,3,4]),
         },
         customize: function ( win ) {
                 
@@ -632,7 +571,7 @@
             extend: 'excel',
             text: '<i class="fa fa-file-excel-o"></i> Excel',
             exportOptions: {
-                columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                columns: [1, 2, 3, 4]
             }
         }
     ],
@@ -644,33 +583,21 @@
           ajax: {
             url: "{{ url('admin/bookings-fetch') }}",
             type: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
             data:{}
           },
           columns: [
             {data: 'check',   name: 'check', searchable:false, orderable:false},
-            {data: 'customer',   name: 'customer.name'},
+            {data: 'driver',   name: 'driver.name'},
             {data: 'vehicle', name: 'vehicle'},
             {data: 'pickup_addr',    name: 'pickup_addr'},
-            {data: 'dest_addr',    name: 'dest_addr'},
-            {name: 'pickup',data: {_: 'pickup.display',sort: 'pickup.timestamp'}},
-            {name: 'dropoff',data: {_: 'dropoff.display',sort: 'dropoff.timestamp'}},
-            {data: 'travellers',  name: 'travellers'},
-            {data: 'payment',  name: 'payment'},
-            {data: 'ride_status',  name: 'ride_status'},
-            { 
-                data: 'return_booking',
-                name: 'return_booking',
-                render: function(data, type, row) {
-                    if (data) {
-                        return '<img src="' + data + '" alt="Return Booking" width="30" height="30">';
-                    }
-                    return "";
-                }
-            },  
-            {data: 'tax_total',  name: 'tax_total',orderable: false},
+            {name: 'pickup_date', data: {_: 'pickup_date.display', sort: 'pickup_date.timestamp'}},
+            {name: 'pickup_time', data: {_: 'pickup_time.display', sort: 'pickup_time.timestamp'}},
             {data: 'action',  name: 'action', searchable:false, orderable:false}
         ],
-        order: [[1, 'desc']],
+        order: [[4, 'desc']],
         "initComplete": function() {
               table.columns().every(function () {
                 var that = this;

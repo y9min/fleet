@@ -88,6 +88,17 @@
     margin-top: 0.25rem;
   }
   
+  .date-dropdowns {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+  
+  .date-dropdowns select {
+    min-width: 80px;
+    text-align: center;
+  }
+  
   .toggle-switch {
     position: relative;
     display: inline-block;
@@ -281,18 +292,21 @@
         <div class="form-field">
           <label>Vehicle Type</label>
           <select name="type_id" class="form-control">
-            <option value="">Vehicle Type</option>
-            @foreach($types as $type)
-            <option value="{{$type->id}}" @if(old('type_id')==$type->id) selected @endif>{{$type->displayname}}</option>
-            @endforeach
+            <option value="1" @if(old('type_id')==1 || old('type_id')==null) selected @endif>Convertible</option>
+            <option value="2" @if(old('type_id')==2) selected @endif>Coupe</option>
+            <option value="3" @if(old('type_id')==3) selected @endif>Estate</option>
+            <option value="4" @if(old('type_id')==4) selected @endif>Hatchback</option>
+            <option value="5" @if(old('type_id')==5) selected @endif>MPV</option>
+            <option value="6" @if(old('type_id')==6) selected @endif>Pickup</option>
+            <option value="7" @if(old('type_id')==7) selected @endif>Saloon</option>
+            <option value="8" @if(old('type_id')==8) selected @endif>SUV</option>
           </select>
         </div>
         
         <div class="form-field">
           <label class="required">Fuel Type</label>
           <select name="engine_type" class="form-control" required>
-            <option value="">petrol</option>
-            <option value="Petrol" @if(old('engine_type')=='Petrol') selected @endif>Petrol</option>
+            <option value="Petrol" @if(old('engine_type')=='Petrol' || old('engine_type')==null) selected @endif>Petrol</option>
             <option value="Diesel" @if(old('engine_type')=='Diesel') selected @endif>Diesel</option>
             <option value="Electric" @if(old('engine_type')=='Electric') selected @endif>Electric</option>
             <option value="Hybrid" @if(old('engine_type')=='Hybrid') selected @endif>Hybrid</option>
@@ -315,20 +329,27 @@
         </div>
         
         <div class="form-field">
-          <label>Price</label>
+          <label>Price (with insurance included)</label>
           <div style="display: flex; gap: 0.5rem;">
             <input type="number" name="vehicle_price" class="form-control" value="{{ old('vehicle_price') }}" min="0" step="0.01" placeholder="0">
             <select name="price_period" class="form-control" style="max-width: 100px;">
-              <option value="monthly" @if(old('price_period')=='monthly' || old('price_period')==null) selected @endif>Monthly</option>
-              <option value="weekly" @if(old('price_period')=='weekly') selected @endif>Weekly</option>
+              <option value="monthly" @if(old('price_period')=='monthly') selected @endif>Monthly</option>
+              <option value="weekly" @if(old('price_period')=='weekly' || old('price_period')==null) selected @endif>Weekly</option>
             </select>
           </div>
+          <div class="help-text">This is the price with insurance included</div>
+        </div>
+        
+        <div class="form-field">
+          <label>Insurance Discount</label>
+          <input type="number" name="insurance_discount" class="form-control" value="{{ old('insurance_discount') }}" min="0" step="0.01" placeholder="0">
+          <div class="help-text">Discount amount when driver chooses without insurance</div>
         </div>
         
         <div class="form-field">
           <label>Select Vehicle Group</label>
           <select name="group_id" class="form-control">
-            <option value="">Default</option>
+            <option value="">No Group</option>
             @foreach($groups as $group)
             <option value="{{$group->id}}" @if(old('group_id')==$group->id) selected @endif>{{$group->name}}</option>
             @endforeach
@@ -339,7 +360,7 @@
         <div class="form-field">
           <label>Select Driver</label>
           <select name="driver_id" class="form-control">
-            <option value="">Mariah Bahringer ( Inactive )</option>
+            <option value="">No Driver Assigned</option>
             @foreach($drivers as $driver)
             <option value="{{$driver->id}}" @if(old('driver_id')==$driver->id) selected @endif>
               {{$driver->name}}@if($driver->getMeta('is_active') != 1) (Inactive)@endif
@@ -375,8 +396,7 @@
         <div class="form-field">
           <label>Scheme</label>
           <select name="vehicle_scheme" class="form-control">
-            <option value="">Select Scheme</option>
-            <option value="Rental" @if(old('vehicle_scheme')=='Rental') selected @endif>Rental</option>
+            <option value="Rental" @if(old('vehicle_scheme')=='Rental' || old('vehicle_scheme')==null) selected @endif>Rental</option>
             <option value="Rent To Buy" @if(old('vehicle_scheme')=='Rent To Buy') selected @endif>Rent To Buy</option>
             <option value="Other" @if(old('vehicle_scheme')=='Other') selected @endif>Other</option>
           </select>
@@ -384,7 +404,7 @@
         
         <div class="form-field">
           <label>Vehicle Status</label>
-          <select name="vehicle_status" class="form-control" required>
+          <select name="vehicle_status" class="form-control">
             <option value="Available" @if(old('vehicle_status')=='Available' || old('vehicle_status')==null) selected @endif>Available</option>
             <option value="Rented" @if(old('vehicle_status')=='Rented') selected @endif>Rented</option>
             <option value="Workshop" @if(old('vehicle_status')=='Workshop') selected @endif>Workshop</option>
@@ -397,9 +417,30 @@
           <input type="url" name="telematics_link" class="form-control" value="{{ old('telematics_link') }}" placeholder="Telematics dashboard URL">
         </div>
         
-        
-        
-        
+        <div class="form-field">
+          <label>MOT Expiry Date</label>
+          <div class="date-dropdowns">
+            <select name="mot_exp_day" class="form-control" style="width: 80px; display: inline-block;">
+              <option value="">DD</option>
+              @for($i = 1; $i <= 31; $i++)
+                <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}" @if(old('mot_exp_day') == str_pad($i, 2, '0', STR_PAD_LEFT)) selected @endif>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+              @endfor
+            </select>
+            <select name="mot_exp_month" class="form-control" style="width: 80px; display: inline-block; margin-left: 5px;">
+              <option value="">MM</option>
+              @for($i = 1; $i <= 12; $i++)
+                <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}" @if(old('mot_exp_month') == str_pad($i, 2, '0', STR_PAD_LEFT)) selected @endif>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+              @endfor
+            </select>
+            <select name="mot_exp_year" class="form-control" style="width: 80px; display: inline-block; margin-left: 5px;">
+              <option value="">YY</option>
+              @for($i = date('Y'); $i <= date('Y') + 10; $i++)
+                <option value="{{ substr($i, -2) }}" @if(old('mot_exp_year') == substr($i, -2)) selected @endif>{{ substr($i, -2) }}</option>
+              @endfor
+            </select>
+          </div>
+          <div class="help-text">MOT test expiration date</div>
+        </div>
         
       </div>
       

@@ -1,49 +1,240 @@
 @extends('layouts.app')
 @section('extra_css')
-    <style type="text/css">
-        .page-header {
-            background: #7FD7E1;
-            color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+<!-- FontAwesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="{{ asset('assets/css/plugins-dataTables.bootstrap4.min.css') }}">
+<style>
+/* Reset and base styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #f4f6f9;
+}
+
+/* Content wrapper */
+.content-wrapper {
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+/* Header styles - EXACT match to onboarding page */
+.content-header {
+    padding: 20px 15px;
+    background: transparent;
+}
+
+.header-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 20px 25px;
+    margin-bottom: 20px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Breadcrumb styles - EXACT match to onboarding page */
+.breadcrumb-text {
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: #6c757d;
+}
+
+.breadcrumb-text a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: normal;
+}
+
+.breadcrumb-text a:hover {
+    text-decoration: underline;
+}
+
+/* Main content */
+.content {
+    padding: 15px;
+}
+
+/* Card styles */
+.card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 12px 20px;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Enhanced page header with modern design */
+.page-header {
+    background: linear-gradient(135deg, #7FD7E1, #6BC5D2);
+    color: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(127, 215, 225, 0.3);
+    border: none;
+}
         
-        .page-header h1 {
-            color: white;
-            margin: 0;
-            font-weight: 600;
-            font-size: 1.5rem;
-        }
+.page-header h1 {
+    color: white;
+    margin: 0;
+    font-weight: 600;
+    font-size: 28px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
         
-        .btn-toolbar {
-            margin-bottom: 1rem;
-        }
+/* Enhanced button styling to match onboarding page */
+.btn-toolbar {
+    margin-bottom: 1.5rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #7FD7E1, #6BC5D2);
+    border: none;
+    color: white;
+    box-shadow: 0 2px 4px rgba(127, 215, 225, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(127, 215, 225, 0.4);
+    background: linear-gradient(135deg, #6BC5D2, #5BB0BD);
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    color: white;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+    background: linear-gradient(135deg, #20c997, #17a2b8);
+    color: white;
+}
+
+.btn-outline-primary {
+    border: 2px solid #7FD7E1;
+    color: #7FD7E1;
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: #7FD7E1;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(127, 215, 225, 0.3);
+}
+
+/* Table styling to match onboarding page exactly */
+.vehicles-table {
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #dee2e6;
+    margin-bottom: 0;
+}
         
-        .vehicles-table {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #333;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
         
-        .table {
-            margin-bottom: 0;
-        }
+.table th,
+.table td {
+    padding: 12px;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
         
-        .table thead th {
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            font-weight: 600;
-            color: #495057;
-            padding: 1rem 0.75rem;
-        }
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    text-align: center;
+}
         
-        .table td {
-            padding: 0.75rem;
-            vertical-align: middle;
-        }
+.table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.05);
+}
+
+.table-bordered {
+    border: 1px solid #dee2e6;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #dee2e6;
+}
         
         .vehicle-image {
             width: 50px;
@@ -87,125 +278,153 @@
             color: white !important;
         }
         
-        /* Enhanced Modal Styling */
-        .modal-content {
-            border-radius: 12px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
+/* Enhanced Modal Styling to match onboarding page */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
         
-        .modal-header {
-            background: linear-gradient(135deg, #7FD7E1, #6BC5D2);
-            color: white;
-            border-radius: 12px 12px 0 0;
-            padding: 1.5rem;
-            border-bottom: none;
-        }
+.modal-header {
+    background: linear-gradient(135deg, #7FD7E1, #6BC5D2);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    padding: 25px 30px;
+    border-bottom: none;
+}
         
-        .modal-header h4 {
-            margin: 0;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+.modal-header h4 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
         
-        .modal-header .close {
-            color: white;
-            opacity: 0.8;
-            font-size: 1.5rem;
-            text-shadow: none;
-        }
+.modal-header .close {
+    color: white;
+    opacity: 0.8;
+    font-size: 1.8rem;
+    text-shadow: none;
+    transition: opacity 0.3s ease;
+}
         
-        .modal-header .close:hover {
-            opacity: 1;
-            color: white;
-        }
+.modal-header .close:hover {
+    opacity: 1;
+    color: white;
+    transform: scale(1.1);
+}
         
-        .modal-body {
-            padding: 2rem;
-        }
+.modal-body {
+    padding: 30px;
+    background: #fff;
+}
         
-        .modal-footer {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-top: 1px solid #eee;
-            border-radius: 0 0 12px 12px;
-        }
+.modal-footer {
+    background: #f8f9fa;
+    padding: 20px 30px;
+    border-top: 1px solid #e9ecef;
+    border-radius: 0 0 15px 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
         
-        /* Import Modal Specific */
-        .file-upload-section {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
+/* Import Modal Specific - Enhanced to match onboarding page */
+.file-upload-section {
+    background: #f8f9fa;
+    border: 2px dashed #7FD7E1;
+    border-radius: 12px;
+    padding: 40px 30px;
+    text-align: center;
+    margin-bottom: 25px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
         
-        .file-upload-section:hover {
-            border-color: #7FD7E1;
-            background: #f0fdff;
-        }
+.file-upload-section:hover {
+    border-color: #6BC5D2;
+    background: #f0fdff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(127, 215, 225, 0.15);
+}
         
-        .file-upload-section.dragover {
-            border-color: #7FD7E1;
-            background: #e8f8fa;
-            transform: scale(1.02);
-        }
+.file-upload-section.dragover {
+    border-color: #6BC5D2;
+    background: #e8f8fa;
+    transform: scale(1.02);
+    box-shadow: 0 10px 30px rgba(127, 215, 225, 0.2);
+}
         
-        .upload-icon {
-            font-size: 3rem;
-            color: #7FD7E1;
-            margin-bottom: 1rem;
-        }
+.upload-icon {
+    font-size: 3.5rem;
+    color: #7FD7E1;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
         
-        .upload-text {
-            font-size: 1.1rem;
-            color: #495057;
-            margin-bottom: 0.5rem;
-        }
+.file-upload-section:hover .upload-icon {
+    transform: scale(1.1);
+}
         
-        .upload-hint {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
+.upload-text {
+    font-size: 1.2rem;
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
         
-        .form-check-custom {
-            background: #fff;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            transition: all 0.3s ease;
-        }
+.upload-hint {
+    color: #6c757d;
+    font-size: 0.95rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
         
-        .form-check-custom:hover {
-            border-color: #7FD7E1;
-            background: #f8fdff;
-        }
+/* Enhanced form elements to match onboarding page */
+.form-check-custom {
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
         
-        .form-check-custom .form-check-input:checked {
-            background-color: #7FD7E1;
-            border-color: #7FD7E1;
-        }
+.form-check-custom:hover {
+    border-color: #7FD7E1;
+    background: #f8fdff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(127, 215, 225, 0.1);
+}
         
-        .info-card {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
+.form-check-custom .form-check-input:checked {
+    background-color: #7FD7E1;
+    border-color: #7FD7E1;
+}
         
-        .info-card-header {
-            background: #7FD7E1;
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 6px 6px 0 0;
-            margin: -1.5rem -1.5rem 1rem -1.5rem;
-            font-weight: 600;
-        }
+.info-card {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+        
+.info-card-header {
+    background: linear-gradient(135deg, #7FD7E1, #6BC5D2);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px 8px 0 0;
+    margin: -25px -25px 20px -25px;
+    font-weight: 600;
+    font-size: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
         
         .required-column {
             color: #dc3545;
@@ -412,6 +631,297 @@
         .row-selected {
             background-color: #f0fdff !important;
         }
+
+        /* Additional enhancements to match onboarding page */
+        .container-fluid {
+            background-color: #f4f6f9;
+            padding: 20px 20px 30px 20px;
+        }
+
+        /* Enhanced Toast Notification Styling */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            animation: slideInDown 0.5s ease-out;
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-success::before {
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-danger::before {
+            background: linear-gradient(90deg, #dc3545, #e74c3c);
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-warning::before {
+            background: linear-gradient(90deg, #ffc107, #f39c12);
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .alert-info::before {
+            background: linear-gradient(90deg, #17a2b8, #3498db);
+        }
+
+        /* Toast Animation */
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutUp {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+        }
+
+        /* Enhanced close button */
+        .alert .close {
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 1;
+            color: inherit;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .alert .close:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Icon styling */
+        .alert i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        /* Success icon */
+        .alert-success i {
+            color: #28a745;
+        }
+
+        /* Error icon */
+        .alert-danger i {
+            color: #dc3545;
+        }
+
+        /* Warning icon */
+        .alert-warning i {
+            color: #ffc107;
+        }
+
+        /* Info icon */
+        .alert-info i {
+            color: #17a2b8;
+        }
+
+        /* Badge styling to match onboarding page exactly */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 4px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .badge-info {
+            color: #fff;
+            background-color: #17a2b8;
+        }
+
+        .badge-warning {
+            color: #212529;
+            background-color: #ffc107;
+        }
+
+        .badge-success {
+            color: #fff;
+            background-color: #28a745;
+        }
+
+        .badge-danger {
+            color: #fff;
+            background-color: #dc3545;
+        }
+
+        .badge-primary {
+            color: #fff;
+            background-color: #007bff;
+        }
+
+        .badge-secondary {
+            color: #fff;
+            background-color: #6c757d;
+        }
+
+        .badge-yellow {
+            color: #212529;
+            background-color: #EABE14;
+        }
+
+        /* Custom dropdown styling - matching vehicle inspection table */
+        .status-container {
+            position: relative;
+        }
+
+        .custom-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 10000 !important;
+            min-width: 120px !important;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            padding: 8px 0;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            white-space: nowrap !important;
+            display: block;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .custom-dropdown-menu .dropdown-item {
+            padding: 0.5rem 1rem;
+        }
+
+        /* Button styling to match vehicle inspection table */
+        .btn-outline-success, .btn-outline-warning, .btn-outline-info, .btn-outline-secondary {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+        }
+
+        .btn-outline-success:hover, .btn-outline-warning:hover, .btn-outline-info:hover, .btn-outline-secondary:hover {
+            background: transparent !important;
+        }
+
+        /* Custom dropdown arrow */
+        .dropdown-arrow {
+            color: #000 !important;
+            font-size: 10px;
+            margin-left: 4px;
+        }
+
+        .custom-dropdown-toggle {
+            cursor: pointer;
+        }
+
+        /* Enhanced dropdown styling */
+        .dropdown-menu {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            padding: 8px 0;
+        }
+
+        .dropdown-item {
+            padding: 10px 20px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8fdff;
+            color: #7FD7E1;
+        }
+
+        /* Enhanced form controls */
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 10px 15px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #7FD7E1;
+            box-shadow: 0 0 0 0.2rem rgba(127, 215, 225, 0.25);
+        }
+
+        /* Enhanced progress bar */
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #7FD7E1, #6BC5D2);
+            border-radius: 4px;
+        }
     </style>
 @endsection
 @section('breadcrumb')
@@ -420,47 +930,162 @@
 
 @section('content')
     <div class="container-fluid">
-        <!-- Success Message -->
+        <!-- Enhanced Success Message -->
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
+            <i class="fas fa-check-circle"></i> 
+            <strong>Success!</strong> {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        @endif
+
+        <!-- Enhanced Error Messages -->
+        @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <strong>Error!</strong> 
+            @foreach ($errors->all() as $error)
+                {{ $error }}
+            @endforeach
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        @endif
+
+        <!-- Enhanced Info Messages -->
+        @if (session('info'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Info!</strong> {{ session('info') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        @endif
+
+        <!-- Enhanced Warning Messages -->
+        @if (session('warning'))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> 
+            <strong>Warning!</strong> {{ session('warning') }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
         @endif
         
-        <!-- Page Header -->
+        <!-- Enhanced Page Header -->
         <div class="page-header d-flex justify-content-between align-items-center">
-            <h1>@lang('fleet.manageVehicles')</h1>
-            <div class="d-flex gap-2">
+            <div>
+                <h1>@lang('fleet.manageVehicles')</h1>
+                <p class="mb-0" style="opacity: 0.9; font-size: 16px; margin-top: 8px;">Manage your fleet vehicles with ease</p>
+            </div>
+            <div class="d-flex gap-3">
                 @can('Vehicles add')
-                    <a href="{{ route('vehicles.create') }}" class="btn" style="background: #7FD7E1; color: white; border-radius: 6px; padding: 0.6rem 1.2rem; margin-right: 8px;" title="Add Vehicle">
-                        <i class="fa fa-plus"></i> Add Vehicle
+                    <a href="{{ route('vehicles.create') }}" class="btn" style="background-color: #C1C1C1; color: black; border: 1px solid #C1C1C1;" title="Add Vehicle">
+                        <i class="fas fa-plus"></i> Add Vehicle
                     </a>
                 @endcan
                 @can('Vehicles import')
-                    <button class="btn" style="background: #6BC5D2; color: white; border-radius: 6px; padding: 0.6rem 1.2rem;" data-toggle="modal" data-target="#import" title="Import Vehicles">
-                        <i class="fa fa-upload"></i> Import
+                    <button type="button" class="btn" style="background-color: #7FD7E1; color: white; border: 1px solid #7FD7E1;" data-toggle="modal" data-target="#import" title="Import Vehicles">
+                        <i class="fas fa-file-import"></i> Import Vehicles
                     </button>
                 @endcan
             </div>
         </div>
         
-        <!-- Bulk Actions Toolbar -->
+        <!-- Enhanced Bulk Actions Toolbar -->
         <div class="bulk-actions-toolbar" id="bulkToolbar" style="display: none;">
-            <div class="d-flex align-items-center justify-content-between p-3 bg-light border rounded mb-3">
+            <div class="d-flex align-items-center justify-content-between p-4" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-check-circle text-success mr-2"></i>
-                    <span id="selectedCount">0</span> vehicle(s) selected
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #7FD7E1, #6BC5D2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <i class="fas fa-check-circle text-white"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0" style="font-weight: 600; color: #333;">Bulk Actions</h6>
+                        <small class="text-muted" id="selectedCount">0</small> vehicle(s) selected
+                    </div>
                 </div>
-                <div class="bulk-actions">
-                    <button class="btn btn-sm btn-outline-secondary mr-2" onclick="clearSelection()">
+                <div class="bulk-actions d-flex gap-2">
+                    <button class="btn btn-outline-secondary" onclick="clearSelection()" style="border-radius: 6px; padding: 8px 16px;">
                         <i class="fas fa-times"></i> Clear Selection
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="bulkDeleteVehicles()">
+                    <button class="btn btn-danger" onclick="bulkDeleteVehicles()" style="border-radius: 6px; padding: 8px 16px; background: linear-gradient(135deg, #dc3545, #c82333); border: none;">
                         <i class="fas fa-trash-alt"></i> Delete Selected
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-filter"></i> Filter Vehicles
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="group_filter" class="form-label">Group</label>
+                                <select class="form-control" id="group_filter">
+                                    <option value="">All Groups</option>
+                                    @foreach($groups ?? [] as $group)
+                                        <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="type_filter" class="form-label">Vehicle Type</label>
+                                <select class="form-control" id="type_filter">
+                                    <option value="">All Types</option>
+                                    <option value="1">Convertible</option>
+                                    <option value="2">Coupe</option>
+                                    <option value="3">Estate</option>
+                                    <option value="4">Hatchback</option>
+                                    <option value="5">MPV</option>
+                                    <option value="6">Pickup</option>
+                                    <option value="7">Saloon</option>
+                                    <option value="8">SUV</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="fuel_filter" class="form-label">Fuel Type</label>
+                                <select class="form-control" id="fuel_filter">
+                                    <option value="">All Fuel Types</option>
+                                    <option value="Petrol">Petrol</option>
+                                    <option value="Diesel">Diesel</option>
+                                    <option value="Electric">Electric</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="status_filter" class="form-label">Status</label>
+                                <select class="form-control" id="status_filter">
+                                    <option value="">All Status</option>
+                                    <option value="available">Available</option>
+                                    <option value="rented">Rented</option>
+                                    <option value="workshop">Workshop</option>
+                                    <option value="disabled">Disabled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="button" class="btn btn-primary" onclick="applyFilters()">
+                                    <i class="fas fa-search"></i> Apply Filters
+                                </button>
+                                <button type="button" class="btn btn-secondary ml-2" onclick="clearFilters()">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -469,7 +1094,7 @@
             <div class="col-12">
                 <div class="vehicles-table">
                     <div class="table-responsive">
-                        <table class="table" id="ajax_data_table">
+                        <table class="table table-striped table-bordered" id="ajax_data_table">
                             <thead>
                                 <tr>
                                     <th style="width: 40px;">
@@ -482,6 +1107,7 @@
                                     <th>Registration Plate</th>
                                     <th>Make</th>
                                     <th>Model</th>
+                                    <th>Vehicle Type</th>
                                     <th>Fuel Type</th>
                                     <th>Status</th>
                                     <th>Assigned Driver</th>
@@ -504,7 +1130,6 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title"><i class="fa fa-cloud-upload-alt"></i> Import Vehicles</h4>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     {!! Form::open(['url' => 'admin/import-vehicles', 'method' => 'POST', 'files' => true, 'id' => 'importForm', 'enctype' => 'multipart/form-data']) !!}
@@ -584,9 +1209,22 @@
                                 </div>
                                 <hr>
                                 <div class="text-center">
-                                    <a href="{{ asset('assets/samples/vehicles.xlsx') }}" class="btn btn-outline-success btn-sm" download>
-                                        <i class="fas fa-download"></i> Download Sample Template
+                                    <a href="{{ route("download-vehicle-sample") }}" class="btn btn-outline-success btn-sm" target="_blank">
+                                        <i class="fas fa-eye"></i> View Sample Template
                                     </a>
+                                    <div class="dropdown ml-2 d-inline-block">
+                                        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" id="downloadTemplateDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-download"></i> Download Empty Template
+                                        </button>
+                                        <div class="dropdown-menu" id="templateDropdownMenu">
+                                            <a class="dropdown-item" href="{{ route('download-empty-template', ['format' => 'xlsx']) }}">
+                                                <i class="fas fa-file-excel"></i> Excel (.xlsx)
+                                            </a>
+                                            <a class="dropdown-item" href="{{ route('download-empty-template', ['format' => 'csv']) }}">
+                                                <i class="fas fa-file-csv"></i> CSV (.csv)
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -624,10 +1262,10 @@
                     
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary-custom" type="submit" id="importBtn">
+                    <button class="btn btn-primary" type="submit" id="importBtn" style="border-radius: 8px; padding: 12px 24px; font-weight: 600;">
                         <i class="fas fa-upload"></i> Import Vehicles
                     </button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 8px; padding: 12px 24px; font-weight: 500;">
                         <i class="fas fa-times"></i> Cancel
                     </button>
                 </div>
@@ -647,11 +1285,30 @@
 <script type="text/javascript">
 // Store vehicles data globally so other functions can access it
 window.vehiclesGlobalData = @json($vehicles ?? []);
+// Store drivers data globally for dropdown functionality
+window.driversGlobalData = @json($drivers ?? []);
+
+// Function to generate driver options for dropdown
+function generateDriverOptions(vehicleId) {
+    const drivers = window.driversGlobalData || [];
+    let options = '';
+    drivers.forEach(driver => {
+        options += `<a class="dropdown-item driver-change" href="#" data-driver-id="${driver.id}" data-vehicle-id="${vehicleId}">${driver.name}</a>`;
+    });
+    return options;
+}
 
 // Simple vanilla JavaScript approach to load vehicles
-function loadVehiclesSimple() {
-    const vehiclesData = window.vehiclesGlobalData; // Get vehicles from global
+function loadVehiclesSimple(filteredData = null) {
+    const vehiclesData = filteredData || window.vehiclesGlobalData; // Use filtered data if provided
     console.log('Vehicles data:', vehiclesData); // Debug log
+    console.log('Number of vehicles:', vehiclesData ? vehiclesData.length : 0);
+    
+    if (vehiclesData && vehiclesData.length > 0) {
+        console.log('First vehicle sample:', vehiclesData[0]);
+        console.log('First vehicle ID:', vehiclesData[0].id, 'Type:', typeof vehiclesData[0].id);
+    }
+    
     const tbody = document.querySelector('#ajax_data_table tbody');
     
     if (!tbody) {
@@ -661,52 +1318,130 @@ function loadVehiclesSimple() {
 
     if (!vehiclesData || vehiclesData.length === 0) {
         console.log('No vehicles data found');
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center">No vehicles found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">No vehicles found</td></tr>';
         return;
     }
 
-    tbody.innerHTML = vehiclesData.map(vehicle => `
-        <tr id="vehicle-row-${vehicle.id}">
+    // Generate table rows with proper error handling
+    let tableHTML = '';
+    vehiclesData.forEach((vehicle, index) => {
+        console.log(`Processing vehicle ${index + 1}:`, vehicle);
+        
+        // Validate vehicle data
+        if (!vehicle || !vehicle.id) {
+            console.error('Invalid vehicle data:', vehicle);
+            return;
+        }
+        
+        // Escape strings to prevent template injection
+        const safeId = String(vehicle.id);
+        const safePlate = (vehicle.license_plate || 'N/A').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        const safeMake = (vehicle.make_name || 'N/A').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        const safeModel = (vehicle.model_name || 'N/A').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        const safeEngineType = vehicle.engine_type ? vehicle.engine_type.charAt(0).toUpperCase() + vehicle.engine_type.slice(1) : 'N/A';
+        
+        // Get vehicle type from database relationship
+        let vehicleType = 'Not Selected';
+        if (vehicle.types && vehicle.types.vehicletype) {
+            vehicleType = vehicle.types.vehicletype;
+        } else if (vehicle.type_id) {
+            // Fallback to type_id if relationship not loaded
+            switch(vehicle.type_id) {
+                case 1: vehicleType = 'Convertible'; break;
+                case 2: vehicleType = 'Coupe'; break;
+                case 3: vehicleType = 'Estate'; break;
+                case 4: vehicleType = 'Hatchback'; break;
+                case 5: vehicleType = 'MPV'; break;
+                case 6: vehicleType = 'Pickup'; break;
+                case 7: vehicleType = 'Saloon'; break;
+                case 8: vehicleType = 'SUV'; break;
+                default: vehicleType = 'Not Selected'; break;
+            }
+        }
+        
+        tableHTML += `
+        <tr id="vehicle-row-${safeId}">
             <td>
                 <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input vehicle-checkbox" id="checkbox-${vehicle.id}" name="ids[]" value="${vehicle.id}" onchange="updateSelection()">
-                    <label class="custom-control-label" for="checkbox-${vehicle.id}"></label>
+                    <input type="checkbox" class="custom-control-input vehicle-checkbox" id="checkbox-${safeId}" name="ids[]" value="${safeId}" onchange="updateSelection()">
+                    <label class="custom-control-label" for="checkbox-${safeId}"></label>
                 </div>
             </td>
-            <td><strong>VEH-${String(vehicle.id).padStart(4, '0')}</strong></td>
-            <td><span class="badge badge-primary">${vehicle.license_plate || 'N/A'}</span></td>
-            <td>${vehicle.make_name || 'N/A'}</td>
-            <td>${vehicle.model_name || 'N/A'}</td>
-            <td>${vehicle.engine_type ? vehicle.engine_type.charAt(0).toUpperCase() + vehicle.engine_type.slice(1) : 'N/A'}</td>
+            <td><strong>VEH-${String(safeId).padStart(4, '0')}</strong></td>
+            <td><span class="badge badge-yellow">${safePlate}</span></td>
+            <td>${safeMake}</td>
+            <td>${safeModel}</td>
+            <td>${vehicleType}</td>
+            <td>${safeEngineType}</td>
             <td>
-                ${vehicle.in_service == 1 
-                    ? '<span class="badge badge-success">Available</span>' 
-                    : '<span class="badge badge-secondary">Disabled</span>'}
-            </td>
-            <td><span class="text-muted">-</span></td>
-            <td>
-                <button class="btn btn-sm btn-outline-info btn-action" onclick="toggleVehicleDetails(${vehicle.id}, ${JSON.stringify(vehicle).replace(/"/g, '&quot;')})" title="View Details" id="details-btn-${vehicle.id}">
-                    ⓘ Details
-                </button>
-            </td>
-            <td class="text-center">
-                <div class="dropdown" style="position: relative; display: inline-block;">
-                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleDropdown(${vehicle.id})" title="Vehicle Actions" style="font-size: 16px; padding: 8px 10px;">
-                        ⚙
-                    </button>
-                    <div class="dropdown-menu" id="dropdown-${vehicle.id}" style="display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 130px; margin-top: 2px;">
-                        <a class="dropdown-item" href="{{ url('admin/vehicles') }}/${vehicle.id}/edit" style="display: block; padding: 8px 12px; text-decoration: none; color: #333;">
-                            Edit Vehicle
+                <div class="status-container" data-vehicle-id="${safeId}">
+                    <div class="status-display">
+                        ${(() => {
+                            const vehicleStatus = vehicle.vehicle_status || 'Available';
+                            switch (vehicleStatus) {
+                                case 'Available':
+                                    return '<button class="btn btn-sm btn-outline-success custom-dropdown-toggle" type="button"><span class="badge badge-success">Available</span> <span class="dropdown-arrow">▼</span></button>';
+                                case 'Rented':
+                                    return '<button class="btn btn-sm btn-outline-warning custom-dropdown-toggle" type="button"><span class="badge badge-warning">Rented</span> <span class="dropdown-arrow">▼</span></button>';
+                                case 'Workshop':
+                                    return '<button class="btn btn-sm btn-outline-info custom-dropdown-toggle" type="button"><span class="badge badge-info">Workshop</span> <span class="dropdown-arrow">▼</span></button>';
+                                case 'Disabled':
+                                    return '<button class="btn btn-sm btn-outline-secondary custom-dropdown-toggle" type="button"><span class="badge badge-secondary">Disabled</span> <span class="dropdown-arrow">▼</span></button>';
+                                default:
+                                    return '<button class="btn btn-sm btn-outline-success custom-dropdown-toggle" type="button"><span class="badge badge-success">Available</span> <span class="dropdown-arrow">▼</span></button>';
+                            }
+                        })()}
+                    </div>
+                    <div class="custom-dropdown-menu" style="display: none;">
+                        <a class="dropdown-item status-change" href="#" data-status="Available" data-vehicle-id="${safeId}">
+                            <span class="badge badge-success">Available</span>
                         </a>
-                        <div style="border-top: 1px solid #eee; margin: 4px 0;"></div>
-                        <a class="dropdown-item text-danger" href="#" onclick="confirmDeleteVehicle(${vehicle.id}, '${vehicle.license_plate || 'N/A'}', '${vehicle.make_name || 'N/A'}', '${vehicle.model_name || 'N/A'}'); return false;" style="display: block; padding: 8px 12px; text-decoration: none; color: #dc3545;">
-                            Delete Vehicle
+                        <a class="dropdown-item status-change" href="#" data-status="Rented" data-vehicle-id="${safeId}">
+                            <span class="badge badge-warning">Rented</span>
+                        </a>
+                        <a class="dropdown-item status-change" href="#" data-status="Workshop" data-vehicle-id="${safeId}">
+                            <span class="badge badge-info">Workshop</span>
+                        </a>
+                        <a class="dropdown-item status-change" href="#" data-status="Disabled" data-vehicle-id="${safeId}">
+                            <span class="badge badge-secondary">Disabled</span>
                         </a>
                     </div>
                 </div>
             </td>
-        </tr>
-    `).join('');
+            <td>
+                <div class="driver-container position-relative">
+                    <div class="driver-display">
+                        <button class="btn btn-sm btn-outline-secondary custom-dropdown-toggle" type="button">
+                            ${vehicle.driver_name || '<span class="text-muted">Not Assigned</span>'} <span class="dropdown-arrow">▼</span>
+                        </button>
+                    </div>
+                    <div class="custom-dropdown-menu" style="display: none;">
+                        <a class="dropdown-item driver-change" href="#" data-driver-id="" data-vehicle-id="${safeId}">
+                            <span class="text-muted">Not Assigned</span>
+                        </a>
+                        ${generateDriverOptions(safeId)}
+                    </div>
+                </div>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-info btn-action" onclick="toggleVehicleDetails(${safeId})" title="View Complete Details" id="details-btn-${safeId}">
+                    <i class="fas fa-eye"></i> View
+                </button>
+            </td>
+            <td class="text-center">
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{{ url('admin/vehicles') }}/${safeId}/edit" class="btn btn-sm btn-outline-primary" title="Edit Vehicle" style="padding: 6px 8px;">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteVehicle('${safeId}', '${safePlate}', '${safeMake}', '${safeModel}'); return false;" title="Delete Vehicle" style="padding: 6px 8px;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    });
+    
+    tbody.innerHTML = tableHTML;
     
     console.log(`Loaded ${vehiclesData.length} vehicles`);
 }
@@ -741,7 +1476,7 @@ window.toggleVehicleDetails = function(id, vehicleData = null) {
         console.log('Closing details');
         existingDetails.remove();
         row.classList.remove('details-expanded');
-        detailsBtn.innerHTML = 'ⓘ Details';
+        detailsBtn.innerHTML = '<i class="fas fa-eye"></i> View';
         detailsBtn.classList.remove('btn-info');
         detailsBtn.classList.add('btn-outline-info');
         return;
@@ -766,7 +1501,7 @@ window.toggleVehicleDetails = function(id, vehicleData = null) {
     // Open details
     console.log('Opening details for vehicle:', vehicle);
     row.classList.add('details-expanded');
-    detailsBtn.innerHTML = '✕ Hide';
+    detailsBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide';
     detailsBtn.classList.remove('btn-outline-info');
     detailsBtn.classList.add('btn-info');
     
@@ -777,7 +1512,7 @@ window.toggleVehicleDetails = function(id, vehicleData = null) {
     detailsRow.style.backgroundColor = '#f8f9fa';
     
     const detailsCell = document.createElement('td');
-    detailsCell.setAttribute('colspan', '10');
+    detailsCell.setAttribute('colspan', '11');
     detailsCell.style.padding = '20px';
     
     // Start with a loading indicator
@@ -793,9 +1528,13 @@ window.toggleVehicleDetails = function(id, vehicleData = null) {
     // Fetch complete vehicle data including metadata via AJAX
     fetchCompleteVehicleData(id).then(completeVehicle => {
         console.log('Complete vehicle data received:', completeVehicle);
+        console.log('Purchase info:', completeVehicle.purchase_info);
+        console.log('Group name:', completeVehicle.group_name);
+        console.log('Driver name:', completeVehicle.driver_name);
         detailsCell.innerHTML = generateCompleteVehicleDetails(id, vehicle, completeVehicle);
     }).catch(error => {
         console.error('Error fetching complete vehicle data:', error);
+        console.log('Using fallback with basic vehicle data:', vehicle);
         // Enhanced fallback with more basic vehicle data
         detailsCell.innerHTML = generateEnhancedBasicVehicleDetails(id, vehicle);
     });
@@ -828,80 +1567,153 @@ async function fetchCompleteVehicleData(id) {
     }
 }
 
-// Generate vehicle creation fields details HTML
+// Generate comprehensive vehicle details HTML for inline display
 function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
     const purchaseInfo = completeVehicle.purchase_info || [];
-    const totalPrice = purchaseInfo.find(item => item.exp_name && item.exp_name.toLowerCase().includes('price'))?.exp_amount || 
-                      purchaseInfo.find(item => item.exp_name && item.exp_name.toLowerCase().includes('cost'))?.exp_amount || 0;
-    const initialCost = purchaseInfo.find(item => item.exp_name && item.exp_name.toLowerCase().includes('initial'))?.exp_amount || 0;
+    
+    // Enhanced price and cost information retrieval
+    let vehiclePrice = 0;
+    let initialCost = 0;
+    let pricePeriod = 'monthly';
+    
+    // Try to get from metadata first
+    if (completeVehicle.metadata) {
+        vehiclePrice = parseFloat(completeVehicle.metadata.vehicle_price || completeVehicle.metadata.price || 0);
+        initialCost = parseFloat(completeVehicle.metadata.initial_cost || 0);
+        pricePeriod = completeVehicle.metadata.price_period || 'monthly';
+    }
+    
+    // Fallback to purchase info
+    if (vehiclePrice === 0 || initialCost === 0) {
+        purchaseInfo.forEach(item => {
+            if (item.exp_name && item.exp_amount) {
+                const name = item.exp_name.toLowerCase();
+                const amount = parseFloat(item.exp_amount) || 0;
+                
+                if (name.includes('price') || name.includes('purchase') || name.includes('total')) {
+                    vehiclePrice = amount;
+                } else if (name.includes('initial') || name.includes('down') || name.includes('deposit')) {
+                    initialCost = amount;
+                }
+            }
+        });
+    }
+    
+    // Get metadata information
+    const metadata = completeVehicle.metadata || {};
+    const allMetadata = completeVehicle.all_metadata || [];
     
     return `
-        <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd;">
-            <h5 style="color: #7FD7E1; margin-bottom: 20px; border-bottom: 2px solid #7FD7E1; padding-bottom: 10px;">
-                🚗 Vehicle Creation Details - ${vehicle.license_plate || 'N/A'}
-            </h5>
+        <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd; max-width: 100%; overflow-x: auto;">
+            <!-- Header -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                <h3 style="margin: 0; color: #495057; font-size: 1.8rem;">${vehicle.make_name || 'Unknown Make'} ${vehicle.model_name || 'Unknown Model'}</h3>
+                <p style="margin: 0.5rem 0 0 0; color: #6c757d; font-size: 1.1rem;">
+                    Vehicle ID: VEH-${String(id).padStart(4, '0')} | 
+                    Registration: ${vehicle.license_plate || 'Not Set'} | 
+                    Status: 
+                    ${(() => {
+                        const vehicleStatus = vehicle.vehicle_status || 'Available';
+                        switch (vehicleStatus) {
+                            case 'Available':
+                                return '<span style="color: #28a745;"><i class="fas fa-check text-success"></i> Available</span>';
+                            case 'Rented':
+                                return '<span style="color: #ffc107;"><i class="fas fa-exclamation-triangle text-warning"></i> Rented</span>';
+                            case 'Workshop':
+                                return '<span style="color: #17a2b8;"><i class="fas fa-wrench text-info"></i> Workshop</span>';
+                            case 'Disabled':
+                                return '<span style="color: #6c757d;"><i class="fas fa-times text-secondary"></i> Disabled</span>';
+                            default:
+                                return '<span style="color: #28a745;"><i class="fas fa-check text-success"></i> Available</span>';
+                        }
+                    })()}
+                </p>
+            </div>
             
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 25px;">
-                <!-- Vehicle Information -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">🚗 Vehicle Information</h6>
-                    <p><strong>Vehicle Make:</strong> ${vehicle.make_name || 'Not Selected'}</p>
-                    <p><strong>Vehicle Model:</strong> ${vehicle.model_name || 'Not Selected'}</p>
-                    <p><strong>Vehicle Type:</strong> ${completeVehicle.vehicle_type || 'Not Selected'}</p>
-                    <p><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</p>
-                    <p><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</p>
-                    <p><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</p>
-                </div>
-                
-                <!-- Pricing & Group -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">💰 Pricing & Assignment</h6>
-                    <p><strong>Price:</strong> ${totalPrice ? ('{{ Hyvikk::get("currency") }} ' + parseFloat(totalPrice).toLocaleString()) : 'Not Set'}</p>
-                    <p><strong>Vehicle Group:</strong> ${completeVehicle.group_name || 'Not Selected'}</p>
-                    <p><strong>Driver:</strong> ${completeVehicle.driver_name || 'Not Selected'}</p>
-                    <p><strong>Initial Mileage:</strong> ${vehicle.int_mileage ? (vehicle.int_mileage + ' miles') : 'Not Set'}</p>
-                    <p><strong>Initial Cost:</strong> ${initialCost ? ('{{ Hyvikk::get("currency") }} ' + parseFloat(initialCost).toLocaleString()) : 'Not Set'}</p>
-                </div>
-                
-                <!-- Status & Settings -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">⚡ Status & Settings</h6>
-                    <p><strong>Is Active:</strong> <span style="color: ${vehicle.in_service == 1 ? '#28a745' : '#dc3545'};">${vehicle.in_service == 1 ? '✅ Yes' : '❌ No'}</span></p>
-                    <p><strong>Scheme:</strong> ${completeVehicle.additional_meta?.scheme || 'Not Set'}</p>
-                    <p><strong>Vehicle Status:</strong> ${vehicle.in_service == 1 ? 'Active' : 'Inactive'}</p>
-                    <p><strong>Telematics Link:</strong> ${completeVehicle.additional_meta?.telematics_link ? 
-                        `<a href="${completeVehicle.additional_meta.telematics_link}" target="_blank" style="color: #7FD7E1;">View Link</a>` : 
-                        'Not Set'}</p>
+            <!-- Vehicle Creation Information -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h4 style="color: #7FD7E1; margin-bottom: 15px; border-bottom: 2px solid #7FD7E1; padding-bottom: 8px;"><i class="fas fa-car"></i> Vehicle Creation Information</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div><strong>Vehicle Make:</strong> ${vehicle.make_name || 'Not Selected'}</div>
+                    <div><strong>Vehicle Model:</strong> ${vehicle.model_name || 'Not Selected'}</div>
+                    <div><strong>Vehicle Type:</strong> ${completeVehicle.vehicle_type || 'Not Selected'}</div>
+                    <div><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</div>
+                    <div><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</div>
+                    <div><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</div>
+                    <div><strong>Vehicle Group:</strong> ${completeVehicle.group_name || 'Not Selected'}</div>
+                    <div><strong>Assigned Driver:</strong> ${completeVehicle.driver_name || 'Not Assigned'}</div>
+                    <div><strong>Initial Mileage:</strong> ${vehicle.int_mileage ? vehicle.int_mileage.toLocaleString() + ' miles' : 'Not Set'}</div>
+                    <div><strong>Is Active:</strong> ${vehicle.in_service == 1 ? '<i class="fas fa-check text-success"></i> Yes' : '<i class="fas fa-times text-danger"></i> No'}</div>
+                    <div><strong>Scheme:</strong> ${metadata.vehicle_scheme || 'Not Set'}</div>
+                    <div><strong>Vehicle Status:</strong> ${(() => {
+                        const vehicleStatus = vehicle.vehicle_status || 'Available';
+                        switch (vehicleStatus) {
+                            case 'Available': return 'Available';
+                            case 'Rented': return 'Rented';
+                            case 'Workshop': return 'Workshop';
+                            case 'Disabled': return 'Disabled';
+                            default: return 'Available';
+                        }
+                    })()}</div>
+                    <div><strong>Telematics Link:</strong> ${metadata.telematics_link ? '<a href="' + metadata.telematics_link + '" target="_blank">View Link</a>' : 'Not Set'}</div>
+                    <div><strong>Vehicle ID:</strong> ${id}</div>
+                    <div><strong>Group ID:</strong> ${vehicle.group_id || 'Not Set'}</div>
                 </div>
             </div>
             
-            <!-- Creation Summary -->
-            <div style="background: #e8f4fd; padding: 12px; border-radius: 6px; margin-bottom: 15px; border-left: 3px solid #7FD7E1;">
-                <h6 style="color: #7FD7E1; margin-bottom: 8px; font-size: 0.9em;">📋 Creation Summary</h6>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 0.85em;">
-                    <p style="margin: 0;"><strong>Vehicle ID:</strong> VEH-${String(id).padStart(4, '0')}</p>
-                    <p style="margin: 0;"><strong>Fields Set:</strong> ${[
-                        vehicle.make_name, vehicle.model_name, completeVehicle.vehicle_type, 
-                        vehicle.engine_type, vehicle.license_plate, vehicle.year,
-                        totalPrice, completeVehicle.group_name, completeVehicle.driver_name,
-                        vehicle.int_mileage, vehicle.in_service, initialCost,
-                        completeVehicle.additional_meta?.scheme, completeVehicle.additional_meta?.telematics_link
-                    ].filter(field => field && field !== 'Not Selected' && field !== 'Not Set').length} / 14</p>
+            <!-- Purchase & Pricing Information -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h4 style="color: #7FD7E1; margin-bottom: 15px; border-bottom: 2px solid #7FD7E1; padding-bottom: 8px;"><i class="fas fa-pound-sign"></i> Purchase & Pricing Information</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div><strong>Vehicle Price (${pricePeriod}):</strong> ${vehiclePrice > 0 ? '£ ' + vehiclePrice.toFixed(2) : 'Not Set'}</div>
+                    <div><strong>Insurance Discount:</strong> ${(() => {
+                        const insuranceDiscount = parseFloat(completeVehicle.metadata?.insurance_discount || 0);
+                        if (insuranceDiscount > 0) {
+                            const priceWithoutInsurance = vehiclePrice - insuranceDiscount;
+                            return '£ ' + insuranceDiscount.toFixed(2) + '<br><small style="color: #666;">Price without insurance: £ ' + priceWithoutInsurance.toFixed(2) + '</small>';
+                        }
+                        return 'Not Set';
+                    })()}</div>
+                    <div><strong>Initial Cost:</strong> ${initialCost > 0 ? '£ ' + initialCost.toFixed(2) : 'Not Set'}</div>
                 </div>
             </div>
+            
+            
+            
+            <!-- Important Dates -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h4 style="color: #7FD7E1; margin-bottom: 15px; border-bottom: 2px solid #7FD7E1; padding-bottom: 8px;"><i class="fas fa-calendar-alt"></i> Important Dates</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div><strong>MOT Expiry Date:</strong> ${(() => {
+                        const motDate = completeVehicle.metadata?.mot_expiry_date || completeVehicle.metadata?.exp_date || vehicle.lic_exp_date;
+                        if (motDate) {
+                            const date = new Date(motDate);
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const year = String(date.getFullYear()).slice(-2);
+                            return `${day}/${month}/${year}`;
+                        }
+                        return 'Not Set';
+                    })()}</div>
+                    <div><strong>Created Date:</strong> ${vehicle.created_at ? new Date(vehicle.created_at).toLocaleString() : 'Not Available'}</div>
+                    <div><strong>Last Updated:</strong> ${vehicle.updated_at ? new Date(vehicle.updated_at).toLocaleString() : 'Not Available'}</div>
+                    <div><strong>Deleted At:</strong> ${vehicle.deleted_at || 'Not Deleted'}</div>
+                </div>
+            </div>
+            
             
             <!-- Action Buttons -->
             <div style="display: flex; gap: 15px; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid #ddd;">
                 <div>
                     <a href="/admin/vehicles/${vehicle.id}/edit" class="btn btn-warning" style="margin-right: 10px; padding: 10px 20px;">
-                        ✏️ Edit Vehicle
+                        <i class="fas fa-edit"></i> Edit Vehicle
                     </a>
                     <a href="/admin/vehicles/${vehicle.id}" class="btn btn-info" style="margin-right: 10px; padding: 10px 20px;">
-                        👁️ View Full Details
+                        <i class="fas fa-eye"></i> View Full Details
                     </a>
                 </div>
                 <button class="btn btn-secondary" onclick="toggleVehicleDetails(${id})" style="padding: 10px 20px;">
-                    ✕ Hide Details
+                    <i class="fas fa-times"></i> Hide Details
                 </button>
             </div>
         </div>
@@ -911,67 +1723,123 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
 // Basic vehicle creation fields fallback when AJAX fails
 function generateEnhancedBasicVehicleDetails(id, vehicle) {
     return `
-        <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd;">
-            <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-                <p style="margin: 0; color: #856404;"><strong>⚠️ Note:</strong> Complete creation data could not be loaded. Showing available basic creation fields only.</p>
+        <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd; max-width: 100%; overflow-x: auto;">
+            <!-- Header -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                <h3 style="margin: 0; color: #495057; font-size: 1.8rem;">${vehicle.make_name || 'Unknown Make'} ${vehicle.model_name || 'Unknown Model'}</h3>
+                <p style="margin: 0.5rem 0 0 0; color: #6c757d; font-size: 1.1rem;">
+                    Vehicle ID: VEH-${String(id).padStart(4, '0')} | 
+                    Registration: ${vehicle.license_plate || 'Not Set'} | 
+                    Status: 
+                    ${(() => {
+                        const vehicleStatus = vehicle.vehicle_status || 'Available';
+                        switch (vehicleStatus) {
+                            case 'Available':
+                                return '<span style="color: #28a745;"><i class="fas fa-check text-success"></i> Available</span>';
+                            case 'Rented':
+                                return '<span style="color: #ffc107;"><i class="fas fa-exclamation-triangle text-warning"></i> Rented</span>';
+                            case 'Workshop':
+                                return '<span style="color: #17a2b8;"><i class="fas fa-wrench text-info"></i> Workshop</span>';
+                            case 'Disabled':
+                                return '<span style="color: #6c757d;"><i class="fas fa-times text-secondary"></i> Disabled</span>';
+                            default:
+                                return '<span style="color: #28a745;"><i class="fas fa-check text-success"></i> Available</span>';
+                        }
+                    })()}
+                </p>
             </div>
             
-            <h5 style="color: #7FD7E1; margin-bottom: 20px; border-bottom: 2px solid #7FD7E1; padding-bottom: 10px;">
-                🚗 Vehicle Creation Details - ${vehicle.license_plate || 'N/A'}
-            </h5>
-            
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 25px;">
-                <!-- Vehicle Information -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">🚗 Vehicle Information</h6>
-                    <p><strong>Vehicle Make:</strong> ${vehicle.make_name || 'Not Selected'}</p>
-                    <p><strong>Vehicle Model:</strong> ${vehicle.model_name || 'Not Selected'}</p>
-                    <p><strong>Vehicle Type:</strong> Not Available</p>
-                    <p><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</p>
-                    <p><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</p>
-                    <p><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</p>
-                </div>
-                
-                <!-- Pricing & Group -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">💰 Pricing & Assignment</h6>
-                    <p><strong>Price:</strong> Not Available</p>
-                    <p><strong>Vehicle Group:</strong> Not Available</p>
-                    <p><strong>Driver:</strong> Not Available</p>
-                    <p><strong>Initial Mileage:</strong> ${vehicle.int_mileage ? (vehicle.int_mileage + ' miles') : 'Not Set'}</p>
-                    <p><strong>Initial Cost:</strong> Not Available</p>
-                </div>
-                
-                <!-- Status & Settings -->
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px;">
-                    <h6 style="color: #7FD7E1; margin-bottom: 12px;">⚡ Status & Settings</h6>
-                    <p><strong>Is Active:</strong> <span style="color: ${vehicle.in_service == 1 ? '#28a745' : '#dc3545'};">${vehicle.in_service == 1 ? '✅ Yes' : '❌ No'}</span></p>
-                    <p><strong>Scheme:</strong> Not Available</p>
-                    <p><strong>Vehicle Status:</strong> ${vehicle.in_service == 1 ? 'Active' : 'Inactive'}</p>
-                    <p><strong>Telematics Link:</strong> Not Available</p>
+            <!-- Vehicle Creation Information -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h4 style="color: #7FD7E1; margin-bottom: 15px; border-bottom: 2px solid #7FD7E1; padding-bottom: 8px;"><i class="fas fa-car"></i> Vehicle Creation Information</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div><strong>Vehicle Make:</strong> ${vehicle.make_name || 'Not Selected'}</div>
+                    <div><strong>Vehicle Model:</strong> ${vehicle.model_name || 'Not Selected'}</div>
+                    <div><strong>Vehicle Type:</strong> Not Available (AJAX Failed)</div>
+                    <div><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</div>
+                    <div><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</div>
+                    <div><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</div>
+                    <div><strong>Vehicle Group:</strong> Not Available (AJAX Failed)</div>
+                    <div><strong>Assigned Driver:</strong> Not Available (AJAX Failed)</div>
+                    <div><strong>Initial Mileage:</strong> ${vehicle.int_mileage ? vehicle.int_mileage.toLocaleString() + ' miles' : 'Not Set'}</div>
+                    <div><strong>Is Active:</strong> ${vehicle.in_service == 1 ? '✅ Yes' : '❌ No'}</div>
+                    <div><strong>Scheme:</strong> Not Available (AJAX Failed)</div>
+                    <div><strong>Vehicle Status:</strong> ${(() => {
+                        const vehicleStatus = vehicle.vehicle_status || 'Available';
+                        switch (vehicleStatus) {
+                            case 'Available': return 'Available';
+                            case 'Rented': return 'Rented';
+                            case 'Workshop': return 'Workshop';
+                            case 'Disabled': return 'Disabled';
+                            default: return 'Available';
+                        }
+                    })()}</div>
+                    <div><strong>Telematics Link:</strong> Not Available (AJAX Failed)</div>
+                    <div><strong>Vehicle ID:</strong> ${id}</div>
+                    <div><strong>Group ID:</strong> ${vehicle.group_id || 'Not Set'}</div>
+                    <div><strong>Type ID:</strong> ${vehicle.type_id || 'Not Set'}</div>
+                    <div><strong>User ID:</strong> ${vehicle.user_id || 'Not Set'}</div>
                 </div>
             </div>
             
-            <!-- Data Notice -->
-            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-                <p style="margin: 0; color: #856404;"><strong>📋 Creation Data:</strong> Complete creation field data requires full data access. Please refresh the page or check your connection to see all vehicle creation details including pricing and assignment information.</p>
+            <!-- Technical Specifications -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h4 style="color: #7FD7E1; margin-bottom: 15px; border-bottom: 2px solid #7FD7E1; padding-bottom: 8px;">🔧 Technical Specifications</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div><strong>Engine Type:</strong> ${vehicle.engine_type || 'Not Specified'}</div>
+                    <div><strong>Horse Power:</strong> ${vehicle.horse_power || 'Not Specified'}</div>
+                    <div><strong>Vehicle Color:</strong> ${vehicle.color_name || 'Not Specified'}</div>
+                    <div><strong>VIN Number:</strong> ${vehicle.vin || 'Not Available'}</div>
+                    <div><strong>Current Mileage:</strong> ${vehicle.mileage ? vehicle.mileage.toFixed(2) + ' miles' : 'Not Recorded'}</div>
+                    <div><strong>Insurance Number:</strong> ${vehicle.insurance_number || 'Not Available'}</div>
+                </div>
+            </div>
+            
+            <!-- Important Dates -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h4 style="color: #7FD7E1; margin-bottom: 15px; border-bottom: 2px solid #7FD7E1; padding-bottom: 8px;"><i class="fas fa-calendar-alt"></i> Important Dates</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <div><strong>MOT Expiry Date:</strong> ${(() => {
+                        const motDate = vehicle.lic_exp_date;
+                        if (motDate) {
+                            const date = new Date(motDate);
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const year = String(date.getFullYear()).slice(-2);
+                            return `${day}/${month}/${year}`;
+                        }
+                        return 'Not Set';
+                    })()}</div>
+                    <div><strong>Created Date:</strong> ${vehicle.created_at ? new Date(vehicle.created_at).toLocaleString() : 'Not Available'}</div>
+                    <div><strong>Last Updated:</strong> ${vehicle.updated_at ? new Date(vehicle.updated_at).toLocaleString() : 'Not Available'}</div>
+                    <div><strong>Deleted At:</strong> ${vehicle.deleted_at || 'Not Deleted'}</div>
+                </div>
+            </div>
+            
+            <!-- Warning Message -->
+            <div style="background: #fff3cd; padding: 20px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <h4 style="color: #856404; margin-bottom: 15px;">⚠️ Limited Data Available</h4>
+                <p style="color: #856404; margin: 0;">
+                    This is basic vehicle information. Complete details including pricing, metadata, and relationships are not available. 
+                    This may be due to network issues or incomplete data loading. Click "View Full Details" for complete information.
+                </p>
             </div>
             
             <!-- Action Buttons -->
             <div style="display: flex; gap: 15px; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid #ddd;">
                 <div>
                     <a href="/admin/vehicles/${vehicle.id}/edit" class="btn btn-warning" style="margin-right: 10px; padding: 10px 20px;">
-                        ✏️ Edit Vehicle
+                        <i class="fas fa-edit"></i> Edit Vehicle
                     </a>
                     <a href="/admin/vehicles/${vehicle.id}" class="btn btn-info" style="margin-right: 10px; padding: 10px 20px;">
-                        👁️ View Full Details
+                        <i class="fas fa-eye"></i> View Full Details
                     </a>
                     <button class="btn btn-outline-info" onclick="location.reload()" style="margin-right: 10px; padding: 10px 20px;">
-                        🔄 Refresh Page
+                        <i class="fas fa-sync-alt"></i> Refresh Page
                     </button>
                 </div>
                 <button class="btn btn-secondary" onclick="toggleVehicleDetails(${id})" style="padding: 10px 20px;">
-                    ✕ Hide Details
+                    <i class="fas fa-times"></i> Hide Details
                 </button>
             </div>
         </div>
@@ -979,13 +1847,35 @@ function generateEnhancedBasicVehicleDetails(id, vehicle) {
 }
 
 window.confirmDeleteVehicle = function(id, plate, make, model) {
-    const row = document.getElementById(`vehicle-row-${id}`);
-    if (!row) return;
+    console.log('confirmDeleteVehicle called with ID:', id, 'Plate:', plate, 'Make:', make, 'Model:', model);
     
-    const existingConfirm = row.querySelector('.delete-confirmation-row');
-    if (existingConfirm) {
-        existingConfirm.remove();
-        row.classList.remove('confirm-delete-row');
+    if (!id) {
+        console.error('No ID provided to confirmDeleteVehicle');
+        alert('Error: No vehicle ID provided');
+        return;
+    }
+    
+    const row = document.getElementById(`vehicle-row-${id}`);
+    if (!row) {
+        console.error('Row not found for ID:', id);
+        return;
+    }
+    
+    // First, close ALL existing delete confirmations to prevent stacking
+    const allExistingConfirms = document.querySelectorAll('.delete-confirmation-row');
+    allExistingConfirms.forEach(confirmRow => {
+        const vehicleRow = confirmRow.previousElementSibling;
+        if (vehicleRow) {
+            vehicleRow.classList.remove('confirm-delete-row');
+        }
+        confirmRow.remove();
+    });
+    
+    // Check if this specific row already had a confirmation (toggle behavior)
+    const existingConfirm = row.nextElementSibling;
+    if (existingConfirm && existingConfirm.classList.contains('delete-confirmation-row')) {
+        // If it already had a confirmation, we just removed it above, so we're done (toggle off)
+        console.log('Delete confirmation toggled off for vehicle:', id);
         return;
     }
     
@@ -996,7 +1886,7 @@ window.confirmDeleteVehicle = function(id, plate, make, model) {
     const confirmRow = document.createElement('tr');
     confirmRow.className = 'delete-confirmation-row';
     confirmRow.innerHTML = `
-        <td colspan="10">
+        <td colspan="11">
             <div class="delete-confirmation">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -1005,10 +1895,10 @@ window.confirmDeleteVehicle = function(id, plate, make, model) {
                         <br><small class="text-muted">This will permanently delete the vehicle and all associated records.</small>
                     </div>
                     <div>
-                        <button class="btn btn-sm btn-danger mr-2" onclick="deleteVehicle(${id})">
+                        <button class="btn btn-sm btn-danger mr-2" onclick="deleteVehicle('${id}')">
                             <i class="fas fa-trash-alt"></i> Delete
                         </button>
-                        <button class="btn btn-sm btn-secondary" onclick="cancelDelete(${id})">
+                        <button class="btn btn-sm btn-secondary" onclick="cancelDelete('${id}')" type="button">
                             <i class="fas fa-times"></i> Cancel
                         </button>
                     </div>
@@ -1018,54 +1908,291 @@ window.confirmDeleteVehicle = function(id, plate, make, model) {
     `;
     
     row.parentNode.insertBefore(confirmRow, row.nextSibling);
+    
+    // Add event listener to cancel button as a fallback
+    const cancelBtn = confirmRow.querySelector('.btn-secondary');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Cancel button clicked via event listener');
+            cancelDelete(id);
+        });
+    }
+    
+    console.log('Delete confirmation toggled on for vehicle:', id);
 }
 
 window.cancelDelete = function(id) {
-    const row = document.getElementById(`vehicle-row-${id}`);
-    if (!row) return;
+    console.log('cancelDelete called with ID:', id);
     
-    const confirmRow = row.querySelector('.delete-confirmation-row');
-    if (confirmRow) {
-        confirmRow.remove();
+    const row = document.getElementById(`vehicle-row-${id}`);
+    if (!row) {
+        console.error('Row not found for ID:', id);
+        return;
     }
+    
+    // Find the confirmation row (it's a sibling, not a child)
+    const confirmRow = row.nextElementSibling;
+    if (confirmRow && confirmRow.classList.contains('delete-confirmation-row')) {
+        console.log('Removing confirmation row');
+        confirmRow.remove();
+    } else {
+        // Fallback: search for any confirmation row in the table
+        const allConfirmRows = document.querySelectorAll('.delete-confirmation-row');
+        allConfirmRows.forEach(row => row.remove());
+    }
+    
+    // Remove the highlight class
     row.classList.remove('confirm-delete-row');
+    console.log('Delete confirmation cancelled');
 }
 
 window.deleteVehicle = function(id) {
-    // Create and submit delete form
-    const deleteForm = document.createElement('form');
-    deleteForm.action = '{{ url("admin/vehicles") }}/' + id;
-    deleteForm.method = 'POST';
-    deleteForm.innerHTML = `
-        @csrf
-        @method('DELETE')
-    `;
-    document.body.appendChild(deleteForm);
-    deleteForm.submit();
+    console.log('Starting vehicle deletion for ID:', id, 'Type:', typeof id);
+    
+    if (!id) {
+        console.error('No ID provided to deleteVehicle');
+        alert('Error: No vehicle ID provided');
+        return;
+    }
+    
+    // Show loading state
+    const row = document.getElementById(`vehicle-row-${id}`);
+    if (row) {
+        row.style.opacity = '0.5';
+        row.style.pointerEvents = 'none';
+        console.log('Row found and loading state applied');
+    } else {
+        console.warn('Row not found for ID:', id);
+    }
+    
+    // Get CSRF token with multiple fallbacks
+    let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                   document.querySelector('input[name="_token"]')?.value ||
+                   document.querySelector('input[name="csrf_token"]')?.value ||
+                   window.Laravel?.csrfToken;
+    
+    console.log('CSRF token found:', csrfToken ? 'Yes' : 'No');
+    
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        showNotification('Security token not found. Please refresh the page.', 'error');
+        if (row) {
+            row.style.opacity = '1';
+            row.style.pointerEvents = 'auto';
+        }
+        return;
+    }
+    
+    // Submit via fetch for better control
+    fetch('{{ url("admin/vehicles") }}/' + id, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({
+            '_method': 'DELETE',
+            '_token': csrfToken,
+            'id': id
+        })
+    })
+    .then(response => {
+        console.log('Delete response status:', response.status);
+        console.log('Delete response headers:', response.headers);
+        
+        if (response.ok) {
+            return response.json().then(data => {
+                console.log('Delete response data:', data);
+                
+                if (data.success) {
+                    // Remove the row from the table immediately
+                    if (row) {
+                        row.remove();
+                    }
+                    
+                    // Also remove any details row if it exists
+                    const detailsRow = document.getElementById(`vehicle-details-${id}`);
+                    if (detailsRow) {
+                        detailsRow.remove();
+                    }
+                    
+                    // Remove any confirmation row if it exists
+                    const confirmRow = document.querySelector('.delete-confirmation-row');
+                    if (confirmRow) {
+                        confirmRow.remove();
+                    }
+                    
+                    // Show success message
+                    showNotification(data.message || 'Vehicle deleted successfully!', 'success');
+                    
+                    // Verify deletion by checking if vehicle still exists
+                    setTimeout(() => {
+                        fetch(`{{ url('admin/vehicles') }}/${id}/complete-data`)
+                            .then(response => {
+                                if (response.ok) {
+                                    console.warn('Vehicle still exists after deletion!');
+                                    showNotification('Warning: Vehicle may not have been deleted properly. Please refresh the page.', 'warning');
+                                } else {
+                                    console.log('Vehicle successfully deleted and verified.');
+                                }
+                            })
+                            .catch(error => {
+                                console.log('Vehicle deletion verified (not found):', error);
+                            });
+                    }, 1000);
+                    
+                    // Update selection if needed
+                    if (typeof updateSelection === 'function') {
+                        updateSelection();
+                    }
+                } else {
+                    throw new Error(data.error || 'Delete failed');
+                }
+            }).catch(jsonError => {
+                console.error('JSON parsing error:', jsonError);
+                // If JSON parsing fails, still try to remove the row as fallback
+                if (row) {
+                    row.remove();
+                }
+                showNotification('Vehicle deleted successfully!', 'success');
+            });
+        } else {
+            return response.text().then(text => {
+                console.error('Delete failed with response:', text);
+                throw new Error('Delete failed with status: ' + response.status);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting vehicle:', error);
+        
+        // Try fallback method with traditional form submission
+        console.log('Trying fallback delete method...');
+        const deleteForm = document.createElement('form');
+        deleteForm.action = '{{ url("admin/vehicles") }}/' + id;
+        deleteForm.method = 'POST';
+        deleteForm.style.display = 'none';
+        deleteForm.innerHTML = `
+            <input type="hidden" name="_token" value="${csrfToken}">
+            <input type="hidden" name="_method" value="DELETE">
+            <input type="hidden" name="id" value="${id}">
+        `;
+        
+        document.body.appendChild(deleteForm);
+        deleteForm.submit();
+    });
 }
 
-window.toggleDropdown = function(vehicleId) {
-    const dropdown = document.getElementById(`dropdown-${vehicleId}`);
-    const isVisible = dropdown.style.display === 'block';
+// Simple test function to verify deletion
+window.testVehicleDeletion = function(id) {
+    console.log('Testing vehicle deletion for ID:', id);
     
-    // Close all other dropdowns first
-    document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
-        d.style.display = 'none';
-    });
-    
-    // Toggle the current dropdown
-    dropdown.style.display = isVisible ? 'none' : 'block';
-    
-    // Close dropdown when clicking outside
-    if (dropdown.style.display === 'block') {
-        document.addEventListener('click', function closeDropdown(e) {
-            if (!dropdown.contains(e.target) && !e.target.closest(`[onclick="toggleDropdown(${vehicleId})"]`)) {
-                dropdown.style.display = 'none';
-                document.removeEventListener('click', closeDropdown);
-            }
-        });
+    // Check if vehicle exists in the table
+    const row = document.getElementById(`vehicle-row-${id}`);
+    if (row) {
+        console.log('Vehicle found in table - ID:', id);
+        return true;
+    } else {
+        console.log('Vehicle not found in table - ID:', id);
+        return false;
     }
 }
+
+// Test function to verify all delete buttons are working
+window.testAllDeleteButtons = function() {
+    console.log('Testing all delete buttons...');
+    const deleteButtons = document.querySelectorAll('button[onclick*="confirmDeleteVehicle"]');
+    console.log('Found delete buttons:', deleteButtons.length);
+    
+    deleteButtons.forEach((button, index) => {
+        const onclick = button.getAttribute('onclick');
+        console.log(`Button ${index + 1} onclick:`, onclick);
+        
+        // Extract the ID from the onclick attribute
+        const match = onclick.match(/confirmDeleteVehicle\('([^']+)'/);
+        if (match) {
+            const id = match[1];
+            console.log(`Button ${index + 1} ID:`, id);
+        } else {
+            console.error(`Button ${index + 1} - Could not extract ID from:`, onclick);
+        }
+    });
+}
+
+// Test function to manually trigger delete for a specific ID
+window.testDeleteById = function(id) {
+    console.log('Manually testing delete for ID:', id);
+    
+    // Test if the row exists
+    const row = document.getElementById(`vehicle-row-${id}`);
+    if (!row) {
+        console.error('Row not found for ID:', id);
+        return false;
+    }
+    
+    // Test if the delete button exists
+    const deleteButton = row.querySelector('button[onclick*="confirmDeleteVehicle"]');
+    if (!deleteButton) {
+        console.error('Delete button not found for ID:', id);
+        return false;
+    }
+    
+    console.log('Row and delete button found, triggering delete...');
+    
+    // Manually call the confirmDeleteVehicle function
+    const onclick = deleteButton.getAttribute('onclick');
+    const match = onclick.match(/confirmDeleteVehicle\('([^']+)',\s*'([^']+)',\s*'([^']+)',\s*'([^']+)'/);
+    if (match) {
+        const [, vehicleId, plate, make, model] = match;
+        console.log('Calling confirmDeleteVehicle with:', vehicleId, plate, make, model);
+        confirmDeleteVehicle(vehicleId, plate, make, model);
+        return true;
+    } else {
+        console.error('Could not parse onclick attribute:', onclick);
+        return false;
+    }
+}
+
+// Alternative deletion method that doesn't depend on external libraries
+window.deleteVehicleSimple = function(id) {
+    console.log('Using simple deletion method for ID:', id);
+    
+    if (confirm('Are you sure you want to delete this vehicle?')) {
+        // Create a simple form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url("admin/vehicles") }}/' + id;
+        form.style.display = 'none';
+        
+        // Add CSRF token
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = '_token';
+        tokenInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        
+        // Add method override
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        
+        // Add ID
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'id';
+        idInput.value = id;
+        
+        form.appendChild(tokenInput);
+        form.appendChild(methodInput);
+        form.appendChild(idInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
 
 window.bulkDeleteVehicles = function() {
     const selectedCheckboxes = document.querySelectorAll('.vehicle-checkbox:checked');
@@ -1354,6 +2481,23 @@ function initializeImportForm() {
 
 // Enhanced delete modals
 function initializeDeleteModals() {
+    // Add global click handler to close delete confirmations when clicking outside
+    document.addEventListener('click', function(e) {
+        // If clicking outside a delete confirmation, close any open confirmations
+        if (!e.target.closest('.delete-confirmation') && !e.target.closest('[onclick*="confirmDeleteVehicle"]')) {
+            const openConfirmations = document.querySelectorAll('.delete-confirmation-row');
+            if (openConfirmations.length > 0) {
+                console.log('Closing all delete confirmations due to outside click');
+                openConfirmations.forEach(confirmRow => {
+                    const vehicleRow = confirmRow.previousElementSibling;
+                    if (vehicleRow) {
+                        vehicleRow.classList.remove('confirm-delete-row');
+                    }
+                    confirmRow.remove();
+                });
+            }
+        }
+    });
     const confirmDeleteBtn = document.getElementById('confirmDelete');
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener('click', function() {
@@ -1397,6 +2541,106 @@ function initializeDeleteModals() {
     }
 }
 
+// Notification function
+window.showNotification = function(message, type = 'info') {
+    try {
+        // Create notification element
+        let alertClass = 'info';
+        if (type === 'success') alertClass = 'success';
+        else if (type === 'error') alertClass = 'danger';
+        else if (type === 'warning') alertClass = 'warning';
+        
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${alertClass} alert-dismissible fade show`;
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '300px';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="close" onclick="this.parentElement.remove()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        `;
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification && notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    } catch (error) {
+        // Fallback to simple alert if notification system fails
+        console.error('Notification system error:', error);
+        alert(message);
+    }
+};
+
+// Simple notification that doesn't depend on Bootstrap
+window.showSimpleNotification = function(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.style.padding = '15px 20px';
+    notification.style.borderRadius = '5px';
+    notification.style.color = 'white';
+    notification.style.fontWeight = 'bold';
+    notification.style.minWidth = '300px';
+    notification.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    
+    // Set background color based on type
+    if (type === 'success') {
+        notification.style.backgroundColor = '#28a745';
+    } else if (type === 'error') {
+        notification.style.backgroundColor = '#dc3545';
+    } else if (type === 'warning') {
+        notification.style.backgroundColor = '#ffc107';
+        notification.style.color = '#000';
+    } else {
+        notification.style.backgroundColor = '#17a2b8';
+    }
+    
+    notification.innerHTML = `
+        ${message}
+        <button onclick="this.parentElement.remove()" style="float: right; background: none; border: none; color: inherit; font-size: 18px; cursor: pointer; margin-left: 10px;">&times;</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification && notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+};
+
+// Function to reload and test the entire flow
+window.reloadAndTestVehicles = function() {
+    console.log('Reloading vehicles and testing...');
+    
+    // Clear existing data
+    const tbody = document.querySelector('#ajax_data_table tbody');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Loading...</td></tr>';
+    }
+    
+    // Reload vehicles
+    loadVehiclesSimple();
+    
+    // Wait a bit then test
+    setTimeout(() => {
+        console.log('Testing delete buttons after reload...');
+        testAllDeleteButtons();
+    }, 500);
+}
+
 // Also try immediate execution as fallback
 console.log('Vehicle script loaded - attempting immediate execution');
 if (document.readyState === 'loading') {
@@ -1405,5 +2649,436 @@ if (document.readyState === 'loading') {
     console.log('Document already loaded, executing immediately');
     setTimeout(loadVehiclesSimple, 100);
 }
+
+// Enhanced Toast Notification System
+function initializeToastNotifications() {
+    // Auto-dismiss success messages after 5 seconds
+    $('.alert-success').each(function() {
+        const $alert = $(this);
+        setTimeout(function() {
+            $alert.fadeOut(500, function() {
+                $(this).remove();
+            });
+        }, 5000);
+    });
+
+    // Auto-dismiss info messages after 4 seconds
+    $('.alert-info').each(function() {
+        const $alert = $(this);
+        setTimeout(function() {
+            $alert.fadeOut(500, function() {
+                $(this).remove();
+            });
+        }, 4000);
+    });
+
+    // Auto-dismiss warning messages after 6 seconds
+    $('.alert-warning').each(function() {
+        const $alert = $(this);
+        setTimeout(function() {
+            $alert.fadeOut(500, function() {
+                $(this).remove();
+            });
+        }, 6000);
+    });
+
+    // Error messages stay until manually dismissed
+    // But add a subtle pulse animation to draw attention
+    $('.alert-danger').addClass('pulse-animation');
+}
+
+// Function to show custom toast notifications
+function showToast(message, type = 'success', duration = 5000) {
+    const iconMap = {
+        'success': 'fas fa-check-circle',
+        'error': 'fas fa-exclamation-triangle',
+        'warning': 'fas fa-exclamation-triangle',
+        'info': 'fas fa-info-circle'
+    };
+
+    const alertClass = `alert-${type}`;
+    const icon = iconMap[type] || iconMap['success'];
+    const title = type.charAt(0).toUpperCase() + type.slice(1);
+
+    const toastHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            <i class="${icon}"></i> 
+            <strong>${title}!</strong> ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `;
+
+    // Insert at the top of the container
+    $('.container-fluid').prepend(toastHtml);
+
+    // Auto-dismiss based on type
+    if (type !== 'error') {
+        setTimeout(function() {
+            $(`.alert-${type}`).first().fadeOut(500, function() {
+                $(this).remove();
+            });
+        }, duration);
+    }
+}
+
+// Add pulse animation for error messages
+$('<style>')
+    .prop('type', 'text/css')
+    .html(`
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+    `)
+    .appendTo('head');
+
+// Initialize toast notifications when page loads
+$(document).ready(function() {
+    initializeToastNotifications();
+    
+    // Handle custom dropdown functionality
+    $(document).on('click', '.custom-dropdown-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const container = $(this).closest('.status-container, .driver-container');
+        const dropdown = container.find('.custom-dropdown-menu');
+        
+        // Hide all other dropdowns
+        $('.custom-dropdown-menu').not(dropdown).hide();
+        
+        // Toggle current dropdown
+        dropdown.toggle();
+        
+        console.log('Dropdown toggled for vehicle:', container.data('vehicle-id'));
+    });
+    
+    // Close dropdown when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.status-container, .driver-container').length) {
+            $('.custom-dropdown-menu').hide();
+        }
+    });
+    
+    // Handle status change
+    $(document).on('click', '.status-change', function(e) {
+        e.preventDefault();
+        const vehicleId = $(this).data('vehicle-id');
+        const newStatus = $(this).data('status');
+        const container = $(this).closest('.status-container');
+        const display = container.find('.status-display');
+        const dropdown = container.find('.custom-dropdown-menu');
+        
+        console.log('Updating vehicle status:', { vehicleId, newStatus });
+        
+        // Update status via AJAX
+        $.ajax({
+            url: '/admin/vehicles/update-status',
+            method: 'POST',
+            data: {
+                vehicle_id: vehicleId,
+                status: newStatus,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log('Status update response:', response);
+                if (response.success) {
+                    // Update the display button with new status
+                    const buttonClass = getButtonClass(newStatus);
+                    const badgeClass = getBadgeClass(newStatus);
+                    display.html(`<button class="btn btn-sm ${buttonClass} custom-dropdown-toggle" type="button"><span class="badge ${badgeClass}">${newStatus}</span> <span class="dropdown-arrow">▼</span></button>`);
+                    
+                    // Hide dropdown
+                    dropdown.hide();
+                    
+                    // Show success message
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('Vehicle status updated successfully!');
+                    } else {
+                        alert('Vehicle status updated successfully!');
+                    }
+                } else {
+                    console.error('Status update failed:', response.message);
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error('Failed to update status: ' + (response.message || 'Unknown error'));
+                    } else {
+                        alert('Failed to update status: ' + (response.message || 'Unknown error'));
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error:', { xhr, status, error });
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('Failed to update status. Please try again.');
+                } else {
+                    alert('Failed to update status. Please try again.');
+                }
+            }
+        });
+    });
+    
+    // Handle driver change
+    $(document).on('click', '.driver-change', function(e) {
+        e.preventDefault();
+        const vehicleId = $(this).data('vehicle-id');
+        const driverId = $(this).data('driver-id');
+        const container = $(this).closest('.driver-container');
+        const display = container.find('.driver-display');
+        const dropdown = container.find('.custom-dropdown-menu');
+        
+        console.log('Updating vehicle driver:', { vehicleId, driverId });
+        
+        // Update driver via AJAX
+        $.ajax({
+            url: '/admin/vehicles/update-driver',
+            method: 'POST',
+            data: {
+                vehicle_id: vehicleId,
+                driver_id: driverId,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log('Driver update response:', response);
+                if (response.success) {
+                    // Update the display button with new driver
+                    const driverName = response.driver_name || '<span class="text-muted">Not Assigned</span>';
+                    display.html(`<button class="btn btn-sm btn-outline-secondary custom-dropdown-toggle" type="button">${driverName} <span class="dropdown-arrow">▼</span></button>`);
+                    
+                    // Update vehicle status display automatically
+                    const newStatus = response.vehicle_status || (driverId ? 'Rented' : 'Available');
+                    updateVehicleStatusDisplay(vehicleId, newStatus);
+                    
+                    // Hide dropdown
+                    dropdown.hide();
+                    
+                    // Show success message
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('Driver assignment updated successfully!');
+                    } else {
+                        alert('Driver assignment updated successfully!');
+                    }
+                } else {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error(response.message || 'Failed to update driver assignment');
+                    } else {
+                        alert(response.message || 'Failed to update driver assignment');
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error:', { xhr, status, error });
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('Failed to update driver assignment. Please try again.');
+                } else {
+                    alert('Failed to update driver assignment. Please try again.');
+                }
+            }
+        });
+    });
+});
+
+// Helper function to get badge class for status
+function getBadgeClass(status) {
+    switch (status) {
+        case 'Available':
+            return 'badge-success';
+        case 'Rented':
+            return 'badge-warning';
+        case 'Workshop':
+            return 'badge-info';
+        case 'Disabled':
+            return 'badge-secondary';
+        default:
+            return 'badge-success';
+    }
+}
+
+// Helper function to get button class for status
+function getButtonClass(status) {
+    switch (status) {
+        case 'Available':
+            return 'btn-outline-success';
+        case 'Rented':
+            return 'btn-outline-warning';
+        case 'Workshop':
+            return 'btn-outline-info';
+        case 'Disabled':
+            return 'btn-outline-secondary';
+        default:
+            return 'btn-outline-success';
+    }
+}
+
+// Filter functions - Client-side filtering to avoid AJAX issues
+function applyFilters() {
+    const groupFilter = document.getElementById('group_filter').value;
+    const typeFilter = document.getElementById('type_filter').value;
+    const fuelFilter = document.getElementById('fuel_filter').value;
+    const statusFilter = document.getElementById('status_filter').value;
+    
+    console.log('Applying filters:', { groupFilter, typeFilter, fuelFilter, statusFilter });
+    
+    // Show loading state
+    const tbody = document.querySelector('#ajax_data_table tbody');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Filtering vehicles...</td></tr>';
+    }
+    
+    // Filter the existing vehicles data
+    const allVehicles = window.vehiclesGlobalData || [];
+    let filteredVehicles = allVehicles.filter(vehicle => {
+        // Group filter
+        if (groupFilter && vehicle.group_id != groupFilter) {
+            return false;
+        }
+        
+        // Type filter
+        if (typeFilter && vehicle.type_id != typeFilter) {
+            return false;
+        }
+        
+        // Fuel filter
+        if (fuelFilter && vehicle.engine_type && vehicle.engine_type.toLowerCase() !== fuelFilter.toLowerCase()) {
+            return false;
+        }
+        
+        // Status filter
+        if (statusFilter) {
+            const vehicleStatus = getVehicleStatus(vehicle);
+            if (statusFilter === 'available' && vehicleStatus !== 'Available') {
+                return false;
+            }
+            if (statusFilter === 'rented' && vehicleStatus !== 'Rented') {
+                return false;
+            }
+            if (statusFilter === 'workshop' && vehicleStatus !== 'Workshop') {
+                return false;
+            }
+            if (statusFilter === 'disabled' && vehicleStatus !== 'Disabled') {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    console.log(`Filtered ${filteredVehicles.length} vehicles from ${allVehicles.length} total`);
+    
+    // Debug: Show status distribution
+    if (statusFilter) {
+        const statusCounts = {};
+        allVehicles.forEach(vehicle => {
+            const status = getVehicleStatus(vehicle);
+            statusCounts[status] = (statusCounts[status] || 0) + 1;
+        });
+        console.log('Status distribution:', statusCounts);
+        console.log(`Looking for status: ${statusFilter}`);
+    }
+    
+    // Load the filtered vehicles
+    setTimeout(() => {
+        loadVehiclesSimple(filteredVehicles);
+    }, 100);
+}
+
+// Helper function to get vehicle status
+function getVehicleStatus(vehicle) {
+    // First check if there's a specific vehicle_status in metadata
+    const vehicleStatus = vehicle.meta_data?.vehicle_status || 
+                         (vehicle.metas && vehicle.metas.find(m => m.key === 'vehicle_status')?.value);
+    
+    if (vehicleStatus) {
+        // Return the status from metadata (capitalize first letter)
+        return vehicleStatus.charAt(0).toUpperCase() + vehicleStatus.slice(1).toLowerCase();
+    }
+    
+    // Fallback logic if no specific status in metadata
+    if (vehicle.in_service === 0) {
+        return 'Disabled';
+    }
+    
+    // Check if vehicle has assigned driver
+    const assignedDriverId = vehicle.meta_data?.assign_driver_id || 
+                            (vehicle.metas && vehicle.metas.find(m => m.key === 'assign_driver_id')?.value);
+    
+    if (assignedDriverId) {
+        return 'Rented';
+    }
+    
+    return 'Available';
+}
+
+// Function to update vehicle status display without page refresh
+function updateVehicleStatusDisplay(vehicleId, newStatus) {
+    const statusContainer = $(`.status-container[data-vehicle-id="${vehicleId}"]`);
+    if (statusContainer.length) {
+        const display = statusContainer.find('.status-display');
+        const buttonClass = getButtonClass(newStatus);
+        const badgeClass = getBadgeClass(newStatus);
+        
+        display.html(`<button class="btn btn-sm ${buttonClass} custom-dropdown-toggle" type="button"><span class="badge ${badgeClass}">${newStatus}</span> <span class="dropdown-arrow">▼</span></button>`);
+        
+        console.log(`Updated status display for vehicle ${vehicleId} to ${newStatus}`);
+    }
+}
+
+function clearFilters() {
+    document.getElementById('group_filter').value = '';
+    document.getElementById('type_filter').value = '';
+    document.getElementById('fuel_filter').value = '';
+    document.getElementById('status_filter').value = '';
+    
+    // Reload all vehicles
+    loadVehiclesSimple();
+}
+
+// Handle dropdown behavior for template download
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdownButton = document.getElementById('downloadTemplateDropdown');
+    const dropdownMenu = document.getElementById('templateDropdownMenu');
+    
+    if (dropdownButton && dropdownMenu) {
+        // Hide dropdown initially
+        dropdownMenu.style.display = 'none';
+        
+        // Toggle dropdown on button click
+        dropdownButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (dropdownMenu.style.display === 'none') {
+                dropdownMenu.style.display = 'block';
+                dropdownButton.setAttribute('aria-expanded', 'true');
+            } else {
+                dropdownMenu.style.display = 'none';
+                dropdownButton.setAttribute('aria-expanded', 'false');
+            }
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.style.display = 'none';
+                dropdownButton.setAttribute('aria-expanded', 'false');
+            }
+        });
+        
+        // Hide dropdown when selecting an option
+        const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
+        dropdownItems.forEach(function(item) {
+            item.addEventListener('click', function() {
+                dropdownMenu.style.display = 'none';
+                dropdownButton.setAttribute('aria-expanded', 'false');
+            });
+        });
+    }
+});
 </script>
 @endsection

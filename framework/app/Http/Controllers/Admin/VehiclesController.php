@@ -68,22 +68,67 @@ class VehiclesController extends Controller {
         public function index() {
                 $user = Auth::user();
                 // Get vehicles data for initial load - fix PostgreSQL GROUP BY issue
-                if ($user->user_type == "S") {
-                    $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'))
-                        ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
-                        ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
-                        ->groupBy('vehicles.id')
-                        ->get();
+                if ($user->getRawOriginal('user_type') == "B") {
+                    // Boss Admin - if no company assigned, see no vehicles
+                    if (is_null($user->company_id)) {
+                        $vehicles = collect([]);
+                    } else {
+                        // Boss Admin with a company assigned (rare): limit to their company
+                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                            ->where('vehicles.company_id', $user->company_id)
+                            ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
+                            ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
+                            ->with('types', 'company') // Load vehicle types and company relationship
+                            ->groupBy('vehicles.id')
+                            ->get();
+                    }
+                } elseif (($user->getRawOriginal('user_type') == "S" || $user->getRawOriginal('user_type') == "O")) {
+                    // Super/Office Admin - must have a company assigned; otherwise none
+                    if (is_null($user->company_id)) {
+                        $vehicles = collect([]);
+                    } else {
+                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                            ->where('vehicles.company_id', $user->company_id)
+                            ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
+                            ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
+                            ->with('types', 'company') // Load vehicle types and company relationship
+                            ->groupBy('vehicles.id')
+                            ->get();
+                    }
                 } else {
-                    $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'))
-                        ->where('vehicles.group_id', $user->group_id)
+                    // Driver - see only assigned vehicles
+                    $vehicle_ids = $user->vehicles->pluck('id')->toArray();
+                    $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                        ->whereIn('vehicles.id', $vehicle_ids)
                         ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                         ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
+                        ->with('types', 'company') // Load vehicle types and company relationship
                         ->groupBy('vehicles.id')
                         ->get();
                 }
+
+                // Already handled Boss-without-company above
                 
-                return view("vehicles.index", compact('vehicles'));
+                // Get filter data
+                $groups = \App\Model\VehicleGroupModel::where('deleted_at', null)->get();
+                $vehicle_types = \App\Model\VehicleTypeModel::where('deleted_at', null)->get();
+                
+                // Get all available drivers for dropdown
+                $drivers = User::where('user_type', 'D')
+                        ->whereHas('metas', function($query) {
+                                $query->where('key', 'is_active')
+                                      ->where('value', '1');
+                        })
+                        ->get();
+                
+                // Debug: Log the vehicles data structure
+                \Log::info('Vehicles loaded for index:', [
+                    'count' => $vehicles->count(),
+                    'first_vehicle' => $vehicles->first() ? $vehicles->first()->toArray() : null,
+                    'sample_ids' => $vehicles->take(3)->pluck('id')->toArray()
+                ]);
+                
+                return view("vehicles.index", compact('vehicles', 'groups', 'vehicle_types', 'drivers'));
         }
         
         public function show($id) {
@@ -92,8 +137,13 @@ class VehiclesController extends Controller {
                 // Debug: Direct database query to verify metadata
                 $directMeta = DB::table('vehicles_meta')
                     ->where('vehicle_id', $id)
-                    ->whereIn('key', ['vehicle_price', 'initial_cost', 'price_period', 'vehicle_scheme'])
+                    ->whereIn('key', ['vehicle_price', 'insurance_discount', 'initial_cost', 'price_period', 'vehicle_scheme', 'price'])
                     ->pluck('value', 'key');
+                
+                // Debug: Get all metadata for this vehicle
+                $allMeta = DB::table('vehicles_meta')
+                    ->where('vehicle_id', $id)
+                    ->get();
                 
                 // Build purchase info from individual metadata fields to ensure display
                 $purchaseInfo = [];
@@ -102,12 +152,48 @@ class VehiclesController extends Controller {
                 $vehiclePrice = $vehicle->getMeta('vehicle_price');
                 $initialCost = $vehicle->getMeta('initial_cost');
                 
-                // Use direct database values if getMeta() fails
-                if (!$vehiclePrice && isset($directMeta['vehicle_price'])) {
-                    $vehiclePrice = $directMeta['vehicle_price'];
+                // Enhanced debugging and fallback logic
+                if (!$vehiclePrice) {
+                    // Try alternative key names
+                    $vehiclePrice = $vehicle->getMeta('price') ?: $directMeta['price'] ?: $directMeta['vehicle_price'];
                 }
-                if (!$initialCost && isset($directMeta['initial_cost'])) {
+                if (!$initialCost) {
                     $initialCost = $directMeta['initial_cost'];
+                }
+                
+                // Debug logging (remove in production)
+                \Log::info('Vehicle Show Debug', [
+                    'vehicle_id' => $id,
+                    'direct_meta' => $directMeta->toArray(),
+                    'getMeta_vehicle_price' => $vehicle->getMeta('vehicle_price'),
+                    'getMeta_initial_cost' => $vehicle->getMeta('initial_cost'),
+                    'final_vehicle_price' => $vehiclePrice,
+                    'final_initial_cost' => $initialCost,
+                    'all_meta_count' => $allMeta->count()
+                ]);
+                
+                // For existing vehicles with missing metadata, try to fix it
+                if (!$vehiclePrice && !$initialCost && $allMeta->count() > 0) {
+                    // Check if there's legacy purchase_info data we can extract
+                    $legacyPurchaseInfo = $vehicle->getMeta('purchase_info');
+                    if ($legacyPurchaseInfo) {
+                        try {
+                            $legacyData = json_decode($legacyPurchaseInfo, true) ?: unserialize($legacyPurchaseInfo);
+                            if (is_array($legacyData)) {
+                                foreach ($legacyData as $item) {
+                                    if (isset($item['exp_name']) && isset($item['exp_amount'])) {
+                                        if (strpos($item['exp_name'], 'Price') !== false) {
+                                            $vehiclePrice = $item['exp_amount'];
+                                        } elseif (strpos($item['exp_name'], 'Initial') !== false) {
+                                            $initialCost = $item['exp_amount'];
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception $e) {
+                            // Ignore errors in legacy data parsing
+                        }
+                    }
                 }
                 
                 // Build purchase info as array of items (expected by view)
@@ -154,12 +240,24 @@ class VehiclesController extends Controller {
                         $purchaseInfo = [];
                 }
                 
-                // Get vehicle type properly
+                // Get vehicle type properly - Enhanced with fallback logic
                 $vehicleType = 'Not Selected';
-                if ($vehicle->types && $vehicle->types->vehicletype) {
-                        $vehicleType = $vehicle->types->vehicletype;
+                if ($vehicle->type_id) {
+                        // First try the relationship
+                        if ($vehicle->types && $vehicle->types->vehicletype) {
+                                $vehicleType = $vehicle->types->vehicletype;
+                        } else {
+                                // Fallback to direct database query if relationship fails
+                                $type = DB::table('vehicle_types')
+                                        ->where('id', $vehicle->type_id)
+                                        ->where('deleted_at', null)
+                                        ->first();
+                                if ($type && $type->vehicletype) {
+                                        $vehicleType = $type->vehicletype;
+                                }
+                        }
                 } else {
-                        // Check metadata for vehicle type
+                        // Check metadata for vehicle type as final fallback
                         $metaVehicleType = $vehicle->getMeta('vehicle_type');
                         if ($metaVehicleType) {
                                 $vehicleType = $metaVehicleType;
@@ -176,10 +274,22 @@ class VehiclesController extends Controller {
                         $driverName = $vehicle->drivers->first()->name;
                 }
                 
-                // Get group name properly
+                // Get group name properly - Enhanced with fallback logic
                 $groupName = 'Not Selected';
-                if ($vehicle->group && $vehicle->group->name) {
-                        $groupName = $vehicle->group->name;
+                if ($vehicle->group_id) {
+                        // First try the relationship
+                        if ($vehicle->group && $vehicle->group->name) {
+                                $groupName = $vehicle->group->name;
+                        } else {
+                                // Fallback to direct database query if relationship fails
+                                $group = DB::table('vehicle_group')
+                                        ->where('id', $vehicle->group_id)
+                                        ->where('deleted_at', null)
+                                        ->first();
+                                if ($group && $group->name) {
+                                        $groupName = $group->name;
+                                }
+                        }
                 }
                 
                 // Get all additional metadata
@@ -253,7 +363,31 @@ class VehiclesController extends Controller {
                         $purchaseInfo = [];
                 }
                 
-                // Get driver information
+                // Get vehicle type properly - Enhanced with fallback logic (SAME AS SHOW METHOD)
+                $vehicleType = 'Not Selected';
+                if ($vehicle->type_id) {
+                        // First try the relationship
+                        if ($vehicle->types && $vehicle->types->vehicletype) {
+                                $vehicleType = $vehicle->types->vehicletype;
+                        } else {
+                                // Fallback to direct database query if relationship fails
+                                $type = DB::table('vehicle_types')
+                                        ->where('id', $vehicle->type_id)
+                                        ->where('deleted_at', null)
+                                        ->first();
+                                if ($type && $type->vehicletype) {
+                                        $vehicleType = $type->vehicletype;
+                                }
+                        }
+                } else {
+                        // Check metadata for vehicle type as final fallback
+                        $metaVehicleType = $vehicle->getMeta('vehicle_type');
+                        if ($metaVehicleType) {
+                                $vehicleType = $metaVehicleType;
+                        }
+                }
+                
+                // Get driver information (SAME AS SHOW METHOD)
                 $driverName = 'Not Assigned';
                 $driverId = $vehicle->getMeta('assign_driver_id');
                 if ($driverId) {
@@ -263,23 +397,58 @@ class VehiclesController extends Controller {
                         $driverName = $vehicle->drivers->first()->name;
                 }
                 
-                // Get vehicle type properly
-                $vehicleType = 'Not Selected';
-                if ($vehicle->types && $vehicle->types->vehicletype) {
-                        $vehicleType = $vehicle->types->vehicletype;
-                } else {
-                        // Check metadata for vehicle type
-                        $metaVehicleType = $vehicle->getMeta('vehicle_type');
-                        if ($metaVehicleType) {
-                                $vehicleType = $metaVehicleType;
+                // Get group name properly - Enhanced with fallback logic (SAME AS SHOW METHOD)
+                $groupName = 'Not Selected';
+                if ($vehicle->group_id) {
+                        // First try the relationship
+                        if ($vehicle->group && $vehicle->group->name) {
+                                $groupName = $vehicle->group->name;
+                        } else {
+                                // Fallback to direct database query if relationship fails
+                                $group = DB::table('vehicle_group')
+                                        ->where('id', $vehicle->group_id)
+                                        ->where('deleted_at', null)
+                                        ->first();
+                                if ($group && $group->name) {
+                                        $groupName = $group->name;
+                                }
                         }
                 }
                 
-                // Get group name properly
-                $groupName = 'Not Selected';
-                if ($vehicle->group && $vehicle->group->name) {
-                        $groupName = $vehicle->group->name;
-                }
+                // Get all metadata (SAME AS SHOW METHOD)
+                $metadata = [
+                        'vehicle_price' => $vehicle->getMeta('vehicle_price'),
+                        'price' => $vehicle->getMeta('price'),
+                        'insurance_discount' => $vehicle->getMeta('insurance_discount'),
+                        'initial_cost' => $vehicle->getMeta('initial_cost'),
+                        'price_period' => $vehicle->getMeta('price_period'),
+                        'vehicle_scheme' => $vehicle->getMeta('vehicle_scheme'),
+                        'vehicle_status' => $vehicle->getMeta('vehicle_status'),
+                        'telematics_link' => $vehicle->getMeta('telematics_link'),
+                        'assign_driver_id' => $vehicle->getMeta('assign_driver_id'),
+                        'luggage' => $vehicle->getMeta('luggage'),
+                        'ins_number' => $vehicle->getMeta('ins_number'),
+                        'ins_exp_date' => $vehicle->getMeta('ins_exp_date'),
+                        'documents' => $vehicle->getMeta('documents'),
+                        'traccar_device_id' => $vehicle->getMeta('traccar_device_id'),
+                        'traccar_vehicle_id' => $vehicle->getMeta('traccar_vehicle_id'),
+                        'icon' => $vehicle->getMeta('icon'),
+                        'mot_expiry_date' => $vehicle->getMeta('mot_expiry_date'),
+                        'exp_date' => $vehicle->getMeta('exp_date'),
+                ];
+                
+                // Get all metadata from database
+                $allMetadata = DB::table('vehicles_meta')
+                        ->where('vehicle_id', $vehicle->id)
+                        ->get()
+                        ->map(function($item) {
+                                return [
+                                        'key' => $item->key,
+                                        'value' => $item->value,
+                                        'type' => $item->type,
+                                        'updated_at' => $item->updated_at
+                                ];
+                        });
                 
                 // Prepare complete vehicle data
                 $completeData = [
@@ -290,7 +459,8 @@ class VehiclesController extends Controller {
                         'vehicle_type' => $vehicleType,
                         'created_at' => $vehicle->created_at,
                         'updated_at' => $vehicle->updated_at,
-                        'ins_exp_date' => $vehicle->getMeta('ins_exp_date'),
+                        'metadata' => $metadata,
+                        'all_metadata' => $allMetadata,
                         'additional_meta' => [
                                 'scheme' => $vehicle->getMeta('scheme') ?: $vehicle->getMeta('vehicle_scheme'),
                                 'telematics_link' => $vehicle->getMeta('telematics_link'),
@@ -321,76 +491,161 @@ class VehiclesController extends Controller {
         
         public function fetch_data(Request $request) {
                 if ($request->ajax()) {
+                        // Debug: Log the request data
+                        \Log::info('Vehicles fetch_data called with filters:', [
+                            'group_filter' => $request->get('group_filter'),
+                            'type_filter' => $request->get('type_filter'),
+                            'fuel_filter' => $request->get('fuel_filter'),
+                            'status_filter' => $request->get('status_filter'),
+                            'all_request' => $request->all()
+                        ]);
+                        
                         $user = Auth::user();
-                        // Super admin (user_type = 'S') can see all vehicles, others filtered by group
-                        if ($user->user_type == "S") {
-                                $vehicles = VehicleModel::select('vehicles.*', 'users.name as name');
+                        
+                        // Use the same structure as index method
+                        if ($user->getRawOriginal('user_type') == "B") {
+                                // Boss Admin - if no company assigned, return empty set
+                                if (is_null($user->company_id)) {
+                                        $vehicles = VehicleModel::query()->whereRaw('1=0');
+                                } else {
+                                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                                                ->where('vehicles.company_id', $user->company_id)
+                                                ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
+                                                ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
+                                                ->with('types', 'company'); // Load vehicle types and company relationship
+                                }
+                        } elseif ($user->getRawOriginal('user_type') == "S" || $user->getRawOriginal('user_type') == "O") {
+                                // Super/Office Admin - require company_id, else none
+                                if (is_null($user->company_id)) {
+                                        $vehicles = VehicleModel::query()->whereRaw('1=0');
+                                } else {
+                                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                                                ->where('vehicles.company_id', $user->company_id)
+                                                ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
+                                                ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
+                                                ->with('types', 'company'); // Load vehicle types and company relationship
+                                }
                         } else {
-                                $vehicles = VehicleModel::select('vehicles.*')->where('vehicles.group_id', $user->group_id);
+                                // Driver - see only assigned vehicles
+                                $vehicle_ids = $user->vehicles->pluck('id')->toArray();
+                                $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                                        ->whereIn('vehicles.id', $vehicle_ids)
+                                        ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
+                                        ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
+                                        ->with('types', 'company'); // Load vehicle types and company relationship
                         }
-                        $vehicles = $vehicles
-                                ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
-                                ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
-                                ->leftJoin('users_meta', 'users_meta.id', '=', 'users.id')
-                                ->groupBy('vehicles.id');
-                        $vehicles->with(['group', 'types', 'drivers']);
-                        return DataTables::eloquent($vehicles)
-                                ->addColumn('check', function ($vehicle) {
-                                        $tag = '<input type="checkbox" name="ids[]" value="' . $vehicle->id . '" class="checkbox" id="chk' . $vehicle->id . '" onclick=\'checkcheckbox();\'>';
-                                        return $tag;
-                                })
-                                ->addColumn('vehicle_id', function ($vehicle) {
-                                        return 'VEH-' . str_pad($vehicle->id, 4, '0', STR_PAD_LEFT);
-                                })
-                                ->editColumn('license_plate', function ($vehicle) {
-                                        return '<span class="badge badge-primary">' . $vehicle->license_plate . '</span>';
-                                })
-                                ->addColumn('make', function ($vehicle) {
-                                        return ($vehicle->make_name) ? $vehicle->make_name : 'N/A';
-                                })
-                                ->addColumn('model', function ($vehicle) {
-                                        return ($vehicle->model_name) ? $vehicle->model_name : 'N/A';
-                                })
-                                ->addColumn('fuel_type', function ($vehicle) {
-                                        return ($vehicle->engine_type) ? ucfirst($vehicle->engine_type) : 'N/A';
-                                })
-                                ->addColumn('status', function ($vehicle) {
-                                        if ($vehicle->in_service == 1) {
-                                                $driverId = $vehicle->getMeta('assign_driver_id');
-                                                if (!is_null($driverId)) {
-                                                        return '<span class="badge badge-warning">Rented</span>';
-                                                } else {
-                                                        return '<span class="badge badge-success">Available</span>';
+                        
+                        // Apply filters
+                        if ($request->has('group_filter') && $request->get('group_filter') != '') {
+                                $vehicles->where('vehicles.group_id', $request->get('group_filter'));
+                        }
+                        
+                        if ($request->has('type_filter') && $request->get('type_filter') != '') {
+                                $vehicles->where('vehicles.type_id', $request->get('type_filter'));
+                        }
+                        
+                        if ($request->has('fuel_filter') && $request->get('fuel_filter') != '') {
+                                $vehicles->where('vehicles.engine_type', $request->get('fuel_filter'));
+                        }
+                        
+                        if ($request->has('status_filter') && $request->get('status_filter') != '') {
+                                if ($request->get('status_filter') == 'available') {
+                                        $vehicles->where('vehicles.in_service', 1)
+                                                ->whereNotExists(function($query) {
+                                                        $query->select(DB::raw(1))
+                                                              ->from('vehicles_meta')
+                                                              ->whereRaw('vehicles_meta.vehicle_id = vehicles.id')
+                                                              ->where('vehicles_meta.key', 'assign_driver_id')
+                                                              ->whereNotNull('vehicles_meta.value');
+                                                });
+                                } elseif ($request->get('status_filter') == 'rented') {
+                                        $vehicles->where('vehicles.in_service', 1)
+                                                ->whereExists(function($query) {
+                                                        $query->select(DB::raw(1))
+                                                              ->from('vehicles_meta')
+                                                              ->whereRaw('vehicles_meta.vehicle_id = vehicles.id')
+                                                              ->where('vehicles_meta.key', 'assign_driver_id')
+                                                              ->whereNotNull('vehicles_meta.value');
+                                                });
+                                } elseif ($request->get('status_filter') == 'disabled') {
+                                        $vehicles->where('vehicles.in_service', 0);
+                                }
+                        }
+                        
+                        // Group by vehicles.id and execute
+                        $vehicles = $vehicles->groupBy('vehicles.id')->get();
+                        
+                        try {
+                                // Process each vehicle to match the frontend expectations
+                                $processedVehicles = [];
+                                foreach ($vehicles as $vehicle) {
+                                        // Get vehicle metadata
+                                        $metas = DB::table('vehicles_meta')
+                                                ->where('vehicle_id', $vehicle->id)
+                                                ->get();
+                                        
+                                        // Convert metas to array format expected by frontend
+                                        $metaArray = [];
+                                        $metaDataArray = [];
+                                        foreach ($metas as $meta) {
+                                                $metaArray[] = [
+                                                        'id' => $meta->id,
+                                                        'vehicle_id' => $meta->vehicle_id,
+                                                        'type' => $meta->type,
+                                                        'key' => $meta->key,
+                                                        'value' => $meta->value,
+                                                        'deleted_at' => $meta->deleted_at,
+                                                        'created_at' => $meta->created_at,
+                                                        'updated_at' => $meta->updated_at
+                                                ];
+                                                $metaDataArray[$meta->key] = $meta->value;
+                                        }
+                                        
+                                        // Get vehicle status from metadata
+                                        $vehicleStatus = 'Available';
+                                        $assignedDriverId = null;
+                                        foreach ($metas as $meta) {
+                                                if ($meta->key == 'vehicle_status') {
+                                                        $vehicleStatus = $meta->value ?: 'Available';
                                                 }
-                                        } else {
-                                                return '<span class="badge badge-secondary">Disabled</span>';
-                                        }
-                                })
-                                ->addColumn('assigned_driver', function ($vehicle) {
-                                        $driverId = $vehicle->getMeta('assign_driver_id');
-                                        if (!is_null($driverId)) {
-                                                $driver = User::find($driverId);
-                                                if ($driver) {
-                                                        return '<a href="' . url('admin/drivers/' . $driver->id . '/edit') . '" class="text-primary">' . $driver->name . '</a>';
+                                                if ($meta->key == 'assign_driver_id') {
+                                                        $assignedDriverId = $meta->value;
                                                 }
                                         }
-                                        return '<span class="text-muted">-</span>';
-                                })
-                                ->addColumn('telematics', function ($vehicle) {
-                                        $telematicsLink = $vehicle->getMeta('telematics_link');
-                                        if ($telematicsLink) {
-                                                return '<a href="' . $telematicsLink . '" target="_blank" class="btn btn-sm btn-outline-info"><i class="fa fa-external-link"></i> View</a>';
+                                        
+                                        // If no vehicle_status in meta but has assigned driver, set as Rented
+                                        if ($vehicleStatus == 'Available' && $assignedDriverId) {
+                                                $vehicleStatus = 'Rented';
                                         }
-                                        return '<span class="text-muted">N/A</span>';
-                                })
-                                ->addColumn('view', function ($vehicle) {
-                                        return '<button class="btn btn-sm btn-outline-primary openBtn" data-id="' . $vehicle->id . '" data-toggle="modal" data-target="#viewModal"><i class="fa fa-eye"></i> View</button>';
-                                })
-                                ->addColumn('action', function ($vehicle) {
-                                        return view('vehicles.list-actions', ['row' => $vehicle]);
-                                })
-                                ->rawColumns(['license_plate', 'status', 'assigned_driver', 'telematics', 'view', 'action', 'check'])
-                                ->make(true);
+                                        
+                                        // Create vehicle array in the format expected by frontend
+                                        $processedVehicle = $vehicle->toArray();
+                                        $processedVehicle['metas'] = $metaArray;
+                                        $processedVehicle['meta_data'] = $metaDataArray;
+                                        $processedVehicle['vehicle_status'] = $vehicleStatus;
+                                        
+                                        $processedVehicles[] = $processedVehicle;
+                                }
+                                
+                                \Log::info('Vehicles processed successfully:', [
+                                        'count' => count($processedVehicles)
+                                ]);
+                                
+                                // Return the vehicles in the expected format
+                                return response()->json([
+                                        'data' => $processedVehicles,
+                                        'success' => true
+                                ]);
+                                
+                        } catch (\Exception $e) {
+                                \Log::error('DataTables error: ' . $e->getMessage());
+                                \Log::error('DataTables error trace: ' . $e->getTraceAsString());
+                                
+                                return response()->json([
+                                        'error' => 'Failed to fetch vehicles data',
+                                        'message' => $e->getMessage()
+                                ], 500);
+                        }
                 }
         }
         public function driver_logs() {
@@ -452,7 +707,14 @@ class VehiclesController extends Controller {
                 $index['makes'] = VehicleModel::select('make_name')->distinct()->whereNotNull('make_name')->pluck('make_name')->toArray();
                 $index['models'] = VehicleModel::select('model_name')->distinct()->whereNotNull('model_name')->pluck('model_name')->toArray();
                 $index['colors'] = VehicleModel::select('color_name')->distinct()->whereNotNull('color_name')->pluck('color_name')->toArray();
-                $index['drivers'] = User::whereUser_type("D")->get();
+                // Get drivers excluding those already assigned to any vehicle and inactive drivers
+                $index['drivers'] = User::whereUser_type("D")
+                        ->whereHas('metas', function($query) {
+                                $query->where('key', 'is_active')
+                                      ->where('value', '1');
+                        })
+                        ->whereDoesntHave('vehicles')
+                        ->get();
                 return view("vehicles.create", $index);
         }
         public function get_models($name) {
@@ -464,23 +726,100 @@ class VehiclesController extends Controller {
                 return $data;
         }
         public function destroy(Request $request) {
-                $vehicle = VehicleModel::find($request->get('id'));
-                if ($vehicle->driver_id) {
-                        if ($vehicle->drivers->count()) {
-                                $vehicle->drivers()->detach($vehicle->drivers->pluck('id')->toArray());
+                try {
+                        $vehicleId = $request->get('id');
+                        \Log::info('Starting vehicle deletion process for ID: ' . $vehicleId);
+                        
+                        $vehicle = VehicleModel::find($vehicleId);
+                        
+                        // Check if vehicle exists
+                        if (!$vehicle) {
+                                \Log::warning('Vehicle not found for deletion: ' . $vehicleId);
+                                if ($request->ajax()) {
+                                        return response()->json(['error' => 'Vehicle not found.'], 404);
+                                }
+                                return redirect()->route('vehicles.index')->with('error', 'Vehicle not found.');
                         }
+                        
+                        \Log::info('Vehicle found for deletion: ' . $vehicle->license_plate . ' (ID: ' . $vehicleId . ')');
+                        
+                        // Handle driver relationships if they exist
+                        if ($vehicle->driver_id) {
+                                if ($vehicle->drivers && $vehicle->drivers->count()) {
+                                        $vehicle->drivers()->detach($vehicle->drivers->pluck('id')->toArray());
+                                }
+                        }
+                        
+                        // Delete vehicle image if it exists
+                        if ($vehicle->vehicle_image && file_exists('./uploads/' . $vehicle->vehicle_image) && !is_dir('./uploads/' . $vehicle->vehicle_image)) {
+                                unlink('./uploads/' . $vehicle->vehicle_image);
+                        }
+                        
+                        // Delete related records
+                        DriverVehicleModel::where('vehicle_id', $request->id)->delete();
+                        
+                        // Permanently delete income and expense records if they exist
+                        if ($vehicle->income) {
+                                $vehicle->income()->forceDelete();
+                        }
+                        if ($vehicle->expense) {
+                                $vehicle->expense()->forceDelete();
+                        }
+                        
+                        // Permanently delete the vehicle (force delete to bypass soft deletes)
+                        $vehicle->forceDelete();
+                        \Log::info('Vehicle force deleted: ' . $vehicleId);
+                        
+                        // Permanently delete other related records (force delete to bypass soft deletes)
+                        VehicleReviewModel::where('vehicle_id', $request->get('id'))->forceDelete();
+                        ServiceReminderModel::where('vehicle_id', $request->get('id'))->forceDelete();
+                        FuelModel::where('vehicle_id', $request->get('id'))->forceDelete();
+                        
+                        // Delete bookings that reference this vehicle
+                        \DB::table('bookings')->where('vehicle_id', $request->get('id'))->delete();
+                        \DB::table('booking_quotation')->where('vehicle_id', $request->get('id'))->delete();
+                        
+                        // Delete work orders that reference this vehicle
+                        \DB::table('work_orders')->where('vehicle_id', $request->get('id'))->delete();
+                        
+                        // Delete notes that reference this vehicle
+                        \DB::table('notes')->where('vehicle_id', $request->get('id'))->delete();
+                        
+                        // Delete driver logs that reference this vehicle
+                        \DB::table('driver_logs')->where('vehicle_id', $request->get('id'))->delete();
+                        
+                        // Delete work order logs that reference this vehicle
+                        \DB::table('work_order_logs')->where('vehicle_id', $request->get('id'))->delete();
+                        
+                        // Delete vehicle metadata
+                        \DB::table('vehicles_meta')->where('vehicle_id', $request->get('id'))->delete();
+                        
+                        \Log::info('Related records force deleted for vehicle: ' . $vehicleId);
+                        
+                        // Verify deletion by checking if vehicle still exists
+                        $deletedVehicle = VehicleModel::withTrashed()->find($vehicleId);
+                        if ($deletedVehicle) {
+                                \Log::warning('Vehicle still exists after force delete: ' . $vehicleId);
+                        } else {
+                                \Log::info('Vehicle successfully deleted and verified: ' . $vehicleId);
+                        }
+                        
+                        // Return appropriate response based on request type
+                        if ($request->ajax()) {
+                                return response()->json(['success' => true, 'message' => 'Vehicle deleted successfully.']);
+                        }
+                        
+                        return redirect()->route('vehicles.index')->with('success', 'Vehicle deleted successfully.');
+                        
+                } catch (\Exception $e) {
+                        \Log::error('Vehicle deletion failed: ' . $e->getMessage());
+                        
+                        if ($request->ajax()) {
+                                return response()->json(['error' => 'Failed to delete vehicle: ' . $e->getMessage()], 500);
+                        }
+                        
+                        return redirect()->route('vehicles.index')->with('error', 'Failed to delete vehicle: ' . $e->getMessage());
                 }
-                if (file_exists('./uploads/' . $vehicle->vehicle_image) && !is_dir('./uploads/' . $vehicle->vehicle_image)) {
-                        unlink('./uploads/' . $vehicle->vehicle_image);
-                }
-                DriverVehicleModel::where('vehicle_id', $request->id)->delete();
-                VehicleModel::find($request->get('id'))->income()->delete();
-                VehicleModel::find($request->get('id'))->expense()->delete();
-                VehicleModel::find($request->get('id'))->delete();
-                VehicleReviewModel::where('vehicle_id', $request->get('id'))->delete();
-                ServiceReminderModel::where('vehicle_id', $request->get('id'))->delete();
-                FuelModel::where('vehicle_id', $request->get('id'))->delete();
-                return redirect()->route('vehicles.index');
         }
         public function edit($id) {
                 if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
@@ -488,7 +827,19 @@ class VehiclesController extends Controller {
                 } else {
                         $groups = VehicleGroupModel::where('id', Auth::user()->group_id)->get();
                 }
-                $drivers = User::whereUser_type("D")->get();
+                // Get drivers excluding those already assigned to other vehicles and inactive drivers
+                $drivers = User::whereUser_type("D")
+                        ->whereHas('metas', function($query) {
+                                $query->where('key', 'is_active')
+                                      ->where('value', '1');
+                        })
+                        ->whereDoesntHave('vehicles', function($query) use ($id) {
+                                $query->where('vehicles.id', '!=', $id);
+                        })
+                        ->orWhereHas('vehicles', function($query) use ($id) {
+                                $query->where('vehicles.id', $id);
+                        })
+                        ->get();
                 $vehicle = VehicleModel::findOrFail($id);
                 $vehicle->load('drivers');
                 $udfs = unserialize($vehicle->getMeta('udf'));
@@ -547,23 +898,110 @@ class VehiclesController extends Controller {
                 unset($form_data['udf']);
                 // Remove metadata fields that should not be mass-assigned
                 unset($form_data['vehicle_price']);
+                unset($form_data['insurance_discount']);
                 unset($form_data['initial_cost']);
                 unset($form_data['price_period']);
                 unset($form_data['vehicle_scheme']);
                 unset($form_data['telematics_link']);
                 $vehicle->update($form_data);
-                $vehicle->setMeta([
-                        'traccar_device_id' => $request->traccar_device_id,
-                        'traccar_vehicle_id' => $request->traccar_vehicle_id,
-                        'luggage'=>$request->luggage,
-                        'price'=>$request->vehicle_price, // Fixed: map vehicle_price to price
+                // Prepare metadata array for edit - only include non-empty values
+                $editMetadata = [
                         'vehicle_status' => $request->vehicle_status ?? 'Available',
-                        'telematics_link' => $request->telematics_link,
-                        'initial_cost' => $request->initial_cost,
-                        'vehicle_scheme' => $request->vehicle_scheme,
-                        'vehicle_price' => $request->vehicle_price, // Ensure metadata persistence
-                        'price_period' => $request->price_period,
-                ]);
+                        'vehicle_scheme' => $request->vehicle_scheme ?: 'Rental',
+                        'price_period' => $request->price_period ?: 'monthly',
+                ];
+                
+                // Only add non-empty values to avoid storing empty strings
+                if ($request->traccar_device_id) $editMetadata['traccar_device_id'] = $request->traccar_device_id;
+                if ($request->traccar_vehicle_id) $editMetadata['traccar_vehicle_id'] = $request->traccar_vehicle_id;
+                if ($request->luggage) $editMetadata['luggage'] = $request->luggage;
+                if ($request->telematics_link) $editMetadata['telematics_link'] = $request->telematics_link;
+                
+                // Handle MOT expiry date
+                if ($request->mot_exp_day && $request->mot_exp_month && $request->mot_exp_year) {
+                        try {
+                                // Convert 2-digit year to 4-digit year
+                                $year = intval($request->mot_exp_year);
+                                if ($year < 100) {
+                                        $year += 2000; // Convert 25 to 2025
+                                }
+                                
+                                // Convert day and month to integers to handle zero-padded values
+                                $day = intval($request->mot_exp_day);
+                                $month = intval($request->mot_exp_month);
+                                
+                                // Validate the date components
+                                if ($day >= 1 && $day <= 31 && $month >= 1 && $month <= 12 && $year >= 1900) {
+                                        $motExpiryDate = \Carbon\Carbon::create($year, $month, $day)->format('Y-m-d');
+                                        $editMetadata['mot_expiry_date'] = $motExpiryDate;
+                                        
+                                        \Log::info('MOT expiry date saved successfully', [
+                                                'vehicle_id' => $vehicle->id,
+                                                'mot_expiry_date' => $motExpiryDate,
+                                                'original_day' => $request->mot_exp_day,
+                                                'original_month' => $request->mot_exp_month,
+                                                'original_year' => $request->mot_exp_year
+                                        ]);
+                                } else {
+                                        \Log::warning('Invalid MOT expiry date components', [
+                                                'vehicle_id' => $vehicle->id,
+                                                'day' => $day,
+                                                'month' => $month,
+                                                'year' => $year
+                                        ]);
+                                }
+                        } catch (\Exception $e) {
+                                \Log::error('Failed to save MOT expiry date', [
+                                        'vehicle_id' => $vehicle->id,
+                                        'error' => $e->getMessage(),
+                                        'day' => $request->mot_exp_day,
+                                        'month' => $request->mot_exp_month,
+                                        'year' => $request->mot_exp_year
+                                ]);
+                        }
+                } else {
+                        // If any MOT expiry field is empty, clear the MOT expiry date
+                        $editMetadata['mot_expiry_date'] = null;
+                }
+                
+                // Handle price fields - store as strings but only if not empty
+                if ($request->vehicle_price && $request->vehicle_price !== '' && $request->vehicle_price !== '0') {
+                        $editMetadata['vehicle_price'] = (string)$request->vehicle_price;
+                        $editMetadata['price'] = (string)$request->vehicle_price; // For backward compatibility
+                }
+                
+                if ($request->insurance_discount && $request->insurance_discount !== '' && $request->insurance_discount !== '0') {
+                        $editMetadata['insurance_discount'] = (string)$request->insurance_discount;
+                }
+                
+                if ($request->initial_cost && $request->initial_cost !== '' && $request->initial_cost !== '0') {
+                        $editMetadata['initial_cost'] = (string)$request->initial_cost;
+                }
+                
+                $vehicle->setMeta($editMetadata);
+                
+                // Handle driver assignment
+                if ($request->has('driver_id') && $request->driver_id) {
+                        // Assign driver to vehicle
+                        $vehicle->setMeta(['assign_driver_id' => $request->driver_id]);
+                        // Driver assigned - set status to "Rented"
+                        $vehicle->setMeta(['vehicle_status' => 'Rented']);
+                        $vehicle->drivers()->sync([$request->driver_id]);
+                        
+                        // Create driver log entry
+                        DriverLogsModel::create([
+                                'driver_id' => $request->driver_id, 
+                                'vehicle_id' => $vehicle->id, 
+                                'date' => date('Y-m-d H:i:s')
+                        ]);
+                } else {
+                        // Remove driver assignment if no driver selected
+                        $vehicle->setMeta(['assign_driver_id' => null]);
+                        // Driver removed - set status to "Available"
+                        $vehicle->setMeta(['vehicle_status' => 'Available']);
+                        $vehicle->drivers()->detach();
+                }
+                
                 if ($request->get("in_service")) {
                         $vehicle->in_service = 1;
                 } else {
@@ -576,23 +1014,332 @@ class VehiclesController extends Controller {
                 $vehicle->average = $request->average;
                 $vehicle->save();
                 $to = \Carbon\Carbon::now();
-                $from = \Carbon\Carbon::createFromFormat('Y-m-d', $request->get('reg_exp_date'));
-                $diff_in_days = $to->diffInDays($from);
-                if ($diff_in_days > 20) {
-                        $t = DB::table('notifications')
-                                ->where('type', 'like', '%RenewRegistration%')
-                                ->where('data', 'like', '%"vid":' . $vehicle->id . '%')
-                                ->delete();
+                
+                // Check registration expiry date
+                if ($request->get('reg_exp_date') && !empty($request->get('reg_exp_date'))) {
+                        try {
+                                $from = \Carbon\Carbon::createFromFormat('Y-m-d', $request->get('reg_exp_date'));
+                                $diff_in_days = $to->diffInDays($from);
+                                if ($diff_in_days > 20) {
+                                        $t = DB::table('notifications')
+                                                ->where('type', 'like', '%RenewRegistration%')
+                                                ->where('data', 'like', '%"vid":' . $vehicle->id . '%')
+                                                ->delete();
+                                }
+                        } catch (\Exception $e) {
+                                \Log::warning('Invalid reg_exp_date format: ' . $request->get('reg_exp_date'));
+                        }
                 }
-                $from = \Carbon\Carbon::createFromFormat('Y-m-d', $request->get('lic_exp_date'));
-                $diff_in_days = $to->diffInDays($from);
-                if ($diff_in_days > 20) {
-                        DB::table('notifications')
-                                ->where('type', 'like', '%RenewVehicleLicence%')
-                                ->where('data', 'like', '%"vid":' . $vehicle->id . '%')
-                                ->delete();
+                
+                // Check license expiry date
+                if ($request->get('lic_exp_date') && !empty($request->get('lic_exp_date'))) {
+                        try {
+                                $from = \Carbon\Carbon::createFromFormat('Y-m-d', $request->get('lic_exp_date'));
+                                $diff_in_days = $to->diffInDays($from);
+                                if ($diff_in_days > 20) {
+                                        DB::table('notifications')
+                                                ->where('type', 'like', '%RenewVehicleLicence%')
+                                                ->where('data', 'like', '%"vid":' . $vehicle->id . '%')
+                                                ->delete();
+                                }
+                        } catch (\Exception $e) {
+                                \Log::warning('Invalid lic_exp_date format: ' . $request->get('lic_exp_date'));
+                        }
                 }
                 return Redirect::route("vehicles.index");
+        }
+
+        /**
+         * Update vehicle status via AJAX
+         */
+        public function updateStatus(Request $request) {
+                try {
+                        $vehicleId = $request->input('vehicle_id');
+                        $status = $request->input('status');
+                        
+                        // Validate input
+                        if (!$vehicleId || !$status) {
+                                return response()->json([
+                                        'success' => false,
+                                        'message' => 'Vehicle ID and status are required'
+                                ], 400);
+                        }
+                        
+                        // Validate status
+                        $validStatuses = ['Available', 'Rented', 'Workshop', 'Disabled'];
+                        if (!in_array($status, $validStatuses)) {
+                                return response()->json([
+                                        'success' => false,
+                                        'message' => 'Invalid status'
+                                ], 400);
+                        }
+                        
+                        // Find vehicle
+                        $vehicle = VehicleModel::find($vehicleId);
+                        if (!$vehicle) {
+                                return response()->json([
+                                        'success' => false,
+                                        'message' => 'Vehicle not found'
+                                ], 404);
+                        }
+                        
+                        // Update status
+                        $vehicle->setMeta(['vehicle_status' => $status]);
+                        
+                        // Clear inspection notes when vehicle is no longer in workshop
+                        if ($status !== 'Workshop') {
+                                $vehicle->setMeta(['inspection_notes' => null]);
+                        }
+                        
+                        // Force save the vehicle to persist the meta changes
+                        $vehicle->save();
+                        
+                        // Log the status change
+                        \Log::info('Vehicle status updated', [
+                                'vehicle_id' => $vehicleId,
+                                'old_status' => $vehicle->getMeta('vehicle_status'),
+                                'new_status' => $status,
+                                'updated_by' => auth()->id()
+                        ]);
+                        
+                        return response()->json([
+                                'success' => true,
+                                'message' => 'Vehicle status updated successfully',
+                                'status' => $status
+                        ]);
+                        
+                } catch (\Exception $e) {
+                        \Log::error('Vehicle status update failed: ' . $e->getMessage());
+                        return response()->json([
+                                'success' => false,
+                                'message' => 'Failed to update vehicle status: ' . $e->getMessage()
+                        ], 500);
+                }
+        }
+
+        /**
+         * Update vehicle assigned driver via AJAX
+         */
+        public function updateDriver(Request $request) {
+                try {
+                        $vehicleId = $request->input('vehicle_id');
+                        $driverId = $request->input('driver_id');
+                        
+                        // Validate input
+                        if (!$vehicleId) {
+                                return response()->json([
+                                        'success' => false,
+                                        'message' => 'Vehicle ID is required'
+                                ], 400);
+                        }
+                        
+                        // Find vehicle
+                        $vehicle = VehicleModel::find($vehicleId);
+                        if (!$vehicle) {
+                                return response()->json([
+                                        'success' => false,
+                                        'message' => 'Vehicle not found'
+                                ], 404);
+                        }
+                        
+                        // If assigning a driver, validate driver exists and is active
+                        if ($driverId) {
+                                $driver = User::where('id', $driverId)
+                                        ->where('user_type', 'D')
+                                        ->whereHas('metas', function($query) {
+                                                $query->where('key', 'is_active')
+                                                      ->where('value', '1');
+                                        })
+                                        ->first();
+                                
+                                if (!$driver) {
+                                        return response()->json([
+                                                'success' => false,
+                                                'message' => 'Driver not found or inactive'
+                                        ], 404);
+                                }
+                                
+                                // If assigning a driver, first detach them from any other vehicle
+                                $otherVehicles = VehicleModel::whereHas('metas', function($query) use ($driverId) {
+                                        $query->where('key', 'assign_driver_id')
+                                              ->where('value', $driverId);
+                                })->get();
+                                
+                                foreach ($otherVehicles as $otherVehicle) {
+                                        $otherVehicle->setMeta(['assign_driver_id' => null]);
+                                        $otherVehicle->save();
+                                        $otherVehicle->drivers()->detach($driverId);
+                                }
+                                
+                                // Also detach any existing driver from the current vehicle
+                                $currentDriverId = $vehicle->getMeta('assign_driver_id');
+                                if ($currentDriverId) {
+                                        $vehicle->drivers()->detach($currentDriverId);
+                                }
+                        } else {
+                                // If unassigning driver, detach current driver
+                                $currentDriverId = $vehicle->getMeta('assign_driver_id');
+                                if ($currentDriverId) {
+                                        $vehicle->drivers()->detach($currentDriverId);
+                                }
+                        }
+                        
+                        // Update assigned driver
+                        $vehicle->setMeta(['assign_driver_id' => $driverId]);
+                        
+                        // Automatically update vehicle status based on driver assignment
+                        if ($driverId) {
+                                // Driver assigned - set status to "Rented"
+                                $vehicle->setMeta(['vehicle_status' => 'Rented']);
+                                $vehicle->drivers()->sync($driverId);
+                                DriverLogsModel::create([
+                                        'driver_id' => $driverId, 
+                                        'vehicle_id' => $vehicleId, 
+                                        'date' => date('Y-m-d H:i:s')
+                                ]);
+                        } else {
+                                // Driver removed - set status to "Available"
+                                $vehicle->setMeta(['vehicle_status' => 'Available']);
+                        }
+                        
+                        $vehicle->save();
+                        
+                        // Get updated driver name for response
+                        $driverName = $driverId ? User::find($driverId)->name : null;
+                        
+                        // Get updated vehicle status
+                        $vehicleStatus = $vehicle->getMeta('vehicle_status') ?: 'Available';
+                        
+                        return response()->json([
+                                'success' => true,
+                                'message' => 'Driver assignment updated successfully',
+                                'driver_name' => $driverName,
+                                'vehicle_status' => $vehicleStatus
+                        ]);
+                        
+                } catch (\Exception $e) {
+                        \Log::error('Driver assignment update failed: ' . $e->getMessage());
+                        return response()->json([
+                                'success' => false,
+                                'message' => 'Failed to update driver assignment: ' . $e->getMessage()
+                        ], 500);
+                }
+        }
+
+        /**
+         * Update vehicle inspection notes via AJAX
+         */
+        public function updateNotes(Request $request) {
+                try {
+                        $vehicleId = $request->input('vehicle_id');
+                        $notes = $request->input('notes');
+                        
+                        \Log::info('UpdateNotes called', [
+                                'vehicle_id' => $vehicleId,
+                                'notes' => $notes,
+                                'user_id' => auth()->id()
+                        ]);
+                        
+                        // Validate input
+                        if (!$vehicleId) {
+                                return response()->json([
+                                        'success' => false,
+                                        'message' => 'Vehicle ID is required'
+                                ], 400);
+                        }
+                        
+                        // Find vehicle
+                        $vehicle = VehicleModel::find($vehicleId);
+                        if (!$vehicle) {
+                                \Log::error('Vehicle not found', ['vehicle_id' => $vehicleId]);
+                                return response()->json([
+                                        'success' => false,
+                                        'message' => 'Vehicle not found'
+                                ], 404);
+                        }
+                        
+                        \Log::info('Vehicle found', [
+                                'vehicle_id' => $vehicle->id,
+                                'make' => $vehicle->make_name,
+                                'model' => $vehicle->model_name,
+                                'current_notes' => $vehicle->getMeta('inspection_notes')
+                        ]);
+                        
+                        // Update notes - try multiple approaches
+                        $vehicle->setMeta(['inspection_notes' => $notes]);
+                        
+                        // Force save the vehicle
+                        $vehicle->save();
+                        
+                        // Verify the update by refreshing from database
+                        $updatedVehicle = VehicleModel::find($vehicleId);
+                        $updatedVehicle->load('metas'); // Ensure metas are loaded
+                        $savedNotes = $updatedVehicle->getMeta('inspection_notes');
+                        
+                        // If still null, try direct database update
+                        if ($savedNotes === null) {
+                                \Log::info('setMeta failed, trying direct database update');
+                                
+                                // Check if meta record exists
+                                $existingMeta = \DB::table('vehicles_meta')
+                                        ->where('vehicle_id', $vehicleId)
+                                        ->where('key', 'inspection_notes')
+                                        ->first();
+                                
+                                if ($existingMeta) {
+                                        // Update existing meta
+                                        \DB::table('vehicles_meta')
+                                                ->where('vehicle_id', $vehicleId)
+                                                ->where('key', 'inspection_notes')
+                                                ->update([
+                                                        'value' => $notes,
+                                                        'updated_at' => now()
+                                                ]);
+                                } else {
+                                        // Create new meta record
+                                        \DB::table('vehicles_meta')->insert([
+                                                'vehicle_id' => $vehicleId,
+                                                'type' => 'string',
+                                                'key' => 'inspection_notes',
+                                                'value' => $notes,
+                                                'created_at' => now(),
+                                                'updated_at' => now()
+                                        ]);
+                                }
+                                
+                                // Get the saved notes again
+                                $savedNotes = \DB::table('vehicles_meta')
+                                        ->where('vehicle_id', $vehicleId)
+                                        ->where('key', 'inspection_notes')
+                                        ->value('value');
+                        }
+                        
+                        \Log::info('Notes update completed', [
+                                'vehicle_id' => $vehicleId,
+                                'notes_sent' => $notes,
+                                'notes_saved' => $savedNotes,
+                                'updated_by' => auth()->id()
+                        ]);
+                        
+                        return response()->json([
+                                'success' => true,
+                                'message' => 'Notes updated successfully',
+                                'notes' => $savedNotes ?: 'No notes'
+                        ]);
+                        
+                } catch (\Exception $e) {
+                        \Log::error('Failed to update vehicle notes', [
+                                'vehicle_id' => $request->input('vehicle_id'),
+                                'notes' => $request->input('notes'),
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                        ]);
+                        
+                        return response()->json([
+                                'success' => false,
+                                'message' => 'Failed to update notes: ' . $e->getMessage()
+                        ], 500);
+                }
         }
         public function store(VehicleRequest $request) {
                 // dd($request->all());
@@ -608,12 +1355,12 @@ class VehiclesController extends Controller {
                         'vin' => $request->get("vin"),
                         'license_plate' => $request->get("license_plate"),
                         'int_mileage' => $request->get("int_mileage") ? (int) $request->get("int_mileage") : null,
-                        'group_id' => $request->get('group_id'),
+                        'group_id' => $request->get('group_id') ?: null, // Set to null if empty
                         'user_id' => $request->get('user_id'),
                         'lic_exp_date' => $request->get('lic_exp_date'),
                         'reg_exp_date' => $request->get('reg_exp_date'),
                         'in_service' => $request->get("in_service"),
-                        'type_id' => $request->get('type_id'),
+                        'type_id' => $request->get('type_id') ?: 1, // Default to type ID 1 if empty
                         // 'vehicle_image' => $request->get('vehicle_image'),
                         'height' => $request->height,
                         'length' => $request->length,
@@ -642,29 +1389,55 @@ class VehiclesController extends Controller {
                         ]);
                 }
 
-                $meta->setMeta([
+                // Prepare metadata array - only include non-empty values
+                $metadata = [
                         'ins_number' => "",
                         'ins_exp_date' => "",
                         'documents' => "",
-                        'traccar_device_id' => $request->traccar_device_id,
-                        'traccar_vehicle_id' => $request->traccar_vehicle_id,
-                        'assign_driver_id' => $request->driver_id,
-                        'luggage'=>$request->luggage,
-                        'price'=>$request->vehicle_price, // Fixed: map vehicle_price to price
-                        'vehicle_status' => $request->vehicle_status ?? 'Available',
-                        'telematics_link' => $request->telematics_link,
-                        'initial_cost' => $request->initial_cost,
-                        'vehicle_scheme' => $request->vehicle_scheme,
-                        'vehicle_price' => $request->vehicle_price, // Ensure metadata persistence
-                        'price_period' => $request->price_period,
-                ]);
+                        'vehicle_status' => $request->vehicle_status ?: 'Available',
+                        'vehicle_scheme' => $request->vehicle_scheme ?: 'Rental',
+                        'price_period' => $request->price_period ?: 'monthly',
+                ];
+                
+                // Only add non-empty values to avoid storing empty strings
+                if ($request->traccar_device_id) $metadata['traccar_device_id'] = $request->traccar_device_id;
+                if ($request->traccar_vehicle_id) $metadata['traccar_vehicle_id'] = $request->traccar_vehicle_id;
+                if ($request->driver_id) {
+                        $metadata['assign_driver_id'] = $request->driver_id;
+                        // Driver assigned - set status to "Rented"
+                        $metadata['vehicle_status'] = 'Rented';
+                } else {
+                        // Driver removed - set status to "Available"
+                        $metadata['vehicle_status'] = 'Available';
+                }
+                if ($request->luggage) $metadata['luggage'] = $request->luggage;
+                if ($request->telematics_link) $metadata['telematics_link'] = $request->telematics_link;
+                
+                // Handle price fields - store as strings but only if not empty
+                if ($request->vehicle_price && $request->vehicle_price !== '' && $request->vehicle_price !== '0') {
+                        $metadata['vehicle_price'] = (string)$request->vehicle_price;
+                        $metadata['price'] = (string)$request->vehicle_price; // For backward compatibility
+                }
+                
+                if ($request->insurance_discount && $request->insurance_discount !== '' && $request->insurance_discount !== '0') {
+                        $metadata['insurance_discount'] = (string)$request->insurance_discount;
+                }
+                
+                if ($request->initial_cost && $request->initial_cost !== '' && $request->initial_cost !== '0') {
+                        $metadata['initial_cost'] = (string)$request->initial_cost;
+                }
+                
+                $meta->setMeta($metadata);
                 $meta->udf = serialize($request->get('udf'));
                 $meta->average = $request->average;
                 $meta->save();
-                // Only sync driver if a driver is assigned
+                // Handle driver sync
                 if ($request->driver_id) {
                         $meta->drivers()->sync($request->driver_id);
                         DriverLogsModel::create(['driver_id' => $request->driver_id, 'vehicle_id' => $meta->id, 'date' => date('Y-m-d H:i:s')]);
+                } else {
+                        // Remove all driver assignments if no driver selected
+                        $meta->drivers()->detach();
                 }
                 
                 // Set default in_service status based on vehicle_status
@@ -674,6 +1447,52 @@ class VehiclesController extends Controller {
                 
                 return redirect()->route('vehicles.index')->with('success', 'Vehicle created successfully!');
         }
+        /**
+         * Repair metadata for existing vehicles that might have corrupted data
+         */
+        public function repairMetadata($id) {
+                $vehicle = VehicleModel::findOrFail($id);
+                
+                // Get all metadata for this vehicle
+                $allMeta = DB::table('vehicles_meta')
+                    ->where('vehicle_id', $id)
+                    ->get();
+                
+                $repaired = false;
+                
+                // Check if we have legacy purchase_info data
+                $legacyPurchaseInfo = $vehicle->getMeta('purchase_info');
+                if ($legacyPurchaseInfo) {
+                        try {
+                                $legacyData = json_decode($legacyPurchaseInfo, true) ?: unserialize($legacyPurchaseInfo);
+                                if (is_array($legacyData)) {
+                                        $newMetadata = [];
+                                        foreach ($legacyData as $item) {
+                                                if (isset($item['exp_name']) && isset($item['exp_amount'])) {
+                                                        if (strpos($item['exp_name'], 'Price') !== false) {
+                                                                $newMetadata['vehicle_price'] = (string)$item['exp_amount'];
+                                                                $newMetadata['price'] = (string)$item['exp_amount'];
+                                                                $repaired = true;
+                                                        } elseif (strpos($item['exp_name'], 'Initial') !== false) {
+                                                                $newMetadata['initial_cost'] = (string)$item['exp_amount'];
+                                                                $repaired = true;
+                                                        }
+                                                }
+                                        }
+                                        
+                                        if (!empty($newMetadata)) {
+                                                $vehicle->setMeta($newMetadata);
+                                                $vehicle->save();
+                                        }
+                                }
+                        } catch (Exception $e) {
+                                // Ignore errors
+                        }
+                }
+                
+                return redirect()->back()->with('success', $repaired ? 'Metadata repaired successfully!' : 'No metadata repair needed.');
+        }
+        
         public function store_insurance(InsuranceRequest $request) {
                 $vehicle = VehicleModel::find($request->get('vehicle_id'));
                 $vehicle->setMeta([
@@ -682,16 +1501,20 @@ class VehiclesController extends Controller {
                         // 'documents' => $request->get('documents'),
                 ]);
                 $vehicle->save();
-                if ($vehicle->getMeta('ins_exp_date') != null) {
+                if ($vehicle->getMeta('ins_exp_date') != null && !empty($vehicle->getMeta('ins_exp_date'))) {
                         $ins_date = $vehicle->getMeta('ins_exp_date');
-                        $to = \Carbon\Carbon::now();
-                        $from = \Carbon\Carbon::createFromFormat('Y-m-d', $ins_date);
-                        $diff_in_days = $to->diffInDays($from);
-                        if ($diff_in_days > 20) {
-                                $t = DB::table('notifications')
-                                        ->where('type', 'like', '%RenewInsurance%')
-                                        ->where('data', 'like', '%"vid":' . $vehicle->id . '%')
-                                        ->delete();
+                        try {
+                                $to = \Carbon\Carbon::now();
+                                $from = \Carbon\Carbon::createFromFormat('Y-m-d', $ins_date);
+                                $diff_in_days = $to->diffInDays($from);
+                                if ($diff_in_days > 20) {
+                                        $t = DB::table('notifications')
+                                                ->where('type', 'like', '%RenewInsurance%')
+                                                ->where('data', 'like', '%"vid":' . $vehicle->id . '%')
+                                                ->delete();
+                                }
+                        } catch (\Exception $e) {
+                                \Log::warning('Invalid ins_exp_date format: ' . $ins_date);
                         }
                 }
                 if ($request->file('documents') && $request->file('documents')->isValid()) {
@@ -706,14 +1529,44 @@ class VehiclesController extends Controller {
         }
         public function assign_driver(Request $request) {
                 $vehicle = VehicleModel::find($request->get('vehicle_id'));
+                
+                // If assigning a driver, first detach them from any other vehicle
+                if ($request->driver_id) {
+                        // Find and detach the driver from any other vehicle
+                        $otherVehicles = VehicleModel::whereHas('metas', function($query) use ($request) {
+                                $query->where('key', 'assign_driver_id')
+                                      ->where('value', $request->driver_id);
+                        })->get();
+                        
+                        foreach ($otherVehicles as $otherVehicle) {
+                                $otherVehicle->setMeta(['assign_driver_id' => null]);
+                                $otherVehicle->save();
+                                $otherVehicle->drivers()->detach($request->driver_id);
+                        }
+                        
+                        // Also detach any existing driver from the current vehicle
+                        $currentDriverId = $vehicle->getMeta('assign_driver_id');
+                        if ($currentDriverId) {
+                                $vehicle->drivers()->detach($currentDriverId);
+                        }
+                }
+                
                 $vehicle->setMeta([
                         'assign_driver_id' => $request->driver_id,
                 ]);
+                
+                // Automatically update vehicle status based on driver assignment
+                if ($request->driver_id) {
+                        // Driver assigned - set status to "Rented"
+                        $vehicle->setMeta(['vehicle_status' => 'Rented']);
+                        $vehicle->drivers()->sync($request->driver_id);
+                        DriverLogsModel::create(['driver_id' => $request->driver_id, 'vehicle_id' => $request->get('vehicle_id'), 'date' => date('Y-m-d H:i:s')]);
+                } else {
+                        // Driver removed - set status to "Available"
+                        $vehicle->setMeta(['vehicle_status' => 'Available']);
+                }
+                
                 $vehicle->save();
-                $vehicle->drivers()->sync($request->driver_id);
-                // foreach ($request->driver_id as $d_id) {
-                DriverLogsModel::create(['driver_id' => $request->driver_id, 'vehicle_id' => $request->get('vehicle_id'), 'date' => date('Y-m-d H:i:s')]);
-                // }
                 return redirect('admin/vehicles/' . $request->get('vehicle_id') . '/edit?tab=driver');
         }
         public function vehicle_review() {
@@ -728,7 +1581,8 @@ class VehiclesController extends Controller {
         public function vehicle_inspection_create() {
                 // // old get vehicles before driver vehicles many-to-many
                 // $data['vehicles'] = DriverLogsModel::where('driver_id', Auth::user()->id)->get();
-                if (Auth::user()->user_type == "D") {
+                $user = Auth::user();
+                if ($user->user_type == "D") {
                         $assign_vehicles = VehicleModel::whereIn_service("1")->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
                         $booking_associated_vehicle_1 = Bookings::where('driver_id', Auth::user()->id)
                                 ->whereMeta('ride_status', 'Upcoming')
@@ -738,26 +1592,129 @@ class VehiclesController extends Controller {
                                 ->pluck('vehicle_id')->toArray();
                         $mergedArray = array_unique(array_merge($booking_associated_vehicle_1, $booking_associated_vehicle_2, $assign_vehicles));
                         $data['vehicles'] = VehicleModel::whereIn('id', $mergedArray)->get();
+                } elseif ($user->user_type == "B" && $user->company_id == null) {
+                        // Boss Admin with no company sees no vehicles
+                        $data['vehicles'] = collect();
                 } else {
-                        $data['vehicles'] = Auth::user()->vehicles()->with('metas')->get();
+                        // Super Admin or Office Admin - filter by company
+                        if ($user->company_id) {
+                                $data['vehicles'] = VehicleModel::where('company_id', $user->company_id)->with('metas')->get();
+                        } else {
+                                $data['vehicles'] = Auth::user()->vehicles()->with('metas')->get();
+                        }
                 }
+                
+                // Pre-select vehicle if coming from workshop status
+                $data['selected_vehicle_id'] = request('vehicle_id');
+                
                 return view('vehicles.vehicle_inspection_create', $data);
         }
         public function vehicle_inspection_index() {
                 $vehicle = DriverLogsModel::where('driver_id', Auth::user()->id)->get()->toArray();
-                if ($vehicle) {
-                        // $data['reviews'] = VehicleReviewModel::where('vehicle_id', $vehicle[0]['vehicle_id'])->orderBy('id', 'desc')->get();
-                        $data['reviews'] = VehicleReviewModel::select('vehicle_review.*')
-                                ->whereHas('vehicle', function ($q) {
-                                        $q->whereHas('drivers', function ($q) {
-                                                $q->where('users.id', auth()->id());
-                                        });
-                                })
-                                ->orderBy('vehicle_review.id', 'desc')->get();
-                } else {
-                        $data['reviews'] = [];
+                $user = Auth::user();
+                
+                // Get existing vehicle reviews
+                $existingReviews = VehicleReviewModel::select('vehicle_review.*')
+                        ->whereHas('vehicle', function ($q) {
+                                $q->whereHas('drivers', function ($q) {
+                                        $q->where('users.id', auth()->id());
+                                });
+                        })
+                        ->orderBy('vehicle_review.id', 'desc')->get();
+
+                // Get vehicles with "Workshop" status that haven't been inspected yet
+                // Handle different user types (Admin vs Driver)
+                $workshopVehicles = VehicleModel::with('metas')->whereMeta('vehicle_status', 'Workshop')
+                        ->whereNotIn('id', $existingReviews->pluck('vehicle_id'));
+                
+                // For drivers, only show vehicles assigned to them
+                if ($user->user_type == "D") {
+                        $workshopVehicles->whereHas('drivers', function ($q) {
+                                $q->where('users.id', auth()->id());
+                        });
+                } elseif ($user->user_type == "B" && $user->company_id == null) {
+                        // Boss Admin with no company sees no vehicles
+                        $workshopVehicles->whereRaw('1 = 0');
+                } elseif ($user->company_id) {
+                        // Super Admin or Office Admin - filter by company
+                        $workshopVehicles->where('company_id', $user->company_id);
                 }
-                // dd($data);
+                // For admins, show all workshop vehicles
+                
+                $workshopVehicles = $workshopVehicles->get();
+
+                // Create virtual inspection records for workshop vehicles
+                $workshopInspections = collect();
+                foreach ($workshopVehicles as $vehicle) {
+                        // Ensure vehicle metadata is loaded
+                        $vehicle->load('metas');
+                        
+                        $virtualInspection = new \stdClass();
+                        $virtualInspection->id = 'workshop_' . $vehicle->id;
+                        $virtualInspection->vehicle_id = $vehicle->id;
+                        $virtualInspection->vehicle = $vehicle;
+                        $virtualInspection->user = auth()->user();
+                        $virtualInspection->reg_no = $vehicle->license_plate;
+                        $virtualInspection->is_workshop_vehicle = true;
+                        $virtualInspection->created_at = now();
+                        $workshopInspections->push($virtualInspection);
+                }
+
+                // Get ALL vehicles with MOT expiry dates (let frontend filter handle timeframe)
+                $motExpiryVehicles = VehicleModel::with('metas')
+                        ->where(function($query) {
+                                $query->whereHas('metas', function($q) {
+                                        $q->where('key', 'mot_expiry_date')
+                                          ->whereNotNull('value');
+                                })
+                                ->orWhereHas('metas', function($q) {
+                                        $q->where('key', 'exp_date')
+                                          ->whereNotNull('value');
+                                })
+                                ->orWhereNotNull('lic_exp_date');
+                        });
+                
+                // Apply company filtering for MOT vehicles
+                if ($user->user_type == "B" && $user->company_id == null) {
+                        // Boss Admin with no company sees no vehicles
+                        $motExpiryVehicles->whereRaw('1 = 0');
+                } elseif ($user->company_id) {
+                        // Super Admin or Office Admin - filter by company
+                        $motExpiryVehicles->where('company_id', $user->company_id);
+                }
+                
+                $motExpiryVehicles = $motExpiryVehicles->get()
+                        ->filter(function($vehicle) {
+                                $motExpiryDate = $vehicle->getMeta('mot_expiry_date') ?: 
+                                               $vehicle->getMeta('exp_date') ?: 
+                                               $vehicle->lic_exp_date;
+                                
+                                if (!$motExpiryDate) {
+                                        return false;
+                                }
+                                
+                                try {
+                                        $expiryDate = \Carbon\Carbon::parse($motExpiryDate);
+                                        // Only exclude vehicles that are already expired (more than 1 year ago)
+                                        // This allows frontend to filter by timeframe
+                                        return $expiryDate->isAfter(now()->subYear());
+                                } catch (\Exception $e) {
+                                        return false;
+                                }
+                        })
+                        ->sortBy(function($vehicle) {
+                                $motExpiryDate = $vehicle->getMeta('mot_expiry_date') ?: 
+                                               $vehicle->getMeta('exp_date') ?: 
+                                               $vehicle->lic_exp_date;
+                                return \Carbon\Carbon::parse($motExpiryDate);
+                        });
+
+                // Merge existing reviews with workshop vehicles
+                $allInspections = $existingReviews->concat($workshopInspections);
+                
+                $data['reviews'] = $allInspections->sortByDesc('created_at');
+                $data['motExpiryVehicles'] = $motExpiryVehicles;
+                
                 return view('vehicles.vehicle_inspection_index', $data);
         }
         public function view_vehicle_inspection($id) {
@@ -970,12 +1927,32 @@ class VehiclesController extends Controller {
                         }
                 }
                 DriverVehicleModel::whereIn('vehicle_id', $request->ids)->delete();
-                VehicleModel::whereIn('id', $request->ids)->delete();
-                IncomeModel::whereIn('vehicle_id', $request->ids)->delete();
-                Expense::whereIn('vehicle_id', $request->ids)->delete();
-                VehicleReviewModel::whereIn('vehicle_id', $request->ids)->delete();
-                ServiceReminderModel::whereIn('vehicle_id', $request->ids)->delete();
-                FuelModel::whereIn('vehicle_id', $request->ids)->delete();
+                VehicleModel::whereIn('id', $request->ids)->forceDelete();
+                IncomeModel::whereIn('vehicle_id', $request->ids)->forceDelete();
+                Expense::whereIn('vehicle_id', $request->ids)->forceDelete();
+                VehicleReviewModel::whereIn('vehicle_id', $request->ids)->forceDelete();
+                ServiceReminderModel::whereIn('vehicle_id', $request->ids)->forceDelete();
+                FuelModel::whereIn('vehicle_id', $request->ids)->forceDelete();
+                
+                // Delete bookings that reference these vehicles
+                \DB::table('bookings')->whereIn('vehicle_id', $request->ids)->delete();
+                \DB::table('booking_quotation')->whereIn('vehicle_id', $request->ids)->delete();
+                
+                // Delete work orders that reference these vehicles
+                \DB::table('work_orders')->whereIn('vehicle_id', $request->ids)->delete();
+                
+                // Delete notes that reference these vehicles
+                \DB::table('notes')->whereIn('vehicle_id', $request->ids)->delete();
+                
+                // Delete driver logs that reference these vehicles
+                \DB::table('driver_logs')->whereIn('vehicle_id', $request->ids)->delete();
+                
+                // Delete work order logs that reference these vehicles
+                \DB::table('work_order_logs')->whereIn('vehicle_id', $request->ids)->delete();
+                
+                // Delete vehicle metadata
+                \DB::table('vehicles_meta')->whereIn('vehicle_id', $request->ids)->delete();
+                
                 return back();
         }
         public function bulk_delete_reviews(Request $request) {
@@ -995,3 +1972,5 @@ class VehiclesController extends Controller {
                 return redirect()->back();
         }
 }
+
+

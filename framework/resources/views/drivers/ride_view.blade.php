@@ -245,7 +245,7 @@
             </div>
             <div class="col common-class">
                 <p class="mb-0 text-muted-custom text-nowrap">@lang('fleet.total_kms')</p>
-                <h4 class="mb-0 text-nowrap">{{ $data->getMeta('total_kms') ? $data->getMeta('total_kms') . ' Kms' : 'NA' }}</h4>
+                <h4 class="mb-0 text-nowrap">{{ $data->getMeta('total_kms') ? $data->getMeta('total_kms') . ' Miles' : 'NA' }}</h4>
             </div>
         </div>
        

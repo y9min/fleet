@@ -1,386 +1,593 @@
-@extends('customer_dashboard.layouts.app')
-@section('title')
-    <title>@lang('frontend.sign_up') | {{ Hyvikk::get('app_name') }}</title>
-@endsection
-@section('css')
-<link rel="stylesheet" href="{{ asset('assets/customer_dashboard/assets/main_css/sign_up.css') }}">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Sign Up | {{ Hyvikk::get('app_name') }}</title>
+    <link rel="icon" href="{{ asset('assets/images/'. Hyvikk::get('icon_img') ) }}" type="icon_img">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-@endsection
-@section('content')
-<div class="container position-sticky z-index-sticky top-0 p-0 d-sm-flex d-md-flex d-lg-none d-xl-none">
-    <div class="row">
-        <div class="col-12">
-            <!-- Navbar -->
-            <nav id="myNavbar" class="d-flex d-sm-flex d-md-flex d-lg-none d-xl-none login_info navbar navbar-expand-lg  top-0 z-index-3 position-absolute  py-2 start-0 end-0 my-0">
-                <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 space" href="{{url('/')}}">
-                    <img src="{{ asset('assets/images/'. Hyvikk::get('logo_img') ) }}">
-                </a>
-                <button class="navbar-toggler shadow-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon mt-2">
-                        <span class="navbar-toggler-bar bar1"></span>
-                        <span class="navbar-toggler-bar bar2"></span>
-                        <span class="navbar-toggler-bar bar3"></span>
-                    </span>
-                </button>
-                <div class="collapse navbar-collapse" id="navigation">
-                    <div class="container">
-                        <div class="row space">
-                            <div class="col-12 col-sm-12 col-md-12 col-lg-6 col-xl-6">
-                                <div class="header-caption">
-                                    <p class="mb-0">@lang('frontend.Mobile_App')</p>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-12 col-md-12 col-lg-6 col-xl-6">
-                                <div class="header-link  d-flex align-items-center justify-content-center justify-content-sm-center justify-content-md-center justify-content-lg-end justify-content-xl-end">
-                                    <p>@lang('frontend.Already_have') <a href="{{ route('log_in') }}">@lang('frontend.login')</a></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #032127;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
-                </div>
-            </nav>
-            <!-- End Navbar -->
-        </div>
-    </div>
-</div>
-<div class="sign-up-content" style="height: 100vh;">
-    <div class="container-fluid px-0 d-flex flex-column min-vh-100">
-        <div class="row  px-0  mx-0 d-flex">
-            <div class="col-12 col-sm-12 col-md-12 col-lg-6 col-xl-5 px-0 order-2 order-sm-2 order-md-2 order-lg-1 order-xl-1  ">
-                <div class="blue_bg  d-flex flex-column flex-grow-1 position-relative res-grid" style="flex: 1;">
-                    <div class="container">
-                        <div class="row  d-flex justify-content-center">
-                            <div class="col-12 col-sm-12 col-md-10 col-lg-12 col-xl-12 px-0 d-none d-sm-none d-md-none d-lg-flex d-xl-flex">
-                                <div class="container-fluid ">
-                                    <div class="row mt-4">
-                                        <div class="col-4">
-                                            <a class="navbar-brand  ms-lg-0 ms-3 space" href="{{url('/')}}">
-                                                <img src="{{ asset('assets/images/'. Hyvikk::get('logo_img') ) }}">
-                                            </a>
-                                        </div>
-                                        <div class="col-8 d-flex align-items-center justify-content-end ">
-                                            <div class="top-header-caption">
-                                                <div class="header-caption ">
-                                                    <p class="mb-0">{{Hyvikk::frontend('sign_up_title')}}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        .signup-container {
+            max-width: 600px;
+            width: 100%;
+            background: #FFFFFF;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            min-height: 700px;
+        }
 
-                            
+        .signup-panel {
+            width: 100%;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-                            @if(Hyvikk::frontend('sign_up_content'))
+        .logo {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+        }
 
+        .pco-logo {
+            display: inline-block;
+        }
 
-                            @foreach(json_decode(Hyvikk::frontend('sign_up_content')) as $s)
+        .pco-logo-img {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+        }
 
+        .form-heading {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            text-align: center;
+        }
 
-                            <div class="col-12 col-sm-12 col-md-10 col-lg-10 col-xl-10">
-                                <div class="features mt-5 mx-0">
-                                    <div class="container px-0">
-                                        <div class="row">
-                                            <div class="col-4 d-flex justify-content-center">
-                                                <div class="features-img">
-                                                    <img src="{{url('/uploads'.'/'.$s->file_path)}}">
-                                                </div>
-                                            </div>
-                                            <div class="col-8 d-flex align-items-center">
-                                                <div class="feature-content ">
-                                                    <div class="feature-title">
-                                                        <p class="f-title">{{$s->title}}</p>
-                                                        <p class="f-content">{{$s->subtitle}}.</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        .form-subheading {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 32px;
+            text-align: center;
+        }
 
+        .form-container {
+            max-width: 100%;
+        }
 
-                            @endforeach
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-                            @endif
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
 
+        .form-row .form-group {
+            flex: 1;
+        }
 
-                            {{-- <div class="col-12 col-sm-12 col-md-10 col-lg-10 col-xl-10 ">
-                                <div class="features mb-4 mx-0">
-                                    <div class="container px-0">
-                                        <div class="row">
-                                            <div class="col-4 d-flex justify-content-center">
-                                                <div class="features-img">
-                                                    <img src="{{ asset('assets/customer_dashboard/assets/img/svg/search.svg')}}">
-                                                </div>
-                                            </div>
-                                            <div class="col-8 d-flex align-items-center">
-                                                <div class="feature-content ">
-                                                    <div class="feature-title">
-                                                        <p class="f-title">Sidebar Search</p>
-                                                        <p class="f-content">Search any Module / Section with Just a Few Key Presses.</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
 
-                            </div>
-                            <div class="col-12 col-sm-12 col-md-10 col-lg-10 col-xl-10 ">
-                                <div class="features mb-4">
-                                    <div class="container px-0">
-                                        <div class="row">
-                                            <div class="col-4 d-flex justify-content-center">
-                                                <div class="features-img">
-                                                    <img src="{{ asset('assets/customer_dashboard/assets/img/svg/upgrade.svg')}}">
-                                                </div>
-                                            </div>
-                                            <div class="col-8 d-flex align-items-center">
-                                                <div class="feature-content ">
-                                                    <div class="feature-title">
-                                                        <p class="f-title">Upgraded Front-end Website</p>
-                                                        <p class="f-content">A Revamped Front-end UI Design to give you a Fresh Experience.</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-12 col-md-10 col-lg-10 col-xl-10 ">
-                                <div class="features mb-4">
-                                    <div class="container px-0">
-                                        <div class="row">
-                                            <div class="col-4 d-flex justify-content-center">
-                                                <div class="features-img">
-                                                    <img src="{{ asset('assets/customer_dashboard/assets/img/svg/menu.svg')}}">
-                                                </div>
-                                            </div>
-                                            <div class="col-8 d-flex align-items-center">
-                                                <div class="feature-content ">
-                                                    <div class="feature-title">
-                                                        <p class="f-title">The Awesome "Font Awesome" Icons</p>
-                                                        <p class="f-content">Because Good Icons Represent Features Better.</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> --}}
-                            <div class="col-12 ">
-                                <div class="features-tagline mt-3 mt-sm-3 mt-md-3 mt-lg-5 mt-xl-5">
-                                    <p>{{Hyvikk::frontend('sign_up_sub_title')}}</p>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="footer-copyright d-none d-sm-none d-md-none d-lg-flex d-xl-flex justify-content-center mb-4 mt-3" style="position: relative;bottom: 0;">
-                                    {{-- <p class="mb-0 copyright-link">
-                                        Copyright ©
-                                        <script>
-                                            document.write(new Date().getFullYear())
+        .form-input {
+            width: 100%;
+            height: 48px;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            background: #FFFFFF;
+            transition: all 0.2s ease;
+        }
 
-                                        </script> 
+        .form-input:focus {
+            outline: none;
+            border-color: #79D1DC;
+            box-shadow: 0 0 0 3px rgba(121, 209, 220, 0.1);
+        }
 
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
 
-                                        
-                                    </p> --}}
-                                    
-                                    <div class="text-white">{!! Hyvikk::get('web_footer') !!}</div>
+        .radio-group {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
 
-                                </div>
-                            </div>
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-                        </div>
-                    </div>
+        .radio-input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .radio-label {
+            font-size: 14px;
+            color: #1a1a1a;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .checkbox {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid #D1D5DB;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            color: #1a1a1a;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        .checkbox-label a {
+            color: #79D1DC;
+            text-decoration: none;
+        }
+
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+
+        .signup-button {
+            width: 100%;
+            height: 48px;
+            background: #79D1DC;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .signup-button:hover {
+            background: #5fc0cc;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(121, 209, 220, 0.3);
+        }
+
+        .signup-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid #FFFFFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .login-link {
+            color: #79D1DC;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+        .back-to-dashboard {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6B7280;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+            color: #79D1DC;
+            background: rgba(121, 209, 220, 0.1);
+            text-decoration: none;
+        }
+
+        .back-button svg {
+            transition: transform 0.2s ease;
+        }
+
+        .back-button:hover svg {
+            transform: translateX(-2px);
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .alert-danger {
+            background: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .alert ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .signup-panel {
+                padding: 30px 20px;
+            }
+
+            .form-heading {
+                font-size: 24px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-panel">
+            <div class="logo">
+                <div class="pco-logo">
+                    <img src="{{ asset('assets/images/pco-flow-logo-black.png') }}" alt="PCO Flow" class="pco-logo-img">
                 </div>
             </div>
-            <div class=" col-12 col-sm-12 col-md-12 col-lg-6 col-xl-7 px-0 order-1 order-sm-1 order-md-1 order-lg-2 order-xl-2 mt-7 mt-sm-7 mt-md-7 mt-lg-0 mt-xl-0">
-                <div class="white-bg d-flex flex-column flex-grow-1 position-relative res-grid" style="flex: 1;">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-12 mt-4 ">
-                                <div class="header-link  d-none d-sm-none d-md-none d-lg-flex d-xl-flex align-items-center justify-content-center justify-content-sm-center justify-content-md-center justify-content-lg-end justify-content-xl-end">
-                                    <p>@lang('frontend.Already_have') <a href="{{ route('log_in') }}">@lang('frontend.login')</a></p>
-                                </div>
-                            </div>
-                            <div class="col-12">
 
-                                <div class="register-msg custom-alerts"></div>
+            <div class="form-container">
+                <h1 class="form-heading">Create your account</h1>
+                <p class="form-subheading">Join us today! Please fill in your details to get started.</p>
 
+                <div class="register-msg custom-alerts"></div>
 
-                                <div class="row res-form">
-                                    <div class="col-12">
-                                        <div class="sign_title">
-                                            <p class="sign_up">@lang('frontend.sign_up')</p>
-                                            <p class="sign_up_welcome">@lang('frontend.Welcome')</p>
-                                            <p class="sign_up_welcome_content">@lang('frontend.join_us')</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="sign-up-form">
-                                            <form id="large-screen-form" method="POST">
-                                                <div class="row">
-                                                    <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 mt-1 mb-1 mb-sm-0 mt-sm-0 mt-md-0 mb-md-0 mt-lg-0 mb-lg-0 mt-xl-0 mb-xl-0">
-                                                        <label for="exampleInputEmail1" class="form-label mb-0">@lang('frontend.First_Name')</label>
-                                                        <input type="text" name="first_name" class="form-control" id="exampleInputEmail1"  placeholder="Enter your First Name" oninput="validateformat(this)">
-                                                        <span class="focus-bg error-first_name"></span>
-                                                    </div>
-                                                    <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 mt-1 mb-1 mb-sm-0 mt-sm-0 mt-md-0 mb-md-0 mt-lg-0 mb-lg-0 mt-xl-0 mb-xl-0">
-                                                        <label for="exampleInputEmail1" class="form-label mb-0">@lang('frontend.Last_Name')</label>
-                                                        <input type="text" name="last_name" class="form-control" id="exampleInputEmail1"  placeholder="Enter your Last Name" oninput="validateformat(this)">
-                                                        <span class="focus-bg error-last_name"></span>
-                                                    </div>
-                                                    <div class="col-12 ">
-                                                        <div class="radio-btn-groups d-flex align-items-center mt-4 mb-3 ">
-                                                            <label class="form-label custom-form-label mb-0">@lang('frontend.Select_Gender')</label>
-                                                            <div class="radio-btn d-flex align-items-center ms-4">
-                                                                <div class="form-check d-flex align-items-center">
-                                                                  
-                                                                    <input type="radio" class="black gender-value " name="gender" value="1" id="male" >
-                                                                    <label class="custom-control-label custom-form-label mb-0 " for="male">@lang('frontend.male')</label>
-                                                                </div>
-                                                                <div class="form-check d-flex align-items-center">
-                                                                  
-                                                                    <input type="radio" class="black gender-value" name="gender" value="0" id="female"  checked>
-                                                                    <label class="custom-control-label custom-form-label mb-0 " for="female">@lang('frontend.female')</label>
-                                                                </div>
-                                                                
-                                                            </div>
-                                                            <span class="focus-bg error-gender"></span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 mt-1 mb-1 mb-sm-0 mt-sm-0 mt-md-0 mb-md-0 mt-lg-0 mb-lg-0 mt-xl-0 mb-xl-0">
-                                                        <label for="exampleInputEmail1" class="form-label mb-0">@lang('frontend.Email_Id')</label>
-                                                        <input type="email" name="email"  class="form-control"  placeholder="Enter your Email Address">
-                                                        <span class="focus-bg error-email"></span>
-
-                                                    </div>
-                                                    <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 mt-1 mb-1 mb-sm-0 mt-sm-0 mt-md-0 mb-md-0 mt-lg-0 mb-lg-0 mt-xl-0 mb-xl-0">
-                                                        <label for="exampleInputEmail1" class="form-label mb-0">@lang('frontend.Phone_Number')</label>
-                                                        <input type="text" name="phone" class="form-control"  placeholder="Enter your Phone Number" maxlength="15">
-                                                        <span class="focus-bg error-phone"></span>
-                                                    </div>
-                                                    <div class="col-12 mb-0 mt-0 mb-sm-3 mt-sm-3 mt-md-3 mb-md-3 mt-lg-3 mb-lg-4 mt-xl-3 mb-xl-3">
-                                                        <label for="exampleInputEmail1" class="form-label mb-0">@lang('frontend.Address_Optional')</label>
-                                                        <input type="text" name="address" class="form-control"  placeholder="Enter your Address">
-                                                    </div>
-                                                    <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 mt-1 mb-1 mb-sm-0 mt-sm-0 mt-md-0 mb-md-0 mt-lg-0 mb-lg-0 mt-xl-0 mb-xl-0">
-                                                        <label for="exampleInputEmail1" class="form-label mb-0">@lang('frontend.Password')
-                                                            <div class="tooltip-container">
-                                                                <span class="tooltip-trigger "><img src="{{ asset('assets/customer_dashboard/assets/img/svg/info-hexagon.svg') }}" class="ms-1"></span>
-                                                                <div class="tooltip-content">
-                                                                    <div class="">
-                                                                        <ul class="pass_guide mb-1 mt-1">
-                                                                            <li>
-                                                                                <p>Min 1 Special Character (@ # $ % &amp; ! * ?)</p>
-                                                                            </li>
-                                                                            <li>
-                                                                                <p>Min Length 6 Characters &amp; Upto 18 Characters</p>
-                                                                            </li>
-                                                                            <li>
-                                                                                <p>Min 2 Numerical Characters</p>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </label>
-                                                        <input type="password" name="password" class="form-control"  placeholder="Type Your Password">
-                                                        <span class="focus-bg error-password"></span>
-                                                    </div>
-                                                    <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 mt-1 mb-1 mb-sm-0 mt-sm-0 mt-md-0 mb-md-0 mt-lg-0 mb-lg-0 mt-xl-0 mb-xl-0">
-                                                        <label for="exampleInputEmail1" class="form-label mb-0">@lang('frontend.Retype_Password')</label>
-                                                        <input type="password" name="confirm_password" class="form-control" placeholder="Re-Type Your Password">
-                                                        <span class="focus-bg error-confirm_password"></span>
-                                                    </div>
-                                                    <div class="col-12 checked-stats agree mt-4 ">
-                                                        <div class="form-check form-check-input-1 d-flex align-items-center">
-                                                            <input class=" form-check-input" type="checkbox"  id="flexCheckDefault" name="agree">
-                                                            <label class="form-check-label custom-control-label custom-form-label mb-0" for="flexCheckDefault">
-                                                                @lang('frontend.I_Agree_to_All') <a href="{{Hyvikk::frontend('terms')}}">@lang('frontend.Terms_Conditions')</a> @lang('frontend.and') <a href="{{Hyvikk::frontend('privacy_policy')}}">@lang('frontend.Privacy_Policies')</a> 
-                                                                @lang('frontend.of_Company')
-                                                            </label>
-                                                        
-                                                        </div>
-                                                        <span class="focus-bg error-agree"></span>
-                                                    </div>
-                                                    <div class="col-12 d-flex justify-content-center justify-content-sm-center justify-content-md-center justify-content-lg-start justify-content-xl-start  ">
-                                                        <button type="button" class="btn btn-square-blue mt-3 mb-5 register-user">
-                                                            <div class="spinner-border text-light hide-3 d-none"
-                                                            role="status">
-                                                            <span class="sr-only"></span>
-                                                        </div>
-                                                        <div class="hide-4">
-                                                            @lang('frontend.sign_up')
-                                                        </div>
-
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 d-none d-sm-none d-md-none d-lg-flex d-xl-flex justify-content-center ">
-                                <div class="footer-copyright dark-footer mb-4 mt-3" style="position: absolute;bottom: 0;">
-
-                                    <div class="footer_link">
-                                        {{-- <a href="javascript:;" target="_blank" class="me-0 me-sm-3 me-md-4 me-lg-4 me-xl-5 mb-sm-0 mb-2">
-                                            Company
-                                        </a>
-                                        <a href="javascript:;" target="_blank" class="me-0 me-sm-3 me-md-4 me-lg-4 me-xl-5 mb-sm-0 mb-2">
-                                            About
-                                        </a>
-                                    
-                                        <a href="javascript:;" target="_blank" class="me-0 me-sm-3 me-md-4 me-lg-4 me-xl-5 mb-sm-0 mb-2">
-                                            Services
-                                        </a> --}}
-
-                                        @if(Hyvikk::frontend('footer_link'))
-
-
-                                        @foreach(json_decode(Hyvikk::frontend('footer_link')) as $f)
-                          
-                                            <a href="{{$f->url}}" target="_blank" class="me-0 me-sm-3 me-md-4 me-lg-4 me-xl-5 mb-sm-0 mb-2">{{$f->title}}</a>
-                                          
-                                        @endforeach
-                          
-                                        @endif
-
-                                     
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 d-flex d-sm-flex d-md-flex d-lg-none d-xl-none order-3 order-sm-3 order-md-3 mt-4 mt-sm-4 mt-md-5 mb-3 mb-sm-3 mb-md-4 ">
-                                @include('customer_dashboard.includes.footer')
-                            </div>
+                <form id="signupForm" method="POST">
+                    @csrf
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="first_name">First Name</label>
+                            <input type="text" 
+                                   class="form-input" 
+                                   id="first_name" 
+                                   name="first_name" 
+                                   placeholder="Enter your first name" 
+                                   required>
                         </div>
-
+                        <div class="form-group">
+                            <label class="form-label" for="last_name">Last Name</label>
+                            <input type="text" 
+                                   class="form-input" 
+                                   id="last_name" 
+                                   name="last_name" 
+                                   placeholder="Enter your last name" 
+                                   required>
+                        </div>
                     </div>
+
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="email">Email</label>
+                            <input type="email" 
+                                   class="form-input" 
+                                   id="email" 
+                                   name="email" 
+                                   placeholder="Enter your email" 
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="phone">Phone Number</label>
+                            <input type="tel" 
+                                   class="form-input" 
+                                   id="phone" 
+                                   name="phone" 
+                                   placeholder="Enter your phone number" 
+                                   maxlength="15" 
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="address">Address (Optional)</label>
+                        <input type="text" 
+                               class="form-input" 
+                               id="address" 
+                               name="address" 
+                               placeholder="Enter your address">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="password">Password</label>
+                            <input type="password" 
+                                   class="form-input" 
+                                   id="password" 
+                                   name="password" 
+                                   placeholder="Type your password" 
+                                   required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="confirm_password">Confirm Password</label>
+                            <input type="password" 
+                                   class="form-input" 
+                                   id="confirm_password" 
+                                   name="confirm_password" 
+                                   placeholder="Re-type your password" 
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="checkbox" name="agree" id="agree" required>
+                        <label class="checkbox-label" for="agree">
+                            I agree to all <a href="{{Hyvikk::frontend('terms')}}">Terms & Conditions</a> and <a href="{{Hyvikk::frontend('privacy_policy')}}">Privacy Policies</a> of the company
+                        </label>
+                    </div>
+
+                    <button type="submit" class="signup-button" id="signupButton">
+                        <div class="spinner d-none" id="spinner"></div>
+                        <span id="buttonText">Sign Up</span>
+                    </button>
+                </form>
+
+                <div class="form-footer">
+                    Already have an account? <a href="{{ route('login') }}" class="login-link">Login</a>
                 </div>
 
+                <div class="back-to-dashboard">
+                    <a href="{{ url('/') }}" class="back-button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-6-6 6-6"/>
+                        </svg>
+                        Back
+                    </a>
+                </div>
             </div>
-
         </div>
     </div>
-</div>
-@endsection
 
-
-@section('script')
-
-<script>
-    function validateformat(input) {
-    // Remove any non-alphabetic characters
-    input.value = input.value.replace(/[^a-zA-Z\s]/g, '');
-    }
-    function validateformat1(input) {
-    // Remove any non-alphabetic characters
-    input.value = input.value.replace(/[^0-9]/g, '');
-    }
-</script>
-@endsection
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const signupForm = document.getElementById('signupForm');
+            const signupButton = document.getElementById('signupButton');
+            const spinner = document.getElementById('spinner');
+            const buttonText = document.getElementById('buttonText');
+            
+            if (!signupForm) return;
+            
+            // Name validation - only letters and spaces
+            function validateName(input) {
+                input.value = input.value.replace(/[^a-zA-Z\s]/g, '');
+            }
+            
+            // Phone validation - only numbers
+            function validatePhone(input) {
+                input.value = input.value.replace(/[^0-9]/g, '');
+            }
+            
+            // Add event listeners for validation
+            document.getElementById('first_name').addEventListener('input', function() {
+                validateName(this);
+            });
+            
+            document.getElementById('last_name').addEventListener('input', function() {
+                validateName(this);
+            });
+            
+            document.getElementById('phone').addEventListener('input', function() {
+                validatePhone(this);
+            });
+            
+            signupForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading spinner
+                if (spinner) spinner.classList.remove('d-none');
+                if (buttonText) buttonText.style.display = 'none';
+                if (signupButton) signupButton.disabled = true;
+                
+                // Basic validation
+                const firstName = document.getElementById('first_name').value.trim();
+                const lastName = document.getElementById('last_name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const password = document.getElementById('password').value.trim();
+                const confirmPassword = document.getElementById('confirm_password').value.trim();
+                const agree = document.getElementById('agree').checked;
+                
+                if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
+                    showError('Please fill in all required fields.');
+                    resetButton();
+                    return;
+                }
+                
+                if (!isValidEmail(email)) {
+                    showError('Please enter a valid email address.');
+                    resetButton();
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showError('Passwords do not match.');
+                    resetButton();
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showError('Password must be at least 6 characters long.');
+                    resetButton();
+                    return;
+                }
+                
+                if (!agree) {
+                    showError('Please agree to the terms and conditions.');
+                    resetButton();
+                    return;
+                }
+                
+                // Submit form
+                const formData = new FormData(signupForm);
+                
+                fetch('{{ url("user-register") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError('Registration failed. Please try again.');
+                        resetButton();
+                    } else {
+                        showSuccess('Registration successful! You can now login.');
+                        setTimeout(() => {
+                            window.location.href = '{{ route("login") }}';
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    showError('Registration failed. Please try again.');
+                    resetButton();
+                });
+            });
+            
+            function isValidEmail(email) {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailPattern.test(email);
+            }
+            
+            function showError(message) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger';
+                alertDiv.innerHTML = message;
+                
+                const formContainer = document.querySelector('.form-container');
+                const form = document.getElementById('signupForm');
+                formContainer.insertBefore(alertDiv, form);
+                
+                setTimeout(function() {
+                    alertDiv.style.transition = 'opacity 0.5s';
+                    alertDiv.style.opacity = '0';
+                    setTimeout(function() {
+                        if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
+                    }, 500);
+                }, 5000);
+            }
+            
+            function showSuccess(message) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success';
+                alertDiv.innerHTML = message;
+                
+                const formContainer = document.querySelector('.form-container');
+                const form = document.getElementById('signupForm');
+                formContainer.insertBefore(alertDiv, form);
+            }
+            
+            function resetButton() {
+                if (spinner) spinner.classList.add('d-none');
+                if (buttonText) buttonText.style.display = 'block';
+                if (signupButton) signupButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -61,7 +61,7 @@
               <ol class="text-muted">
                 <li>To enable or disable international card payments from your <strong>RazorPay</strong> Dashboard: <a href="https://razorpay.com/docs/international-payments/#enable-or-disable-international-payments-from-the-dashboard" target="_blank">Click Here</a>
                 <br>
-                If you do not want to accept payments in currencies apart from INR (₹), you can turn off <strong>International Card Payment</strong> using the toggle switch <a href="https://dashboard.razorpay.com/#/app/config" target="_blank">available here.</a></li>
+                If you do not want to accept payments in currencies apart from GBP (£), you can turn off <strong>International Card Payment</strong> using the toggle switch <a href="https://dashboard.razorpay.com/#/app/config" target="_blank">available here.</a></li>
                 <li>you can automatically email your customers upon successful payments using <strong>Stripe</strong>. Enable this feature with the email customers for successful payments option in your email receipt settings. <a href="https://dashboard.stripe.com/account/emails" target="_blank">Click Here</a></li>
               </ol>
             </div> --}}

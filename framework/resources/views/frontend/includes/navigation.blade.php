@@ -1,17 +1,17 @@
 <div class="main-section-background">
     @if (!Auth::guest() && (Auth::user()->user_type == 'C' || Auth::user()->user_type == 'D'))
-        <div class="header" style="position:relative">
+        <div class="header" style="position:relative; padding-top:100px;">
         @else
-            <div class="header header-first " style="position:relative">
+            <div class="header header-first " style="position:relative; padding-top:100px;">
     @endif
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <div class="main-menubar">
-                <a class="navbar-brand" href="{{ route('frontend.home') }}"> <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow 2"></a>
+    <nav class="navbar navbar-expand-lg" style="padding:14px 0; align-items:center;">
+        <div class="container" style="display:flex; align-items:center; flex-wrap:nowrap;">
+            <div class="main-menubar" style="width:100%; display:flex; align-items:center; flex:1;">
+                <a class="navbar-brand" href="{{ route('frontend.home') }}" style="margin-right:24px;"> <img src="{{ asset('assets/images/pco-flow-logo-2.png') }}" style="width:333px; height:86px; object-fit: contain; max-width:100%;" alt="PCO Flow"></a>
                 
  
 
-                <div class="res-collapse d-flex d-sm-flex d-md-flex d-lg-none d-xl-none ">
+                <div class="res-collapse d-flex d-sm-flex d-md-flex d-lg-none d-xl-none " style="margin-left:auto; align-items:center; gap:8px;">
                     @if (!Auth::guest() && (Auth::user()->user_type == 'C' || Auth::user()->user_type == 'D'))
                         <div class="login-btn-res d-none">
                             <a href="{{url('/login')}}" style="text-decoration:none;border-radious:2px;"> <button type="button" class="btn mobile-login-btn" data-bs-toggle="modal"
@@ -40,18 +40,11 @@
                     @endif
                 
                 </div>
-                <div class="collapse navbar-collapse justify-content-center" id="navbarsExample09">
-                    <ul class="navbar-nav mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a href="{{ url('/') }}"
-                                class="nav-item nav-link {{ request()->is('/') ? 'active' : '' }}">@lang('frontend.home')</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('frontend.about') }}">@lang('frontend.about')</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('frontend.contact') }}">@lang('frontend.contact')</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="navbarsExample09" style="flex-grow:1;">
+                    <ul class="navbar-nav" style="gap:22px; margin-left:8px; display:flex; align-items:center;">
+                        <li class="nav-item"><a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}" style="color:#EAF3F4; font-weight:600; font-size:14px; padding:0; display:flex; align-items:center; height:36px;">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url('/') }}#why" style="color:#EAF3F4; font-weight:600; font-size:14px; padding:0; display:flex; align-items:center; height:36px;">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('frontend.contact') }}" style="color:#EAF3F4; font-weight:600; font-size:14px; padding:0; display:flex; align-items:center; height:36px;">Contact</a></li>
                         @if (!Auth::guest() && (Auth::user()->user_type == 'C' || Auth::user()->user_type == 'D'))
                             <li class="nav-item">
                                 <a class="nav-link"
@@ -528,12 +521,11 @@
                         </ul>
                     </div>
                 @endif
-                <div class="signin-signup-btn d-md-none d-lg-flex">
-                
-                        <a href="{{url('/login')}}" style="text-decoration:none;border-radious:2px;"><button type="button" class="btn login d-none d-sm-none d-md-none d-lg-flex">@lang('frontend.login')</button></a>
-
-                        <a href="{{url('/sign_up')}}" style="text-decoration:none;border-radious:2px;"><button type="button" class="btn sign-up d-md-none d-lg-flex">@lang('frontend.sign_up')</button></a>
-
+                <div class="signin-signup-btn d-none d-lg-flex" style="margin-left:auto; gap:10px; align-items:center; height:36px; align-self:center; margin-top:0; margin-bottom:0; position:absolute; top:0px; right:86px; z-index:1001; padding-top:0;">
+                    <a href="{{url('/login')}}" style="text-decoration:none;">
+                        <button type="button" class="btn" style="background:transparent; color:#EAF3F4; border:1px solid rgba(234,243,244,0.25); padding:8px 14px; border-radius:999px; font-weight:600; font-size:13px; height:36px; display:flex; align-items:center; justify-content:center;">Login</button>
+                    </a>
+                    {{-- Sign up button hidden intentionally (backend route retained) --}}
                 </div>
              
         </div>

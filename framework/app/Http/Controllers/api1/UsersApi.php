@@ -1884,7 +1884,10 @@ public function user_login(Request $request) {
 
 
 
-									$price=($vhc->getMeta('price') * $num);
+									// Calculate price based on insurance selection
+									$insuranceSelection = 'with_insurance'; // TODO: Get from request or driver data
+									$basePrice = $vhc->calculatePrice($insuranceSelection);
+									$price = ($basePrice * $num);
 
 									$total_tax_percent = $count;
 

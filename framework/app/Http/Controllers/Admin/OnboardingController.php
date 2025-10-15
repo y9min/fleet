@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\OnboardingDriver;
 use App\OnboardingLink;
 use App\CustomFormField;
+use App\OnboardingFormFieldConfig;
 use App\Model\User;
+use App\Model\VehicleModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -29,15 +31,101 @@ class OnboardingController extends Controller
      */
     public function index()
     {
+        // Initialize default field configurations if none exist
+        OnboardingFormFieldConfig::initializeDefaultFields();
+
+        $auth = \Auth::user();
+        
+        // Get historic stats - correct logic for onboarding vs approved drivers
+        // PENDING: Only submitted status in onboarding table
+        // APPROVED: Count from users table where user_type = 'D' (actual approved drivers)
+        // REJECTED: Only rejected status in onboarding table
+        // TOTAL: Onboarding records (submitted + rejected) + approved drivers from users table
+        
+        if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+            $vehicleIds = \App\Model\VehicleModel::where('company_id', $auth->company_id)->pluck('id')->toArray();
+            
+            // Pending: Only submitted status in onboarding table
+            $pending_count = OnboardingDriver::submitted()
+                ->where(function($query) use ($vehicleIds) {
+                    $query->whereIn('vehicle_id', $vehicleIds)
+                          ->orWhereNull('vehicle_id');
+                })->count();
+                
+            // Approved: Count from users table where user_type = 'D' (actual approved drivers)
+            // Filter out test users and only count real drivers from onboarding process
+            $approved_count = \App\Model\User::where('user_type', 'D')
+                ->where(function($query) use ($vehicleIds) {
+                    // Use the many-to-many relationship through driver_vehicle table
+                    $query->whereHas('vehicles', function($q) use ($vehicleIds) {
+                        $q->whereIn('vehicles.id', $vehicleIds);
+                    })->orWhereDoesntHave('vehicles');
+                })
+                ->where(function($query) {
+                    // Exclude test users based on patterns
+                    $query->where('email', 'not like', '%@example.%')
+                          ->where('name', 'not like', '%snnfjon%')
+                          ->where('name', 'not like', '%tarantino%')
+                          ->where('email', 'not like', '%josephwilk2022%')
+                          ->whereYear('created_at', '>=', 2025);
+                })->count();
+                
+            // Rejected: Only rejected status in onboarding table
+            $rejected_count = OnboardingDriver::rejected()
+                ->where(function($query) use ($vehicleIds) {
+                    $query->whereIn('vehicle_id', $vehicleIds)
+                          ->orWhereNull('vehicle_id');
+                })->count();
+                
+            // Total: Onboarding records (submitted + rejected) + approved drivers from users table
+            $onboarding_total = OnboardingDriver::where(function($query) use ($vehicleIds) {
+                $query->whereIn('vehicle_id', $vehicleIds)
+                      ->orWhereNull('vehicle_id');
+            })->count();
+            $total_count = $onboarding_total + $approved_count;
+            
+        } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+            // For broker users without company, show all records
+            $pending_count = OnboardingDriver::submitted()->count();
+            $approved_count = \App\Model\User::where('user_type', 'D')
+                ->where(function($query) {
+                    // Exclude test users based on patterns
+                    $query->where('email', 'not like', '%@example.%')
+                          ->where('name', 'not like', '%snnfjon%')
+                          ->where('name', 'not like', '%tarantino%')
+                          ->where('email', 'not like', '%josephwilk2022%')
+                          ->whereYear('created_at', '>=', 2025);
+                })->count();
+            $rejected_count = OnboardingDriver::rejected()->count();
+            $onboarding_total = OnboardingDriver::count();
+            $total_count = $onboarding_total + $approved_count;
+        } else {
+            // For admin users or other cases, show all historic records
+            $pending_count = OnboardingDriver::submitted()->count();
+            $approved_count = \App\Model\User::where('user_type', 'D')
+                ->where(function($query) {
+                    // Exclude test users based on patterns
+                    $query->where('email', 'not like', '%@example.%')
+                          ->where('name', 'not like', '%snnfjon%')
+                          ->where('name', 'not like', '%tarantino%')
+                          ->where('email', 'not like', '%josephwilk2022%')
+                          ->whereYear('created_at', '>=', 2025);
+                })->count();
+            $rejected_count = OnboardingDriver::rejected()->count();
+            $onboarding_total = OnboardingDriver::count();
+            $total_count = $onboarding_total + $approved_count;
+        }
+
         $data = [
             'page_title' => 'Driver Onboarding',
             'page_description' => 'Manage driver onboarding process',
             'custom_fields' => CustomFormField::ordered()->get(),
             'field_types' => CustomFormField::getFieldTypes(),
-            'pending_count' => OnboardingDriver::submitted()->count(),
-            'approved_count' => OnboardingDriver::approved()->count(),
-            'rejected_count' => OnboardingDriver::rejected()->count(),
-            'total_count' => OnboardingDriver::count(),
+            'field_configs' => OnboardingFormFieldConfig::ordered()->get(),
+            'pending_count' => $pending_count,
+            'approved_count' => $approved_count,
+            'rejected_count' => $rejected_count,
+            'total_count' => $total_count,
             'saved_links' => OnboardingLink::active()->with('createdBy')->orderBy('created_at', 'desc')->get()
         ];
 
@@ -49,6 +137,7 @@ class OnboardingController extends Controller
      */
     public function fetchData(Request $request)
     {
+        $auth = \Auth::user();
         $query = OnboardingDriver::select([
             'id',
             'name',
@@ -61,30 +150,45 @@ class OnboardingController extends Controller
             'created_at'
         ]);
 
+        // Company scoping via vehicle_id - consistent with stats logic
+        if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+            $vehicleIds = \App\Model\VehicleModel::where('company_id', $auth->company_id)->pluck('id');
+            // Include records with matching vehicle_id OR null vehicle_id for historic data
+            $query->where(function($q) use ($vehicleIds) {
+                $q->whereIn('vehicle_id', $vehicleIds)
+                  ->orWhereNull('vehicle_id');
+            });
+        } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+            // For broker users without company, show all records
+            // Remove the whereRaw('1=0') restriction to show historic data
+        }
+
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
         return DataTables::of($query)
             ->addColumn('actions', function ($driver) {
-                $actions = '';
+                $actions = '<div class="d-flex justify-content-center gap-1">';
                 
                 if ($driver->isSubmitted()) {
-                    $actions .= '<button class="btn btn-success btn-sm mx-1" onclick="approveDriver(' . $driver->id . ')" title="Approve">
-                        <i class="fa fa-check"></i>
+                    $actions .= '<button class="btn btn-sm btn-success" onclick="approveDriver(' . $driver->id . ')" title="Approve" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                        <i class="fas fa-check"></i>
                     </button>';
-                    $actions .= '<button class="btn btn-warning btn-sm mx-1" onclick="rejectDriver(' . $driver->id . ')" title="Reject">
-                        <i class="fa fa-times"></i>
+                    $actions .= '<button class="btn btn-sm btn-warning" onclick="rejectDriver(' . $driver->id . ')" title="Reject" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                        <i class="fas fa-times"></i>
                     </button>';
                 }
                 
-                $actions .= '<button class="btn btn-info btn-sm mx-1" onclick="viewDriver(' . $driver->id . ')" title="View Details">
-                    <i class="fa fa-eye"></i>
+                $actions .= '<button class="btn btn-sm btn-info" data-driver-id="' . $driver->id . '" onclick="toggleDriverDetails(' . $driver->id . ')" title="Toggle Details" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                    <i class="fas fa-eye"></i>
                 </button>';
                 
-                $actions .= '<button class="btn btn-danger btn-sm mx-1" onclick="deleteDriver(' . $driver->id . ')" title="Delete">
-                    <i class="fa fa-trash"></i>
+                $actions .= '<button class="btn btn-sm btn-danger" onclick="deleteDriver(' . $driver->id . ')" title="Delete" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                    <i class="fas fa-trash"></i>
                 </button>';
+                
+                $actions .= '</div>';
 
                 return $actions;
             })
@@ -99,19 +203,21 @@ class OnboardingController extends Controller
                     . ucfirst($driver->status) . '</span>';
             })
             ->addColumn('documents', function ($driver) {
-                $docs = '';
+                $docs = '<div class="d-flex justify-content-center gap-1">';
                 
                 if ($driver->license_upload_path) {
-                    $docs .= '<a href="' . $driver->license_url . '" class="btn btn-sm btn-outline-primary mx-1" target="_blank" title="View License">
+                    $docs .= '<a href="' . $driver->license_url . '" class="btn btn-sm btn-primary" target="_blank" title="View License" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                         <i class="fa fa-id-card"></i>
                     </a>';
                 }
                 
                 if ($driver->insurance_upload_path) {
-                    $docs .= '<a href="' . $driver->insurance_url . '" class="btn btn-sm btn-outline-info mx-1" target="_blank" title="View Insurance">
+                    $docs .= '<a href="' . $driver->insurance_url . '" class="btn btn-sm btn-info" target="_blank" title="View Insurance" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                         <i class="fa fa-shield-alt"></i>
                     </a>';
                 }
+                
+                $docs .= '</div>';
                 
                 return $docs ?: '<span class="text-muted">No documents</span>';
             })
@@ -129,331 +235,46 @@ class OnboardingController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'field_name' => 'required|string|max:255',
-            'field_type' => 'required|in:text,email,phone,dropdown,date,file,textarea',
-            'is_required' => 'boolean'
+            'field_type' => 'required|string|in:text,email,phone,dropdown,date,file,textarea',
+            'dropdown_options' => 'array'
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()]);
         }
 
-        $fieldOptions = [];
-        
-        if ($request->field_type === 'dropdown' && $request->has('dropdown_options')) {
-            $fieldOptions['options'] = array_filter($request->dropdown_options);
-        }
-        
-        if ($request->field_type === 'file') {
-            $fieldOptions['max_size'] = $request->max_file_size ?? 2048; // KB
-            $fieldOptions['allowed_types'] = $request->allowed_file_types ?? ['pdf', 'jpg', 'png'];
-        }
-
-        $field = CustomFormField::create([
+        $fieldData = [
             'field_name' => $request->field_name,
             'field_type' => $request->field_type,
-            'field_options' => $fieldOptions,
             'is_required' => $request->has('is_required'),
-            'sort_order' => CustomFormField::count()
-        ]);
+            'sort_order' => CustomFormField::max('sort_order') + 1
+        ];
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Custom field added successfully',
-            'field' => $field
-        ]);
-    }
+        if ($request->field_type === 'dropdown' && $request->has('dropdown_options')) {
+            $fieldData['field_options'] = [
+                'options' => array_filter($request->dropdown_options)
+            ];
+        }
 
-    /**
-     * Delete custom form field
-     */
-    public function deleteField($id)
-    {
-        $field = CustomFormField::findOrFail($id);
-        $field->delete();
+        CustomFormField::create($fieldData);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Custom field deleted successfully'
-        ]);
+        return response()->json(['success' => true]);
     }
 
     /**
      * Generate onboarding link
      */
-    public function generateLink()
+    public function generateLink(Request $request)
     {
-        $token = Str::random(40);
-        $link = url('/driver-onboarding/' . $token);
-        
-        // Save the link to database
-        $onboardingLink = OnboardingLink::create([
-            'token' => $token,
-            'link' => $link,
-            'created_by' => Auth::id()
+        $link = OnboardingLink::create([
+            'link' => url('/onboarding/form/' . Str::random(32)),
+            'created_by' => Auth::id(),
+            'is_active' => true
         ]);
-        
-        return response()->json([
-            'success' => true,
-            'link' => $link,
-            'token' => $token,
-            'id' => $onboardingLink->id
-        ]);
-    }
-
-    /**
-     * Show public onboarding form
-     */
-    public function showPublicForm($token = null)
-    {
-        $customFields = CustomFormField::ordered()->get();
-        
-        // Track link usage if token is provided
-        if ($token) {
-            $onboardingLink = OnboardingLink::where('token', $token)->where('is_active', true)->first();
-            if ($onboardingLink) {
-                $onboardingLink->incrementUsage();
-            }
-        }
-        
-        return view('onboarding.public_form', [
-            'token' => $token,
-            'custom_fields' => $customFields
-        ]);
-    }
-
-    /**
-     * Handle public form submission
-     */
-    public function submitPublicForm(Request $request)
-    {
-        // Basic validation
-        $rules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:onboarding_drivers,email',
-            'phone' => 'required|string|max:20',
-            'license_number' => 'required|string|max:50',
-            'license_upload' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'insurance_upload' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048'
-        ];
-
-        // Add validation for custom fields
-        $customFields = CustomFormField::all();
-        foreach ($customFields as $field) {
-            if ($field->isRequired()) {
-                $rules['custom_' . $field->id] = $field->getValidationRules();
-            }
-        }
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        // Handle file uploads
-        $licenseFileName = null;
-        $insuranceFileName = null;
-
-        if ($request->hasFile('license_upload')) {
-            $licenseFileName = time() . '_license_' . $request->file('license_upload')->getClientOriginalName();
-            $request->file('license_upload')->move(public_path('uploads/onboarding'), $licenseFileName);
-        }
-
-        if ($request->hasFile('insurance_upload')) {
-            $insuranceFileName = time() . '_insurance_' . $request->file('insurance_upload')->getClientOriginalName();
-            $request->file('insurance_upload')->move(public_path('uploads/onboarding'), $insuranceFileName);
-        }
-
-        // Collect custom field data
-        $customData = [];
-        foreach ($customFields as $field) {
-            $fieldKey = 'custom_' . $field->id;
-            if ($request->has($fieldKey)) {
-                if ($field->isFileUpload() && $request->hasFile($fieldKey)) {
-                    $fileName = time() . '_custom_' . $field->id . '_' . $request->file($fieldKey)->getClientOriginalName();
-                    $request->file($fieldKey)->move(public_path('uploads/onboarding'), $fileName);
-                    $customData[$field->field_name] = $fileName;
-                } else {
-                    $customData[$field->field_name] = $request->input($fieldKey);
-                }
-            }
-        }
-
-        // Create onboarding record
-        $driver = OnboardingDriver::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'license_number' => $request->license_number,
-            'license_upload_path' => $licenseFileName,
-            'insurance_upload_path' => $insuranceFileName,
-            'custom_data' => $customData,
-            'status' => OnboardingDriver::STATUS_SUBMITTED
-        ]);
-
-        return view('onboarding.success', [
-            'driver' => $driver,
-            'message' => 'Your application has been submitted successfully! We will review your information and get back to you soon.'
-        ]);
-    }
-
-    /**
-     * Show driver details
-     */
-    public function show($id)
-    {
-        $driver = OnboardingDriver::findOrFail($id);
-        $customFields = CustomFormField::all()->keyBy('field_name');
-        
-        return response()->json([
-            'success' => true,
-            'driver' => $driver,
-            'custom_fields' => $customFields
-        ]);
-    }
-
-    /**
-     * Approve driver and move to main drivers table
-     */
-    public function approve($id)
-    {
-        $onboardingDriver = OnboardingDriver::findOrFail($id);
-        
-        if (!$onboardingDriver->isSubmitted()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Driver is not in submitted status'
-            ], 400);
-        }
-
-        // Create new user
-        $user = User::create([
-            'name' => $onboardingDriver->name,
-            'email' => $onboardingDriver->email,
-            'password' => bcrypt('password123'), // Default password
-            'user_type' => 'D'
-        ]);
-
-        // Set user meta data
-        $user->setMeta('phone', $onboardingDriver->phone);
-        $user->setMeta('license_number', $onboardingDriver->license_number);
-        
-        if ($onboardingDriver->license_upload_path) {
-            $user->setMeta('documents', $onboardingDriver->license_upload_path);
-        }
-
-        // Set custom data as meta
-        if ($onboardingDriver->custom_data) {
-            foreach ($onboardingDriver->custom_data as $key => $value) {
-                $user->setMeta($key, $value);
-            }
-        }
-
-        // Update onboarding status
-        $onboardingDriver->update(['status' => OnboardingDriver::STATUS_APPROVED]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Driver approved and added to main drivers list',
-            'user_id' => $user->id
-        ]);
-    }
-
-    /**
-     * Reject driver application
-     */
-    public function reject($id)
-    {
-        $driver = OnboardingDriver::findOrFail($id);
-        
-        if (!$driver->isSubmitted()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Driver is not in submitted status'
-            ], 400);
-        }
-
-        $driver->update(['status' => OnboardingDriver::STATUS_REJECTED]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Driver application rejected'
-        ]);
-    }
-
-    /**
-     * Delete onboarding driver
-     */
-    public function destroy($id)
-    {
-        $driver = OnboardingDriver::findOrFail($id);
-        
-        // Delete uploaded files
-        if ($driver->license_upload_path) {
-            $licensePath = public_path('uploads/onboarding/' . $driver->license_upload_path);
-            if (file_exists($licensePath)) {
-                unlink($licensePath);
-            }
-        }
-        
-        if ($driver->insurance_upload_path) {
-            $insurancePath = public_path('uploads/onboarding/' . $driver->insurance_upload_path);
-            if (file_exists($insurancePath)) {
-                unlink($insurancePath);
-            }
-        }
-
-        // Delete custom field files
-        if ($driver->custom_data) {
-            foreach ($driver->custom_data as $key => $value) {
-                $customFields = CustomFormField::where('field_name', $key)->first();
-                if ($customFields && $customFields->isFileUpload()) {
-                    $customFilePath = public_path('uploads/onboarding/' . $value);
-                    if (file_exists($customFilePath)) {
-                        unlink($customFilePath);
-                    }
-                }
-            }
-        }
-
-        $driver->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Driver record deleted successfully'
-        ]);
-    }
-
-    /**
-     * Get onboarding statistics
-     */
-    public function getStats()
-    {
-        return response()->json([
-            'pending' => OnboardingDriver::submitted()->count(),
-            'approved' => OnboardingDriver::approved()->count(),
-            'rejected' => OnboardingDriver::rejected()->count(),
-            'total' => OnboardingDriver::count()
-        ]);
-    }
-
-    /**
-     * Update form field order
-     */
-    public function updateFieldOrder(Request $request)
-    {
-        $fieldOrder = $request->input('field_order', []);
-        
-        foreach ($fieldOrder as $index => $fieldId) {
-            CustomFormField::where('id', $fieldId)->update(['sort_order' => $index]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Field order updated successfully'
+            'link' => $link->link
         ]);
     }
 
@@ -465,9 +286,501 @@ class OnboardingController extends Controller
         $link = OnboardingLink::findOrFail($id);
         $link->update(['is_active' => false]);
 
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Delete custom field
+     */
+    public function deleteField($id)
+    {
+        CustomFormField::findOrFail($id)->delete();
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Approve driver
+     */
+    public function approve($id)
+    {
+        \Log::info('Approving driver with ID: ' . $id);
+        \Log::info('CSRF Token: ' . request()->header('X-CSRF-TOKEN'));
+        \Log::info('Session Token: ' . csrf_token());
+        \Log::info('Request Headers: ' . json_encode(request()->headers->all()));
+        
+        $onboardingDriver = OnboardingDriver::findOrFail($id);
+        \Log::info('Found onboarding driver: ' . $onboardingDriver->name);
+        
+        try {
+            // Check if a driver with this email already exists
+            $existingDriver = \App\Model\User::where('email', $onboardingDriver->email)
+                ->where('user_type', 'D')
+                ->first();
+            
+            \Log::info('Checking for existing driver with email: ' . $onboardingDriver->email);
+            if ($existingDriver) {
+                \Log::info('Found existing driver: ID=' . $existingDriver->id . ', Name=' . $existingDriver->name . ', Active=' . $existingDriver->is_active . ', Company ID=' . ($existingDriver->company_id ?? 'NULL'));
+            } else {
+                \Log::info('No existing driver found with email: ' . $onboardingDriver->email);
+            }
+            
+            \Log::info('Admin user company_id: ' . (Auth::user()->company_id ?? 'NULL'));
+            
+            if ($existingDriver) {
+                \Log::info('Driver with email ' . $onboardingDriver->email . ' already exists. Updating existing driver. ID: ' . $existingDriver->id);
+                $user = $existingDriver;
+                $userId = $existingDriver->id;
+                
+                // Update the existing driver's basic info
+                $user->name = $onboardingDriver->name;
+                $user->is_active = 1;
+                $user->company_id = Auth::user()->company_id ?? 2; // Ensure company_id is set, default to 2 if null
+                $user->save();
+            } else {
+                // Create a new user record in the drivers table
+                $userId = \App\Model\User::create([
+                    "name" => $onboardingDriver->name,
+                    "email" => $onboardingDriver->email,
+                    "password" => bcrypt('password'), // Default password
+                    "user_type" => "D",
+                    "is_active" => 1, // Set driver as active by default
+                    'api_token' => \Illuminate\Support\Str::random(60),
+                    'company_id' => Auth::user()->company_id ?? 2, // Set company_id from approving admin, default to 2 if null
+                ])->id;
+                
+                \Log::info('Created new user with ID: ' . $userId);
+                $user = \App\Model\User::find($userId);
+            }
+            
+            \Log::info('Final driver details - ID: ' . $user->id . ', Name: ' . $user->name . ', Company ID: ' . ($user->company_id ?? 'NULL') . ', Active: ' . $user->is_active);
+            
+            $user->user_id = Auth::user()->id;
+            
+            // Set metadata from onboarding data - comprehensive transfer
+            $metadata = [
+                // Basic information
+                'first_name' => explode(' ', $onboardingDriver->name)[0] ?? '',
+                'last_name' => explode(' ', $onboardingDriver->name, 2)[1] ?? '',
+                'phone' => $onboardingDriver->phone,
+                'license_number' => $onboardingDriver->license_number,
+                'is_active' => 1, // Set driver as active by default
+                
+                // Document paths
+                'license_image' => $onboardingDriver->license_upload_path,
+                'license_upload_path' => $onboardingDriver->license_upload_path,
+                'insurance_upload_path' => $onboardingDriver->insurance_upload_path,
+                'documents' => $onboardingDriver->insurance_upload_path,
+                'id_proof_type' => 'License',
+                
+                // Personal details from custom_data (ensure string values)
+                'address' => is_array($onboardingDriver->custom_data['address'] ?? '') ? json_encode($onboardingDriver->custom_data['address']) : ($onboardingDriver->custom_data['address'] ?? ''),
+                'city' => is_array($onboardingDriver->custom_data['city'] ?? '') ? json_encode($onboardingDriver->custom_data['city']) : ($onboardingDriver->custom_data['city'] ?? ''),
+                'state' => is_array($onboardingDriver->custom_data['state'] ?? '') ? json_encode($onboardingDriver->custom_data['state']) : ($onboardingDriver->custom_data['state'] ?? ''),
+                'country' => is_array($onboardingDriver->custom_data['country'] ?? '') ? json_encode($onboardingDriver->custom_data['country']) : ($onboardingDriver->custom_data['country'] ?? ''),
+                'postal_code' => is_array($onboardingDriver->custom_data['postal_code'] ?? '') ? json_encode($onboardingDriver->custom_data['postal_code']) : ($onboardingDriver->custom_data['postal_code'] ?? ''),
+                'date_of_birth' => is_array($onboardingDriver->custom_data['date_of_birth'] ?? '') ? json_encode($onboardingDriver->custom_data['date_of_birth']) : ($onboardingDriver->custom_data['date_of_birth'] ?? ''),
+                'gender' => is_array($onboardingDriver->custom_data['gender'] ?? '') ? json_encode($onboardingDriver->custom_data['gender']) : ($onboardingDriver->custom_data['gender'] ?? ''),
+                
+                // Emergency contacts (ensure string values)
+                'emergency_contact_name' => is_array($onboardingDriver->custom_data['emergency_contact_name'] ?? '') ? json_encode($onboardingDriver->custom_data['emergency_contact_name']) : ($onboardingDriver->custom_data['emergency_contact_name'] ?? ''),
+                'emergency_contact_phone' => is_array($onboardingDriver->custom_data['emergency_contact_phone'] ?? '') ? json_encode($onboardingDriver->custom_data['emergency_contact_phone']) : ($onboardingDriver->custom_data['emergency_contact_phone'] ?? ''),
+                'emergency_contact_number' => is_array($onboardingDriver->custom_data['emergency_contact_phone'] ?? '') ? json_encode($onboardingDriver->custom_data['emergency_contact_phone']) : ($onboardingDriver->custom_data['emergency_contact_phone'] ?? ''),
+                
+                // Expiry dates (ensure string values)
+                'driver_license_expiry' => is_array($onboardingDriver->custom_data['driver_license_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['driver_license_expiry']) : ($onboardingDriver->custom_data['driver_license_expiry'] ?? ''),
+                'license_expiry_date' => is_array($onboardingDriver->custom_data['driver_license_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['driver_license_expiry']) : ($onboardingDriver->custom_data['driver_license_expiry'] ?? ''),
+                'insurance_expiry' => is_array($onboardingDriver->custom_data['insurance_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['insurance_expiry']) : ($onboardingDriver->custom_data['insurance_expiry'] ?? ''),
+                'insurance_expiry_date' => is_array($onboardingDriver->custom_data['insurance_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['insurance_expiry']) : ($onboardingDriver->custom_data['insurance_expiry'] ?? ''),
+                
+                // Additional custom fields
+                'custom_data' => is_array($onboardingDriver->custom_data) ? json_encode($onboardingDriver->custom_data) : $onboardingDriver->custom_data,
+            ];
+            
+            // Add all custom fields from the onboarding form
+            if (is_array($onboardingDriver->custom_data)) {
+                foreach ($onboardingDriver->custom_data as $key => $value) {
+                    if (!isset($metadata[$key])) {
+                        // Convert arrays to JSON strings to avoid "Array to string conversion" error
+                        $metadata[$key] = is_array($value) ? json_encode($value) : $value;
+                    }
+                }
+            }
+            
+            $user->setMeta($metadata);
+            
+            $user->save();
+            \Log::info('Saved user metadata');
+            
+            // Give driver permissions
+            $user->givePermissionTo([
+                'Notes add', 'Notes edit', 'Notes delete', 'Notes list', 
+                'Drivers list', 'Fuel add', 'Fuel edit', 'Fuel delete', 'Fuel list', 
+                'VehicleInspection add', 'Transactions list', 'Transactions add', 
+                'Transactions edit', 'Transactions delete'
+            ]);
+            \Log::info('Assigned permissions to user');
+            
+            // Send approval email notification
+            try {
+                $emailService = new \App\Utils\ResendEmailService();
+                $emailResult = $emailService->sendDriverApprovalEmail($onboardingDriver->email, $onboardingDriver->name);
+                
+                if ($emailResult['success']) {
+                    \Log::info('Driver approval email sent successfully', [
+                        'driver_email' => $onboardingDriver->email,
+                        'driver_name' => $onboardingDriver->name,
+                        'resend_id' => $emailResult['resend_id'] ?? null
+                    ]);
+                } else {
+                    \Log::warning('Failed to send driver approval email', [
+                        'driver_email' => $onboardingDriver->email,
+                        'driver_name' => $onboardingDriver->name,
+                        'error' => $emailResult['message']
+                    ]);
+                }
+            } catch (\Exception $emailException) {
+                \Log::error('Exception while sending driver approval email', [
+                    'driver_email' => $onboardingDriver->email,
+                    'driver_name' => $onboardingDriver->name,
+                    'error' => $emailException->getMessage()
+                ]);
+                // Don't fail the approval process if email fails
+            }
+            
+            // Remove the driver from onboarding table
+            $onboardingDriver->delete();
+            \Log::info('Deleted onboarding driver record');
+            
+            return response()->json([
+                'success' => true, 
+                'message' => 'Driver approved successfully and added to drivers list'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error approving driver: ' . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error approving driver: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject driver
+     */
+    public function reject($id)
+    {
+        $driver = OnboardingDriver::findOrFail($id);
+        $driver->update(['status' => 'rejected']);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Refresh CSRF token
+     */
+    public function refreshToken()
+    {
         return response()->json([
-            'success' => true,
-            'message' => 'Onboarding link deactivated successfully'
+            'csrf_token' => csrf_token()
         ]);
+    }
+
+    /**
+     * Show driver details
+     */
+    public function show($id)
+    {
+        $driver = OnboardingDriver::findOrFail($id);
+        $customFields = CustomFormField::ordered()->get();
+        
+        // Ensure URL accessors are included in the response
+        $driverData = $driver->toArray();
+        $driverData['license_url'] = $driver->license_url;
+        $driverData['insurance_url'] = $driver->insurance_url;
+        
+        // Add vehicle details if vehicle_id exists
+        if ($driver->vehicle_id) {
+            $vehicle = VehicleModel::find($driver->vehicle_id);
+            if ($vehicle) {
+                $driverData['vehicle_details'] = [
+                    'id' => $vehicle->id,
+                    'make_name' => $vehicle->make_name,
+                    'model_name' => $vehicle->model_name,
+                    'year' => $vehicle->year,
+                    'license_plate' => $vehicle->license_plate,
+                    'fuel_type' => $vehicle->getMeta('fuel_type') ?? 'Petrol'
+                ];
+            }
+        }
+        
+        // Generate URLs for custom file fields
+        if ($driver->custom_data) {
+            \Log::info('Driver custom_data:', $driver->custom_data);
+            foreach ($customFields as $field) {
+                $fieldKey = 'custom_' . $field->id;
+                if ($field->field_type === 'file' && isset($driver->custom_data[$fieldKey])) {
+                    $filePath = $driver->custom_data[$fieldKey];
+                    if ($filePath) {
+                        $driverData['custom_data'][$fieldKey . '_url'] = asset('storage/' . $filePath);
+                    }
+                }
+            }
+        }
+        
+        return response()->json([
+            'success' => true, 
+            'driver' => $driverData,
+            'customFields' => $customFields
+        ]);
+    }
+
+    /**
+     * Delete driver
+     */
+    public function destroy($id)
+    {
+        $driver = OnboardingDriver::findOrFail($id);
+        $driver->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Show public onboarding form
+     */
+    public function showPublicForm($token)
+    {
+        $link = OnboardingLink::where('link', 'like', '%' . $token)->where('is_active', true)->first();
+        
+        if (!$link) {
+            abort(404);
+        }
+
+        $customFields = CustomFormField::ordered()->get();
+        $custom_fields = $customFields; // Alias for view compatibility
+        $fieldConfigs = OnboardingFormFieldConfig::visible()->ordered()->get();
+        
+        // Get available vehicles for selection
+        $availableVehicles = VehicleModel::where('in_service', 1)
+            ->get()
+            ->filter(function($vehicle) {
+                return $vehicle->getVehicleStatusAttribute() === 'Available';
+            })
+            ->map(function($vehicle) {
+                $fuelType = $vehicle->getMeta('fuel_type') ?? 'Petrol';
+                $price = $vehicle->getMeta('price') ?? 'N/A';
+                $pricePeriod = $vehicle->getMeta('price_period') ?? 'monthly';
+                $vehicleScheme = $vehicle->getMeta('vehicle_scheme') ?? 'Rental';
+                $insuranceDiscount = $vehicle->getMeta('insurance_discount') ?? '0';
+                
+                return [
+                    'id' => $vehicle->id,
+                    'make_name' => $vehicle->make_name,
+                    'model_name' => $vehicle->model_name,
+                    'year' => $vehicle->year,
+                    'license_plate' => $vehicle->license_plate,
+                    'fuel_type' => $fuelType,
+                    'price' => $price,
+                    'price_period' => $pricePeriod,
+                    'vehicle_scheme' => $vehicleScheme,
+                    'initial_cost' => $vehicle->getMeta('initial_cost') ?? 'N/A',
+                    'insurance_discount' => $insuranceDiscount,
+                    'display_text' => $vehicle->make_name . ' ' . $vehicle->model_name . ' - ' . $vehicle->year . ' - ' . $fuelType
+                ];
+            });
+        
+        return view('onboarding.public_form', compact('customFields', 'custom_fields', 'fieldConfigs', 'link', 'token', 'availableVehicles'));
+    }
+
+    /**
+     * Submit public onboarding form
+     */
+    public function submitPublicForm(Request $request)
+    {
+        // Build validation rules dynamically based on field configurations
+        $validationRules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'license_number' => 'required|string|max:50',
+            'license_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'insurance_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048'
+        ];
+
+        // Add vehicle selection validation if it's required
+        $vehicleFieldConfig = OnboardingFormFieldConfig::where('field_key', 'vehicle_selection')
+            ->where('is_visible', true)
+            ->first();
+        
+        if ($vehicleFieldConfig && $vehicleFieldConfig->is_required) {
+            $validationRules['vehicle_selection'] = 'required|integer|exists:vehicles,id';
+            $validationRules['insurance_selection'] = 'required|in:with_insurance,without_insurance';
+        }
+
+        // Add scheme selection validation if it's required
+        $schemeFieldConfig = OnboardingFormFieldConfig::where('field_key', 'scheme_selection')
+            ->where('is_visible', true)
+            ->first();
+        
+        if ($schemeFieldConfig && $schemeFieldConfig->is_required) {
+            $validationRules['scheme_selection'] = 'required|in:Rental,Rent to Buy';
+        }
+
+        $validator = Validator::make($request->all(), $validationRules);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        // Check if files were actually uploaded
+        if (!$request->hasFile('license_file')) {
+            \Log::info('License file not found in request', ['files' => $request->allFiles()]);
+            return back()->withErrors(['license_file' => 'License file is required.'])->withInput();
+        }
+
+        if (!$request->hasFile('insurance_file')) {
+            \Log::info('Insurance file not found in request', ['files' => $request->allFiles()]);
+            return back()->withErrors(['insurance_file' => 'Insurance file is required.'])->withInput();
+        }
+
+        // Log file details for debugging
+        $licenseFile = $request->file('license_file');
+        $insuranceFile = $request->file('insurance_file');
+        
+        \Log::info('File upload attempt', [
+            'license_file' => [
+                'name' => $licenseFile->getClientOriginalName(),
+                'size' => $licenseFile->getSize(),
+                'mime' => $licenseFile->getMimeType(),
+                'is_valid' => $licenseFile->isValid(),
+                'error' => $licenseFile->getError()
+            ],
+            'insurance_file' => [
+                'name' => $insuranceFile->getClientOriginalName(),
+                'size' => $insuranceFile->getSize(),
+                'mime' => $insuranceFile->getMimeType(),
+                'is_valid' => $insuranceFile->isValid(),
+                'error' => $insuranceFile->getError()
+            ]
+        ]);
+
+        // Check if files are valid
+        if (!$licenseFile->isValid()) {
+            \Log::error('License file upload failed', ['error' => $licenseFile->getError()]);
+            return back()->withErrors(['license_file' => 'License file upload failed. Error: ' . $licenseFile->getErrorMessage()])->withInput();
+        }
+
+        if (!$insuranceFile->isValid()) {
+            \Log::error('Insurance file upload failed', ['error' => $insuranceFile->getError()]);
+            return back()->withErrors(['insurance_file' => 'Insurance file upload failed. Error: ' . $insuranceFile->getErrorMessage()])->withInput();
+        }
+
+        try {
+            $licensePath = $request->file('license_file')->store('onboarding/documents', 'public');
+            $insurancePath = $request->file('insurance_file')->store('onboarding/documents', 'public');
+        } catch (\Exception $e) {
+            return back()->withErrors(['file_upload' => 'File upload failed. Please try again.'])->withInput();
+        }
+
+        // Process custom file fields
+        $customData = $request->except(['name', 'email', 'phone', 'license_number', 'license_file', 'insurance_file', '_token']);
+        $customFields = CustomFormField::all();
+        
+        foreach ($customFields as $field) {
+            $fieldKey = 'custom_' . $field->id;
+            if ($field->field_type === 'file' && $request->hasFile($fieldKey)) {
+                try {
+                    $filePath = $request->file($fieldKey)->store('onboarding/documents', 'public');
+                    $customData[$fieldKey] = $filePath;
+                } catch (\Exception $e) {
+                    \Log::error('Custom file upload failed for field: ' . $fieldKey, ['error' => $e->getMessage()]);
+                    // Continue processing other fields even if one fails
+                }
+            }
+        }
+
+        // Find the onboarding link and increment usage count
+        $token = $request->input('token');
+        $link = OnboardingLink::where('link', 'like', '%' . $token)->where('is_active', true)->first();
+        
+        if ($link) {
+            $link->incrementUsage();
+        }
+
+        $driverData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'license_number' => $request->license_number,
+            'license_upload_path' => $licensePath,
+            'insurance_upload_path' => $insurancePath,
+            'vehicle_id' => $request->vehicle_selection,
+            'scheme' => $request->scheme_selection,
+            'insurance_selection' => $request->insurance_selection,
+            'status' => 'submitted',
+            'custom_data' => $customData
+        ];
+
+        OnboardingDriver::create($driverData);
+
+        return redirect()->back()->with('success', 'Application submitted successfully!');
+    }
+
+    /**
+     * Update field configuration
+     */
+    public function updateFieldConfig(Request $request, $id)
+    {
+        \Log::info('Field config update request', [
+            'id' => $id,
+            'data' => $request->all()
+        ]);
+
+        // Convert string values to proper booleans
+        $data = $request->all();
+        if (isset($data['is_visible'])) {
+            $data['is_visible'] = filter_var($data['is_visible'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($data['is_required'])) {
+            $data['is_required'] = filter_var($data['is_required'], FILTER_VALIDATE_BOOLEAN);
+        }
+
+        $validator = Validator::make($data, [
+            'is_visible' => 'nullable|boolean',
+            'is_required' => 'nullable|boolean'
+        ]);
+
+        if ($validator->fails()) {
+            \Log::error('Validation failed', ['errors' => $validator->errors()]);
+            return response()->json(['success' => false, 'errors' => $validator->errors()]);
+        }
+
+        $fieldConfig = OnboardingFormFieldConfig::findOrFail($id);
+        
+        $updateData = [];
+        if ($request->has('is_visible')) {
+            $updateData['is_visible'] = $data['is_visible'];
+        }
+        if ($request->has('is_required')) {
+            $updateData['is_required'] = $data['is_required'];
+        }
+
+        \Log::info('Updating field config', [
+            'id' => $id,
+            'update_data' => $updateData
+        ]);
+
+        $fieldConfig->update($updateData);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Get field configurations for public form
+     */
+    public function getFieldConfigs()
+    {
+        return OnboardingFormFieldConfig::visible()->ordered()->get();
     }
 }

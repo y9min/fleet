@@ -1,0 +1,10 @@
+apiVersion: 1
+services:
+  - type: web
+    name: fleet-php
+    env: php
+    rootDir: framework
+    buildCommand: composer install --no-dev --optimize-autoloader
+    startCommand: heroku-php-apache2 public/
+
+

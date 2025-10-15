@@ -1364,15 +1364,22 @@ public function get_vehicle(Request $request) {
 			$b = Bookings::whereIn('vehicle_id', $vehicle_ids)->get();
 		}
 		foreach ($b as $booking) {
-			$x['start'] = $booking->pickup;
-			$x['end'] = $booking->dropoff;
+			$x['start'] = date('Y-m-d H:i:s', strtotime($booking->pickup));
+			$x['end'] = $booking->dropoff ? date('Y-m-d H:i:s', strtotime($booking->dropoff)) : date('Y-m-d H:i:s', strtotime($booking->pickup . ' +2 hours'));
 			if ($booking->status == 1) {
-				$color = "grey";
+				$color = "#7FD7E1"; // PCO Flow secondary color for completed bookings
+				$textColor = '#3A87AC'; // Blue text
+			} elseif ($booking->getMeta('ride_status') == 'Ongoing') {
+				$color = "#808080"; // Grey for collected pickups
+				$textColor = '#FFFFFF'; // White text for greyed out
 			} else {
-				$color = "red";
+				$color = "#CEFAFF"; // Light blue for active bookings
+				$textColor = '#3A87AC'; // Blue text
 			}
 			$x['backgroundColor'] = $color;
-			$x['title'] = $booking->customer->name."\n"."Ride Status:".($booking->ride_status??'-');
+			$x['textColor'] = $textColor;
+			$x['classNames'] = 'font-weight-bold'; // Bold text
+			$x['title'] = ($booking->driver->name ?? 'No Driver')."\n".($booking->vehicle->make_name ?? '')." ".($booking->vehicle->model_name ?? '')." ".($booking->vehicle->license_plate ?? '');
 			$x['id'] = $booking->id;
 			$x['type'] = 'calendar';
 			array_push($data, $x);
@@ -1387,9 +1394,11 @@ public function get_vehicle(Request $request) {
 			}
 			$x['start'] = $date;
 			$x['end'] = $date;
-			$color = "green";
+			$color = "#6B7280"; // PCO Flow button color for service reminders
 			$x['backgroundColor'] = $color;
-			$x['title'] = $r->services->description."\n"."Ride Status:".($booking->ride_status??'-');
+			$x['textColor'] = '#3A87AC'; // Blue text
+			$x['classNames'] = 'font-weight-bold'; // Bold text
+			$x['title'] = $r->services->description."\n".($r->vehicle->make_name ?? '')." ".($r->vehicle->model_name ?? '')." ".($r->vehicle->license_plate ?? '');
 			$x['id'] = $r->id;
 			$x['type'] = 'service';
 			array_push($data, $x);

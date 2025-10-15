@@ -4,6 +4,14 @@
 
 use Illuminate\Http\Request;
 
+// Test email routes (for development/testing only)
+Route::prefix('test-email')->group(function () {
+    Route::post('/driver-approval', 'TestEmailController@testDriverApprovalEmail');
+    Route::post('/vehicle-assignment', 'TestEmailController@testVehicleAssignmentEmail');
+    Route::post('/fine-notification', 'TestEmailController@testFineNotificationEmail');
+    Route::post('/generic', 'TestEmailController@testGenericEmail');
+});
+
 Route::namespace ('Api')->middleware(['throttle'])->group(function () {
 
 	Route::post('/login', 'Auth@login');

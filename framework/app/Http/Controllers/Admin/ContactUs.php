@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Model\MessageModel;
 use Illuminate\Http\Request;
+use Auth;
 
 class ContactUs extends Controller {
 	public function __construct() {
@@ -20,6 +21,12 @@ class ContactUs extends Controller {
 	}
 
     public function index() {
+        // Yamz-only access check
+        $user = Auth::user();
+        if ($user->email !== 'yamzahmed@hotmail.com') {
+            abort(403, 'Access denied.');
+        }
+
 		$data['messages'] = MessageModel::orderBy('id', 'desc')->get();
 		return view('contactus', $data);
 	}
@@ -27,6 +34,11 @@ class ContactUs extends Controller {
 	// Single delete method
     public function destroy($id)
     {
+        // Yamz-only access check
+        $user = Auth::user();
+        if ($user->email !== 'yamzahmed@hotmail.com') {
+            abort(403, 'Access denied.');
+        }
      
         $message = MessageModel::findOrFail($id);
 
@@ -42,6 +54,12 @@ class ContactUs extends Controller {
     // Bulk delete method
     public function bulkDelete(Request $request)
     {
+        // Yamz-only access check
+        $user = Auth::user();
+        if ($user->email !== 'yamzahmed@hotmail.com') {
+            abort(403, 'Access denied.');
+        }
+
         $ids = $request->input('ids');
 
    

@@ -189,7 +189,7 @@ class FrontendApiController extends Controller {
 		$data['customer_support'] = Hyvikk::frontend('customer_support');
 		$data['about_breif'] = Hyvikk::frontend('about_us');
 		$data['faq_link'] = Hyvikk::frontend('faq_link');
-		$data['driver_login_url'] = url('admin/login');
+        $data['driver_login_url'] = url('login');
 		$data['gmap_api_key'] = Hyvikk::api('api_key');
 		$data['facebook'] = Hyvikk::frontend('facebook');
 		$data['twitter'] = Hyvikk::frontend('twitter');

@@ -92,7 +92,7 @@
               {!! Form::label('phone', __('fleet.phone'), ['class' => 'form-label required']) !!}
               <div class="input-group">
                 <div class="input-group-prepend">
-                  {!! Form::select('phone_code',$phone_code,null,['class' => 'form-control
+                  {!! Form::select('phone_code',$phone_code,'+44',['class' => 'form-control
                   code','required','style'=>'width:80px']) !!}
                 </div>
                 {!! Form::number('phone', null,['class' => 'form-control','required']) !!}

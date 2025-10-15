@@ -12,7 +12,7 @@
     
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             min-height: 100vh;
             padding: 20px 0;
         }
@@ -22,12 +22,13 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             overflow: hidden;
+            border: 1px solid #e9ecef;
         }
         
         .onboarding-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #7FD7E1;
             color: white;
             padding: 30px;
             text-align: center;
@@ -55,7 +56,7 @@
         
         .form-section h5 {
             color: #333;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #7FD7E1;
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
@@ -84,8 +85,8 @@
         }
         
         .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #7FD7E1;
+            box-shadow: 0 0 0 0.2rem rgba(127, 215, 225, 0.25);
         }
         
         .file-upload-wrapper {
@@ -112,17 +113,17 @@
         }
         
         .file-upload-label:hover {
-            border-color: #667eea;
-            background: #e3f2fd;
+            border-color: #7FD7E1;
+            background: #f0f9fa;
         }
         
         .file-upload-label i {
             margin-right: 10px;
-            color: #667eea;
+            color: #7FD7E1;
         }
         
         .submit-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #7FD7E1;
             border: none;
             color: white;
             padding: 15px 40px;
@@ -135,7 +136,8 @@
         
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(127, 215, 225, 0.4);
+            background: #6bc5d1;
         }
         
         .progress-steps {
@@ -182,7 +184,7 @@
         }
         
         .step.active .step-number {
-            background: #667eea;
+            background: #7FD7E1;
             color: white;
         }
         
@@ -203,14 +205,14 @@
         
         .document-requirements {
             background: #f8f9fa;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #7FD7E1;
             padding: 15px;
             margin-bottom: 20px;
             border-radius: 0 8px 8px 0;
         }
         
         .document-requirements h6 {
-            color: #667eea;
+            color: #7FD7E1;
             margin-bottom: 10px;
         }
         
@@ -222,6 +224,112 @@
         .document-requirements li {
             margin-bottom: 5px;
             color: #555;
+        }
+        
+        .vehicle-selection-info {
+            background: #f8f9fa;
+            border-left: 4px solid #7FD7E1;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .vehicle-selection-info h6 {
+            color: #7FD7E1;
+            margin-bottom: 10px;
+        }
+        
+        .vehicle-selection-info p {
+            margin-bottom: 0;
+            color: #555;
+        }
+        
+        .vehicle-select {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .vehicle-select:focus {
+            border-color: #7FD7E1;
+            box-shadow: 0 0 0 0.2rem rgba(127, 215, 225, 0.25);
+        }
+        
+        .vehicle-details .card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .vehicle-details .card-body {
+            padding: 20px;
+        }
+        
+        .vehicle-details .card-title {
+            color: #7FD7E1;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .vehicle-details p {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .vehicle-details strong {
+            color: #333;
+        }
+        
+        /* Insurance Options Styles - Left Aligned */
+        .insurance-options-left {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .insurance-options-left .form-check {
+            margin-bottom: 0;
+            padding: 0;
+        }
+        
+        .insurance-options-left .form-check-input {
+            margin-top: 0;
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #7FD7E1;
+        }
+        
+        .insurance-options-left .form-check-input:checked {
+            background-color: #7FD7E1;
+            border-color: #7FD7E1;
+        }
+        
+        .insurance-options-left .form-check-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .insurance-options-left .form-check-label small {
+            font-size: 14px;
+            color: #666;
+            font-weight: normal;
+            margin-left: 5px;
+        }
+        
+        .form-check-input:checked + .form-check-label {
+            color: #7FD7E1;
+        }
+        
+        .form-check-input:checked + .form-check-label small {
+            color: #7FD7E1;
         }
     </style>
 </head>
@@ -269,37 +377,42 @@
                     <h5><i class="fas fa-user me-2"></i>Personal Information</h5>
                     
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label required-label">Full Name</label>
-                                <input type="text" class="form-control" name="name" value="{{ old('name') }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label required-label">Email Address</label>
-                                <input type="email" class="form-control" name="email" value="{{ old('email') }}" required>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label required-label">Phone Number</label>
-                                <input type="tel" class="form-control" name="phone" value="{{ old('phone') }}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label required-label">Driver's License Number</label>
-                                <input type="text" class="form-control" name="license_number" value="{{ old('license_number') }}" required>
-                            </div>
-                        </div>
+                        @foreach($fieldConfigs as $config)
+                            @if($config->field_key === 'full_name')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <input type="text" class="form-control" name="name" value="{{ old('name') }}" {{ $config->is_required ? 'required' : '' }}>
+                                    </div>
+                                </div>
+                            @elseif($config->field_key === 'email')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <input type="email" class="form-control" name="email" value="{{ old('email') }}" {{ $config->is_required ? 'required' : '' }}>
+                                    </div>
+                                </div>
+                            @elseif($config->field_key === 'phone')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <input type="tel" class="form-control" name="phone" value="{{ old('phone') }}" {{ $config->is_required ? 'required' : '' }}>
+                                    </div>
+                                </div>
+                            @elseif($config->field_key === 'license_number')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <input type="text" class="form-control" name="license_number" value="{{ old('license_number') }}" {{ $config->is_required ? 'required' : '' }}>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
                 </div>
 
                 <!-- Document Upload Section -->
+                @if($fieldConfigs->where('field_key', 'license_file')->first() || $fieldConfigs->where('field_key', 'insurance_file')->first())
                 <div class="form-section">
                     <h5><i class="fas fa-file-upload me-2"></i>Required Documents</h5>
                     
@@ -314,32 +427,146 @@
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="form-label required-label">Driver's License</label>
-                                <div class="file-upload-wrapper">
-                                    <input type="file" class="file-upload-input" name="license_upload" id="license_upload" required accept=".pdf,.jpg,.jpeg,.png">
-                                    <label for="license_upload" class="file-upload-label">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <span>Click to upload driver's license</span>
-                                    </label>
+                        @foreach($fieldConfigs as $config)
+                            @if($config->field_key === 'license_file')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <div class="file-upload-wrapper">
+                                            <input type="file" class="file-upload-input" name="license_file" id="license_file" {{ $config->is_required ? 'required' : '' }} accept=".pdf,.jpg,.jpeg,.png">
+                                            <label for="license_file" class="file-upload-label">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                <span>Click to upload driver's license</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
+                            @elseif($config->field_key === 'insurance_file')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <div class="file-upload-wrapper">
+                                            <input type="file" class="file-upload-input" name="insurance_file" id="insurance_file" {{ $config->is_required ? 'required' : '' }} accept=".pdf,.jpg,.jpeg,.png">
+                                            <label for="insurance_file" class="file-upload-label">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                <span>Click to upload insurance certificate</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                <!-- Vehicle Selection Section -->
+                @if($fieldConfigs->where('field_key', 'vehicle_selection')->first())
+                <div class="form-section">
+                    <h5><i class="fas fa-car me-2"></i>Vehicle Selection</h5>
+                    
+                    <div class="vehicle-selection-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Available Vehicles</h6>
+                        <p>Please select a vehicle from the available options below. Each vehicle shows make, model, year, pricing, and rental scheme information.</p>
+                    </div>
+                    
+                    <div class="row">
+                        @foreach($fieldConfigs as $config)
+                            @if($config->field_key === 'vehicle_selection')
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <select class="form-control vehicle-select" name="vehicle_selection" id="vehicle_selection" {{ $config->is_required ? 'required' : '' }}>
+                                            <option value="">Select a vehicle...</option>
+                                            @foreach($availableVehicles as $vehicle)
+                                                <option value="{{ $vehicle['id'] }}" 
+                                                        data-fuel-type="{{ $vehicle['fuel_type'] }}"
+                                                        data-price="{{ $vehicle['price'] }}" 
+                                                        data-period="{{ $vehicle['price_period'] }}" 
+                                                        data-scheme="{{ $vehicle['vehicle_scheme'] }}" 
+                                                        data-initial-cost="{{ $vehicle['initial_cost'] }}"
+                                                        data-insurance-discount="{{ $vehicle['insurance_discount'] }}"
+                                                        {{ old('vehicle_selection') == $vehicle['id'] ? 'selected' : '' }}>
+                                                    {{ $vehicle['display_text'] }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        
+                                        <!-- Vehicle Details Display -->
+                                        <div id="vehicle-details" class="vehicle-details" style="display: none; margin-top: -17px;">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">Selected Vehicle Details</h6>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <p><strong>Fuel Type:</strong> <span id="vehicle-fuel-type">-</span></p>
+                                                            <p><strong>Price:</strong> <span id="vehicle-price">-</span></p>
+                                                            <p><strong>Period:</strong> <span id="vehicle-period">-</span></p>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <p><strong>Scheme:</strong> <span id="vehicle-scheme">-</span></p>
+                                                            <p><strong>Initial Cost:</strong> <span id="vehicle-initial-cost">-</span></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                <!-- Insurance Selection Section -->
+                <div class="form-section">
+                    <h5><i class="fas fa-shield-alt me-2"></i>Insurance Selection</h5>
+                    
+                    <div class="row">
+                        <div class="col-12">
                             <div class="form-group">
-                                <label class="form-label required-label">Insurance Certificate</label>
-                                <div class="file-upload-wrapper">
-                                    <input type="file" class="file-upload-input" name="insurance_upload" id="insurance_upload" required accept=".pdf,.jpg,.jpeg,.png">
-                                    <label for="insurance_upload" class="file-upload-label">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <span>Click to upload insurance certificate</span>
-                                    </label>
+                                <label class="form-label required-label">Choose your insurance option:</label>
+                                
+                                <div class="insurance-options-left">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="insurance_selection" id="with_insurance" value="with_insurance" {{ old('insurance_selection') == 'with_insurance' ? 'checked' : '' }} required>
+                                        <label class="form-check-label" for="with_insurance">
+                                            With Insurance <small>(Full coverage included)</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="insurance_selection" id="without_insurance" value="without_insurance" {{ old('insurance_selection') == 'without_insurance' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="without_insurance">
+                                            Without Insurance <small>(No insurance coverage)</small>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Scheme Selection Section -->
+                @if($fieldConfigs->where('field_key', 'scheme_selection')->first())
+                <div class="row">
+                    @foreach($fieldConfigs as $config)
+                        @if($config->field_key === 'scheme_selection')
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                    <select class="form-control vehicle-select" name="scheme_selection" id="scheme_selection" {{ $config->is_required ? 'required' : '' }}>
+                                        <option value="">Select a scheme...</option>
+                                        <option value="Rental" {{ old('scheme_selection') == 'Rental' ? 'selected' : '' }}>Rental</option>
+                                        <option value="Rent to Buy" {{ old('scheme_selection') == 'Rent to Buy' ? 'selected' : '' }}>Rent to Buy</option>
+                                    </select>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+                @endif
 
                 <!-- Custom Fields Section -->
                 @if($custom_fields->count() > 0)
@@ -466,8 +693,34 @@
             });
         });
 
-        // Form submission with loading state
-        document.getElementById('onboardingForm').addEventListener('submit', function() {
+        // Vehicle selection change handler
+        document.getElementById('vehicle_selection').addEventListener('change', function() {
+            var detailsDiv = document.getElementById('vehicle-details');
+            
+            // Always hide details regardless of selection
+            detailsDiv.style.display = 'none';
+        });
+
+        // Insurance selection change handler for radio buttons
+        function updateInsuranceSelection() {
+            var selectedOption = document.querySelector('input[name="insurance_selection"]:checked');
+            // No pricing updates needed - just selection tracking
+        }
+
+        // Add event listeners to radio buttons
+        document.querySelectorAll('input[name="insurance_selection"]').forEach(function(radio) {
+            radio.addEventListener('change', updateInsuranceSelection);
+        });
+
+
+        // Form submission with confirmation and loading state
+        document.getElementById('onboardingForm').addEventListener('submit', function(e) {
+            // Show confirmation dialog
+            if (!confirm('Are you sure you want to submit your application? Please make sure all information is correct before proceeding.')) {
+                e.preventDefault();
+                return false;
+            }
+            
             var submitBtn = document.querySelector('.submit-btn');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
             submitBtn.disabled = true;

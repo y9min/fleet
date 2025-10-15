@@ -155,11 +155,6 @@
                  <option value="">@lang('fleet.vehicleGroup')</option>
                 @foreach($groups as $group)
                 <option value="{{$group->id}}">{{$group->name}}</option>
-                <!-- @if($group->id == 1)
-                <option value="{{$group->id}}" selected>{{$group->name}}</option>
-                @else
-                <option value="{{$group->id}}">{{$group->name}}</option>
-                @endif -->
                 @endforeach
               </select>
             </div>

@@ -383,12 +383,11 @@ $(document).ready(function() {
 
 
     $(function () {
-        const format = 'YYYY-MM-DD HH:mm:ss';
-        let suppressApiCall = false;
-    
-        function disablePicker(selector) {
-           
-            if (!$(selector).data("DateTimePicker")) {
+        const format = 'YYYY-MM-DD HH:mm';
+
+        function initPicker(selector) {
+            if (!$(selector).length) return null;
+            if (!$(selector).data('DateTimePicker')) {
                 $(selector).datetimepicker({
                     format,
                     sideBySide: true,
@@ -396,167 +395,37 @@ $(document).ready(function() {
                     icons: {
                         previous: 'fa fa-arrow-left',
                         next: 'fa fa-arrow-right',
-                        up: "fa fa-arrow-up",
-                        down: "fa fa-arrow-down"
+                        up: 'fa fa-arrow-up',
+                        down: 'fa fa-arrow-down'
                     }
                 });
             }
+            return $(selector).data('DateTimePicker');
         }
-    
-        function enableAndUpdatePicker(selector, minDate) {
-            
-            if (!$(selector).data("DateTimePicker")) {
-                $(selector).datetimepicker({
-                    format,
-                    sideBySide: true,
-                    useCurrent: false,
-                    minDate,
-                    icons: {
-                        previous: 'fa fa-arrow-left',
-                        next: 'fa fa-arrow-right',
-                        up: "fa fa-arrow-up",
-                        down: "fa fa-arrow-down"
-                    }
-                });
-            }
-    
-            const picker = $(selector).data("DateTimePicker");
-    
-            if (picker) {
-                picker.minDate(minDate);
-                if (!picker.date() || !picker.date().isSameOrAfter(minDate)) {
-                    picker.date(minDate);
-                }
-            }
+
+        const pickupPicker = initPicker('#pickup');
+        const dropoffPicker = null;
+
+        if (pickupPicker) {
+            // Enforce 15-minute stepping on pickup
+            pickupPicker.stepping(15);
+            $('#pickup').on('dp.change', function (e) {
+                const pickup = e.date.clone();
+                const toDate = pickup.clone().add(15, 'minutes');
+                get_driver(pickup.format(format), toDate.format(format));
+                get_vehicle(pickup.format(format), toDate.format(format));
+            });
         }
-    
-        // Disable all inputs except pickup initially
-        disablePicker('#dropoff');
-        disablePicker('#returnPickup');
-        disablePicker('#returnDropoff');
-    
-        $('#pickup').datetimepicker({
-            format,
-            sideBySide: true,
-            icons: {
-                previous: 'fa fa-arrow-left',
-                next: 'fa fa-arrow-right',
-                up: "fa fa-arrow-up",
-                down: "fa fa-arrow-down"
-            }
-        }).on('dp.change', function (e) {
-            const bookingType = $('.booking_type').val();
-            const pickup = e.date.clone();
-            const dropoff = pickup.clone().add(1, 'minutes');
-            const returnPickup = dropoff.clone().add(1, 'minutes');
-            const returnDropoff = returnPickup.clone().add(1, 'minutes');
-    
-            enableAndUpdatePicker('#dropoff', dropoff);
-            enableAndUpdatePicker('#returnPickup', returnPickup);
-            enableAndUpdatePicker('#returnDropoff', returnDropoff);
-    
-            if (bookingType === 'return_way') {
-                const to_date = $('#returnDropoff').data("DateTimePicker").date();
-                if (to_date && to_date.isAfter(pickup)) {
-                    get_driver(pickup.format(format), to_date.format(format));
-                    get_vehicle(pickup.format(format), to_date.format(format));
-                }
-            } else {
-                const to_date = $('#dropoff').data("DateTimePicker").date();
-                if (to_date && to_date.isAfter(pickup)) {
-                    get_driver(pickup.format(format), to_date.format(format));
-                    get_vehicle(pickup.format(format), to_date.format(format));
-                }
-            }
-        });
-    
-        $('#dropoff').datetimepicker({
-            format,
-            sideBySide: true,
-            useCurrent: false,
-            icons: {
-                previous: 'fa fa-arrow-left',
-                next: 'fa fa-arrow-right',
-                up: "fa fa-arrow-up",
-                down: "fa fa-arrow-down"
-            }
-        }).on('dp.change', function (e) {
-            const bookingType = $('.booking_type').val();
-            const dropoff = e.date.clone();
-            const pickup = $('#pickup').data("DateTimePicker").date();
-    
-            if (bookingType === 'one_way') {
-                if (pickup && dropoff.isAfter(pickup)) {
-                    get_driver(pickup.format(format), dropoff.format(format));
-                    get_vehicle(pickup.format(format), dropoff.format(format));
-                }
-            } else {
-                const returnPickup = dropoff.clone().add(1, 'minutes');
-                const returnDropoff = returnPickup.clone().add(1, 'minutes');
-    
-                if ($("#returnPickup").val() == '' && $("#returnDropoff").val() == '') {
-                    if (pickup) {
-                        get_driver(pickup.format(format), returnDropoff.format(format));
-                        get_vehicle(pickup.format(format), returnDropoff.format(format));
-                    }
-                }
-    
-                enableAndUpdatePicker('#returnPickup', returnPickup);
-                enableAndUpdatePicker('#returnDropoff', returnDropoff);
-            }
-        });
-    
-        $('#returnPickup').datetimepicker({
-            format,
-            sideBySide: true,
-            useCurrent: false,
-            icons: {
-                previous: 'fa fa-arrow-left',
-                next: 'fa fa-arrow-right',
-                up: "fa fa-arrow-up",
-                down: "fa fa-arrow-down"
-            }
-        }).on('dp.change', function (e) {
-            suppressApiCall = true;
-    
-            const returnPickup = e.date.clone();
-            const returnDropoff = returnPickup.clone().add(1, 'minutes');
-    
-            enableAndUpdatePicker('#returnDropoff', returnDropoff);
-    
-            suppressApiCall = false;
-        });
-    
-        $('#returnDropoff').datetimepicker({
-            format,
-            sideBySide: true,
-            useCurrent: false,
-            icons: {
-                previous: 'fa fa-arrow-left',
-                next: 'fa fa-arrow-right',
-                up: "fa fa-arrow-up",
-                down: "fa fa-arrow-down"
-            }
-        }).on('dp.change', function (e) {
-            if (suppressApiCall) return;
-    
-            const bookingType = $('.booking_type').val();
-            if (bookingType === 'return_way') {
-                const pickup = $('#pickup').data("DateTimePicker").date();
-                const returnDropoff = e.date;
-                if (pickup && returnDropoff.isAfter(pickup)) {
-                    get_driver(pickup.format(format), returnDropoff.format(format));
-                    get_vehicle(pickup.format(format), returnDropoff.format(format));
-                }
-            }
-        });
+
+        // No dropoff controls; availability based on pickup to pickup+15 only
+
+        // Remove any return-way widgets if present (defensive)
+        if ($('#returnPickup').length) { $('#returnPickup').closest('.col-md-6').remove(); }
+        if ($('#returnDropoff').length) { $('#returnDropoff').closest('.col-md-6').remove(); }
     });
-    
-    
-    
-    
-    
-    
+
+
+
 
 
 

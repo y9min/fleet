@@ -836,7 +836,7 @@ return [
 'npb' => 'numărul de pasageri al rezervării',
 'click here' => 'clic aici',
 'international' => 'Pentru a activa sau dezactiva plățile internaționale cu cardul din contul dvs.',
-'accept' => 'Dacă nu doriți să acceptați plăți în monede în afara INR (₹), puteți dezactiva',
+'accept' => 'Dacă nu doriți să acceptați plăți în monede în afara GBP (£), puteți dezactiva',
 'authomatic' => 'puteți trimite automat e-mailuri clienților după plăți reușite utilizând',
 'icp' => 'Plată internațională cu cardul',
 'uts' => 'utilizând comutatorul de comutare',

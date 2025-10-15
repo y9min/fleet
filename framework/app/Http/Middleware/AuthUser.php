@@ -29,16 +29,16 @@ class AuthUser {
                 
                 $user = Auth::guard('web')->user();
                 
-                // Check if user is the correct type (customer)
-                if ($user->user_type === 'C') {
-                    return $next($request);
-                }
-                
-                // Wrong user type - logout and redirect to customer login
-                Auth::guard('web')->logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-                
-                return redirect()->guest('/login')->with('error', 'Please log in as a customer.');
+        // Check if user is the correct type (customer, boss admin, super admin, office admin, or driver)
+        if (in_array($user->user_type, ['C', 'B', 'S', 'O', 'D'])) {
+            return $next($request);
+        }
+        
+        // Wrong user type - logout and redirect to login
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return redirect()->guest('/login')->with('error', 'Please log in with a valid account.');
         }
 }

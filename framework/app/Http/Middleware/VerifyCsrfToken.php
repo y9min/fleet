@@ -23,5 +23,6 @@ class VerifyCsrfToken extends BaseVerifier {
         protected $except = [
                 'razorpay-success',
                 'backend*',
+                'admin/bookings-fetch',
         ];
 }

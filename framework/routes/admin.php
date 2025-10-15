@@ -1,11 +1,8 @@
 <?php
 use Illuminate\Support\Facades\Route;
-Auth::routes();
 
 // Redirect admin login to unified login
-Route::get("/admin/login", function () {
-    return redirect("/login");
-})->name("admin.login");
+Route::permanentRedirect('/admin/login', '/login')->name('admin.login');
 Route::namespace ('Admin')->group(function () {
     // Route::get('export-events', 'HomeController@export_calendar');
 
@@ -15,6 +12,7 @@ Route::namespace ('Admin')->group(function () {
     Route::get('test-admin', function () {
         return '<h1>Admin Routes Working!</h1><p><a href="/admin/login">Go to Admin Login</a></p>';
     });
+    
 
     // SECURITY: Migrate and cache clear routes are commented out for security
     // These routes should only be accessible via console, not web
@@ -34,10 +32,22 @@ Route::namespace ('Admin')->group(function () {
     //         //$d->givePermissionTo(['Transactions list','Transactions add','Transactions edit','Transactions delete']);
     //     }
     // });
+
 // dd('test');
     Route::get("/", 'HomeController@index')->middleware(['lang_check', 'auth']);
-    Route::group(['middleware' => ['lang_check', 'auth', 'officeadmin', 'IsInstalled']], function () {
+    Route::group(['middleware' => ['lang_check', 'auth', 'officeadmin', 'IsInstalled', 'web']], function () {
 
+        // Profile Management Routes
+        Route::get('/profile', 'ProfileController@index')->name('admin.profile');
+        Route::post('/profile', 'ProfileController@update')->name('admin.profile.update');
+        Route::get('/profile/company', 'ProfileController@company')->name('admin.profile.company');
+        Route::post('/profile/company', 'ProfileController@updateCompany')->name('admin.profile.company.update');
+        Route::get('/profile/office-admins', 'ProfileController@officeAdmins')->name('admin.profile.office-admins');
+        Route::post('/profile/office-admins', 'ProfileController@createOfficeAdmin')->name('admin.profile.office-admins.create');
+        Route::post('/profile/office-admins/{id}', 'ProfileController@updateOfficeAdmin')->name('admin.profile.office-admins.update');
+        Route::delete('/profile/office-admins/{id}', 'ProfileController@deleteOfficeAdmin')->name('admin.profile.office-admins.delete');
+
+        // Yamz-only admin views (moved to separate auth group below to bypass officeadmin middleware)
 
 
 
@@ -113,13 +123,9 @@ Route::namespace ('Admin')->group(function () {
         Route::get('parts-used/{id}', 'WorkOrdersController@parts_used');
         Route::get('remove-part/{id}', 'WorkOrdersController@remove_part');
         Route::post('add-stock', 'PartsController@add_stock');
-        Route::post('booking-quotation-fetch', 'BookingQuotationController@fetch_data');
-        Route::resource('booking-quotation', 'BookingQuotationController');
-        Route::post('add-booking', 'BookingQuotationController@add_booking');
-        Route::get('booking-quotation/invoice/{id}', 'BookingQuotationController@invoice');
-        Route::get('print-quote/{id}', 'BookingQuotationController@print');
-        Route::get('booking-quotation/approve/{id}', 'BookingQuotationController@approve');
+        // Booking quotation routes removed
         Route::post('import-vehicles', 'VehiclesController@importVehicles');
+        // Route::get("download-vehicle-sample", "VehiclesController@downloadSample")->name("download-vehicle-sample"); // MOVED TO PUBLIC ROUTES
         Route::post('import-drivers', 'DriversController@importDrivers');
         Route::post('import-income', 'IncomeCategories@importIncome');
         Route::post('import-expense', 'ExpenseCategories@importExpense');
@@ -231,11 +237,15 @@ Route::namespace ('Admin')->group(function () {
         Route::post('/vehicles-fetch', 'VehiclesController@fetch_data');
         Route::get('/vehicles/{id}/complete-data', 'VehiclesController@getCompleteData')->name('vehicles.complete')->whereNumber('id');
         Route::resource('/vehicles', 'VehiclesController');
+        Route::post('/vehicles/update-status', 'VehiclesController@updateStatus')->name('vehicles.update-status');
+        Route::post('/vehicles/update-driver', 'VehiclesController@updateDriver')->name('vehicles.update-driver');
+        Route::post('/vehicles/update-notes', 'VehiclesController@updateNotes')->name('vehicles.update-notes');
         Route::get("/vehicles/enable/{id}", 'VehiclesController@enable');
         Route::get("/vehicles/disable/{id}", 'VehiclesController@disable');
+        Route::get("/vehicles/repair-metadata/{id}", 'VehiclesController@repairMetadata')->name('vehicles.repair-metadata');
         Route::post('/bookings-fetch', 'BookingsController@fetch_data');
         Route::post('/driver-bookings-fetch', 'DriversController@fetch_bookings_data');
-        Route::resource('/bookings', 'BookingsController');
+        Route::resource('/invitations', 'BookingsController');
         Route::post('/prev-address', 'BookingsController@prev_address');
         Route::get('print/{id}', 'BookingsController@print');
         Route::resource('/acquisition', 'AcquisitionController');
@@ -246,9 +256,10 @@ Route::namespace ('Admin')->group(function () {
         Route::resource('/expense', 'ExpenseController');
         Route::resource('/expensecategories', 'ExpenseCategories');
         Route::resource('/incomecategories', 'IncomeCategories');
-        Route::get('/bookings/complete/{id}', 'BookingsController@complete');
-        Route::get('/bookings/receipt/{id}', 'BookingsController@receipt');
-        Route::get('/bookings/payment/{id}', 'BookingsController@payment');
+        Route::get('/invitations/complete/{id}', 'BookingsController@complete');
+        Route::get('/invitations/receipt/{id}', 'BookingsController@receipt');
+        Route::get('/invitations/payment/{id}', 'BookingsController@payment');
+        Route::get('/invitations/collected/{id}', 'BookingsController@mark_collected')->name('bookings.collected');
         Route::get("/reports/monthly", "ReportsController@monthly")->name("reports.monthly");
         Route::get("/reports/vendors", "ReportsController@vendors")->name("reports.vendors");
         Route::post("/reports/vendors", "ReportsController@vendors_post")->name("reports.vendors");
@@ -264,6 +275,7 @@ Route::namespace ('Admin')->group(function () {
         Route::get('/calendar/event/{id}', 'BookingsController@calendar_event');
         Route::get("/drivers/enable/{id}", 'DriversController@enable');
         Route::get("/drivers/disable/{id}", 'DriversController@disable');
+        Route::get("/drivers/{id}/details", 'DriversController@getDriverDetails');
         Route::get("/reports/vehicle", "ReportsController@vehicle")->name("reports.vehicle");
         Route::post("/reports/booking", "ReportsController@booking_post")->name("reports.booking");
         Route::post("/reports/fuel", "ReportsController@fuel_post")->name("reports.fuel");
@@ -274,14 +286,14 @@ Route::namespace ('Admin')->group(function () {
         Route::post("/reports/payments", "ReportsController@drivers_payments_post")->name("reports.payments");
 
         Route::post('/customer/ajax_save', 'CustomersController@ajax_store')->name('customers.ajax_store');
-        Route::get("/bookings_calendar", 'BookingsController@calendar_view')->name("bookings.calendar");
+        Route::get("/calendar", 'BookingsController@calendar_view')->name("bookings.calendar");
         Route::get('/calendar/event/calendar/{id}', 'BookingsController@calendar_event');
         Route::get('/calendar/event/service/{id}', 'BookingsController@service_view');
-        Route::get('/calendar', 'BookingsController@calendar');
+        Route::get('/calendar-data', 'BookingsController@calendar');
         Route::post('/get_driver', 'BookingsController@get_driver');
         Route::post('/get_vehicle', 'BookingsController@get_vehicle');
-        Route::post('/bookings/complete', 'BookingsController@complete_post')->name("bookings.complete");
-        Route::get('/bookings/complete', 'BookingsController@complete_post')->name("bookings.complete");
+        Route::post('/invitations/complete', 'BookingsController@complete_post')->name("bookings.complete");
+        Route::get('/invitations/complete', 'BookingsController@complete_post')->name("bookings.complete");
 
         Route::post("/reports/monthly", "ReportsController@monthly_post")->name("reports.monthly");
         Route::post("/reports/booking", "ReportsController@booking_post")->name("reports.booking");
@@ -302,14 +314,25 @@ Route::namespace ('Admin')->group(function () {
         Route::get('onboarding/fetch-data', 'OnboardingController@fetchData')->name('onboarding.fetch');
         Route::post('onboarding/store-field', 'OnboardingController@storeField')->name('onboarding.store_field');
         Route::delete('onboarding/delete-field/{id}', 'OnboardingController@deleteField')->name('onboarding.delete_field');
+        Route::post('onboarding/update-field-config/{id}', 'OnboardingController@updateFieldConfig')->name('onboarding.update_field_config');
         Route::post('onboarding/generate-link', 'OnboardingController@generateLink')->name('onboarding.generate_link');
         Route::get('onboarding/{id}', 'OnboardingController@show')->name('onboarding.show');
         Route::post('onboarding/approve/{id}', 'OnboardingController@approve')->name('onboarding.approve');
         Route::post('onboarding/reject/{id}', 'OnboardingController@reject')->name('onboarding.reject');
+        Route::get('onboarding/refresh-token', 'OnboardingController@refreshToken')->name('onboarding.refresh_token');
         Route::delete('onboarding/{id}', 'OnboardingController@destroy')->name('onboarding.destroy');
         Route::get('onboarding/stats', 'OnboardingController@getStats')->name('onboarding.stats');
         Route::post('onboarding/update-field-order', 'OnboardingController@updateFieldOrder')->name('onboarding.update_field_order');
         Route::post('onboarding/deactivate-link/{id}', 'OnboardingController@deactivateLink')->name('onboarding.deactivate_link');
+
+        // Fines and Penalties Routes
+        Route::get('/fines-fetch', 'FinesController@fetch_data')->name('fines.fetch');
+        Route::get('/fines/get-driver-by-vehicle', 'FinesController@getDriverByVehicle')->name('fines.get-driver-by-vehicle');
+        Route::get('/fines/get-contravention-codes', 'FinesController@getContraventionCodes')->name('fines.get-contravention-codes');
+        Route::resource('/fines', 'FinesController');
+        Route::post('delete-fines', 'FinesController@bulk_delete')->name('fines.bulk-delete');
+        Route::post('/fines/{id}/update-status', 'FinesController@updateStatus')->name('fines.update-status');
+        Route::get('/fines/{id}/details', 'FinesController@getDetails')->name('fines.details');
     });
 
     Route::group(['middleware' => ['lang_check', 'auth','driver_ride_check']], function () {
@@ -379,6 +402,26 @@ Route::namespace ('Admin')->group(function () {
         Route::post('delete-fuel', 'FuelController@bulk_delete')->middleware('IsInstalled');
 
         Route::get('/add-parts', 'WorkOrdersController@addParts')->name('add.parts');
+    });
+
+    // Yamz-only routes (must bypass officeadmin middleware but stay authenticated)
+    Route::group(['middleware' => ['lang_check', 'auth', 'IsInstalled']], function () {
+        // User routes
+        Route::get('yamz/all-users', 'ProfileController@allUsers')->name('admin.yamz.all-users');
+        Route::get('yamz/user/create', 'ProfileController@createUser')->name('admin.yamz.user.create');
+        Route::post('yamz/user/store', 'ProfileController@storeUser')->name('admin.yamz.user.store');
+        Route::get('yamz/user/{id}/edit', 'ProfileController@editUser')->name('admin.yamz.user.edit');
+        Route::put('yamz/user/{id}', 'ProfileController@updateUser')->name('admin.yamz.user.update');
+        Route::delete('yamz/user/{id}', 'ProfileController@destroyUser')->name('admin.yamz.user.delete');
+        
+        // Company routes
+        Route::get('yamz/companies', 'CompaniesController@index')->name('admin.yamz.companies');
+        Route::get('yamz/company/create', 'CompaniesController@create')->name('admin.yamz.company.create');
+        Route::post('yamz/company/store', 'CompaniesController@store')->name('admin.yamz.company.store');
+        Route::get('yamz/companies/{id}', 'CompaniesController@show')->name('admin.yamz.companies.show');
+        Route::get('yamz/companies/{id}/edit', 'CompaniesController@edit')->name('admin.yamz.companies.edit');
+        Route::put('yamz/companies/{id}', 'CompaniesController@update')->name('admin.yamz.companies.update');
+        Route::delete('yamz/companies/{id}', 'CompaniesController@destroy')->name('admin.yamz.companies.delete');
     });
 
 });

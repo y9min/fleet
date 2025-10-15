@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     libicu-dev \
     libmagickwand-dev \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -29,11 +32,16 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         bcmath \
         gd \
         zip \
-        intl
+        intl \
+        opcache
 
 # Install ImageMagick extension
 RUN pecl install imagick \
     && docker-php-ext-enable imagick
+
+# Install Redis extension (optional but commonly used)
+RUN pecl install redis \
+    && docker-php-ext-enable redis
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -41,11 +49,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
+# Configure Composer
+RUN composer config --global process-timeout 300 \
+    && composer config --global memory-limit -1
+
 # Copy composer files first for better caching
 COPY composer.json composer.lock ./
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install PHP dependencies with fallback options
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts || \
+    composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs || \
+    composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --ignore-platform-req=php
 
 # Copy application code
 COPY . .

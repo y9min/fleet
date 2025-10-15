@@ -118,19 +118,10 @@ ENV APACHE_RUN_GROUP www-data
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Configure Apache (with error handling)
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
-    sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf && \
-    echo '<VirtualHost *:80>\n\
-    DocumentRoot ${APACHE_DOCUMENT_ROOT}\n\
-    <Directory ${APACHE_DOCUMENT_ROOT}>\n\
-        AllowOverride All\n\
-        Require all granted\n\
-        Options -Indexes\n\
-    </Directory>\n\
-    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
-    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+# Configure Apache (simplified approach)
+RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf && \
+    sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
+    sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 # Create necessary directories
 RUN mkdir -p /var/www/html/storage/logs \

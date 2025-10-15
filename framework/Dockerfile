@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     libpq-dev \
+    libicu-dev \
+    libmagickwand-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -26,7 +28,12 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         pcntl \
         bcmath \
         gd \
-        zip
+        zip \
+        intl
+
+# Install ImageMagick extension
+RUN pecl install imagick \
+    && docker-php-ext-enable imagick
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -38,10 +45,16 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy application code
 COPY . .
+
+# Create .env file if it doesn't exist
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Generate application key
+RUN php artisan key:generate --no-interaction || true
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \

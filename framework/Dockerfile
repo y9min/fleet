@@ -1,10 +1,32 @@
-# Stage 1: Build vendor dependencies with Composer
-FROM composer:2 AS vendor
+# Stage 1: Build vendor dependencies with PHP 8.2
+FROM php:8.2-cli AS vendor
+
+# Install system dependencies for PHP extensions
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpng-dev \
+    libzip-dev \
+    libicu-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install required PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd zip intl
+
+# Copy Composer binary and set environment
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+# Set working directory
 WORKDIR /app
 
-# Copy only composer files and install dependencies (cached)
+# Copy composer files and install dependencies
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader
+RUN composer config platform.php 8.2.0
+RUN composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader --no-scripts
 
 # Stage 2: Runtime image using official PHP 8.2 Apache
 FROM php:8.2-apache
@@ -121,4 +143,3 @@ EXPOSE 80
 
 # Start Apache
 CMD ["apache2-foreground"]
-

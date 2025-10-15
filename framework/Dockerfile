@@ -23,8 +23,18 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 # Set working directory
 WORKDIR /app
 
-# Copy composer files and install dependencies
+# Copy composer files and necessary Laravel directories
 COPY composer.json composer.lock ./
+COPY database ./database
+COPY app ./app
+COPY bootstrap ./bootstrap
+COPY config ./config
+COPY public ./public
+COPY resources ./resources
+COPY routes ./routes
+COPY storage ./storage
+
+# Configure and install dependencies
 RUN composer config platform.php 8.2.0
 RUN composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader --no-scripts
 

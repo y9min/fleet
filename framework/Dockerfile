@@ -1,4 +1,12 @@
-# Use the official PHP 8.2 Apache image
+# Stage 1: Build vendor dependencies with Composer
+FROM composer:2 AS vendor
+WORKDIR /app
+
+# Copy only composer files and install dependencies (cached)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+# Stage 2: Runtime image using official PHP 8.2 Apache
 FROM php:8.2-apache
 
 # Install system dependencies
@@ -44,28 +52,20 @@ RUN pecl install imagick && docker-php-ext-enable imagick || echo "ImageMagick i
 # Install Redis extension (with error handling)
 RUN pecl install redis && docker-php-ext-enable redis || echo "Redis installation failed, continuing..."
 
-# Install Composer
+# Optionally copy Composer binary (for runtime ops like dump-autoload)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
 # Configure Composer (with error handling)
-RUN composer --version && \
-    composer config --global process-timeout 300 && \
-    composer config --global memory-limit -1 || \
-    echo "Composer config failed, continuing..."
-
-# Copy composer files first for better caching
-COPY composer.json composer.lock ./
-
-# Install PHP dependencies with fallback options
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts || \
-    composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs || \
-    composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --ignore-platform-req=php
+RUN composer --version || echo "Composer not required at runtime"
 
 # Copy application code
 COPY . .
+
+# Copy pre-built vendor from composer stage
+COPY --from=vendor /app/vendor /var/www/html/vendor
 
 # Create .env file if it doesn't exist
 RUN if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
@@ -121,3 +121,4 @@ EXPOSE 80
 
 # Start Apache
 CMD ["apache2-foreground"]
+

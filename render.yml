@@ -1,4 +1,3 @@
-apiVersion: 1
 services:
   - type: web
     name: fleet-php

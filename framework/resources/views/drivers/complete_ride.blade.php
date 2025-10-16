@@ -223,7 +223,7 @@
                 </div>
                 <div class="info-item card">
                     <div class="label">@lang('fleet.total_kms')</div>
-                    <div class="value">{{ $data->getMeta('total_kms') ? $data->getMeta('total_kms') . ' Kms' : 'NA' }}</div>
+                    <div class="value">{{ $data->getMeta('total_kms') ? $data->getMeta('total_kms') . ' Miles' : 'NA' }}</div>
                 </div>
                 <div class="info-item card">
                     <div class="label">@lang('fleet.Started_On')</div>
@@ -271,7 +271,7 @@
             <h6>@lang('fleet.fare_details')</h6>
             <div class="card-details d-flex justify-content-between">
                 <span>@lang('fleet.amount'):</span>
-                <span>{{ Hyvikk::get('currency') }} {{ $data->total ?? 0 }}</span>
+                <span>£ {{ $data->total ?? 0 }}</span>
             </div>
             <div class="card-details d-flex justify-content-between">
                 <span>@lang('fleet.total_tax') (%) :</span>
@@ -280,11 +280,11 @@
             <hr class="my-2">
             <div class="card-details d-flex justify-content-between">
                 <span>@lang('fleet.total') @lang('fleet.tax_charge')</span>
-                <span><strong>{{ Hyvikk::get('currency') }} {{ $data->total_tax_charge_rs ?? 0 }}</strong></span>
+                <span><strong>£ {{ $data->total_tax_charge_rs ?? 0 }}</strong></span>
             </div>
             <div class="fare-total">
                 <span>@lang('fleet.total'):</span>
-                <span>{{ Hyvikk::get('currency') }} {{ $data->tax_total ?? 0 }}</span>
+                <span>£ {{ $data->tax_total ?? 0 }}</span>
             </div>
         </div> --}}
 

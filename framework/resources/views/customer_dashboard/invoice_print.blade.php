@@ -22,8 +22,8 @@
             <div class="row">
                 <div class="col-6 mb-5">
                     <div class="invoice-logo  mb-3">
-                        <img src="{{ asset('assets/images/' . Hyvikk::get('logo_img')) }}" class="img-fluid"
-                            alt="Logo">
+                        <img src="{{ asset('assets/images/pco-flow-logo.png') }}" class="img-fluid"
+                            alt="PCO Flow Logo">
                     </div>
                     <h1 class="mb-0 set-invoice">Tax Invoice</h1>
                     <p>Invoice number: {{ $i['income_id'] ?? '-' }}</p>
@@ -181,7 +181,7 @@
                                 </tbody>
                             </table>
                             {{-- <div class="text-end">
-                      <p><strong>Total: ₹ 1150</strong></p>
+                      <p><strong>Total: £ 1150</strong></p>
                     </div> --}}
                             <div class="text-end">
                                 <p><strong>@lang('fleet.total'):

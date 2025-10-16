@@ -1,0 +1,27 @@
+Make Name,Model Name,Year,Engine Type,Color Name,VIN,License Plate,Horse Power,Initial Mileage,Vehicle Type ID,Group ID,Vehicle Price,Initial Cost,Price Period,Vehicle Scheme,Vehicle Status,Telematics Link,Fuel Efficiency,MOT Expiry Day,MOT Expiry Month,MOT Expiry Year,Height,Length,Breadth,Weight
+BMW,X5,2023,Petrol,Black,WBAFR9C50LC123456,BM23 X5A,340,15000,9,1,850.00,65000.00,monthly,Rental,Available,https://tracking.example.com/bmwx5,25.5,15,06,25,1750,4920,2004,2200
+Audi,A4,2022,Diesel,Silver,WAUZZZ8V2MA123457,AU22 A4B,190,22000,8,1,650.00,45000.00,monthly,Rental,Available,https://tracking.example.com/audia4,45.2,20,08,25,1432,4725,1842,1650
+Mercedes-Benz,C-Class,2023,Hybrid,White,WDD2050461A123458,MB23 CC1,255,8500,8,1,750.00,52000.00,monthly,Rental,Available,https://tracking.example.com/mercedes-c,52.3,10,12,25,1442,4751,1820,1680
+Volkswagen,Golf,2022,Petrol,Blue,WVWZZZ1KZ2W123459,VW22 GOL,150,18500,4,1,450.00,28000.00,monthly,Rental,Available,https://tracking.example.com/vwgolf,38.7,05,03,25,1459,4258,1799,1320
+Ford,Focus,2023,Electric,Red,WF0EXXGBP3MA123460,FO23 FOC,143,3200,4,1,550.00,35000.00,monthly,Rental,Available,https://tracking.example.com/fordfocus,4.2,18,09,26,1500,4378,1825,1685
+Toyota,Prius,2022,Hybrid,Green,JTDKARFU2N3123461,TO22 PRI,121,25600,4,1,480.00,32000.00,monthly,Rental,Available,https://tracking.example.com/toyotaprius,65.7,12,11,25,1490,4545,1760,1520
+Nissan,Leaf,2023,Electric,White,1N4AZ1CP5JC123462,NI23 LEA,147,1200,4,1,520.00,33000.00,monthly,Rental,Available,https://tracking.example.com/nissanleaf,3.8,25,07,26,1540,4490,1788,1580
+Honda,Civic,2022,Petrol,Grey,1HGCV1F3XLA123463,HO22 CIV,158,19800,4,1,420.00,26000.00,monthly,Rental,Available,https://tracking.example.com/hondacivic,42.2,08,04,25,1416,4656,1799,1280
+Hyundai,i30,2023,Diesel,Black,KMHDN4AE3NU123464,HY23 I30,136,7500,4,1,380.00,24000.00,monthly,Rental,Available,https://tracking.example.com/hyundaii30,48.7,14,06,26,1425,4340,1795,1350
+Kia,Sportage,2022,Petrol,Silver,KNDJN2A25N7123465,KI22 SPO,177,22300,9,1,580.00,38000.00,monthly,Rental,Available,https://tracking.example.com/kiasportage,35.8,22,10,25,1645,4480,1855,1650
+Skoda,Octavia,2023,Diesel,Blue,TMBJF7NE3MA123466,SK23 OCT,150,4500,8,1,490.00,31000.00,monthly,Rental,Available,https://tracking.example.com/skodaoctavia,46.3,30,01,26,1469,4689,1829,1420
+SEAT,Leon,2022,Petrol,Red,VSSZZZ5FZ2R123467,SE22 LEO,150,18700,4,1,440.00,27000.00,monthly,Rental,Available,https://tracking.example.com/seatleon,39.8,16,05,25,1420,4268,1799,1300
+Peugeot,308,2023,Diesel,White,VF3LCYHZ0PS123468,PE23 308,130,3200,4,1,460.00,29000.00,monthly,Rental,Available,https://tracking.example.com/peugeot308,44.1,03,12,26,1457,4253,1804,1330
+Renault,Clio,2022,Petrol,Yellow,VF1RJA002123469,RE22 CLI,100,21400,4,1,350.00,22000.00,monthly,Rental,Available,https://tracking.example.com/renaultclio,41.5,27,08,25,1442,4051,1732,1200
+Citroen,C3,2023,Electric,Orange,VF7RJA002123470,CI23 C3E,100,1800,4,1,420.00,28000.00,monthly,Rental,Available,https://tracking.example.com/citroenc3,4.1,11,02,26,1524,3996,1747,1450
+Mazda,CX-5,2022,Diesel,Grey,JMZKE8E70N1123471,MA22 CX5,173,19600,9,1,620.00,40000.00,monthly,Rental,Available,https://tracking.example.com/mazdacx5,43.5,19,09,25,1680,4550,1840,1700
+Subaru,Outback,2023,Petrol,Green,JF1BSA6L8MG123472,SU23 OUT,182,2800,9,1,680.00,45000.00,monthly,Rental,Available,https://tracking.example.com/subaruoutback,32.1,07,11,26,1675,4870,1875,1750
+Volvo,XC60,2022,Hybrid,Black,YV1LFA0AC2M123473,VO22 XC6,340,15200,9,1,780.00,55000.00,monthly,Rental,Available,https://tracking.example.com/volvoxc60,49.6,13,04,25,1715,4688,1902,1950
+Jaguar,XE,2023,Petrol,Silver,SAJAA2GX3MA123474,JA23 XE1,300,1200,8,1,720.00,48000.00,monthly,Rental,Available,https://tracking.example.com/jaguarxe,28.8,21,07,26,1416,4672,1850,1630
+Land Rover,Discovery Sport,2022,Diesel,White,SALVA2BG2MA123475,LR22 DIS,240,18900,9,1,850.00,60000.00,monthly,Rental,Available,https://tracking.example.com/landroverdiscovery,38.2,26,03,25,1722,4597,2069,2100
+MINI,Cooper,2023,Petrol,Red,WMWXX7C05MA123476,MI23 COO,136,800,4,1,480.00,32000.00,monthly,Rental,Available,https://tracking.example.com/minicooper,44.8,09,10,26,1414,3854,1727,1240
+Smart,ForTwo,2022,Electric,Blue,WME4513321A123477,SM22 FT2,82,15600,4,1,320.00,20000.00,monthly,Rental,Available,https://tracking.example.com/smartfortwo,3.2,17,06,25,1555,2695,1663,1120
+Tesla,Model 3,2023,Electric,Black,5YJ3E1EA4PF123478,TE23 M3A,283,500,8,1,950.00,65000.00,monthly,Rental,Available,https://tracking.example.com/teslamodel3,4.1,04,01,27,1443,4694,1849,1847
+Porsche,Macan,2022,Petrol,Silver,WP1AB2A59MLA123479,PO22 MAC,375,12300,9,1,1200.00,75000.00,monthly,Rental,Available,https://tracking.example.com/porschemacan,26.4,28,12,25,1624,4696,1923,1925
+Lexus,NX,2023,Hybrid,White,JTJBARBZ8N2123480,LE23 NX1,194,2200,9,1,680.00,45000.00,monthly,Rental,Available,https://tracking.example.com/lexusnx,51.4,15,08,26,1645,4640,1845,1810
+

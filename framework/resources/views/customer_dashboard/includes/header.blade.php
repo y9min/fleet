@@ -124,7 +124,7 @@
 
     <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 space" href="{{url('/')}}">
 
-        <img src="{{ asset('assets/images/pco-flow-logo.png') }}" width="172px" height="auto">
+        <img src="{{ asset('assets/images/pco-flow-logo.png') }}" style="height: 100px; width: auto; object-fit: contain;" alt="PCO Flow">
 
     </a>
 
@@ -166,7 +166,7 @@
 
                         <li class="nav-item">
 
-                            <a class="nav-link me-2" href="{{url('about')}}">
+                            <a class="nav-link me-2" href="{{ url('/') }}#why">
 
 
 
@@ -200,13 +200,13 @@
 
                         <li class="nav-item d-flex align-items-center">
 
-                            <a class="btn btn-round btn-sm mb-0 login_btn me-2 "  href="{{ route('log_in') }}">@lang('frontend.login')</a>
+                            <a class="btn btn-round btn-sm mb-0 login_btn me-2 "  href="{{ route('login') }}">@lang('frontend.login')</a>
 
                         </li>
 
                         <li class="nav-item d-flex align-items-center ms-0 ms-sm-0 ms-md-0 ms-lg-4 ms-xl-4">
 
-                            <a href="{{ route('sign_up') }}" class="btn btn-sm btn-round mb-0 me-1 sign_up_btn mt-0 mt-sm-0 mt-md-0 mt-lg-0 mt-xl-0">@lang('frontend.sign_up')</a>
+                            {{-- Sign up button hidden intentionally (backend route retained) --}}
 
                         </li>
 

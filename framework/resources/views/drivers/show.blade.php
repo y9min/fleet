@@ -31,12 +31,64 @@
                 <div class="col-md-6">
                     <p><b>@lang('fleet.name')</b>: {{ $driver->name }}</p>
                     <p><b>@lang('fleet.email')</b>: {{ $driver->email }}</p>
+                    <p><b>@lang('fleet.phone')</b>: {{ $driver->phone }}</p>
+                    <p><b>License Number</b>: {{ $driver->getMeta('license_number') ?: 'N/A' }}</p>
                 </div>
                 <div class="col-md-6">
-                    <p><b>@lang('fleet.phone')</b>: {{ $driver->phone }}</p>
                     <p><b>@lang('fleet.start_date')</b>: {{ $driver->start_date }}</p>
+                    <p><b>Address</b>: {{ $driver->getMeta('address') ?: 'N/A' }}</p>
+                    <p><b>City</b>: {{ $driver->getMeta('city') ?: 'N/A' }}</p>
+                    <p><b>State</b>: {{ $driver->getMeta('state') ?: 'N/A' }}</p>
                 </div>
             </div>
+            
+            <!-- Documents Section -->
+            @if($driver->getMeta('license_upload_path') || $driver->getMeta('insurance_upload_path'))
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5><i class="fas fa-file-alt me-2"></i>Documents</h5>
+                    <div class="d-flex gap-2">
+                        @if($driver->getMeta('license_upload_path'))
+                            <a href="{{ asset('storage/' . $driver->getMeta('license_upload_path')) }}" target="_blank" class="btn btn-primary">
+                                <i class="fa fa-id-card me-2"></i>View License
+                            </a>
+                        @endif
+                        @if($driver->getMeta('insurance_upload_path'))
+                            <a href="{{ asset('storage/' . $driver->getMeta('insurance_upload_path')) }}" target="_blank" class="btn btn-info">
+                                <i class="fa fa-shield-alt me-2"></i>View Insurance
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
+            
+            <!-- Additional Information Section -->
+            @if($driver->getMeta('date_of_birth') || $driver->getMeta('gender') || $driver->getMeta('emergency_contact_name'))
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5><i class="fas fa-info-circle me-2"></i>Additional Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            @if($driver->getMeta('date_of_birth'))
+                                <p><b>Date of Birth</b>: {{ $driver->getMeta('date_of_birth') }}</p>
+                            @endif
+                            @if($driver->getMeta('gender'))
+                                <p><b>Gender</b>: {{ $driver->getMeta('gender') }}</p>
+                            @endif
+                        </div>
+                        <div class="col-md-6">
+                            @if($driver->getMeta('emergency_contact_name'))
+                                <p><b>Emergency Contact</b>: {{ $driver->getMeta('emergency_contact_name') }}</p>
+                            @endif
+                            @if($driver->getMeta('emergency_contact_phone'))
+                                <p><b>Emergency Phone</b>: {{ $driver->getMeta('emergency_contact_phone') }}</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
       </div>
     </div>

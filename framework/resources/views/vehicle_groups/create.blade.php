@@ -24,6 +24,7 @@
                 @endif
 
                 {!! Form::open(['route' => 'vehicle_group.store','method'=>'post','class' => 'form-reset']) !!}
+                @csrf
                 {!! Form::hidden('user_id',Auth::user()->id)!!}
 
                 <div class="row">

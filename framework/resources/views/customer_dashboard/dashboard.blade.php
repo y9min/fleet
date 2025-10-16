@@ -502,7 +502,7 @@
 
                                     <p class="content-title ">@lang('frontend.Distance')</p>
 
-                                    <p class="content-detail mb-0 show-distance">0 Kms</p>
+                                    <p class="content-detail mb-0 show-distance">0 Miles</p>
 
                                 </div>
 
@@ -1207,7 +1207,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             $(".show-places").text(data['places']);
 
-            $(".show-distance").text(data['kms'] + " Kms");
+            $(".show-distance").text(data['kms'] + " Miles");
 
             $(".show-minutes").text(data['minutes']);
 

@@ -114,38 +114,56 @@ class DefaultAdmin extends Seeder
         $user2->save();
 
         $c1 = User::create([
-            "name" => "Customer One",
-            "email" => "customer1@gmail.com",
+            "name" => "Driver One",
+            "email" => "driver1@gmail.com",
             "password" => bcrypt("password"),
             'api_token' => str_random(60),
-            "user_type" => "C",
+            "user_type" => "D",
             'user_id' => 1]);
 
         $c2 = User::create([
-            "name" => "Customer Two",
-            "email" => "customer2@gmail.com",
+            "name" => "Driver Two",
+            "email" => "driver2@gmail.com",
             "password" => bcrypt("password"),
             'api_token' => str_random(60),
-            "user_type" => "C",
+            "user_type" => "D",
             'user_id' => 1]);
         $name1 = explode(" ", $c1->name);
         $name2 = explode(" ", $c2->name);
-        $customer1 = User::find($c1->id);
-        $customer1->setMeta(["first_name" => $name1[0],
+        $driver1 = User::find($c1->id);
+        $driver1->setMeta([
+            "first_name" => $name1[0],
             "last_name" => $name1[1],
             "address" => "728 Evalyn Knolls Apt. 119 Lake Jaydenville, MD 74979-3406",
             "mobno" => "8639379915669",
             'gender' => 0,
+            'license_number' => 'DL123456789',
+            'contract_number' => 'CN001',
+            'emp_id' => 'EMP001',
+            'is_verified' => '1',
+            'issue_date' => date('Y-m-d'),
+            'exp_date' => date('Y-m-d', strtotime('+2 years')),
+            'start_date' => date('Y-m-d'),
+            'end_date' => date('Y-m-d', strtotime('+1 year')),
         ]);
-        $customer1->save();
-        $customer2 = User::find($c2->id);
-        $customer2->setMeta(["first_name" => $name2[0],
+        $driver1->save();
+        $driver2 = User::find($c2->id);
+        $driver2->setMeta([
+            "first_name" => $name2[0],
             "last_name" => $name2[1],
             "address" => "91158 Luigi Cliffs Lake Darby, MA 39627-1727",
             "mobno" => "9773607007903",
             'gender' => 1,
+            'license_number' => 'DL987654321',
+            'contract_number' => 'CN002',
+            'emp_id' => 'EMP002',
+            'is_verified' => '1',
+            'issue_date' => date('Y-m-d'),
+            'exp_date' => date('Y-m-d', strtotime('+2 years')),
+            'start_date' => date('Y-m-d'),
+            'end_date' => date('Y-m-d', strtotime('+1 year')),
         ]);
-        $customer2->save();
+        $driver2->save();
 
         VehicleGroupModel::create([
             'name' => 'Default',

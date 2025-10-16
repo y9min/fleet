@@ -19,7 +19,7 @@ class MessageModel extends Model {
 	use SoftDeletes;
 	protected $dates = ['deleted_at'];
 	protected $table = 'message';
-	protected $fillable = ['fcm_id', 'user_id', 'message', 'name', 'email'];
+	protected $fillable = ['fcm_id', 'user_id', 'message', 'name', 'email', 'company', 'phone', 'fleet_size'];
 
 	public function user() {
 		return $this->hasOne("App\Model\User", "id", "user_id")->withTrashed();

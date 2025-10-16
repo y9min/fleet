@@ -1246,11 +1246,22 @@ class DriversController extends Controller {
         }
         public function fetch_data(Request $request) {
                 if ($request->ajax()) {
+                        $auth = \Auth::user();
                         $users = User::select('users.*')
                                 ->leftJoin('users_meta', 'users_meta.user_id', '=', 'users.id')
                                 ->leftJoin('driver_vehicle', 'driver_vehicle.driver_id', '=', 'users.id')
                                 ->leftJoin('vehicles', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
-                                ->with(['metas'])->whereUser_type("D")->groupBy('users.id');
+                                ->with(['metas'])->whereUser_type("D");
+
+                        // Company scoping
+                        if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+                                $users = $users->where('users.company_id', $auth->company_id);
+                        } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+                                // Boss Admin without company sees no drivers
+                                $users = $users->whereRaw('1=0');
+                        }
+
+                        $users = $users->groupBy('users.id');
                         return DataTables::eloquent($users)
                                 ->addColumn('check', function ($user) {
                                         return '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '" onclick=\'checkcheckbox();\'>';
@@ -1258,21 +1269,66 @@ class DriversController extends Controller {
                                 ->editColumn('name', function ($user) {
                                         return "<a href=" . route('drivers.show', $user->id) . ">$user->name</a>";
                                 })
-                                ->addColumn('driver_image', function ($user) {
-                                        $src = ($user->driver_image != null) ? asset('./uploads/' . $user->driver_image) : asset('assets/images/no-user.jpg');
-                                        return '<img src="' . $src . '" height="70px" width="70px">';
-                                })
                                 ->addColumn('is_active', function ($user) {
-                                        return ($user->is_active == 1) ? "YES" : "NO";
+                                        $isActive = $user->is_active == 1;
+                                        $driverId = $user->id;
+                                        $checked = $isActive ? 'checked' : '';
+                                        
+                                        return '<div class="d-flex justify-content-center">
+                                                    <label class="switch">
+                                                        <input type="checkbox" class="driver-status-toggle" data-driver-id="' . $driverId . '" ' . $checked . '>
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>';
                                 })
                                 ->addColumn('phone', function ($user) {
                                         return $user->phone_code . ' ' . $user->phone;
                                 })
-                                ->addColumn('start_date', function ($user) {
-                                        return $user->start_date;
+                                ->addColumn('license_number', function ($user) {
+                                        return $user->getMeta('license_number') ?: 'N/A';
+                                })
+                                ->addColumn('documents', function ($user) {
+                                        $docs = '';
+                                        if ($user->getMeta('license_upload_path')) {
+                                                $docs .= '<a href="' . asset('storage/' . $user->getMeta('license_upload_path')) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
+                                        }
+                                        if ($user->getMeta('insurance_upload_path')) {
+                                                $docs .= '<a href="' . asset('storage/' . $user->getMeta('insurance_upload_path')) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
+                                        }
+                                        return $docs ?: '<span class="text-muted">No documents</span>';
+                                })
+                                ->addColumn('assigned_vehicle', function ($user) {
+                                        $vehicle = $user->vehicles()->first();
+                                        if ($vehicle) {
+                                                return '<a href="' . route('vehicles.show', $vehicle->id) . '" class="badge badge-warning text-dark" style="background-color: #EABE14; color: #333; border-radius: 4px; padding: 6px 12px; text-decoration: none; font-weight: bold;" title="View Vehicle Details">' . $vehicle->license_plate . '</a>';
+                                        }
+                                        return 'N/A';
                                 })
                                 ->addColumn('action', function ($user) {
-                                        return view('drivers.list-actions', ['row' => $user]);
+                                        $buttons = '<div class="d-flex justify-content-center gap-2">';
+                                        
+                                        // View Details Button
+                                        $buttons .= '<button class="btn btn-sm btn-info" data-driver-id="' . $user->id . '" onclick="toggleDriverDetails(' . $user->id . ')" title="View Details" style="padding: 6px 8px;">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>';
+                                        
+                                        // Change Password Button
+                                        $buttons .= '<button class="btn btn-sm btn-warning" data-id="' . $user->id . '" data-toggle="modal" data-target="#changepass" title="Change Password" style="padding: 6px 8px;">
+                                                        <i class="fas fa-key"></i>
+                                                    </button>';
+                                        
+                                        // Edit Button
+                                        $buttons .= '<a href="' . url("admin/drivers/" . $user->id . "/edit") . '" class="btn btn-sm btn-primary" title="Edit Driver" style="padding: 6px 8px;">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>';
+                                        
+                                        // Delete Button
+                                        $buttons .= '<button class="btn btn-sm btn-danger" data-id="' . $user->id . '" data-toggle="modal" data-target="#myModal" title="Delete Driver" style="padding: 6px 8px;">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>';
+                                        
+                                        $buttons .= '</div>';
+                                        return $buttons;
                                 })
                                 ->filterColumn('is_active', function ($query, $keyword) {
                                         $query->whereHas("metas", function ($q) use ($keyword) {
@@ -1293,14 +1349,13 @@ class DriversController extends Controller {
                                         });
                                         return $query;
                                 })
-                                ->filterColumn('start_date', function ($query, $keyword) {
-                                        $query->whereHas("metas", function ($q) use ($keyword) {
-                                                $q->where('key', 'start_date');
-                                                $q->where("value", 'like', "%$keyword%");
+                                ->filterColumn('assigned_vehicle', function ($query, $keyword) {
+                                        $query->whereHas("vehicles", function ($q) use ($keyword) {
+                                                $q->where("license_plate", 'like', "%$keyword%");
                                         });
                                         return $query;
                                 })
-                                ->rawColumns(['driver_image', 'action', 'check', 'name'])
+                                ->rawColumns(['action', 'check', 'name', 'documents', 'assigned_vehicle', 'is_active'])
                                 ->make(true);
                         //return datatables(User::all())->toJson();
                 }
@@ -1308,6 +1363,68 @@ class DriversController extends Controller {
         public function show($id) {
                 $index['driver'] = User::find($id);
                 return view('drivers.show', $index);
+        }
+        
+        public function getDriverDetails($id) {
+                try {
+                        $driver = User::findOrFail($id);
+                        $driverData = $driver->toArray();
+                        
+                        // Get all driver metadata using the Metable trait
+                        $metas = \App\Model\UserData::where('user_id', $driver->id)->get();
+                        
+                        // Add metadata to driver data
+                        foreach ($metas as $meta) {
+                                $driverData[$meta->key] = $meta->value;
+                        }
+                        
+                        // Get assigned vehicle
+                        $vehicle = $driver->vehicles()->first();
+                        if ($vehicle) {
+                                $driverData['assigned_vehicle'] = [
+                                        'id' => $vehicle->id,
+                                        'license_plate' => $vehicle->license_plate,
+                                        'make_name' => $vehicle->make_name,
+                                        'model_name' => $vehicle->model_name
+                                ];
+                        }
+                        
+                        // Also check for vehicle selection in custom_data and add vehicle details
+                        if (isset($driverData['custom_data'])) {
+                            $customData = is_string($driverData['custom_data']) ? json_decode($driverData['custom_data'], true) : $driverData['custom_data'];
+                            if (isset($customData['vehicle_selection']) && $customData['vehicle_selection']) {
+                                $selectedVehicle = \App\Model\VehicleModel::find($customData['vehicle_selection']);
+                                if ($selectedVehicle) {
+                                    $driverData['vehicle_details'] = [
+                                        'id' => $selectedVehicle->id,
+                                        'license_plate' => $selectedVehicle->license_plate,
+                                        'make_name' => $selectedVehicle->make_name,
+                                        'model_name' => $selectedVehicle->model_name,
+                                        'year' => $selectedVehicle->year,
+                                        'fuel_type' => $selectedVehicle->getMeta('fuel_type') ?? 'Petrol'
+                                    ];
+                                }
+                            }
+                        }
+                        
+                        // Get custom form fields for display (optional)
+                        try {
+                                $customFields = \App\CustomFormField::ordered()->get();
+                        } catch (\Exception $e) {
+                                $customFields = collect(); // Empty collection if custom fields don't exist
+                        }
+                        
+                        return response()->json([
+                                'success' => true,
+                                'driver' => $driverData,
+                                'customFields' => $customFields
+                        ]);
+                } catch (\Exception $e) {
+                        return response()->json([
+                                'success' => false,
+                                'message' => 'Error loading driver details: ' . $e->getMessage()
+                        ], 500);
+                }
         }
         public function fetch_bookings_data(Request $request) {
                 if ($request->ajax()) {
@@ -1431,46 +1548,29 @@ class DriversController extends Controller {
                 }
         }
         public function destroy(Request $request) {
+                \Log::info('Destroy method called with request data:', $request->all());
+                try {
+                        $driver = User::find($request->get('id'));
+                        
+                        if (!$driver) {
+                                \Log::error('Driver not found with ID: ' . $request->get('id'));
+                                return redirect()->route('drivers.index')->with('error', 'Driver not found.');
+                        }
 
-                $u=User::find($request->get('id'));
+                        \Log::info('Found driver:', ['id' => $driver->id, 'email' => $driver->email]);
 
-                $this->deleteUser($u->email);
-
-                $driver = User::find($request->id);
-                if ($driver->vehicles->count()) {
-                        $driver->vehicles()->detach($driver->vehicles->pluck('id')->toArray());
-                }
-                DriverVehicleModel::where('driver_id', $request->id)->delete();
-                if (file_exists('./uploads/' . $driver->driver_image) && !is_dir('./uploads/' . $driver->driver_image)) {
-                        unlink('./uploads/' . $driver->driver_image);
-                }
-                if (file_exists('./uploads/' . $driver->license_image) && !is_dir('./uploads/' . $driver->license_image)) {
-                        unlink('./uploads/' . $driver->license_image);
-                }
-                if (file_exists('./uploads/' . $driver->documents) && !is_dir('./uploads/' . $driver->documents)) {
-                        unlink('./uploads/' . $driver->documents);
-                }
-                User::find($request->get('id'))->user_data()->delete();
-                //User::find($request->get('id'))->delete();
-                $driver->update([
-                        'email' => time() . "_deleted" . $driver->email,
-                ]);
-                $driver->delete();
-                return redirect()->route('drivers.index');
-        }
-        public function bulk_delete(Request $request) {
-                $drivers = User::whereIn('id', $request->ids)->get();
-                foreach ($drivers as $driver) {
-
+                        // Delete from Firebase first
                         $this->deleteUser($driver->email);
 
-
+                        // Detach vehicles if any
                         if ($driver->vehicles->count()) {
                                 $driver->vehicles()->detach($driver->vehicles->pluck('id')->toArray());
                         }
-                        $driver->update([
-                                'email' => time() . "_deleted" . $driver->email,
-                        ]);
+                        
+                        // Delete driver-vehicle relationships
+                        DriverVehicleModel::where('driver_id', $request->id)->delete();
+                        
+                        // Delete uploaded files
                         if (file_exists('./uploads/' . $driver->driver_image) && !is_dir('./uploads/' . $driver->driver_image)) {
                                 unlink('./uploads/' . $driver->driver_image);
                         }
@@ -1480,12 +1580,71 @@ class DriversController extends Controller {
                         if (file_exists('./uploads/' . $driver->documents) && !is_dir('./uploads/' . $driver->documents)) {
                                 unlink('./uploads/' . $driver->documents);
                         }
+                        
+                        // Delete user data
+                        $driver->user_data()->delete();
+                        
+                        // Update email to prevent conflicts and then delete
+                        $driver->update([
+                                'email' => time() . "_deleted_" . $driver->email,
+                        ]);
+                        
+                        // Finally delete the driver record
                         $driver->delete();
+                        
+                        \Log::info('Driver deleted successfully:', ['id' => $request->get('id')]);
+                        return redirect()->route('drivers.index')->with('success', 'Driver deleted successfully.');
+                        
+                } catch (\Exception $e) {
+                        \Log::error('Error deleting driver: ' . $e->getMessage());
+                        return redirect()->route('drivers.index')->with('error', 'An error occurred while deleting the driver.');
                 }
-                DriverVehicleModel::whereIn('driver_id', $request->ids)->delete();
-                //User::whereIn('id', $request->ids)->delete();
-                // return redirect('admin/customers');
-                return back();
+        }
+        public function bulk_delete(Request $request) {
+                try {
+                        $drivers = User::whereIn('id', $request->ids)->get();
+                        
+                        foreach ($drivers as $driver) {
+                                // Delete from Firebase first
+                                $this->deleteUser($driver->email);
+
+                                // Detach vehicles if any
+                                if ($driver->vehicles->count()) {
+                                        $driver->vehicles()->detach($driver->vehicles->pluck('id')->toArray());
+                                }
+                                
+                                // Delete uploaded files
+                                if (file_exists('./uploads/' . $driver->driver_image) && !is_dir('./uploads/' . $driver->driver_image)) {
+                                        unlink('./uploads/' . $driver->driver_image);
+                                }
+                                if (file_exists('./uploads/' . $driver->license_image) && !is_dir('./uploads/' . $driver->license_image)) {
+                                        unlink('./uploads/' . $driver->license_image);
+                                }
+                                if (file_exists('./uploads/' . $driver->documents) && !is_dir('./uploads/' . $driver->documents)) {
+                                        unlink('./uploads/' . $driver->documents);
+                                }
+                                
+                                // Update email to prevent conflicts and then delete
+                                $driver->update([
+                                        'email' => time() . "_deleted_" . $driver->email,
+                                ]);
+                                
+                                // Delete user data
+                                $driver->user_data()->delete();
+                                
+                                // Finally delete the driver record
+                                $driver->delete();
+                        }
+                        
+                        // Delete driver-vehicle relationships
+                        DriverVehicleModel::whereIn('driver_id', $request->ids)->delete();
+                        
+                        return back()->with('success', 'Selected drivers deleted successfully.');
+                        
+                } catch (\Exception $e) {
+                        \Log::error('Error bulk deleting drivers: ' . $e->getMessage());
+                        return back()->with('error', 'An error occurred while deleting the drivers.');
+                }
         }
         public function create() {
                 $data['vehicles'] = VehicleModel::get();

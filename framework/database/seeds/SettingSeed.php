@@ -40,7 +40,7 @@ class SettingSeed extends Seeder
         Settings::create(['label' => 'Country', 'name' => 'country', 'value' => 'India']);
         Settings::create(['label' => 'Distence Format', 'name' => 'dis_format', 'value' => 'km']);
         Settings::create(['label' => 'Language', 'name' => 'language', 'value' => 'English-en']);
-        Settings::create(['label' => 'Currency', 'name' => 'currency', 'value' => '₹']);
+        Settings::create(['label' => 'Currency', 'name' => 'currency', 'value' => '£']);
         Settings::create(['label' => 'Tax No', 'name' => 'tax_no', 'value' => 'ABCD8735XXX']);
         Settings::create(['label' => 'Invoice Text', 'name' => 'invoice_text', 'value' => 'Etsy doostang zoodles disqus groupon greplin oooj voxy zoodles, weebly ning heekya handango imeem plugg dopplr jibjab, movity jajah plickers sifteo edmodo ifttt zimbra.']);
         Settings::create(['label' => 'Small Logo', 'name' => 'icon_img', 'value' => 'logo-40.png']);
@@ -49,7 +49,7 @@ class SettingSeed extends Seeder
         Settings::create(['label' => 'Tax Charge', 'name' => 'tax_charge', 'value' => 'null']);
         Settings::create(['label' => 'Fuel Unit', 'name' => 'fuel_unit', 'value' => 'gallon']);
         Settings::create(['label' => 'Date Format', 'name' => 'date_format', 'value' => 'd-m-Y']);
-        Settings::create(['label' => 'Website Footer', 'name' => 'web_footer', 'value' => '<p><span style="font-size: 16px;">© Hyvikk Solutions '.date('Y').'. All Rights Reserved.&nbsp;<span class="vertical-spacer d-none d-lg-inline">|</span>&nbsp;Powered By&nbsp;</span><a href="https://hyvikk.com/" target="_blank" class="link"><span style="font-size: 16px;">Hyvikk</span></a></p>']);
+        Settings::create(['label' => 'Website Footer', 'name' => 'web_footer', 'value' => '']);
         Settings::create(['label' => 'Fuel enable for Driver', 'name' => 'fuel_enable_driver', 'value' => 0]);
         Settings::create(['label' => 'Income enable for Driver', 'name' => 'income_enable_driver', 'value' => 0]);
 		Settings::create(['label' => 'Expense enable for Driver', 'name' => 'expense_enable_driver', 'value' => 0]);

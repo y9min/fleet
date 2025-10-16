@@ -24,6 +24,7 @@
         @endif
 
         {!! Form::open(['route' => ['vehicle_group.update',$data->id],'method'=>'PATCH']) !!}
+        @csrf
         {!! Form::hidden('user_id',Auth::user()->id)!!}
         {!! Form::hidden('id',$data->id)!!}
 

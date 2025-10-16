@@ -117,6 +117,7 @@
           <div class="row">
             <div class="col-md-3">
               <label class="switch">
+              <input type="hidden" name="isenable" value="0">
               <input type="checkbox" name="isenable" value="1" @if($vehicle_type->isenable == 1) checked @endif>
               <span class="slider round"></span>
               </label>

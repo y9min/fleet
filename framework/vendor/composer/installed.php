@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'd759aba35ca390d9bfc68f544ccc4b20eedb673a',
+        'reference' => 'b7a68c477b289cb91a0f975b7647290ee94d24b5',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -571,7 +571,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'd759aba35ca390d9bfc68f544ccc4b20eedb673a',
+            'reference' => 'b7a68c477b289cb91a0f975b7647290ee94d24b5',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -1177,8 +1177,8 @@
         'psr/log-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '3.0.0',
-                1 => '1.0|2.0|3.0',
+                0 => '1.0|2.0|3.0',
+                1 => '3.0.0',
             ),
         ),
         'psr/simple-cache' => array(
@@ -1247,6 +1247,15 @@
             'reference' => 'c151dadbb3d0a64d92574e9789b970196e629cac',
             'type' => 'library',
             'install_path' => __DIR__ . '/../razorpay/razorpay',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'resend/resend-php' => array(
+            'pretty_version' => 'v0.21.0',
+            'version' => '0.21.0.0',
+            'reference' => '16d481c8347d2b2aa9910ca0ae7f252b2f7d8b8c',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../resend/resend-php',
             'aliases' => array(),
             'dev_requirement' => false,
         ),

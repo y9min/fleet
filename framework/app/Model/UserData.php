@@ -19,4 +19,8 @@ class UserData extends Model {
 	use SoftDeletes;
 	protected $dates = ['deleted_at'];
 	protected $table = "users_meta";
+	
+	protected $fillable = [
+		'user_id', 'key', 'value', 'type'
+	];
 }

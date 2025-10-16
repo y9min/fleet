@@ -10,6 +10,9 @@ class Kernel extends ConsoleKernel {
 		'App\Console\Commands\EmailNotification',
 		'App\Console\Commands\PushNotification',
 		'App\Console\Commands\VersionAutoUpdate',
+		'App\Console\Commands\TestResendEmails',
+		'App\Console\Commands\FixDriverCompanyIds',
+		'App\Console\Commands\FixDriverPasswords',
 	];
 	protected function schedule(Schedule $schedule) {
 		$schedule->command('notification:generate')->dailyAt('10:00');

@@ -33,7 +33,9 @@ class DriverBooked extends Mailable {
 	 *
 	 * @return $this
 	 */
-	public function build() {
-		return $this->from(Hyvikk::get("email"))->subject('Your Vehicle is Booked. Booking ID: ' . $this->booking->id)->markdown('emails.booked_driver');
-	}
+    public function build() {
+        return $this->from(Hyvikk::get("email"))
+            ->subject('Pickup Invitation - Booking #' . $this->booking->id)
+            ->markdown('emails.booked_driver');
+    }
 }

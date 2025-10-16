@@ -3,7 +3,7 @@
 <link rel="stylesheet" type="text/css" href="{{asset('assets/css/bootstrap-datetimepicker.min.css')}}">
 @endsection
 @section("breadcrumb")
-<li class="breadcrumb-item"><a href="{{ route('bookings.index')}}">@lang('menu.bookings')</a></li>
+<li class="breadcrumb-item"><a href="{{ route('invitations.index')}}">@lang('menu.bookings')</a></li>
 <li class="breadcrumb-item active">@lang('fleet.edit_booking')</li>
 @endsection
 @section('content')
@@ -37,7 +37,7 @@
           Your current vehicle is not available in the chosen times. Available vehicle has been selected.
         </div>
 
-        {!! Form::open(['route' => ['bookings.update',$data->id],'method'=>'PATCH']) !!}
+        {!! Form::open(['route' => ['invitations.update',$data->id],'method'=>'PATCH']) !!}
         {!! Form::hidden('user_id',Auth::user()->id)!!}
         {!! Form::hidden('status',0)!!}
         {!! Form::hidden('id',$data->id)!!}

@@ -804,7 +804,7 @@ return [
 'npb' => 'numero di passeggeri della prenotazione',
 'click here' => 'clicca qui',
 'International'=>'Per abilitare o disabilitare i pagamenti internazionali con carta dal tuo',
-    'accept'=>'Se non desideri accettare pagamenti in valute diverse da INR (₹), puoi disattivare',
+    'accept'=>'Se non desideri accettare pagamenti in valute diverse da GBP (£), puoi disattivare',
     'automatico'=>"puoi inviare automaticamente un'e-mail ai tuoi clienti quando i pagamenti vanno a buon fine utilizzando",
     'icp' => 'Pagamento internazionale con carta',
 'uts' => 'utilizzando l\'interruttore a levetta',

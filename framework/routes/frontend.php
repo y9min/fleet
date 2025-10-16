@@ -2,8 +2,7 @@
 Route::namespace ('FrontEnd')->middleware(['throttle'])->group(function () {
 	Route::get('company-info', 'FrontendApiController@company_info');
 	Route::get('vehicle-types', 'FrontendApiController@vehicle_types');
-	Route::get('our-services', 'FrontendApiController@our_services');
-	Route::get('about', 'FrontendApiController@about_fleet');
+    Route::get('our-services', 'FrontendApiController@our_services');
 	Route::post('user-login', 'FrontendApiController@user_login');
 	Route::post('user-register', 'FrontendApiController@user_register');
 	Route::get('testimonials', 'FrontendApiController@testimonials');

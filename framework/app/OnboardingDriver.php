@@ -19,6 +19,9 @@ class OnboardingDriver extends Model
         'license_number',
         'license_upload_path',
         'insurance_upload_path',
+        'vehicle_id',
+        'scheme',
+        'insurance_selection',
         'custom_data',
         'status',
         'unique_token'
@@ -86,11 +89,39 @@ class OnboardingDriver extends Model
     // File accessors
     public function getLicenseUrlAttribute()
     {
-        return $this->license_upload_path ? asset('uploads/onboarding/' . $this->license_upload_path) : null;
+        if (!$this->license_upload_path) {
+            return null;
+        }
+        
+        // Handle both old and new file path formats
+        if (strpos($this->license_upload_path, 'onboarding/documents/') === 0) {
+            // New format: onboarding/documents/filename
+            return asset('storage/' . $this->license_upload_path);
+        } else {
+            // Old format: filename (stored in uploads/onboarding/)
+            return asset('uploads/onboarding/' . $this->license_upload_path);
+        }
     }
 
     public function getInsuranceUrlAttribute()
     {
-        return $this->insurance_upload_path ? asset('uploads/onboarding/' . $this->insurance_upload_path) : null;
+        if (!$this->insurance_upload_path) {
+            return null;
+        }
+        
+        // Handle both old and new file path formats
+        if (strpos($this->insurance_upload_path, 'onboarding/documents/') === 0) {
+            // New format: onboarding/documents/filename
+            return asset('storage/' . $this->insurance_upload_path);
+        } else {
+            // Old format: filename (stored in uploads/onboarding/)
+            return asset('uploads/onboarding/' . $this->insurance_upload_path);
+        }
+    }
+
+    // Vehicle relationship
+    public function vehicle()
+    {
+        return $this->belongsTo(\App\Model\VehicleModel::class, 'vehicle_id');
     }
 }

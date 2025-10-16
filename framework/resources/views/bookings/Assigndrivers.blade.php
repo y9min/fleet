@@ -8,7 +8,7 @@
 
 @section("breadcrumb")
 
-<li class="breadcrumb-item"><a href="{{ route('bookings.index')}}">@lang('menu.bookings')</a></li>
+<li class="breadcrumb-item"><a href="{{ route('invitations.index')}}">@lang('menu.bookings')</a></li>
 
 <li class="breadcrumb-item active">@lang('fleet.edit_booking')</li>
 

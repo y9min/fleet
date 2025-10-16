@@ -62,6 +62,36 @@
     position: relative;
     overflow: hidden;
   }
+  /* Wide revenue card */
+  .revenue-card {
+    background: var(--light-bg);
+    color: var(--dark-bg);
+    border-radius: var(--border-radius);
+    padding: 1.75rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(126, 214, 223, 0.2);
+  }
+  .revenue-card h3 {
+    margin: 0 0 0.75rem 0;
+    font-weight: 700;
+  }
+  .revenue-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .revenue-item {
+    background: transparent;
+    border: 1px solid rgba(126, 214, 223, 0.2);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+  .revenue-label { color: #6c757d; text-transform: uppercase; letter-spacing: .5px; font-size: .85rem; }
+  .revenue-amount { font-size: 2rem; font-weight: 800; color: var(--dark-bg); }
+  @media (max-width: 768px) {
+    .revenue-grid { grid-template-columns: 1fr; }
+    .revenue-amount { font-size: 1.8rem; }
+  }
 
 
   .stat-card:hover {
@@ -131,6 +161,10 @@
     transition: var(--transition);
     height: 100%;
     border: 1px solid rgba(126, 214, 223, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   .action-card:hover {
@@ -142,26 +176,30 @@
     color: var(--dark-bg);
     font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
     border-bottom: 2px solid var(--primary-color);
     padding-bottom: 0.5rem;
+    width: 100%;
+    text-align: center;
   }
 
   .action-btn {
     background: #6B7280;
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: 12px 20px;
     border-radius: 6px;
     font-weight: 500;
     text-decoration: none;
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     transition: all 0.3s ease;
-    margin: 0.25rem;
     font-size: 0.9rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex: 1;
+    min-width: 0;
   }
 
   .action-btn:hover {
@@ -174,6 +212,16 @@
 
   .action-btn i {
     font-size: 1rem;
+  }
+
+  .action-buttons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 1.5rem;
+    padding: 0 1rem;
+    justify-content: center;
+    align-items: center;
   }
 
   .welcome-section {
@@ -294,14 +342,15 @@
   <div class="container-fluid">
     
 
-    <!-- Statistics Cards -->
+    @if(Auth::user()->email !== 'yamzahmed@hotmail.com')
+    <!-- Statistics Cards - Hidden for Yamz -->
     <div class="stats-container">
       <div class="row d-flex no-gutters">
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon vehicles">
-              <svg width="24" height="24" viewBox="0 0 512 512" fill="currentColor">
-                <path d="M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM109.1 224c-2.4 0-4.7.2-6.9.7L133.6 320h244.8l31.4-95.3c-2.2-.5-4.5-.7-6.9-.7H109.1zM160 384c0 17.7-14.3 32-32 32s-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32zM416 384c0 17.7-14.3 32-32 32s-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32zM48 192c0-26.5 21.5-48 48-48H112L138.1 69.4C151.3 41.5 179.5 24 210.4 24H301.6c30.9 0 59.1 17.5 72.3 45.4L400 144h16c26.5 0 48 21.5 48 48v160c0 26.5-21.5 48-48 48H400c0 53-43 96-96 96s-96-43-96-96H208c0 53-43 96-96 96s-96-43-96-96H0V192z"/>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
               </svg>
             </div>
             <h3 class="stat-number">{{ $total_vehicles ?? 0 }}</h3>
@@ -315,8 +364,8 @@
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100">
             <div class="stat-icon drivers">
-              <svg width="24" height="24" viewBox="0 0 448 512" fill="currentColor">
-                <path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0S96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
               </svg>
             </div>
             <h3 class="stat-number">{{ $total_drivers ?? 0 }}</h3>
@@ -326,47 +375,11 @@
             </a>
           </div>
         </div>
-        
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
-          <div class="stat-card w-100">
-            <div class="stat-icon customers">
-              <svg width="24" height="24" viewBox="0 0 640 512" fill="currentColor">
-                <path d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM609.3 512H471.4c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8c2.4-.1 4.7-.2 7.1-.2h61.4C567.8 320 640 392.2 640 481.3c0 17-13.8 30.7-30.7 30.7zM432 256c-31 0-59-12.6-79.3-32.9C372.4 196.5 384 163.6 384 128c0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112z"/>
-              </svg>
-            </div>
-            <h3 class="stat-number">{{ $total_customers ?? 0 }}</h3>
-            <p class="stat-label">@lang('fleet.customers')</p>
-            <a href="{{url('admin/customers')}}" class="stat-link">
-              View All <i class="fa fa-arrow-right"></i>
-            </a>
-          </div>
-        </div>
-        
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
-          <div class="stat-card w-100">
-            <div class="stat-icon bookings">
-              <svg width="24" height="24" viewBox="0 0 448 512" fill="currentColor">
-                <path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/>
-              </svg>
-            </div>
-            <h3 class="stat-number">{{ $total_bookings ?? 0 }}</h3>
-            <p class="stat-label">@lang('fleet.bookings')</p>
-            <a href="{{url('admin/bookings')}}" class="stat-link">
-              View All <i class="fa fa-arrow-right"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Second Row with Onboarding Card -->
-    <div class="stats-container">
-      <div class="row d-flex no-gutters">
         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
           <div class="stat-card w-100" style="cursor: pointer;" onclick="window.location.href='{{url('admin/onboarding')}}'">
-            <div class="stat-icon" style="color: #ff6b6b;">
-              <svg width="24" height="24" viewBox="0 0 640 512" fill="currentColor">
-                <path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0H21.3C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7h42.7C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3H405.3zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352H378.7C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"/>
+            <div class="stat-icon onboarding">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
             </div>
             <h3 class="stat-number">{{ $onboarding_pending ?? 0 }}</h3>
@@ -382,24 +395,151 @@
           </div>
         </div>
         
-        <!-- Placeholder cards to maintain layout -->
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100" style="cursor: pointer;" onclick="window.location.href='{{url('admin/vehicle-inspection')}}'">
+            <div class="stat-icon inspection">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M16.862 4.487a5.5 5.5 0 00-7.41 6.596L3 17.5V21h3.5l6.452-6.452a5.5 5.5 0 006.596-7.41l-3.752 3.752a2.5 2.5 0 01-3.536-3.536l3.752-3.752z"/>
+              </svg>
+            </div>
+            <h3 class="stat-number">{{ $pending_inspections ?? 0 }}</h3>
+            <p class="stat-label">Vehicle Inspections</p>
+            <div class="stat-link">
+              Manage <i class="fa fa-arrow-right"></i>
+            </div>
+            @if(($upcoming_mots ?? 0) > 0)
+              <div style="position: absolute; top: 10px; right: 10px;">
+                <span class="badge badge-warning">{{ $upcoming_mots }} {{ ($upcoming_mots == 1) ? 'upcoming MOT' : 'upcoming MOTs' }}</span>
+              </div>
+            @endif
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- Second Row with Onboarding Card - Hidden for Yamz -->
+    <div class="stats-container">
+      <div class="row d-flex no-gutters">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100" style="cursor: pointer;" onclick="window.location.href='{{url('admin/fines')}}'">
+            <div class="stat-icon fines">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+              </svg>
+            </div>
+            <h3 class="stat-number">{{ $total_fines ?? 0 }}</h3>
+            <p class="stat-label">Fines & Penalties</p>
+            <div class="stat-link">
+              Manage <i class="fa fa-arrow-right"></i>
+            </div>
+            @if(($pending_fines ?? 0) > 0)
+              <div style="position: absolute; top: 10px; right: 10px;">
+                <span class="badge badge-warning">{{ $pending_fines }} Pending</span>
+              </div>
+            @endif
+          </div>
+        </div>
+        
+        
+        
+        <!-- Expected Revenue card in same row as Fines -->
         <div class="col-xl-9 col-lg-9 col-md-9 col-sm-6 col-12 d-flex">
-          <div style="flex: 1;">
-            <!-- Space for future additional cards -->
+          <div class="revenue-card w-100">
+            <h3>Expected Revenue</h3>
+            <div class="revenue-grid">
+              <div class="revenue-item">
+                <div class="revenue-label">Weekly</div>
+                <div class="revenue-amount">£{{ number_format($expected_weekly_revenue ?? 0, 2) }}</div>
+              </div>
+              <div class="revenue-item">
+                <div class="revenue-label">Monthly</div>
+                <div class="revenue-amount">£{{ number_format($expected_monthly_revenue ?? 0, 2) }}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    @endif
 
-    <!-- Action Cards -->
+    @if(Auth::user()->email === 'yamzahmed@hotmail.com')
+    <!-- Yamz Dashboard: Only Admin User Statistics -->
+    <div class="stats-container">
+      <div class="row d-flex no-gutters">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100" style="cursor: pointer;" onclick="window.location.href='{{url('admin/yamz/companies')}}'">
+            <div class="stat-icon companies">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+              </svg>
+            </div>
+            <h3 class="stat-number">{{ $total_companies ?? 0 }}</h3>
+            <p class="stat-label">Companies</p>
+            <div class="stat-link">
+              View All <i class="fa fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100" style="cursor: pointer;" onclick="window.location.href='{{url('admin/yamz/all-users')}}'">
+            <div class="stat-icon super-admins">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+            </div>
+            <h3 class="stat-number">{{ $total_super_admins ?? 0 }}</h3>
+            <p class="stat-label">Super Admins</p>
+            <div class="stat-link">
+              View All <i class="fa fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100" style="cursor: pointer;" onclick="window.location.href='{{url('admin/yamz/all-users')}}'">
+            <div class="stat-icon office-admins">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+            </div>
+            <h3 class="stat-number">{{ $total_office_admins ?? 0 }}</h3>
+            <p class="stat-label">Office Admins</p>
+            <div class="stat-link">
+              View All <i class="fa fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 d-flex">
+          <div class="stat-card w-100" style="cursor: pointer;" onclick="window.location.href='{{url('admin/yamz/all-users')}}'">
+            <div class="stat-icon drivers">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 4H6c-1.1 0-2 .9-2 2v12c0 1.1 .9 2 2 2h12c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-2V2c0-.6-.4-1-1-1s-1 .4-1 1v2h-4V2c0-.6-.4-1-1-1s-1 .4-1 1v2zM6 6h12v12H6V6zm2 6c0-1.1 .9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm8 6c0 1.1-.9 2-2 2h-8c-1.1 0-2-.9-2-2v-1c0-1.1 .9-2 2-2h8c1.1 0 2 .9 2 2v1z"/>
+              </svg>
+            </div>
+            <h3 class="stat-number">{{ $total_drivers ?? 0 }}</h3>
+            <p class="stat-label">Drivers</p>
+            <div class="stat-link">
+              View All <i class="fa fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    @endif
+
+    @if(Auth::user()->email !== 'yamzahmed@hotmail.com')
+    <!-- Action Cards - Hidden for Yamz -->
     <div class="action-cards">
       <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
           <div class="action-card">
             <h3 class="card-title">
               <i class="fa fa-plus-circle"></i> Quick Actions
             </h3>
-            <div class="d-flex flex-wrap">
+            <div class="action-buttons-grid">
               <a href="{{url('admin/vehicles/create')}}" class="action-btn">
                 <i class="fa fa-plus"></i> Add Vehicle
               </a>
@@ -409,36 +549,15 @@
               <a href="{{url('admin/customers/create')}}" class="action-btn">
                 <i class="fa fa-plus"></i> Add Customer
               </a>
-              <a href="{{url('admin/bookings/create')}}" class="action-btn">
-                <i class="fa fa-plus"></i> New Booking
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-md-6">
-          <div class="action-card">
-            <h3 class="card-title">
-              <i class="fa fa-chart-line"></i> Reports & Analytics
-            </h3>
-            <div class="d-flex flex-wrap">
-              <a href="{{url('admin/reports/monthly')}}" class="action-btn">
-                <i class="fa fa-chart-bar"></i> Monthly Report
-              </a>
-              <a href="{{url('admin/reports/yearly')}}" class="action-btn">
-                <i class="fa fa-chart-line"></i> Yearly Report
-              </a>
-              <a href="{{url('admin/reports/fuel')}}" class="action-btn">
-                <i class="fa fa-gas-pump"></i> Fuel Report
-              </a>
-              <a href="{{url('admin/reports/vehicle')}}" class="action-btn">
-                <i class="fa fa-car"></i> Vehicle Report
+              <a href="{{url('admin/invitations/create')}}" class="action-btn">
+                <i class="fa fa-plus"></i> New Pickup Invitation
               </a>
             </div>
           </div>
         </div>
       </div>
     </div>
+    @endif
 
   </div>
 </section>

@@ -25,7 +25,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="icon" href="{{ asset('assets/images/'. Hyvikk::get('icon_img') ) }}" type="icon_img">
+  <link rel="icon" href="{{ asset('assets/images/pco-flow-favicon.png') }}" type="icon_img" sizes="32x32">
 
   <!-- Font Awesome -->
 
@@ -527,11 +527,38 @@ input:checked + .slider:before {
         background: #032127 !important;
         border-bottom: none !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
-        padding: 0.5rem 1rem !important;
+        padding: 0.25rem 1rem !important;
+        margin-left: 0 !important;
+        width: 100% !important;
     }
 
     .main-header .navbar-nav {
         align-items: center;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+    }
+    
+    /* Logo sizing and scaling */
+    .main-header img,
+    .brand-image,
+    .navbar-brand img,
+    .brand-link img {
+        max-height: 100px !important;
+        width: auto !important;
+        object-fit: contain !important;
+        object-position: center !important;
+    }
+    
+    /* Header logo specific sizing */
+    .main-header .nav-item img {
+        height: 80px !important;
+        max-width: 120px !important;
+    }
+    
+    /* Sidebar logo specific sizing */
+    .brand-image {
+        height: 100px !important;
+        max-width: 150px !important;
     }
 
     .content-wrapper {
@@ -793,9 +820,79 @@ input:checked + .slider:before {
                     </div>
                 </button>
             </li>
-            <li class="nav-item" style="display: flex; align-items: center; margin-left: 15px;">
-                <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow" style="height: 35px; margin-right: 12px;">
-                <h4 style="color: white; margin: 0; font-weight: 600; font-size: 1.2rem; line-height: 1;">Dashboard</h4>
+            <li class="nav-item" style="display: flex; align-items: center; margin-left: 15px; padding: 5px 0;">
+                <img src="{{ asset('assets/images/pco-flow-logo-2.png') }}" alt="PCO Flow" style="height: 60px; width: auto; margin-right: 12px; object-fit: contain;">
+                <h4 style="color: white; margin: 0; font-weight: 600; font-size: 1.2rem; line-height: 1;">
+                    @if(Route::currentRouteName() == "admin.dashboard" || Request::is('admin') || Request::is('admin/'))
+                        Dashboard
+                    @elseif(Route::currentRouteName() == "drivers.index")
+                        Drivers
+                    @elseif(Route::currentRouteName() == "drivers.create")
+                        Add Driver
+                    @elseif(Route::currentRouteName() == "drivers.show")
+                        Driver Details
+                    @elseif(Route::currentRouteName() == "drivers.edit")
+                        Edit Driver
+                    @elseif(Route::currentRouteName() == "vehicles.index")
+                        Vehicles
+                    @elseif(Route::currentRouteName() == "vehicles.create")
+                        Add Vehicle
+                    @elseif(Route::currentRouteName() == "vehicles.show")
+                        Vehicle Details
+                    @elseif(Route::currentRouteName() == "vehicles.edit")
+                        Edit Vehicle
+                    @elseif(Route::currentRouteName() == "invitations.index")
+                        Manage Pickup Invitations
+                    @elseif(Route::currentRouteName() == "invitations.create")
+                        New Pickup Invitation
+                    @elseif(Route::currentRouteName() == "invitations.show")
+                        Booking Details
+                    @elseif(Route::currentRouteName() == "invitations.edit")
+                        Edit Booking
+                    @elseif(Route::currentRouteName() == "bookings.calendar")
+                        Vehicle Pickup Calendar 
+                    @elseif(Route::currentRouteName() == "customers.index")
+                        Customers
+                    @elseif(Route::currentRouteName() == "customers.create")
+                        Add Customer
+                    @elseif(Route::currentRouteName() == "customers.show")
+                        Customer Details
+                    @elseif(Route::currentRouteName() == "customers.edit")
+                        Edit Customer
+                    @elseif(Route::currentRouteName() == "onboarding.index")
+                        Onboarding
+                    @elseif(Route::currentRouteName() == "onboarding.show")
+                        Onboarding Details
+                    @elseif(Request::is('admin/vehicle-types*'))
+                        Vehicle Types
+                    @elseif(Request::is('admin/vehicle_group*'))
+                        Vehicle Groups
+                    @elseif(Route::currentRouteName() == "vehicle_inspection")
+                        Vehicle Inspection
+                    @elseif(Request::is('admin/income*'))
+                        Income Management
+                    @elseif(Request::is('admin/expense*'))
+                        Expense Management
+                    @elseif(Request::is('admin/reports*'))
+                        Reports
+                    @elseif(Request::is('admin/settings*'))
+                        Settings
+                    @elseif(Request::is('admin/users*'))
+                        User Management
+                    @elseif(Request::is('admin/fines*'))
+                        Fines & Penalties
+                    @elseif(Request::is('admin/fuel*'))
+                        Fuel Management
+                    @elseif(Request::is('admin/parts*'))
+                        Parts Management
+                    @elseif(Request::is('admin/chat*'))
+                        Messages
+                    @elseif(Request::is('admin/change-details*'))
+                        Change Password
+                    @else
+                        {{ Hyvikk::get('app_name') }}
+                    @endif
+                </h4>
             </li>
         </ul>
 
@@ -809,7 +906,7 @@ input:checked + .slider:before {
             <div class="sidebar-overlay" id="sidebar-overlay" onclick="(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}})();"></div>
             <div class="sidebar-content">
                 <div class="menu-header">
-                    <h3>Fleet Manager</h3>
+                    <h3>{{ Hyvikk::get('app_name') }}</h3>
                     <button class="close-btn" id="close-sidebar-btn" onclick="(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}})(); return false;">&times;</button>
                 </div>
                 <div class="menu-items">
@@ -820,7 +917,6 @@ input:checked + .slider:before {
                         <div class="submenu-content">
                             <a href="{{route('drivers.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-id-card"></i> Drivers</a>
                             <a href="{{url('admin/users')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Users(Managers)</a>
-                            <a href="{{route('customers.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-friends"></i> Customers</a>
                         </div>
                     </div>
 
@@ -828,54 +924,51 @@ input:checked + .slider:before {
                         <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
                             <a href="{{route('vehicles.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Vehicles</a>
-                            <a href="{{url('admin/vehicle-types')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-tag"></i> Manage Vehicle Types</a>
-                            <a href="{{url('admin/vehicle-group')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a>
+                            <a href="{{url('admin/vehicle_group')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a>
                             <a href="{{url('admin/vehicle-inspection')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-clipboard-check"></i> Vehicle Inspection</a>
                         </div>
                     </div>
 
-                    <a href="{{route('onboarding.index')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-plus"></i> Onboarding</a>
-
                     <div class="menu-group">
-                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-exchange-alt"></i> Transactions <i class="fas fa-chevron-down" style="float: right;"></i></div>
+                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-user-plus"></i> Onboarding <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
-                            <a href="{{url('admin/income')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-plus-circle"></i> Manage Income</a>
-                            <a href="{{url('admin/expense')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-minus-circle"></i> Manage Expense</a>
+                            <a href="{{route('onboarding.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-plus"></i> Onboarding</a>
+                            <a href="{{route('invitations.create')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-plus"></i> New Pickup Invitation</a>
+                            <a href="{{route('invitations.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Pickup Invitations</a>
+                            <a href="{{url('admin/calendar')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-calendar"></i> Vehicle Pickup Calendar </a>
                         </div>
                     </div>
 
+                    <a href="{{route('fines.index')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-gavel"></i> Fines and Penalties</a>
+
+
+                    @if(Auth::check() && Auth::user()->email === 'yamzahmed@hotmail.com')
+                    <a href="{{url('admin/messages')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-question-circle"></i> Inquiries</a>
+                    @endif
+                    
+                    @if(Auth::check() && Auth::user()->email === 'yamzahmed@hotmail.com')
                     <div class="menu-group">
-                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-calendar-check"></i> Bookings <i class="fas fa-chevron-down" style="float: right;"></i></div>
+                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-user-shield"></i> Tools <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
-                            <a href="{{route('bookings.create')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-plus"></i> New Booking</a>
-                            <a href="{{route('bookings.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Bookings</a>
-                            <a href="{{url('admin/booking-payments')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-credit-card"></i> Booking Payments</a>
-                            <a href="{{route('booking-quotation.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-file-invoice"></i> Booking Quotations</a>
-                            <a href="{{url('admin/bookings_calendar')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-calendar"></i> Booking Calendar</a>
+                            <a href="{{ route('admin.yamz.all-users') }}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-users"></i> All Users</a>
+                            <a href="{{ route('admin.yamz.companies') }}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-building"></i> Companies Overview</a>
+                            @if(Auth::user()->email === 'yamzahmed@hotmail.com')
+                            <a href="{{ url('admin/messages') }}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-comments"></i> Messages</a>
+                            @endif
                         </div>
                     </div>
-
+                    @endif
+                    
                     <div class="menu-group">
-                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-chart-bar"></i> Reports <i class="fas fa-chevron-down" style="float: right;"></i></div>
+                        <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-user-circle"></i> Profile <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
-                            <a href="{{url('admin/reports/income')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Income Report</a>
-                            <a href="{{url('admin/reports/expense')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Expense Report</a>
-                            <a href="{{url('admin/reports/delinquent')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Delinquent Report</a>
-                            <a href="{{route('reports.monthly')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Monthly Report</a>
-                            <a href="{{url('admin/reports/booking')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Booking Report</a>
-                            <a href="{{url('admin/reports/users')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Users Report</a>
-                            <a href="{{url('admin/reports/work-order')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Work Order Report</a>
-                            <a href="{{url('admin/reports/fuel')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Fuel Report</a>
-                            <a href="{{url('admin/reports/driver')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Driver Report</a>
-                            <a href="{{url('admin/reports/customer')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Customer Report</a>
-                            <a href="{{url('admin/reports/vendor')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Vendor Report</a>
-                            <a href="{{route('reports.yearly')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Yearly Report</a>
-                            <a href="{{url('admin/reports/driver-payment')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);">Driver Payment Report</a>
+                            <a href="{{url('admin/profile')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user"></i> My Profile</a>
+                            @if(Auth::user()->user_type == 'B' || Auth::user()->user_type == 'S')
+                            <a href="{{url('admin/profile/company')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-building"></i> Company Settings</a>
+                            <a href="{{url('admin/profile/office-admins')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Office Admins</a>
+                            @endif
                         </div>
                     </div>
-
-                    <a href="{{url('admin/mechanics')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-cog"></i> Mechanics</a>
-                    <a href="{{url('admin/inquiries')}}" class="menu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-question-circle"></i> Inquiries</a>
                     
                     <!-- Logout at bottom of menu -->
                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
@@ -899,9 +992,9 @@ input:checked + .slider:before {
 
       <a href="{{ url('admin/')}}" class="brand-link">
 
-        <img src="{{ asset('assets/images/' . Hyvikk::get('icon_img')) }}" alt="Fleet Logo" class="brand-image"
+        <img src="{{ asset('assets/images/pco-flow-logo-2.png') }}" alt="PCO Flow Logo" class="brand-image"
 
-          style="opacity: .8">
+          style="opacity: .8; height: 100px; width: auto; object-fit: contain;">
 
         <span class="brand-text font-weight-light">{{ Hyvikk::get('app_name') }}</span>
 
@@ -1035,7 +1128,7 @@ input:checked + .slider:before {
 
 
 
-              @if(Request::is('admin/bookings*'))
+              @if(Request::is('admin/invitations*'))
 
               @php($class="menu-open")
 
@@ -1071,9 +1164,9 @@ input:checked + .slider:before {
 
                   <li class="nav-item">
 
-                    <a href="{{ route('bookings.create')}}"
+                    <a href="{{ route('invitations.create')}}"
 
-                      class="nav-link @if(Request::is('admin/bookings/create')) active @endif">
+                      class="nav-link @if(Request::is('admin/invitations/create')) active @endif">
 
                       <i class="fa fa-address-book nav-icon "></i>
 
@@ -1087,9 +1180,9 @@ input:checked + .slider:before {
 
                   <li class="nav-item">
 
-                    <a href="{{ route('bookings.index')}}"
+                    <a href="{{ route('invitations.index')}}"
 
-                      class="nav-link @if((Request::is('admin/bookings*')) && !(Request::is('admin/bookings/create')) && !(Request::is('admin/bookings_calendar'))) active @endif">
+                      class="nav-link @if((Request::is('admin/invitations*')) && !(Request::is('admin/invitations/create')) && !(Request::is('admin/calendar'))) active @endif">
 
                       <i class="fa fa-tasks nav-icon"></i>
 
@@ -1860,7 +1953,7 @@ input:checked + .slider:before {
                   </li>
                 </ul>
               </li> @endcan
-              @if((Request::is('admin/transactions*')) || (Request::is('admin/bookings*')) ||(Request::is('admin/bookings_calendar')) || (Request::is('admin/booking-quotation*')))
+              @if((Request::is('admin/transactions*')) || (Request::is('admin/invitations*')) ||(Request::is('admin/calendar')))
               @php($class="menu-open")
               @php($active="active")
               @else
@@ -1879,8 +1972,8 @@ input:checked + .slider:before {
                 <ul class="nav nav-treeview">
                   @can('Bookings add')
                   <li class="nav-item">
-                    <a href="{{ route('bookings.create')}}"
-                      class="nav-link @if(Request::is('admin/bookings/create')) active @endif">
+                    <a href="{{ route('invitations.create')}}"
+                      class="nav-link @if(Request::is('admin/invitations/create')) active @endif">
                       <i class="fa fa-address-book nav-icon "></i>
                       <p>
                         @lang('menu.newbooking')</p>
@@ -1889,8 +1982,8 @@ input:checked + .slider:before {
                   @endcan
                   @can('Bookings list')
                   <li class="nav-item">
-                    <a href="{{ route('bookings.index')}}"
-                      class="nav-link @if((Request::is('admin/bookings*')) && !(Request::is('admin/bookings/create')) && !(Request::is('admin/bookings_calendar'))) active @endif">
+                    <a href="{{ route('invitations.index')}}"
+                      class="nav-link @if((Request::is('admin/invitations*')) && !(Request::is('admin/invitations/create')) && !(Request::is('admin/calendar'))) active @endif">
                       <i class="fa fa-tasks nav-icon"></i>
                       <p>
                         @lang('menu.manage_bookings')</p>
@@ -1905,20 +1998,11 @@ input:checked + .slider:before {
                     </a>
                   </li>
                   @endcan
-                  @can('BookingQuotations list')
-                  <li class="nav-item">
-                    <a href="{{ route('booking-quotation.index')}}"
-                      class="nav-link @if(Request::is('admin/booking-quotation*')) active @endif">
-                      <i class="fa fa-quote-left nav-icon"></i>
-                      <p>
-                        @lang('fleet.booking_quotes')</p>
-                    </a>
-                  </li>
-                  @endcan
+                  
                   @can('Bookings list')
                   <li class="nav-item">
                     <a href="{{ route('bookings.calendar')}}"
-                      class="nav-link @if(Request::is('admin/bookings_calendar')) active @endif">
+                      class="nav-link @if(Request::is('admin/calendar')) active @endif">
                       <i class="fa fa-calendar nav-icon"></i>
                       <p>
                         @lang('menu.calendar')</p>
@@ -2605,7 +2689,7 @@ input:checked + .slider:before {
               </li>
               @endif
               @can('Inquiries list')
-              @if(in_array(Auth::user()->user_type, ['S','O']))
+              @if(Auth::user()->email === 'yamzahmed@hotmail.com')
               <li class="nav-item">
                 <a href="{{ url('admin/messages')}}" class="nav-link @if(Request::is('admin/messages')) active @endif">
                   <i class="nav-icon fa fa-comments"></i>
@@ -2649,12 +2733,6 @@ input:checked + .slider:before {
       <!-- /.content -->
     </div>
     <!-- /.content-wrapper -->
-    <footer class="main-footer">
-      {!! Hyvikk::get('web_footer') !!}
-      <div class="float-right d-none d-sm-inline-block">
-        <b>@lang('fleet.version')</b> 7.1.2
-      </div>
-    </footer>
     <!-- Control Sidebar -->
     <aside class="control-sidebar control-sidebar-dark">
       <!-- Control sidebar content goes here -->

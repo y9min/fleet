@@ -16,7 +16,13 @@ use Validator;
 class VehicleInspectionApiController extends Controller {
 	public function get_vehicles() {
 		$user = Auth::user();
-		if ($user->group_id == null || $user->user_type == "S") {
+		if ($user->user_type == "B" && $user->company_id == null) {
+			// Boss Admin with no company sees no vehicles
+			$vehicles = collect();
+		} elseif ($user->company_id) {
+			// Super Admin or Office Admin - filter by company
+			$vehicles = VehicleModel::where('company_id', $user->company_id)->get();
+		} elseif ($user->group_id == null || $user->user_type == "S") {
 			$vehicles = VehicleModel::get();
 		} else {
 			$vehicles = VehicleModel::where('group_id', $user->group_id)->get();
@@ -229,7 +235,20 @@ class VehicleInspectionApiController extends Controller {
 	}
 	public function inspections() {
 		$details = array();
-		$records = VehicleReviewModel::orderBy('id', 'desc')->get();
+		$user = Auth::user();
+		
+		// Apply company filtering for inspections
+		if ($user->user_type == "B" && $user->company_id == null) {
+			// Boss Admin with no company sees no inspections
+			$records = collect();
+		} elseif ($user->company_id) {
+			// Super Admin or Office Admin - filter by company vehicles
+			$vehicleIds = \App\Model\VehicleModel::where('company_id', $user->company_id)->pluck('id')->toArray();
+			if (empty($vehicleIds)) { $vehicleIds = [0]; }
+			$records = VehicleReviewModel::whereIn('vehicle_id', $vehicleIds)->orderBy('id', 'desc')->get();
+		} else {
+			$records = VehicleReviewModel::orderBy('id', 'desc')->get();
+		}
 		foreach ($records as $row) {
 			$petrol_card = unserialize($row->petrol_card);
 			$lights_indicators = unserialize($row->lights);

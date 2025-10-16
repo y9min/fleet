@@ -18,6 +18,9 @@
               <th><input type="checkbox" id="chk_all"></th>
               <th>@lang('fleet.user')</th>
               <th>@lang('fleet.email')</th>
+              <th>Company Name</th>
+              <th>Phone Number</th>
+              <th>Fleet Size</th>
               <th>@lang('fleet.message')</th>
               <th>@lang('fleet.delete')</th>
             </tr>
@@ -28,6 +31,9 @@
               <td><input type="checkbox" class="checkbox" name="ids[]" value="{{ $msg->id }}"></td>
               <td>{{ $msg->name }}</td>
               <td>{{ $msg->email }}</td>
+              <td>{{ $msg->company ?? 'N/A' }}</td>
+              <td>{{ $msg->phone ?? 'N/A' }}</td>
+              <td>{{ $msg->fleet_size ?? 'N/A' }}</td>
               <td>{{ $msg->message }}</td>
               <td>
                 <button class="btn btn-danger btn-sm delete-btn" data-id="{{ $msg->id }}" data-toggle="modal" data-target="#singleDeleteModal">
@@ -46,6 +52,9 @@
               </th>
               <th>@lang('fleet.user')</th>
               <th>@lang('fleet.email')</th>
+              <th>Company Name</th>
+              <th>Phone Number</th>
+              <th>Fleet Size</th>
               <th>@lang('fleet.message')</th>
               <th>@lang('fleet.delete')</th>
             </tr>

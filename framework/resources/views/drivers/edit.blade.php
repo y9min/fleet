@@ -25,6 +25,9 @@
       </div>
 
       <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i> Fields marked with <span style="color: red;">*</span> are required and must be filled before saving.
+        </div>
         @if (count($errors) > 0)
         <div class="alert alert-danger">
           <ul>
@@ -43,7 +46,7 @@
         <div class="row">
           <div class="col-md-4">
             <div class="form-group">
-              {!! Form::label('first_name', __('fleet.firstname'), ['class' => 'form-label required']) !!}
+              {!! Form::label('first_name', __('fleet.firstname') . ' <span style="color: red;">*</span>', ['class' => 'form-label required'], false) !!}
               {!! Form::text('first_name', $driver->getMeta('first_name'),['class' => 'form-control','required']) !!}
             </div>
           </div>
@@ -55,7 +58,7 @@
           </div>
           <div class="col-md-4">
             <div class="form-group">
-              {!! Form::label('last_name', __('fleet.lastname'), ['class' => 'form-label required']) !!}
+              {!! Form::label('last_name', __('fleet.lastname') . ' <span style="color: red;">*</span>', ['class' => 'form-label required'], false) !!}
               {!! Form::text('last_name', $driver->getMeta('last_name'),['class' => 'form-control','required']) !!}
             </div>
           </div>
@@ -64,18 +67,18 @@
           
           <div class="col-md-6">
             <div class="form-group">
-              {!! Form::label('address', __('fleet.address'), ['class' => 'form-label required']) !!}
+              {!! Form::label('address', __('fleet.address'), ['class' => 'form-label']) !!}
               <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text"><i class="fa fa-address-book"></i></span>
                 </div>
-                {!! Form::text('address', $driver->getMeta('address'),['class' => 'form-control','required']) !!}
+                {!! Form::text('address', $driver->getMeta('address'),['class' => 'form-control']) !!}
               </div>
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group">
-              {!! Form::label('email', __('fleet.email'), ['class' => 'form-label required']) !!}
+              {!! Form::label('email', __('fleet.email') . ' <span style="color: red;">*</span>', ['class' => 'form-label required'], false) !!}
               <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text"><i class="fa fa-envelope"></i></span>
@@ -88,10 +91,10 @@
         <div class="row">
           <div class="col-md-4">
             <div class="form-group">
-              {!! Form::label('phone', __('fleet.phone'), ['class' => 'form-label required']) !!}
+              {!! Form::label('phone', __('fleet.phone') . ' <span style="color: red;">*</span>', ['class' => 'form-label required'], false) !!}
               <div class="input-group">
                 <div class="input-group-prepend">
-                  {!! Form::select('phone_code',$phone_code,$driver->getMeta('phone_code'),['class' => 'form-control
+                  {!! Form::select('phone_code',$phone_code,'+44',['class' => 'form-control
                   code','required','style'=>'width:80px;']) !!}
                 </div>
                 {!! Form::number('phone', $driver->getMeta('phone'),['class' => 'form-control','required']) !!}
@@ -121,24 +124,14 @@
             </div>
           </div>
 
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('issue_date', __('fleet.issueDate'), ['class' => 'form-label']) !!}
-              <div class="input-group date">
-                <div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                </div>
-                {!! Form::text('issue_date', $driver->getMeta('issue_date'),['class' => 'form-control','required']) !!}
-              </div>
-            </div>
-          </div>
 
           <div class="col-md-4">
             <div class="form-group">
-              {!! Form::label('exp_date', __('fleet.expirationDate'), ['class' => 'form-label required']) !!}
+              {!! Form::label('exp_date', 'License Expiration Date', ['class' => 'form-label']) !!}
               <div class="input-group date">
                 <div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-calendar"></i></span>
                 </div>
-                {!! Form::text('exp_date', $driver->getMeta('exp_date'),['class' => 'form-control','required']) !!}
+                {!! Form::text('exp_date', $driver->getMeta('exp_date'),['class' => 'form-control']) !!}
               </div>
             </div>
           </div>
@@ -166,29 +159,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('driver_commision_type', __('fleet.driver_commision_type'), ['class' => 'form-label']) !!}
-              
-                {!! Form::select('driver_commision_type',['amount'=>__('fleet.amount'), 'percent'=> __('fleet.percent')],$driver->getMeta('driver_commision_type'),['class' => 'form-control', 'placeholder' =>__('fleet.select'), 'required']) !!}            
-            </div>
-          </div>
-          <div class="col-md-4" id="driver_commision_container" style="display: none;">
-            <div class="form-group">
-              {!! Form::label('driver_commision', __('fleet.driver_commision'), ['class' => 'form-label']) !!}              
-                {!! Form::number('driver_commision',$driver->getMeta('driver_commision'),['class' => 'form-control']) !!}            
-            </div>
-          </div>
-        </div>
-        <div class="row">
           <div class="col-md-6">
-            <div class="form-group">
-              {!! Form::label('gender', __('fleet.gender') , ['class' => 'form-label']) !!}<br>
-              <input type="radio" name="gender" class="flat-red gender" value="1" @if($driver->getMeta('gender')== 1)
-              checked @endif> @lang('fleet.male')<br>
-              <input type="radio" name="gender" class="flat-red gender" value="0" @if($driver->getMeta('gender')== 0)
-              checked @endif> @lang('fleet.female')
-            </div>
             <div class="form-group">
               {!! Form::label('driver_image', __('fleet.driverImage'), ['class' => 'form-label']) !!}
               @if($driver->getMeta('driver_image') != null)

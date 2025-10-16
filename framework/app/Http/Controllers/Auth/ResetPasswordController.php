@@ -36,7 +36,7 @@ class ResetPasswordController extends Controller
     // Redirect after successful password reset
     protected function redirectTo()
     {
-        return '/admin/login';
+        return '/login';
     }
 
     // Handle invalid token case

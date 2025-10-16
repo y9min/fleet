@@ -16,6 +16,7 @@ use App\Model\User;
 use App\Model\VehicleModel;
 use App\Model\Vendor;
 use App\OnboardingDriver;
+use App\Fine;
 use Auth;
 use DB;
 use Hyvikk;
@@ -101,18 +102,272 @@ class HomeController extends Controller {
         $data['page_description'] = "Fleet Management Dashboard";
         $data['page_keywords'] = "fleet, management, dashboard";
 
-        // Basic dashboard statistics
-        $data['total_vehicles'] = \App\Model\VehicleModel::count();
-        $data['total_drivers'] = \App\Model\User::where('user_type', 'D')->count();
-        $data['total_customers'] = \App\Model\User::where('user_type', 'C')->count();
-        $data['total_bookings'] = \App\Model\Bookings::count();
-        
-        // Onboarding statistics
-        $data['onboarding_pending'] = OnboardingDriver::submitted()->count();
-        $data['onboarding_total'] = OnboardingDriver::count();
+        // Check if this is Yamz (Boss Admin with no company)
+        $user = Auth::user();
+        // Always expose currency for dashboard cards
+        $data['currency'] = Hyvikk::get('currency');
+        if ($user->getRawOriginal('user_type') === 'B' && is_null($user->company_id) && $user->email === 'yamzahmed@hotmail.com') {
+            // Yamz ONLY: Show snapshot of all users and companies
+            $data['total_vehicles'] = \App\Model\VehicleModel::count();
+            $data['total_drivers'] = \App\Model\User::where('user_type', 'D')->count();
+            $data['total_customers'] = \App\Model\User::where('user_type', 'C')->count();
+            $data['total_bookings'] = \App\Model\Bookings::count();
+            $data['onboarding_pending'] = OnboardingDriver::submitted()->count();
+            $data['onboarding_total'] = OnboardingDriver::count();
+            $data['total_fines'] = Fine::where('status', '!=', 'paid')->count();
+            $data['pending_fines'] = Fine::where('status', 'pending')->count();
+            $data['total_inspections'] = \App\Model\VehicleReviewModel::count();
+            $data['pending_inspections'] = \App\Model\VehicleModel::whereMeta('vehicle_status', 'Workshop')->count();
+            
+            // MOT statistics (all vehicles)
+            $data['upcoming_mots'] = \App\Model\VehicleModel::with('metas')
+                ->where(function($query) {
+                    $query->whereHas('metas', function($q) {
+                        $q->where('key', 'mot_expiry_date')->whereNotNull('value');
+                    })
+                    ->orWhereHas('metas', function($q) {
+                        $q->where('key', 'exp_date')->whereNotNull('value');
+                    })
+                    ->orWhereNotNull('lic_exp_date');
+                })
+                ->get()
+                ->filter(function($vehicle) {
+                    $motExpiryDate = $vehicle->getMeta('mot_expiry_date') ?: 
+                                   $vehicle->getMeta('exp_date') ?: 
+                                   $vehicle->lic_exp_date;
+                    
+                    if (!$motExpiryDate) return false;
+                    
+                    try {
+                        $expiryDate = \Carbon\Carbon::parse($motExpiryDate);
+                        // Count MOTs expiring within next 30 days
+                        return $expiryDate->isAfter(now()) && $expiryDate->isBefore(now()->addDays(30));
+                    } catch (\Exception $e) {
+                        return false;
+                    }
+                })
+                ->count();
+                
+            // Add company and user statistics for Yamz
+            $data['total_companies'] = \App\Model\Company::count();
+            $data['total_super_admins'] = \App\Model\User::where('user_type', 'S')->count();
+            $data['total_office_admins'] = \App\Model\User::where('user_type', 'O')->count();
+            $data['total_boss_admins'] = \App\Model\User::where('user_type', 'B')->count();
+
+            // Expected Revenue (global scope for Yamz)
+            [$weeklyRevenue, $monthlyRevenue] = $this->calculateExpectedRevenue();
+            $data['expected_weekly_revenue'] = $weeklyRevenue;
+            $data['expected_monthly_revenue'] = $monthlyRevenue;
+        } else {
+            // All other users: Keep existing logic
+            // Basic dashboard statistics (scoped by company)
+            if (in_array($user->getRawOriginal('user_type'), ['S','O']) && !is_null($user->company_id)) {
+                // Super/Office Admin: show only their company's data
+                $data['total_vehicles'] = \App\Model\VehicleModel::where('company_id', $user->company_id)->count();
+                $data['total_drivers'] = \App\Model\User::where('user_type', 'D')->where('company_id', $user->company_id)->count();
+                $data['total_customers'] = \App\Model\User::where('user_type', 'C')->where('company_id', $user->company_id)->count();
+                $data['total_bookings'] = \App\Model\Bookings::where('company_id', $user->company_id)->count();
+                // Expected Revenue (company-scoped)
+                [$weeklyRevenue, $monthlyRevenue] = $this->calculateExpectedRevenue($user->company_id);
+                $data['expected_weekly_revenue'] = $weeklyRevenue;
+                $data['expected_monthly_revenue'] = $monthlyRevenue;
+            } elseif ($user->getRawOriginal('user_type') === 'B' && is_null($user->company_id)) {
+                // Boss Admin with no company assigned: show zeros
+                $data['total_vehicles'] = 0;
+                $data['total_drivers'] = 0;
+                $data['total_customers'] = 0;
+                $data['total_bookings'] = 0;
+                $data['expected_weekly_revenue'] = 0;
+                $data['expected_monthly_revenue'] = 0;
+            } else {
+                // Fallback (e.g., drivers/customers): if they have a company, scope to it; else zero
+                if (!is_null($user->company_id)) {
+                    $data['total_vehicles'] = \App\Model\VehicleModel::where('company_id', $user->company_id)->count();
+                    $data['total_drivers'] = \App\Model\User::where('user_type', 'D')->where('company_id', $user->company_id)->count();
+                    $data['total_customers'] = \App\Model\User::where('user_type', 'C')->where('company_id', $user->company_id)->count();
+                    $data['total_bookings'] = \App\Model\Bookings::where('company_id', $user->company_id)->count();
+                    // Expected Revenue (company-scoped)
+                    [$weeklyRevenue, $monthlyRevenue] = $this->calculateExpectedRevenue($user->company_id);
+                    $data['expected_weekly_revenue'] = $weeklyRevenue;
+                    $data['expected_monthly_revenue'] = $monthlyRevenue;
+                } else {
+                    $data['total_vehicles'] = 0;
+                    $data['total_drivers'] = 0;
+                    $data['total_customers'] = 0;
+                    $data['total_bookings'] = 0;
+                    $data['expected_weekly_revenue'] = 0;
+                    $data['expected_monthly_revenue'] = 0;
+                }
+            }
+            
+            // Onboarding & Fines statistics (company-scoped)
+            if (in_array($user->getRawOriginal('user_type'), ['S','O']) && !is_null($user->company_id)) {
+                // Show global onboarding counts to ensure accuracy even if vehicle_id is null
+                $data['onboarding_pending'] = OnboardingDriver::submitted()->count();
+                $data['onboarding_total'] = OnboardingDriver::count();
+                // Fines still scoped by company vehicles
+                $companyVehicleIds = \App\Model\VehicleModel::where('company_id', $user->company_id)->pluck('id')->toArray();
+                if (empty($companyVehicleIds)) { $companyVehicleIds = [0]; }
+                $data['total_fines'] = Fine::where('status', '!=', 'paid')
+                    ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                $data['pending_fines'] = Fine::where('status', 'pending')
+                    ->whereIn('vehicle_id', $companyVehicleIds)->count();
+            } elseif ($user->getRawOriginal('user_type') === 'B' && is_null($user->company_id)) {
+                // Boss Admin with no company: show global onboarding counts
+                $data['onboarding_pending'] = OnboardingDriver::submitted()->count();
+                $data['onboarding_total'] = OnboardingDriver::count();
+                // Keep fines behavior unchanged
+                $data['total_fines'] = 0;
+                $data['pending_fines'] = 0;
+            } else {
+                // For all other users, show global onboarding counts for accuracy
+                $data['onboarding_pending'] = OnboardingDriver::submitted()->count();
+                $data['onboarding_total'] = OnboardingDriver::count();
+                if (!is_null($user->company_id)) {
+                    $companyVehicleIds = \App\Model\VehicleModel::where('company_id', $user->company_id)->pluck('id')->toArray();
+                    if (empty($companyVehicleIds)) { $companyVehicleIds = [0]; }
+                    $data['total_fines'] = Fine::where('status', '!=', 'paid')
+                        ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                    $data['pending_fines'] = Fine::where('status', 'pending')
+                        ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                } else {
+                    $data['total_fines'] = 0;
+                    $data['pending_fines'] = 0;
+                }
+            }
+            
+            // Vehicle inspection statistics
+            if ($user->group_id == null || $user->getRawOriginal('user_type') == "S") {
+                // Company-scoped inspections for Super Admin
+                if (!is_null($user->company_id)) {
+                    $vehicle_ids_company = \App\Model\VehicleModel::where('company_id', $user->company_id)->pluck('id')->toArray();
+                    if (empty($vehicle_ids_company)) { $vehicle_ids_company = [0]; }
+                    $data['total_inspections'] = \App\Model\VehicleReviewModel::whereIn('vehicle_id', $vehicle_ids_company)->count();
+                    $data['pending_inspections'] = \App\Model\VehicleModel::where('company_id', $user->company_id)->whereMeta('vehicle_status', 'Workshop')->count();
+                } else {
+                    // No company: show zeros
+                    $data['total_inspections'] = 0;
+                    $data['pending_inspections'] = 0;
+                }
+                
+                // MOT statistics (company-scoped)
+                $data['upcoming_mots'] = \App\Model\VehicleModel::with('metas')
+                    ->when(!is_null($user->company_id), function($q) use ($user) {
+                        return $q->where('company_id', $user->company_id);
+                    })
+                    ->where(function($query) {
+                        $query->whereHas('metas', function($q) {
+                            $q->where('key', 'mot_expiry_date')->whereNotNull('value');
+                        })
+                        ->orWhereHas('metas', function($q) {
+                            $q->where('key', 'exp_date')->whereNotNull('value');
+                        })
+                        ->orWhereNotNull('lic_exp_date');
+                    })
+                    ->get()
+                    ->filter(function($vehicle) {
+                        $motExpiryDate = $vehicle->getMeta('mot_expiry_date') ?: 
+                                       $vehicle->getMeta('exp_date') ?: 
+                                       $vehicle->lic_exp_date;
+                        
+                        if (!$motExpiryDate) return false;
+                        
+                        try {
+                            $expiryDate = \Carbon\Carbon::parse($motExpiryDate);
+                            // Count MOTs expiring within next 30 days
+                            return $expiryDate->isAfter(now()) && $expiryDate->isBefore(now()->addDays(30));
+                        } catch (\Exception $e) {
+                            return false;
+                        }
+                    })
+                    ->count();
+            } else {
+                // Group user - show only inspections for vehicles in their group
+                $vehicle_ids = \App\Model\VehicleModel::where('group_id', $user->group_id)->pluck('id')->toArray();
+                if (empty($vehicle_ids)) {
+                    $vehicle_ids = [0]; // Prevent empty array issues
+                }
+                $data['total_inspections'] = \App\Model\VehicleReviewModel::whereIn('vehicle_id', $vehicle_ids)->count();
+                $data['pending_inspections'] = \App\Model\VehicleModel::where('group_id', $user->group_id)
+                    ->whereMeta('vehicle_status', 'Workshop')->count();
+                
+                // MOT statistics for group user
+                $data['upcoming_mots'] = \App\Model\VehicleModel::where('group_id', $user->group_id)
+                    ->with('metas')
+                    ->where(function($query) {
+                        $query->whereHas('metas', function($q) {
+                            $q->where('key', 'mot_expiry_date')->whereNotNull('value');
+                        })
+                        ->orWhereHas('metas', function($q) {
+                            $q->where('key', 'exp_date')->whereNotNull('value');
+                        })
+                        ->orWhereNotNull('lic_exp_date');
+                    })
+                    ->get()
+                    ->filter(function($vehicle) {
+                        $motExpiryDate = $vehicle->getMeta('mot_expiry_date') ?: 
+                                       $vehicle->getMeta('exp_date') ?: 
+                                       $vehicle->lic_exp_date;
+                        
+                        if (!$motExpiryDate) return false;
+                        
+                        try {
+                            $expiryDate = \Carbon\Carbon::parse($motExpiryDate);
+                            // Count MOTs expiring within next 30 days
+                            return $expiryDate->isAfter(now()) && $expiryDate->isBefore(now()->addDays(30));
+                        } catch (\Exception $e) {
+                            return false;
+                        }
+                    })
+                    ->count();
+            }
+        }
 
         return view('home', $data);
     }
+        /**
+         * Calculate expected weekly and monthly revenue across vehicles with status "Rented".
+         * If $companyId is provided, scope to that company; otherwise include all vehicles.
+         * Returns array [weeklyRevenue, monthlyRevenue].
+         */
+        private function calculateExpectedRevenue($companyId = null)
+        {
+                $query = VehicleModel::query()->with('metas');
+                if (!is_null($companyId)) {
+                        $query->where('company_id', $companyId);
+                }
+                $vehicles = $query->get();
+
+                $weekly = 0.0;
+                $monthly = 0.0;
+                $weeksPerMonth = 4.0; // use 4 weeks per month for conversion
+
+                foreach ($vehicles as $vehicle) {
+                        $status = $vehicle->getMeta('vehicle_status') ?: 'Available';
+                        if (strcasecmp($status, 'Rented') !== 0) {
+                                continue;
+                        }
+
+                        // Price: support both 'vehicle_price' and legacy 'price'
+                        $rawPrice = $vehicle->getMeta('vehicle_price');
+                        if ($rawPrice === null || $rawPrice === '') {
+                                $rawPrice = $vehicle->getMeta('price');
+                        }
+                        $price = is_numeric($rawPrice) ? (float)$rawPrice : 0.0;
+                        if ($price <= 0) { continue; }
+
+                        $period = strtolower((string)($vehicle->getMeta('price_period') ?: 'weekly'));
+                        if ($period === 'monthly') {
+                                $monthly += $price;
+                                $weekly += $price / $weeksPerMonth;
+                        } else { // default weekly
+                                $weekly += $price;
+                                $monthly += $price * $weeksPerMonth;
+                        }
+                }
+
+                return [round($weekly, 2), round($monthly, 2)];
+        }
         private function yearly_income($year) {
                 if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
                         $all_vehicles = VehicleModel::get();
@@ -186,6 +441,6 @@ class HomeController extends Controller {
         }
         public function logout() {
                 Auth::logout();
-                return redirect('admin/');
+                return redirect('/');
         }
 }

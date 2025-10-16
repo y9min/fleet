@@ -587,8 +587,10 @@ class BookingController extends Controller {
                 {
                     if($vehicle->getMeta('price') != '0')
                     {
-    
-                        $total_fare=$vehicle->getMeta('price');
+                        // Calculate price based on insurance selection
+                        // For now, default to 'with_insurance' - this can be updated when insurance selection is available
+                        $insuranceSelection = 'with_insurance'; // TODO: Get from booking/driver data
+                        $total_fare = $vehicle->calculatePrice($insuranceSelection);
     
                         $count = 0;
                         if (Hyvikk::get('tax_charge') != "null") {

@@ -245,40 +245,107 @@ class VehiclesApiController extends Controller {
 			$data['message'] = implode(", ", $errors->all());
 			$data['data'] = "";
 		} else {
-			$records = User::meta()->where('users_meta.key', '=', 'vehicle_id')->where('users_meta.value', '=', $request->vehicle_id)->get();
-			// remove records of this vehicle which are assigned to other drivers
-			foreach ($records as $record) {
-				$record->vehicle_id = null;
-				$record->save();
-			}
 			$vehicle = VehicleModel::find($request->vehicle_id);
-			$vehicle->driver_id = $request->driver_id;
-			$vehicle->save();
-			DriverVehicleModel::updateOrCreate(['vehicle_id' => $request->vehicle_id], ['vehicle_id' => $request->vehicle_id, 'driver_id' => $request->driver_id]);
-			DriverLogsModel::create(['driver_id' => $request->driver_id, 'vehicle_id' => $request->vehicle_id, 'date' => date('Y-m-d H:i:s')]);
-			$driver = User::find($request->driver_id);
-			if ($driver != null) {
-				$driver->vehicle_id = $request->vehicle_id;
-				$driver->save();
+			
+			// If assigning a driver, first detach them from any other vehicle
+			if ($request->driver_id) {
+				// Find and detach the driver from any other vehicle
+				$otherVehicles = VehicleModel::whereHas('metas', function($query) use ($request) {
+					$query->where('key', 'assign_driver_id')
+						  ->where('value', $request->driver_id);
+				})->get();
+				
+				foreach ($otherVehicles as $otherVehicle) {
+					$otherVehicle->setMeta(['assign_driver_id' => null]);
+					$otherVehicle->save();
+					$otherVehicle->drivers()->detach($request->driver_id);
+				}
+				
+				// Also detach any existing driver from the current vehicle
+				$currentDriverId = $vehicle->getMeta('assign_driver_id');
+				if ($currentDriverId) {
+					$vehicle->drivers()->detach($currentDriverId);
+				}
 			}
+			
+			$vehicle->setMeta([
+				'assign_driver_id' => $request->driver_id,
+			]);
+			
+			// Automatically update vehicle status based on driver assignment
+			if ($request->driver_id) {
+				// Driver assigned - set status to "Rented"
+				$vehicle->setMeta(['vehicle_status' => 'Rented']);
+				$vehicle->drivers()->sync($request->driver_id);
+				DriverLogsModel::create(['driver_id' => $request->driver_id, 'vehicle_id' => $request->vehicle_id, 'date' => date('Y-m-d H:i:s')]);
+			} else {
+				// Driver removed - set status to "Available"
+				$vehicle->setMeta(['vehicle_status' => 'Available']);
+			}
+			
+			$vehicle->save();
+			
+			// Send vehicle assignment email notification
+			try {
+				$driver = User::find($request->driver_id);
+				if ($driver && $driver->email) {
+					$emailService = new \App\Utils\ResendEmailService();
+					$emailResult = $emailService->sendVehicleAssignmentEmail(
+						$driver->email, 
+						$driver->name, 
+						$vehicle->license_plate, 
+						$vehicle->make_name . ' ' . $vehicle->model_name
+					);
+					
+					if ($emailResult['success']) {
+						\Log::info('Vehicle assignment email sent successfully', [
+							'driver_email' => $driver->email,
+							'driver_name' => $driver->name,
+							'vehicle_plate' => $vehicle->license_plate,
+							'resend_id' => $emailResult['resend_id'] ?? null
+						]);
+					} else {
+						\Log::warning('Failed to send vehicle assignment email', [
+							'driver_email' => $driver->email,
+							'driver_name' => $driver->name,
+							'vehicle_plate' => $vehicle->license_plate,
+							'error' => $emailResult['message']
+						]);
+					}
+				}
+			} catch (\Exception $emailException) {
+				\Log::error('Exception while sending vehicle assignment email', [
+					'driver_id' => $request->driver_id,
+					'vehicle_id' => $request->vehicle_id,
+					'error' => $emailException->getMessage()
+				]);
+				// Don't fail the assignment process if email fails
+			}
+			
+			// Get updated vehicle status
+			$vehicleStatus = $vehicle->getMeta('vehicle_status') ?: 'Available';
+			
 			$data['success'] = "1";
 			$data['message'] = "Driver assigned successfully!";
 			$data['data'] = "";
+			$data['vehicle_status'] = $vehicleStatus;
 		}
 		return $data;
 	}
 	public function available_drivers($id) {
-		$assigned = DriverVehicleModel::get();
-		$did[] = 0;
-		foreach ($assigned as $d) {
-			$did[] = $d->driver_id;
-		}
-		$data = DriverVehicleModel::where('vehicle_id', $id)->first();
-		// $except = array_diff($did, array($data->driver_id));
-		if ($data != null) {
-			$except = array_diff($did, array($data->driver_id));
-		} else { $except = $did;}
-		$drivers = User::whereUser_type("D")->whereNotIn('id', $except)->get();
+		// Get drivers excluding those already assigned to other vehicles and inactive drivers
+		$drivers = User::whereUser_type("D")
+				->whereHas('metas', function($query) {
+					$query->where('key', 'is_active')
+						  ->where('value', '1');
+				})
+				->whereDoesntHave('vehicles', function($query) use ($id) {
+					$query->where('vehicles.id', '!=', $id);
+				})
+				->orWhereHas('vehicles', function($query) use ($id) {
+					$query->where('vehicles.id', $id);
+				})
+				->get();
 		$details = array();
 		foreach ($drivers as $row) {
 			$details[] = array(

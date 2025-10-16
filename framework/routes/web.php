@@ -1,29 +1,26 @@
 <?php
 
+// Public route for downloading sample vehicle template
+Route::get("download-vehicle-sample", "Admin\VehiclesController@downloadSample")->name("download-vehicle-sample");
 
-
-
-
+// Public route for downloading empty vehicle template
+Route::get("download-empty-template/{format}", "Admin\VehiclesController@downloadEmptyTemplate")->name("download-empty-template");
 
 Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_enable']], function () {
 
 
-    Route::get("/login", "UnifiedLoginController@showLoginForm")->name("log_in");
+    Route::get("/login", "UnifiedLoginController@showLoginForm")->name("login");
     Route::post("unified-login", "UnifiedLoginController@login")->name("unified.login");
+    Route::post("unified-logout", "UnifiedLoginController@logout")->name("unified.logout");
+    
+    // Driver Password Reset Routes
+    Route::get('driver-forgot-password', 'UnifiedLoginController@showDriverForgotPasswordForm')->name('driver.forgot.password');
+    Route::post('driver-forgot-password', 'UnifiedLoginController@sendDriverPasswordReset')->name('driver.send.reset');
+    Route::get('driver-reset-password/{token}', 'UnifiedLoginController@showDriverResetPasswordForm')->name('driver.reset.password');
+    Route::post('driver-reset-password', 'UnifiedLoginController@resetDriverPassword')->name('driver.reset.password.submit');
     
     Route::get('/sign_up', function () {
-
-  
-        if(Hyvikk::api('anyone_register') == "1")
-        {
-             return view('customer_dashboard.sign_up');
-        }
-        else
-        {
-           abort(403, "Access denied.");
-        }
-        
-       
+        return redirect('/login');
     })->name('sign_up');
     
     Route::get('/forgot-password', function () {
@@ -50,7 +47,6 @@ Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_e
     // Route::get('edit_profile', 'FrontEnd\HomeController@edit_profile')->middleware('auth_user')->name('frontend.edit_profile');
     Route::post('edit_profile', 'FrontEnd\HomeController@edit_profile_post')->middleware('auth_user');
     Route::get('contact', 'FrontEnd\HomeController@contact')->name('frontend.contact');
-    Route::get('about', 'FrontEnd\HomeController@about')->name('frontend.about');
     Route::post('user-login', 'FrontEnd\HomeController@user_login');
     Route::get('user-login', function () {
         return redirect('/login');
@@ -71,19 +67,7 @@ Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_e
 
  
 
-     Route::get('dashboard','FrontEnd\DashboardController@index')->name('dashboard')->middleware('auth_user');
-     Route::get('getinfo','FrontEnd\DashboardController@getinfo')->name('dashboard.getinfo')->middleware('auth_user');
-
-     Route::get('show_info','FrontEnd\DashboardController@show_info')->name('dashboard.showinfo')->middleware('auth_user');
-
-     Route::get('single_booking_info','FrontEnd\DashboardController@single_booking_info')->name('dashboard.single_booking_info')->middleware('auth_user');
-
-     Route::get('single_ongoing_booking','FrontEnd\DashboardController@single_ongoing_booking')->name('dashboard.single_ongoing_booking')->middleware('auth_user');
-   
-
-     Route::get('booking_details/{id}','FrontEnd\DashboardController@booking_details')->name('dashboard.booking_details')->middleware('auth_user');
-
-     Route::get('booking_details_ongoing/{id}','FrontEnd\DashboardController@booking_details_ongoing')->name('dashboard.booking_details_ongoing')->middleware('auth_user');
+     // Dashboard routes removed - all users now redirect to /admin
 
      Route::post('update-profile','FrontEnd\UserinfoController@update_profile')->name('update.profile')->middleware('auth_user');
 
@@ -117,7 +101,20 @@ Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_e
     })->name('user_profile')->middleware('auth_user');
 
 
-    Route::get('save-booking-alert','FrontEnd\BookingController@save_booking_alert')->middleware('auth_user');
+     Route::get('save-booking-alert','FrontEnd\BookingController@save_booking_alert')->middleware('auth_user');
+
+    // Driver Dashboard Routes
+    Route::get('driver-dashboard', 'FrontEnd\DriverDashboardController@index')->name('driver.dashboard')->middleware('auth_driver');
+    Route::get('driver-dashboard/getinfo', 'FrontEnd\DriverDashboardController@getinfo')->name('driver.getinfo')->middleware('auth_driver');
+    Route::get('driver-profile', 'FrontEnd\DriverDashboardController@profile')->name('driver.profile')->middleware('auth_driver');
+    Route::post('driver-profile/update', 'FrontEnd\DriverDashboardController@updateProfile')->name('driver.profile.update')->middleware('auth_driver');
+    Route::get('driver-change-password', 'FrontEnd\DriverDashboardController@showChangePassword')->name('driver.change.password')->middleware('auth_driver');
+    Route::post('driver-change-password', 'FrontEnd\DriverDashboardController@updatePassword')->name('driver.update.password')->middleware('auth_driver');
+    Route::get('driver-bookings', 'FrontEnd\DriverDashboardController@bookings')->name('driver.bookings')->middleware('auth_driver');
+    Route::get('driver-booking-details/{id}', 'FrontEnd\DriverDashboardController@bookingDetails')->name('driver.booking.details')->middleware('auth_driver');
+    Route::post('driver-change-password-profile', 'FrontEnd\DriverDashboardController@changePasswordFromProfile')->name('driver.change.password.profile')->middleware('auth_driver');
+    Route::post('driver-clear-password-prompt', 'FrontEnd\DriverDashboardController@clearPasswordChangePrompt')->name('driver.clear.password.prompt')->middleware('auth_driver');
+    Route::post('driver-mark-fine-paid', 'FrontEnd\DriverDashboardController@markFineAsPaid')->name('driver.mark.fine.paid')->middleware('auth_driver');
 
 
 });
@@ -193,10 +190,8 @@ Route::get('sample-payment', function () {
 
 
 
-# Admin login redirect to unified login
-Route::get('/admin/login', function () {
-    return redirect('/login');
-})->name('admin.login');
+# Admin login redirect to unified login (permanent)
+Route::permanentRedirect('/admin/login', '/login')->name('admin.login');
 
 // Public Driver Onboarding Routes (no authentication required)
 Route::group(['middleware' => ['web', 'IsInstalled']], function () {

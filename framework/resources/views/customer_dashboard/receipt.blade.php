@@ -19,7 +19,7 @@
             <div class="row">
                 <div class="col-6">
                     <div class="invoice-logo">
-                        <img src="{{ asset('assets/images/' . Hyvikk::get('logo_img')) }}" class="img-fluid" alt="Logo">
+                        <img src="{{ asset('assets/images/pco-flow-logo.png') }}" class="img-fluid" alt="PCO Flow Logo">
                     </div>
                 </div>
                 <div class="col-6">
@@ -66,7 +66,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Booking Services</th>
-                        <th scope="col">Kms of Ride</th>
+                        <th scope="col">Miles of Ride</th>
                         <th scope="col">Total Amt</th>
                     </tr>
                 </thead>
@@ -79,15 +79,15 @@
                             <p class="mb-0"><span class="semibold-title">Dropoff :
                                 </span>{{ $booking->dest_addr ?? '-' }}</p>
                         </td>
-                        <td data-label="Kms of Ride">{{ isset($booking->total_kms) ? $booking->total_kms . 'kms' : '-' }}
+                        <td data-label="Miles of Ride">{{ isset($booking->total_kms) ? $booking->total_kms . ' miles' : '-' }}
                         </td>
-                        <td data-label="Total Amt" class="total-amount">{{ Hyvikk::get('currency') }}
+                        <td data-label="Total Amt" class="total-amount">£
                             {{ $i->booking_income->amount ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td></td>
                         <td>Total</td>
-                        <td class="total total-amount">{{ Hyvikk::get('currency') }}
+                        <td class="total total-amount">£
                             {{ $i->booking_income->amount ?? '-' }}</td>
                     </tr>
                     <tr>
@@ -106,7 +106,7 @@
                                     style="text-decoration:none;">support</a>.</p>
                             <div class="company-logo mb-4 mt-3">
                                 <a href="#" target="_blank">
-                                    <img src="{{ asset('assets/images/' . Hyvikk::get('logo_img')) }}" alt="Logo"
+                                    <img src="{{ asset('assets/images/pco-flow-logo.png') }}" alt="PCO Flow Logo"
                                         height="100px" width="150px">
                                 </a>
                             </div>

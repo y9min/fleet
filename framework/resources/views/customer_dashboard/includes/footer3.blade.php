@@ -11,9 +11,7 @@
               </div>
               <div
               class="col-12 col-sm-12 col-md-12 col-lg-6 col-xl-6 mt-1  d-flex justify-content-center justify-content-sm-center justify-content-md-center justify-content-lg-center justify-content-xl-center">
-              <p class="mb-0 footer-adjust copyright-link">
-                {!! Hyvikk::get('web_footer') !!}         
-                </p>
+              <p class="mb-0 footer-adjust copyright-link"></p>
             </div>
              
             </div>

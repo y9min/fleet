@@ -562,7 +562,6 @@ class HomeController extends Controller {
                         'email' => 'required|email|unique:users,email',
                         'password' => 'required|min:6|max:16',
                         'confirm_password' => 'required|same:password',
-                        'gender' => 'required|integer',
                         'phone' => 'required|numeric',
                         'agree'=>'required'
                 ]);
@@ -590,7 +589,6 @@ class HomeController extends Controller {
                 $user->last_name = $request->last_name;
                 $user->address = $request->address;
                 $user->mobno = $request->phone;
-                $user->gender = $request->gender;
                 if(isset($request->address))
                 {
                         $user->address=$request->address;
@@ -605,6 +603,9 @@ class HomeController extends Controller {
                 $message = MessageModel::create([
                         "name" => $request->name,
                         "email" => $request->email,
+                        "company" => $request->company,
+                        "phone" => $request->phone,
+                        "fleet_size" => $request->fleet_size,
                         "message" => $request->message,
                 ]);
 
@@ -1041,7 +1042,9 @@ class HomeController extends Controller {
                                         if($vehicle->getMeta('price') != '0')
                     {
     
-                        $total_fare=$vehicle->getMeta('price');
+                        // Calculate price based on insurance selection
+                        $insuranceSelection = 'with_insurance'; // TODO: Get from request or driver data
+                        $total_fare = $vehicle->calculatePrice($insuranceSelection);
     
                         $count = 0;
                         if (Hyvikk::get('tax_charge') != "null") {

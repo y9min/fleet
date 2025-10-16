@@ -17,51 +17,64 @@ use Illuminate\Support\Facades\DB;
 class VehicleGroupController extends Controller {
 	public function __construct() {
 		// $this->middleware(['role:Admin']);
-		$this->middleware('permission:VehicleGroup add', ['only' => ['create']]);
-		$this->middleware('permission:VehicleGroup edit', ['only' => ['edit']]);
+		$this->middleware('permission:VehicleGroup add', ['only' => ['create', 'store']]);
+		$this->middleware('permission:VehicleGroup edit', ['only' => ['edit', 'update']]);
 		$this->middleware('permission:VehicleGroup delete', ['only' => ['bulk_delete', 'destroy']]);
-		$this->middleware('permission:VehicleGroup list');
+		$this->middleware('permission:VehicleGroup list', ['only' => ['index', 'fetch_data']]);
 	}
 	public function index() {
 		return view('vehicle_groups.index');
 	}
 	public function fetch_data(Request $request) {
 		if ($request->ajax()) {
-			if (Auth::user()->user_type == "S" || Auth::user()->group_id == null) {
-				$vehicle_groups = VehicleGroupModel::query();
-			} else {
-				// $vehicle_groups = VehicleGroupModel::where('id', Auth::user()->group_id);
-				$vehicle_groups = VehicleGroupModel::where('user_id', Auth::user()->id)->orwhere('id', Auth::user()->group_id);
-				// dd($vehicle_groups);
+			// Debug: Log user information
+			\Log::info('Vehicle Group fetch_data called', [
+				'user_id' => Auth::user()->id,
+				'user_type' => Auth::user()->user_type,
+				'group_id' => Auth::user()->group_id,
+				'has_permission' => Auth::user()->can('VehicleGroup list')
+			]);
+			
+			try {
+				if (Auth::user()->user_type == "S" || Auth::user()->group_id == null) {
+					$vehicle_groups = VehicleGroupModel::query();
+				} else {
+					$vehicle_groups = VehicleGroupModel::where('user_id', Auth::user()->id)->orWhere('id', Auth::user()->group_id);
+				}
+				
+				// Debug: Log the query results
+				$groups_data = $vehicle_groups->get();
+				\Log::info('Vehicle Groups query results', [
+					'count' => $groups_data->count(),
+					'groups' => $groups_data->pluck('name', 'id')->toArray()
+				]);
+				
+				return DataTables::eloquent($vehicle_groups)
+					->addColumn('check', function ($vehicle) {
+						return '<input type="checkbox" name="ids[]" value="' . $vehicle->id . '" class="checkbox" id="chk' . $vehicle->id . '" onclick=\'checkcheckbox();\'>';
+					})
+					->addColumn('vehicle_count', function ($vehicle) {
+						$v = DB::table('vehicles')
+							->where('group_id', $vehicle->id)->where('deleted_at', null)
+							->count('group_id');
+						return $v;
+					})
+					->addColumn('user_count', function ($vehicle) {
+						$v = DB::table('users')->where('group_id', $vehicle->id)->where('deleted_at', null)->count('group_id');
+						return $v;
+					})
+					->addColumn('action', function ($vehicle) {
+						return view('vehicle_groups.list-actions', ['row' => $vehicle]);
+					})
+					->addIndexColumn()
+					->rawColumns(['action', 'check'])
+					->make(true);
+			} catch (\Exception $e) {
+				\Log::error('Vehicle Groups fetch_data error: ' . $e->getMessage());
+				return response()->json(['error' => 'Failed to fetch data: ' . $e->getMessage()], 500);
 			}
-			return DataTables::eloquent($vehicle_groups)
-				->addColumn('check', function ($vehicle) {
-					$tag = '';
-					if ($vehicle->id == '1') {
-						$tag = '<i class="fa fa-ban" style="color:#767676;"></i>';
-					} else {
-						$tag = '<input type="checkbox" name="ids[]" value="' . $vehicle->id . '" class="checkbox" id="chk' . $vehicle->id . '" onclick=\'checkcheckbox();\'>';
-					}
-					return $tag;
-				})
-				->addColumn('vehicle_count', function ($vehicle) {
-					$v = DB::table('vehicles')
-						->where('group_id', $vehicle->id)->where('deleted_at', null)
-						->count('group_id');
-					return $v;
-				})
-				->addColumn('user_count', function ($vehicle) {
-					$v = DB::table('users')->where('group_id', $vehicle->id)->where('deleted_at', null)->count('group_id');
-					return $v;
-				})
-				->addColumn('action', function ($vehicle) {
-					return view('vehicle_groups.list-actions', ['row' => $vehicle]);
-				})
-				->addIndexColumn()
-				->rawColumns(['action', 'check'])
-				->make(true);
-			//return datatables(User::all())->toJson();
 		}
+		return response()->json(['error' => 'Not an AJAX request'], 400);
 	}
 	public function create() {
 		return view('vehicle_groups.create');
@@ -73,7 +86,7 @@ class VehicleGroupController extends Controller {
 		$group->note = $request->get('note');
 		$group->user_id = Auth::user()->id;
 		$group->save();
-		return redirect()->route('vehicle_group.index');
+		return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group created successfully!');
 	}
 	public function edit($id) {
 		$index['data'] = VehicleGroupModel::where('id', $id)->first();
@@ -85,14 +98,14 @@ class VehicleGroupController extends Controller {
 		$group->description = $request->get('description');
 		$group->note = $request->get('note');
 		$group->save();
-		return redirect()->route('vehicle_group.index');
+		return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group updated successfully!');
 	}
 	public function destroy(Request $request) {
 		VehicleGroupModel::find($request->get('id'))->delete();
-		return redirect()->route('vehicle_group.index');
+		return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group deleted successfully!');
 	}
 	public function bulk_delete(Request $request) {
 		VehicleGroupModel::whereIn('id', $request->ids)->delete();
-		return back();
+		return back()->with('success', 'Selected vehicle groups deleted successfully!');
 	}
 }

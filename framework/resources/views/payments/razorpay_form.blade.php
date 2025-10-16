@@ -27,7 +27,7 @@
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <center> <img src="{{ asset('assets/images/'. Hyvikk::get('logo_img') ) }}" height="140px" width="300px"/> </center>
+    <center> <img src="{{ asset('assets/images/pco-flow-logo.png') }}" height="140px" width="300px" alt="PCO Flow Logo"/> </center>
   </div>
   <!-- /.login-logo -->
   <div class="card">

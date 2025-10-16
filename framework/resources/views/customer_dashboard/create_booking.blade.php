@@ -280,19 +280,14 @@
                                         <select class="form-select select-vehicle-type" name="veh_type"
                                             aria-label="Default select example">
                                             <option value='' selected disabled>Select Vehicle Type</option>
-
-                                            @if(isset($vehicle_type) && count($vehicle_type) > 0)
-
-                                              @foreach($vehicle_type as $vt)
-                                                    
-                                                  <option value="{{$vt->id}}">{{$vt->vehicletype}}</option>
-
-                                              @endforeach
-                                              
-
-                                            @endif
-
-
+                                            <option value="1">Convertible</option>
+                                            <option value="2">Coupe</option>
+                                            <option value="3">Estate</option>
+                                            <option value="4">Hatchback</option>
+                                            <option value="5">MPV</option>
+                                            <option value="6">Pickup</option>
+                                            <option value="7">Saloon</option>
+                                            <option value="8">SUV</option>
                                         </select>
                                         <span class="error_vehicle_type"></span>
                                     </div>
@@ -751,7 +746,7 @@ $(document).ready(function () {
                                        <div class="create_booking booking_vehicle_marker">
                                          <div class="vehicle_marker">
                                            <p class="vehicle-info-title">Mileage</p>
-                                           <p class="vehicle-info-detail">${(data.vehicle.mileage != null ? data.vehicle.mileage : data.vehicle.int_mileage)} Km</p>
+                                           <p class="vehicle-info-detail">${(data.vehicle.mileage != null ? data.vehicle.mileage : data.vehicle.int_mileage)} Miles</p>
                                          </div>
                                        </div>
                                      </div>
@@ -854,7 +849,7 @@ $(document).ready(function () {
                                        <div class="create_booking booking_vehicle_marker">
                                          <div class="vehicle_marker">
                                            <p class="vehicle-info-title">Mileage</p>
-                                           <p class="vehicle-info-detail">${(data.vehicle.mileage != null ? data.vehicle.mileage : data.vehicle.int_mileage)} Km</p>
+                                           <p class="vehicle-info-detail">${(data.vehicle.mileage != null ? data.vehicle.mileage : data.vehicle.int_mileage)} Miles</p>
                                          </div>
                                        </div>
                                      </div>

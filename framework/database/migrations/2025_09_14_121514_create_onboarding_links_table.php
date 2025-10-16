@@ -11,13 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('onboarding_links')) {
+            return;
+        }
+
         Schema::create('onboarding_links', function (Blueprint $table) {
             $table->id();
             $table->string('token', 40)->unique();
             $table->string('link');
             $table->boolean('is_active')->default(true);
             $table->integer('usage_count')->default(0);
-            $table->unsignedBigInteger('created_by');
+            // Match users.id type from imported dump (int unsigned)
+            $table->unsignedInteger('created_by');
             $table->timestamps();
             
             $table->foreign('created_by')->references('id')->on('users');

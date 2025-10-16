@@ -1628,7 +1628,7 @@ return [
 
     'International'=>'Për të aktivizuar ose çaktivizuar pagesat me kartë ndërkombëtare nga juaj',
 
-    'accept'=>'Nëse nuk dëshiron të pranosh pagesa në monedha përveç INR (₹), mund të çaktivizosh',
+    'accept'=>'Nëse nuk dëshiron të pranosh pagesa në monedha përveç GBP (£), mund të çaktivizosh',
 
     'automatic'=>'mund ti dërgoni email automatikisht klientëve tuaj pas pagesave të suksesshme duke përdorur',
 

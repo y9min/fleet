@@ -6,7 +6,7 @@
                <div class="col-lg-6 mb-lg-0 mb-4">
                    <div class="copyright text-center text-sm text-muted text-lg-start">
                      <p class="mb-0 copyright-link">
-                     {!! Hyvikk::get('web_footer') !!}
+                     
                    </p>
                    </div>
                </div>
@@ -47,7 +47,7 @@
            <div class="col-12 col-sm-12 col-md-12 col-lg-6 col-xl-6 mt-1 order-2 order-sm-2 order-md-2 order-lg-1 order-xl-1 d-flex  justify-content-center justify-content-sm-center justify-content-md-center justify-content-lg-start justify-content-xl-start">
             
              <p class="mb-0 copyright-link">
-               {!! Hyvikk::get('web_footer') !!}
+               
               
              </p>
            </div> 

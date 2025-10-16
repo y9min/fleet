@@ -9,7 +9,7 @@
 </style>
 @endsection
 @section("breadcrumb")
-<li class="breadcrumb-item"><a href="{{ route('bookings.index')}}">@lang('menu.bookings')</a></li>
+<li class="breadcrumb-item"><a href="{{ route('invitations.index')}}">@lang('menu.bookings')</a></li>
 <li class="breadcrumb-item active">@lang('menu.calendar')</li>
 @endsection
 @section('content')
@@ -17,7 +17,7 @@
   <div class="col-md-12">
     <div class="card card-info">
       <div class="card-header">
-        <h3 class="card-title">@lang('menu.calendar')</h3>
+        <h3 class="card-title">Vehicle Pickup Calendar</h3>
       </div>
       <div class="card-body">
         <div id='calendar'></div>
@@ -30,7 +30,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="exampleModalLabel">@lang('fleet.event_details')</h4>
+        <h4 class="modal-title" id="exampleModalLabel">Vehicle Pickup Details</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
             aria-hidden="true">&times;</span></button>
       </div>
@@ -74,20 +74,20 @@
   $(document).ready(function() {
     $('#calendar').fullCalendar({
       header: {
-        left: 'prev,next today',
+        left: 'prev,next',
         center: 'title',
-        right: 'month,agendaWeek,agendaDay,listWeek'
+        right: ''
       },
 
       defaultDate: '{{date("Y-m-d")}}',
       navLinks: true, // can click day/week names to navigate views
       editable: false,
-      events: "{{ url('admin/calendar')}}",
-      eventLimit: true,
+      events: "{{ url('admin/calendar-data')}}",
+      eventLimit: false,
       eventClick: function(calEvent, jsEvent, view) {
          $.ajax({
 
-            url: '{{url("/admin/calendar/event/")}}/'+calEvent.type+'/'+calEvent.id,
+            url: '{{url("/calendar/event/")}}/'+calEvent.type+'/'+calEvent.id,
 
           })
           .then(function(content){

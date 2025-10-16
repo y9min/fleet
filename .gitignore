@@ -1,0 +1,5 @@
+# Ignore local env and macOS metadata
+framework/.env
+.DS_Store
+assets/.DS_Store
+**/.DS_Store

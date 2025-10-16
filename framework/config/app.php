@@ -111,4 +111,15 @@ return [
         '_ENV' => array_keys($_ENV),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Driver Dashboard Features
+    |--------------------------------------------------------------------------
+    |
+    | Configuration options for driver dashboard features
+    |
+    */
+
+    'show_upcoming_payments' => env('SHOW_UPCOMING_PAYMENTS', false),
+
 ];

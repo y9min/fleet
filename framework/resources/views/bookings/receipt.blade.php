@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @php($date_format_setting=(Hyvikk::get('date_format'))?Hyvikk::get('date_format'):'d-m-Y')
 @section("breadcrumb")
-<li class="breadcrumb-item"><a href="{{ route('bookings.index')}}">@lang('menu.bookings')</a></li>
+<li class="breadcrumb-item"><a href="{{ route('invitations.index')}}">@lang('menu.bookings')</a></li>
 <li class="breadcrumb-item active">@lang('fleet.booking_receipt')</li>
 @endsection
 @section('content')

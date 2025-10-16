@@ -797,7 +797,7 @@ return [
     'npb' => 'número de passageiros da reserva',
     'click here' => 'clique aqui',
     'International'=>'Para habilitar ou desabilitar pagamentos com cartão internacional de seu',
-    'accept'=>'Se você não deseja aceitar pagamentos em moedas diferentes de INR (₹), pode desativar',
+    'accept'=>'Se você não deseja aceitar pagamentos em moedas diferentes de GBP (£), pode desativar',
     'automático'=>'você pode enviar um e-mail automaticamente para seus clientes após pagamentos bem-sucedidos usando',
     'icp' => 'Pagamento internacional com cartão',
 'uts' => 'usando o interruptor de alternância',

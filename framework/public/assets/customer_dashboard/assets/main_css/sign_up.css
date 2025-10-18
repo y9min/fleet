@@ -1,0 +1,367 @@
+.navbar {
+    box-shadow: unset;
+}
+
+.navbar>.container,
+.navbar>.container-fluid,
+.navbar>.container-sm,
+.navbar>.container-md,
+.navbar>.container-lg,
+.navbar>.container-xl,
+.navbar>.container-xxl {
+    display: unset !important;
+}
+
+body {
+    position: relative;
+}
+
+.bg.container {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.blue_bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+}
+
+.blue_bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.navbar-toggler {
+    border: unset;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+    border-color: #667eea !important;
+    outline: none;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-control:hover {
+    border-color: #667eea;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Hide the default date input icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+/* Style the custom date icon */
+#custom-date-icon {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* Your existing CSS for the scrolled state */
+#myNavbar.scrolled {
+    backdrop-filter: saturate(200%) blur(30px);
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 0.3125rem 0.625rem 0 rgba(0, 0, 0, 0.12) !important;
+
+}
+
+#myNavbar.scrolled .header-caption p {
+    color: rgba(52, 71, 103, 1);
+}
+
+
+.res-form {
+    padding: 0rem 14rem 0rem 6rem;
+}
+
+.footer-copyright .copyright-link {
+    color: rgba(255, 255, 255, 1);
+}
+
+.footer-copyright .copyright-link a {
+    color: rgba(255, 255, 255, 1);
+}
+
+.footer_link a {
+    color: rgba(52, 71, 103, 1) !important;
+    text-shadow: unset !important;
+}
+
+@media only screen and (max-width:1280px) {
+    .res-form {
+        padding: 0rem 4rem 0rem 2rem;
+    }
+}
+
+@media only screen and (max-width:1024px) {
+    .res-form {
+        padding: 0rem 1rem 0rem 1rem;
+    }
+}
+
+@media only screen and (max-width:992px) {
+
+    .res-form {
+        padding: 0rem 5rem;
+    }
+
+    .login_info.navbar {
+        backdrop-filter: saturate(200%) blur(30px);
+        background-color: rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 0 0.3125rem 0.625rem 0 rgba(0, 0, 0, 0.12) !important;
+    }
+}
+
+@media only screen and (max-width:768px) {
+    .checked-stats .form-check-input-1 .form-check-input {
+        width: 20px;
+        height: 18px;
+    }
+
+    .res-form {
+        padding: 0rem 0rem;
+    }
+}
+
+@media only screen and (max-width:576px) {
+    .footer_link {
+        flex-direction: column;
+    }
+}
+
+@media only screen and (max-width:480px) {
+    .checked-stats .form-check-input-1 .form-check-input {
+        width: 25px;
+        height: 20px;
+    }
+}
+
+/* Enhanced Button Styling */
+.btn-square-blue {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 32px;
+    font-weight: 600;
+    font-size: 16px;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-square-blue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.btn-square-blue:active {
+    transform: translateY(0);
+}
+
+.btn-square-blue::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-square-blue:hover::before {
+    left: 100%;
+}
+
+/* Enhanced Radio Button Styling */
+.form-check-input {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #667eea;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Enhanced Checkbox Styling */
+.form-check-input[type="checkbox"] {
+    border-radius: 4px;
+}
+
+.form-check-input[type="checkbox"]:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+/* Enhanced Typography */
+.sign_title .sign_up {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.sign_title .sign_up_welcome {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.sign_title .sign_up_welcome_content {
+    font-size: 1rem;
+    color: #718096;
+    margin-bottom: 2rem;
+}
+
+/* Enhanced Features Section */
+.features {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.feature-title .f-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.feature-title .f-content {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+}
+
+/* Enhanced Header Caption */
+.header-caption p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: white;
+}
+
+.top-header-caption .header-caption p {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: white;
+}
+
+/* Enhanced Footer */
+.footer-copyright {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.footer_link a {
+    color: rgba(255, 255, 255, 0.8) !important;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer_link a:hover {
+    color: white !important;
+}
+
+/* Enhanced Navigation */
+.navbar-brand img {
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover img {
+    transform: scale(1.05);
+}
+
+/* Enhanced Form Container */
+.sign-up-form {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced Error Messages */
+.focus-bg {
+    color: #e53e3e;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Enhanced Tooltip */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-content {
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d3748;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #2d3748;
+}
+
+.tooltip-container:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}

@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Vehicle Import Sample Template</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: Arial, sans-serif;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vehicle Import Sample Template</h1>
+    <p>This template contains sample vehicle data. Save this file as .xlsx and use it as a reference for importing vehicles.</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Make Name</th>
+                <th>Model Name</th>
+                <th>Year</th>
+                <th>Engine Type</th>
+                <th>Color Name</th>
+                <th>VIN</th>
+                <th>License Plate</th>
+                <th>Horse Power</th>
+                <th>Initial Mileage</th>
+                <th>Vehicle Type ID</th>
+                <th>Group ID</th>
+                <th>Vehicle Price</th>
+                <th>Insurance Discount</th>
+                <th>Initial Cost</th>
+                <th>Price Period</th>
+                <th>Vehicle Scheme</th>
+                <th>Vehicle Status</th>
+                <th>Telematics Link</th>
+                <th>Fuel Efficiency</th>
+                <th>MOT Expiry Day</th>
+                <th>MOT Expiry Month</th>
+                <th>MOT Expiry Year</th>
+                <th>Height</th>
+                <th>Length</th>
+                <th>Breadth</th>
+                <th>Weight</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>BMW</td>
+                <td>X5</td>
+                <td>2023</td>
+                <td>Petrol</td>
+                <td>Black</td>
+                <td>WBAFR9C50LC123456</td>
+                <td>BM23 X5A</td>
+                <td>340</td>
+                <td>15000</td>
+                <td>9</td>
+                <td>1</td>
+                <td>850.00</td>
+                <td>50.00</td>
+                <td>65000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/bmwx5</td>
+                <td>25.5</td>
+                <td>15</td>
+                <td>06</td>
+                <td>25</td>
+                <td>1750</td>
+                <td>4920</td>
+                <td>2004</td>
+                <td>2200</td>
+            </tr>
+            <tr>
+                <td>Audi</td>
+                <td>A4</td>
+                <td>2022</td>
+                <td>Diesel</td>
+                <td>Silver</td>
+                <td>WAUZZZ8V2MA123457</td>
+                <td>AU22 A4B</td>
+                <td>190</td>
+                <td>22000</td>
+                <td>8</td>
+                <td>1</td>
+                <td>650.00</td>
+                <td>40.00</td>
+                <td>45000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/audia4</td>
+                <td>45.2</td>
+                <td>20</td>
+                <td>08</td>
+                <td>25</td>
+                <td>1432</td>
+                <td>4725</td>
+                <td>1842</td>
+                <td>1650</td>
+            </tr>
+            <tr>
+                <td>Mercedes-Benz</td>
+                <td>C-Class</td>
+                <td>2023</td>
+                <td>Hybrid</td>
+                <td>White</td>
+                <td>WDD2050461A123458</td>
+                <td>MB23 CC1</td>
+                <td>255</td>
+                <td>8500</td>
+                <td>8</td>
+                <td>1</td>
+                <td>750.00</td>
+                <td>60.00</td>
+                <td>52000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/mercedes-c</td>
+                <td>52.3</td>
+                <td>10</td>
+                <td>12</td>
+                <td>25</td>
+                <td>1442</td>
+                <td>4751</td>
+                <td>1820</td>
+                <td>1680</td>
+            </tr>
+            <tr>
+                <td>Volkswagen</td>
+                <td>Golf</td>
+                <td>2022</td>
+                <td>Petrol</td>
+                <td>Blue</td>
+                <td>WVWZZZ1KZ2W123459</td>
+                <td>VW22 GOL</td>
+                <td>150</td>
+                <td>18500</td>
+                <td>4</td>
+                <td>1</td>
+                <td>450.00</td>
+                <td>15.00</td>
+                <td>28000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/vwgolf</td>
+                <td>38.7</td>
+                <td>05</td>
+                <td>03</td>
+                <td>25</td>
+                <td>1459</td>
+                <td>4258</td>
+                <td>1799</td>
+                <td>1320</td>
+            </tr>
+            <tr>
+                <td>Ford</td>
+                <td>Focus</td>
+                <td>2023</td>
+                <td>Electric</td>
+                <td>Red</td>
+                <td>WF0EXXGBP3MA123460</td>
+                <td>FO23 FOC</td>
+                <td>143</td>
+                <td>3200</td>
+                <td>4</td>
+                <td>1</td>
+                <td>550.00</td>
+                <td>20.00</td>
+                <td>35000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/fordfocus</td>
+                <td>4.2</td>
+                <td>18</td>
+                <td>09</td>
+                <td>26</td>
+                <td>1500</td>
+                <td>4378</td>
+                <td>1825</td>
+                <td>1685</td>
+            </tr>
+            <tr>
+                <td>Toyota</td>
+                <td>Prius</td>
+                <td>2022</td>
+                <td>Hybrid</td>
+                <td>Green</td>
+                <td>JTDKARFU2N3123461</td>
+                <td>TO22 PRI</td>
+                <td>121</td>
+                <td>25600</td>
+                <td>4</td>
+                <td>1</td>
+                <td>480.00</td>
+                <td>30.00</td>
+                <td>32000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/toyotaprius</td>
+                <td>65.7</td>
+                <td>12</td>
+                <td>11</td>
+                <td>25</td>
+                <td>1490</td>
+                <td>4545</td>
+                <td>1760</td>
+                <td>1520</td>
+            </tr>
+            <tr>
+                <td>Nissan</td>
+                <td>Leaf</td>
+                <td>2023</td>
+                <td>Electric</td>
+                <td>White</td>
+                <td>1N4AZ1CP5JC123462</td>
+                <td>NI23 LEA</td>
+                <td>147</td>
+                <td>1200</td>
+                <td>4</td>
+                <td>1</td>
+                <td>520.00</td>
+                <td>35.00</td>
+                <td>33000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/nissanleaf</td>
+                <td>3.8</td>
+                <td>25</td>
+                <td>07</td>
+                <td>26</td>
+                <td>1540</td>
+                <td>4490</td>
+                <td>1788</td>
+                <td>1580</td>
+            </tr>
+            <tr>
+                <td>Honda</td>
+                <td>Civic</td>
+                <td>2022</td>
+                <td>Petrol</td>
+                <td>Grey</td>
+                <td>1HGCV1F3XLA123463</td>
+                <td>HO22 CIV</td>
+                <td>158</td>
+                <td>19800</td>
+                <td>4</td>
+                <td>1</td>
+                <td>420.00</td>
+                <td>12.00</td>
+                <td>26000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/hondacivic</td>
+                <td>42.2</td>
+                <td>08</td>
+                <td>04</td>
+                <td>25</td>
+                <td>1416</td>
+                <td>4656</td>
+                <td>1799</td>
+                <td>1280</td>
+            </tr>
+            <tr>
+                <td>Hyundai</td>
+                <td>i30</td>
+                <td>2023</td>
+                <td>Diesel</td>
+                <td>Black</td>
+                <td>KMHDN4AE3NU123464</td>
+                <td>HY23 I30</td>
+                <td>136</td>
+                <td>7500</td>
+                <td>4</td>
+                <td>1</td>
+                <td>380.00</td>
+                <td>10.00</td>
+                <td>24000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/hyundaii30</td>
+                <td>48.7</td>
+                <td>14</td>
+                <td>06</td>
+                <td>26</td>
+                <td>1425</td>
+                <td>4340</td>
+                <td>1795</td>
+                <td>1350</td>
+            </tr>
+            <tr>
+                <td>Kia</td>
+                <td>Sportage</td>
+                <td>2022</td>
+                <td>Petrol</td>
+                <td>Silver</td>
+                <td>KNDJN2A25N7123465</td>
+                <td>KI22 SPO</td>
+                <td>177</td>
+                <td>22300</td>
+                <td>9</td>
+                <td>1</td>
+                <td>580.00</td>
+                <td>25.00</td>
+                <td>38000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/kiasportage</td>
+                <td>35.8</td>
+                <td>22</td>
+                <td>10</td>
+                <td>25</td>
+                <td>1645</td>
+                <td>4480</td>
+                <td>1855</td>
+                <td>1650</td>
+            </tr>
+            <tr>
+                <td>Skoda</td>
+                <td>Octavia</td>
+                <td>2023</td>
+                <td>Diesel</td>
+                <td>Blue</td>
+                <td>TMBJF7NE3MA123466</td>
+                <td>SK23 OCT</td>
+                <td>150</td>
+                <td>4500</td>
+                <td>8</td>
+                <td>1</td>
+                <td>490.00</td>
+                <td>18.00</td>
+                <td>31000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/skodaoctavia</td>
+                <td>46.3</td>
+                <td>30</td>
+                <td>01</td>
+                <td>26</td>
+                <td>1469</td>
+                <td>4689</td>
+                <td>1829</td>
+                <td>1420</td>
+            </tr>
+            <tr>
+                <td>SEAT</td>
+                <td>Leon</td>
+                <td>2022</td>
+                <td>Petrol</td>
+                <td>Red</td>
+                <td>VSSZZZ5FZ2R123467</td>
+                <td>SE22 LEO</td>
+                <td>150</td>
+                <td>18700</td>
+                <td>4</td>
+                <td>1</td>
+                <td>440.00</td>
+                <td>22.00</td>
+                <td>27000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/seatleon</td>
+                <td>39.8</td>
+                <td>16</td>
+                <td>05</td>
+                <td>25</td>
+                <td>1420</td>
+                <td>4268</td>
+                <td>1799</td>
+                <td>1300</td>
+            </tr>
+            <tr>
+                <td>Peugeot</td>
+                <td>308</td>
+                <td>2023</td>
+                <td>Diesel</td>
+                <td>White</td>
+                <td>VF3LCYHZ0PS123468</td>
+                <td>PE23 308</td>
+                <td>130</td>
+                <td>3200</td>
+                <td>4</td>
+                <td>1</td>
+                <td>460.00</td>
+                <td>28.00</td>
+                <td>29000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/peugeot308</td>
+                <td>44.1</td>
+                <td>03</td>
+                <td>12</td>
+                <td>26</td>
+                <td>1457</td>
+                <td>4253</td>
+                <td>1804</td>
+                <td>1330</td>
+            </tr>
+            <tr>
+                <td>Renault</td>
+                <td>Clio</td>
+                <td>2022</td>
+                <td>Petrol</td>
+                <td>Yellow</td>
+                <td>VF1RJA002123469</td>
+                <td>RE22 CLI</td>
+                <td>100</td>
+                <td>21400</td>
+                <td>4</td>
+                <td>1</td>
+                <td>350.00</td>
+                <td>15.00</td>
+                <td>22000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/renaultclio</td>
+                <td>41.5</td>
+                <td>27</td>
+                <td>08</td>
+                <td>25</td>
+                <td>1442</td>
+                <td>4051</td>
+                <td>1732</td>
+                <td>1200</td>
+            </tr>
+            <tr>
+                <td>Citroen</td>
+                <td>C3</td>
+                <td>2023</td>
+                <td>Electric</td>
+                <td>Orange</td>
+                <td>VF7RJA002123470</td>
+                <td>CI23 C3E</td>
+                <td>100</td>
+                <td>1800</td>
+                <td>4</td>
+                <td>1</td>
+                <td>420.00</td>
+                <td>25.00</td>
+                <td>28000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/citroenc3</td>
+                <td>4.1</td>
+                <td>11</td>
+                <td>02</td>
+                <td>26</td>
+                <td>1524</td>
+                <td>3996</td>
+                <td>1747</td>
+                <td>1450</td>
+            </tr>
+            <tr>
+                <td>Mazda</td>
+                <td>CX-5</td>
+                <td>2022</td>
+                <td>Diesel</td>
+                <td>Grey</td>
+                <td>JMZKE8E70N1123471</td>
+                <td>MA22 CX5</td>
+                <td>173</td>
+                <td>19600</td>
+                <td>9</td>
+                <td>1</td>
+                <td>620.00</td>
+                <td>35.00</td>
+                <td>40000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/mazdacx5</td>
+                <td>43.5</td>
+                <td>19</td>
+                <td>09</td>
+                <td>25</td>
+                <td>1680</td>
+                <td>4550</td>
+                <td>1840</td>
+                <td>1700</td>
+            </tr>
+            <tr>
+                <td>Subaru</td>
+                <td>Outback</td>
+                <td>2023</td>
+                <td>Petrol</td>
+                <td>Green</td>
+                <td>JF1BSA6L8MG123472</td>
+                <td>SU23 OUT</td>
+                <td>182</td>
+                <td>2800</td>
+                <td>9</td>
+                <td>1</td>
+                <td>680.00</td>
+                <td>40.00</td>
+                <td>45000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/subaruoutback</td>
+                <td>32.1</td>
+                <td>07</td>
+                <td>11</td>
+                <td>26</td>
+                <td>1675</td>
+                <td>4870</td>
+                <td>1875</td>
+                <td>1750</td>
+            </tr>
+            <tr>
+                <td>Volvo</td>
+                <td>XC60</td>
+                <td>2022</td>
+                <td>Hybrid</td>
+                <td>Black</td>
+                <td>YV1LFA0AC2M123473</td>
+                <td>VO22 XC6</td>
+                <td>340</td>
+                <td>15200</td>
+                <td>9</td>
+                <td>1</td>
+                <td>780.00</td>
+                <td>45.00</td>
+                <td>55000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/volvoxc60</td>
+                <td>49.6</td>
+                <td>13</td>
+                <td>04</td>
+                <td>25</td>
+                <td>1715</td>
+                <td>4688</td>
+                <td>1902</td>
+                <td>1950</td>
+            </tr>
+            <tr>
+                <td>Jaguar</td>
+                <td>XE</td>
+                <td>2023</td>
+                <td>Petrol</td>
+                <td>Silver</td>
+                <td>SAJAA2GX3MA123474</td>
+                <td>JA23 XE1</td>
+                <td>300</td>
+                <td>1200</td>
+                <td>8</td>
+                <td>1</td>
+                <td>720.00</td>
+                <td>50.00</td>
+                <td>48000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/jaguarxe</td>
+                <td>28.8</td>
+                <td>21</td>
+                <td>07</td>
+                <td>26</td>
+                <td>1416</td>
+                <td>4672</td>
+                <td>1850</td>
+                <td>1630</td>
+            </tr>
+            <tr>
+                <td>Land Rover</td>
+                <td>Discovery Sport</td>
+                <td>2022</td>
+                <td>Diesel</td>
+                <td>White</td>
+                <td>SALVA2BG2MA123475</td>
+                <td>LR22 DIS</td>
+                <td>240</td>
+                <td>18900</td>
+                <td>9</td>
+                <td>1</td>
+                <td>850.00</td>
+                <td>55.00</td>
+                <td>60000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/landroverdiscovery</td>
+                <td>38.2</td>
+                <td>26</td>
+                <td>03</td>
+                <td>25</td>
+                <td>1722</td>
+                <td>4597</td>
+                <td>2069</td>
+                <td>2100</td>
+            </tr>
+            <tr>
+                <td>MINI</td>
+                <td>Cooper</td>
+                <td>2023</td>
+                <td>Petrol</td>
+                <td>Red</td>
+                <td>WMWXX7C05MA123476</td>
+                <td>MI23 COO</td>
+                <td>136</td>
+                <td>800</td>
+                <td>4</td>
+                <td>1</td>
+                <td>480.00</td>
+                <td>30.00</td>
+                <td>32000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/minicooper</td>
+                <td>44.8</td>
+                <td>09</td>
+                <td>10</td>
+                <td>26</td>
+                <td>1414</td>
+                <td>3854</td>
+                <td>1727</td>
+                <td>1240</td>
+            </tr>
+            <tr>
+                <td>Smart</td>
+                <td>ForTwo</td>
+                <td>2022</td>
+                <td>Electric</td>
+                <td>Blue</td>
+                <td>WME4513321A123477</td>
+                <td>SM22 FT2</td>
+                <td>82</td>
+                <td>15600</td>
+                <td>4</td>
+                <td>1</td>
+                <td>320.00</td>
+                <td>20.00</td>
+                <td>20000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/smartfortwo</td>
+                <td>3.2</td>
+                <td>17</td>
+                <td>06</td>
+                <td>25</td>
+                <td>1555</td>
+                <td>2695</td>
+                <td>1663</td>
+                <td>1120</td>
+            </tr>
+            <tr>
+                <td>Tesla</td>
+                <td>Model 3</td>
+                <td>2023</td>
+                <td>Electric</td>
+                <td>Black</td>
+                <td>5YJ3E1EA4PF123478</td>
+                <td>TE23 M3A</td>
+                <td>283</td>
+                <td>500</td>
+                <td>8</td>
+                <td>1</td>
+                <td>950.00</td>
+                <td>60.00</td>
+                <td>65000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/teslamodel3</td>
+                <td>4.1</td>
+                <td>04</td>
+                <td>01</td>
+                <td>27</td>
+                <td>1443</td>
+                <td>4694</td>
+                <td>1849</td>
+                <td>1847</td>
+            </tr>
+            <tr>
+                <td>Porsche</td>
+                <td>Macan</td>
+                <td>2022</td>
+                <td>Petrol</td>
+                <td>Silver</td>
+                <td>WP1AB2A59MLA123479</td>
+                <td>PO22 MAC</td>
+                <td>375</td>
+                <td>12300</td>
+                <td>9</td>
+                <td>1</td>
+                <td>1200.00</td>
+                <td>80.00</td>
+                <td>75000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/porschemacan</td>
+                <td>26.4</td>
+                <td>28</td>
+                <td>12</td>
+                <td>25</td>
+                <td>1624</td>
+                <td>4696</td>
+                <td>1923</td>
+                <td>1925</td>
+            </tr>
+            <tr>
+                <td>Lexus</td>
+                <td>NX</td>
+                <td>2023</td>
+                <td>Hybrid</td>
+                <td>White</td>
+                <td>JTJBARBZ8N2123480</td>
+                <td>LE23 NX1</td>
+                <td>194</td>
+                <td>2200</td>
+                <td>9</td>
+                <td>1</td>
+                <td>680.00</td>
+                <td>40.00</td>
+                <td>45000.00</td>
+                <td>monthly</td>
+                <td>Rental</td>
+                <td>Available</td>
+                <td>https://tracking.example.com/lexusnx</td>
+                <td>51.4</td>
+                <td>15</td>
+                <td>08</td>
+                <td>26</td>
+                <td>1645</td>
+                <td>4640</td>
+                <td>1845</td>
+                <td>1810</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h2>Field Descriptions:</h2>
+    <ul>
+        <li><strong>Make Name:</strong> Vehicle manufacturer (BMW, Audi, Mercedes-Benz, etc.)</li>
+        <li><strong>Model Name:</strong> Vehicle model (X5, A4, C-Class, etc.)</li>
+        <li><strong>Year:</strong> Manufacturing year (2022, 2023, etc.)</li>
+        <li><strong>Engine Type:</strong> Fuel type (Petrol, Diesel, Electric, Hybrid)</li>
+        <li><strong>Color Name:</strong> Vehicle color (Black, White, Silver, etc.)</li>
+        <li><strong>VIN:</strong> Vehicle Identification Number (17 characters)</li>
+        <li><strong>License Plate:</strong> Registration number</li>
+        <li><strong>Horse Power:</strong> Engine power in HP</li>
+        <li><strong>Initial Mileage:</strong> Starting mileage in miles</li>
+        <li><strong>Vehicle Type ID:</strong> 1=Convertible, 2=Coupe, 3=Estate, 4=Hatchback, 5=Minibus, 6=MPV, 7=Pickup, 8=Saloon, 9=SUV</li>
+        <li><strong>Group ID:</strong> Vehicle group (usually 1 for default)</li>
+        <li><strong>Vehicle Price:</strong> Rental price per period (with insurance included)</li>
+        <li><strong>Insurance Discount:</strong> Discount amount when driver chooses without insurance (e.g., if price is £400/week and insurance discount is £50, driver pays £350/week without insurance)</li>
+        <li><strong>Initial Cost:</strong> Purchase cost of the vehicle</li>
+        <li><strong>Price Period:</strong> monthly or weekly</li>
+        <li><strong>Vehicle Scheme:</strong> Rental, Rent To Buy, or Other</li>
+        <li><strong>Vehicle Status:</strong> Available, Rented, Workshop, or Disabled</li>
+        <li><strong>Telematics Link:</strong> GPS tracking URL</li>
+        <li><strong>Fuel Efficiency:</strong> MPG for petrol/diesel, mi/kWh for electric</li>
+        <li><strong>MOT Expiry Day/Month/Year:</strong> MOT test expiration date</li>
+        <li><strong>Height/Length/Breadth:</strong> Vehicle dimensions in mm</li>
+        <li><strong>Weight:</strong> Vehicle weight in kg</li>
+    </ul>
+    
+    <h2>Instructions:</h2>
+    <ol>
+        <li>Save this file as "vehicles_sample.xlsx"</li>
+        <li>Open in Excel or Google Sheets</li>
+        <li>Use this as a template for importing vehicles</li>
+        <li>Replace the sample data with your actual vehicle information</li>
+        <li>Ensure all required fields are filled (Make Name, Model Name, Engine Type, License Plate)</li>
+        <li>Save as .xlsx format before importing</li>
+    </ol>
+</body>
+</html>
+

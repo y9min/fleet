@@ -118,6 +118,9 @@ ENV APACHE_RUN_GROUP www-data
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# Allow .htaccess overrides
+RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+
 # Configure Apache (simplified approach)
 RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf && \
     sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \

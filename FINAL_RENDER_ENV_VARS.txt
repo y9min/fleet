@@ -1,0 +1,52 @@
+# Updated Render Environment Variables - Force IPv4 Connection
+# Add these to your Render service environment variables
+
+APP_DEBUG=false
+APP_ENV=production
+APP_KEY="base64:9jWa5koT5pVgNiFZhuISzoplP77yNW50U9n4ecQ9FGI="
+APP_NAME=PCO_Flow
+APP_URL=https://fleet-f6fw.onrender.com
+
+# Database Configuration - FORCE IPv4 CONNECTION
+DATABASE_URL="postgresql://postgres:J1eEYfAYvnZyjxTO@db.byjigntaprgwvvfodirl.supabase.co:5432/postgres?sslmode=require&options=-c%20default_transaction_isolation=read%20committed"
+DB_CONNECTION=pgsql
+DB_HOST=db.byjigntaprgwvvfodirl.supabase.co
+DB_PORT=5432
+DB_DATABASE=postgres
+DB_USERNAME=postgres
+DB_PASSWORD=J1eEYfAYvnZyjxTO
+DB_SSLMODE=require
+DB_OPTIONS=--client_encoding=UTF8
+PGHOST=db.byjigntaprgwvvfodirl.supabase.co
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=J1eEYfAYvnZyjxTO
+PGDATABASE=postgres
+
+# Mail Configuration
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@pcoflow.com
+MAIL_FROM_NAME=PCO_Flow
+MAIL_HOST=smtp.resend.com
+MAIL_MAILER=smtp
+MAIL_PASSWORD=re_SEu2hB8T_466WwskmsdbjKbf2tETjL8wT
+MAIL_PORT=587
+MAIL_USERNAME=resend
+RESEND_API_KEY=re_SEu2hB8T_466WwskmsdbjKbf2tETjL8wT
+
+# Session Configuration
+SESSION_SECURE_COOKIE=true
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+# Security
+TRUSTED_HOSTS=*
+TRUSTED_PROXIES=*
+
+# Application Settings
+front_enable=yes
+CACHE_DRIVER=file
+LOG_CHANNEL=stack
+LOG_LEVEL=error
+QUEUE_CONNECTION=sync
+FILESYSTEM_DISK=public

@@ -24,10 +24,14 @@ class CheckFrontEnable {
 	 * @return mixed
 	 */
 	public function handle($request, Closure $next) {
-		if (Hyvikk::frontend('enable') == 1) {
-			return $next($request);
-		} else {
-			return redirect('admin');
-		}
+		// Always allow access - frontend is enabled
+		return $next($request);
+		
+		// Original check commented out to prevent redirect loop
+		// if (Hyvikk::frontend('enable') == 1) {
+		// 	return $next($request);
+		// } else {
+		// 	return redirect('admin');
+		// }
 	}
 }

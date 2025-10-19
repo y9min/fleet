@@ -1,0 +1,92 @@
+# CORRECTED Render Environment Variables - Remove DB_OPTIONS to fix array_diff_key error
+
+# Application Configuration
+APP_DEBUG=false
+APP_ENV=production
+APP_KEY="base64:9jWa5koT5pVgNiFZhuISzoplP77yNW50U9n4ecQ9FGI="
+APP_NAME=PCO_Flow
+APP_URL=https://fleet-f6fw.onrender.com
+
+# AWS Configuration (if needed)
+AWS_ACCESS_KEY_ID=
+AWS_BUCKET=
+AWS_DEFAULT_REGION=us-east-1
+AWS_SECRET_ACCESS_KEY=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+# Broadcasting
+BROADCAST_DRIVER=log
+
+# Cache Configuration
+CACHE_DRIVER=file
+
+# Database Configuration - PostgreSQL with Supabase
+DATABASE_URL="postgresql://postgres:J1eEYfAYvnZyjxTO@db.byjigntaprgwvvfodirl.supabase.co:5432/postgres?sslmode=require&options=-c%20default_transaction_isolation=read%20committed"
+DB_CONNECTION=pgsql
+DB_HOST=db.byjigntaprgwvvfodirl.supabase.co
+DB_PORT=5432
+DB_DATABASE=postgres
+DB_USERNAME=postgres
+DB_PASSWORD=J1eEYfAYvnZyjxTO
+DB_SSLMODE=require
+# REMOVED DB_OPTIONS - This was causing the array_diff_key error
+
+# File System
+FILESYSTEM_DISK=public
+
+# Logging
+LOG_CHANNEL=stack
+LOG_LEVEL=error
+
+# Mail Configuration (Resend)
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@pcoflow.com
+MAIL_FROM_NAME=PCO_Flow
+MAIL_HOST=smtp.resend.com
+MAIL_MAILER=smtp
+MAIL_PASSWORD=re_SEu2hB8T_466WwskmsdbjKbf2tETjL8wT
+MAIL_PORT=587
+MAIL_USERNAME=resend
+
+# Memcached
+MEMCACHED_HOST=127.0.0.1
+
+# Pusher Configuration
+PUSHER_APP_CLUSTER=mt1
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+
+# Queue Configuration
+QUEUE_CONNECTION=sync
+
+# Redis Configuration
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# Resend API Key
+RESEND_API_KEY=re_SEu2hB8T_466WwskmsdbjKbf2tETjL8wT
+
+# Session Configuration
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=true
+
+# Security
+TRUSTED_HOSTS=*
+TRUSTED_PROXIES=*
+
+# Vite Configuration
+VITE_APP_NAME=PCO_Flow
+VITE_PUSHER_APP_CLUSTER=mt1
+VITE_PUSHER_APP_KEY=
+VITE_PUSHER_HOST=
+VITE_PUSHER_PORT=443
+VITE_PUSHER_SCHEME=https
+
+# Frontend Configuration
+front_enable=yes

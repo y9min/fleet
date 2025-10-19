@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__.'/../vendor/autoload.php';
+
 $app = new Illuminate\Foundation\Application(
 	realpath(__DIR__ . '/../')
 );

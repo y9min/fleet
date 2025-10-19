@@ -6,6 +6,9 @@ Route::get("download-vehicle-sample", "Admin\VehiclesController@downloadSample")
 // Public route for downloading empty vehicle template
 Route::get("download-empty-template/{format}", "Admin\VehiclesController@downloadEmptyTemplate")->name("download-empty-template");
 
+// Database connection test endpoint
+Route::get("db-test", "DatabaseTestController@testConnection")->name("db-test");
+
 Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_enable']], function () {
 
 

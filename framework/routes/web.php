@@ -12,6 +12,9 @@ Route::get("db-test", "DatabaseTestController@testConnection")->name("db-test");
 // CRITICAL: Database connection test for North America Data Centers
 Route::get("critical-db-test", "CriticalDatabaseTestController@testConnection")->name("critical-db-test");
 
+// CRITICAL: Session clear endpoint to fix UUID/integer mismatch
+Route::get("clear-session", "SessionClearController@clearSession")->name("clear-session");
+
 Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_enable']], function () {
 
 

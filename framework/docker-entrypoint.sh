@@ -12,6 +12,13 @@ mkdir -p /var/www/html/storage/framework/sessions \
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Ensure Apache listens on Render-assigned PORT on 0.0.0.0
+PORT_TO_USE=${PORT:-80}
+echo "Listen 0.0.0.0:${PORT_TO_USE}" > /etc/apache2/ports.conf
+if [ -f /etc/apache2/sites-available/000-default.conf ]; then
+  sed -i "s#<VirtualHost \*:.*>#<VirtualHost *:${PORT_TO_USE}>#g" /etc/apache2/sites-available/000-default.conf || true
+fi
+
 # Skip artisan cache clears at boot to avoid permission noise/timeouts
 
 # Start Apache in foreground

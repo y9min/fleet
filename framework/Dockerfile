@@ -1,47 +1,39 @@
 FROM php:8.2-apache
 
-# Install system dependencies
+# System deps (pgsql + common extensions)
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libpq-dev \
-    zip \
-    unzip \
-    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
+    git curl libpng-dev libonig-dev libxml2-dev libpq-dev zip unzip \
+ && docker-php-ext-install pdo pdo_pgsql mbstring bcmath
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Set working directory
-WORKDIR /var/www/html
-
-# Copy composer files
-COPY framework/composer.json framework/composer.lock ./
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Copy application code
-COPY framework/ .
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 775 storage bootstrap/cache
-
-# Configure Apache
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Set Apache document root
+# Set Apache document root to Laravel public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+ && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Expose port
+# Install Composer (no mirror)
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php \
+ && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+ && rm /tmp/composer-setup.php
+
+WORKDIR /var/www/html
+
+# Copy composer files first to leverage Docker layer cache
+COPY framework/composer.json framework/composer.lock ./
+
+# Install PHP deps (no dev), optimize autoload
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+# Copy application code
+COPY framework/ ./
+
+# Ensure writable dirs
+RUN mkdir -p storage/framework/{cache,views,sessions} \
+ && chown -R www-data:www-data /var/www/html \
+ && chmod -R 775 storage bootstrap/cache
+
 EXPOSE 80
-
-# Start Apache
 CMD ["apache2-foreground"]

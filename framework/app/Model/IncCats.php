@@ -12,10 +12,10 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class IncCats extends Model {
+class IncCats extends BaseUuidModel {
 	use SoftDeletes;
 	protected $dates = ['deleted_at'];
 	protected $fillable = ['name', 'user_id', 'cost', 'type'];

@@ -12,9 +12,9 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 
-class DriverLogsModel extends Model {
+class DriverLogsModel extends BaseUuidModel {
 
 	protected $table = 'driver_logs';
 	protected $fillable = ['driver_id', 'vehicle_id', 'date'];

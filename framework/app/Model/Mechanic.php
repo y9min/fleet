@@ -13,10 +13,10 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 namespace App\Model;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Mechanic extends Model {
+class Mechanic extends BaseUuidModel {
 	use SoftDeletes;
 	use HasFactory;
 	protected $dates = ['deleted_at'];

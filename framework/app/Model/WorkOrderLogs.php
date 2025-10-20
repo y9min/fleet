@@ -12,9 +12,9 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 
-class WorkOrderLogs extends Model {
+class WorkOrderLogs extends BaseUuidModel {
 
 	protected $table = 'work_order_logs';
 	protected $fillable = ['user_id', 'vehicle_id', 'vendor_id', 'mechanic_id', 'required_by', 'status', 'description', 'meter', 'note', 'price', 'type', 'created_on', 'parts_price'];

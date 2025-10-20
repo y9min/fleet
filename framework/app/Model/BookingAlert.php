@@ -2,10 +2,10 @@
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BookingAlert extends Model 
+class BookingAlert extends BaseUuidModel 
 {
   
     use SoftDeletes;

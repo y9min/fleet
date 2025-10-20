@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel {
 		'App\Console\Commands\TestResendEmails',
 		'App\Console\Commands\FixDriverCompanyIds',
 		'App\Console\Commands\FixDriverPasswords',
+		'App\Console\Commands\ClearAllSessions',
 	];
 	protected function schedule(Schedule $schedule) {
 		$schedule->command('notification:generate')->dailyAt('10:00');

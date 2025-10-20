@@ -2,10 +2,10 @@
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class VehicleBreakdown extends Model 
+class VehicleBreakdown extends BaseUuidModel 
 {
   
     use SoftDeletes;

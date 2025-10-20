@@ -7,12 +7,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasRoles, Notifiable, SoftDeletes;
     use HasFactory;
+    use HasUuids;
     protected $dates = ['deleted_at'];
     protected $table = "users";
     protected $fillable = [

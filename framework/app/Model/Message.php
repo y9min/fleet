@@ -12,9 +12,9 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 
-class Message extends Model
+class Message extends BaseUuidModel
 {
     protected $table = "messages";
     protected $fillable = ['from_user', 'to_user', 'content', 'read_at'];

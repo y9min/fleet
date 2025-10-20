@@ -49,5 +49,7 @@ RUN mkdir -p storage/framework/{cache,views,sessions} \
 EXPOSE 80
 
 # Start Apache
-CMD ["apache2-foreground"]
+COPY framework/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
 # Force rebuild - cache clear

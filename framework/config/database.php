@@ -10,7 +10,7 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
  */
 return [
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     'connections' => [
 

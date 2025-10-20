@@ -1,5 +1,11 @@
 # Ignore local env and macOS metadata
+.env
 framework/.env
 .DS_Store
 assets/.DS_Store
 **/.DS_Store
+
+# Ignore environment files
+*.env
+.env.*
+!.env.example

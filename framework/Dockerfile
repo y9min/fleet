@@ -1,14 +1,16 @@
 FROM php:8.2-apache
 
-# System deps (pgsql + common extensions)
+# System deps (pgsql, zip, gd build deps)
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev libpq-dev zip unzip \
- && docker-php-ext-install pdo pdo_pgsql mbstring bcmath
+    git curl unzip zip libzip-dev libpq-dev \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install gd zip pdo pdo_pgsql mbstring bcmath
 
-# Enable Apache mod_rewrite
+# Enable Apache rewrite
 RUN a2enmod rewrite
 
-# Set Apache document root to Laravel public
+# Serve Laravel from public/
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
  && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
@@ -21,16 +23,16 @@ RUN curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php \
 
 WORKDIR /var/www/html
 
-# Copy composer files first to leverage Docker layer cache
+# Copy composer files first (better caching)
 COPY framework/composer.json framework/composer.lock ./
 
-# Install PHP deps (no dev), optimize autoload
+# Install PHP deps (optimize autoload)
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 # Copy application code
 COPY framework/ ./
 
-# Ensure writable dirs
+# Writable dirs
 RUN mkdir -p storage/framework/{cache,views,sessions} \
  && chown -R www-data:www-data /var/www/html \
  && chmod -R 775 storage bootstrap/cache

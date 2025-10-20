@@ -34,6 +34,7 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # Configure Apache
 RUN a2enmod rewrite
+COPY framework/public/.htaccess /var/www/html/public/.htaccess
 
 # Set Apache document root
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public

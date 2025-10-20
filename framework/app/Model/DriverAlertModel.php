@@ -2,10 +2,10 @@
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class DriverAlertModel extends Model 
+class DriverAlertModel extends BaseUuidModel 
 {
   
     use SoftDeletes;

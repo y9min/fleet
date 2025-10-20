@@ -2,10 +2,10 @@
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CitiesModel extends Model {
+class CitiesModel extends BaseUuidModel {
 	use SoftDeletes;
 	protected $dates = ['deleted_at'];
 	protected $table = 'cities';

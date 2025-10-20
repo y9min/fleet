@@ -14,11 +14,11 @@ namespace App\Model;
 
 use App\Model\DriverVehicleModel;
 use App\Model\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kodeine\Metable\Metable;
 
-class VehicleModel extends Model {
+class VehicleModel extends BaseUuidModel {
 	use Metable;
 	use SoftDeletes;
 	protected $dates = ['deleted_at'];

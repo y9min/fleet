@@ -12,9 +12,9 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 
-class BookingPaymentsModel extends Model {
+class BookingPaymentsModel extends BaseUuidModel {
 	protected $table = "booking_payments";
 	protected $fillable = ['booking_id', 'method', 'amount', 'payment_details', 'transaction_id', 'payment_status'];
 

@@ -12,10 +12,10 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BookingQuotationModel extends Model {
+class BookingQuotationModel extends BaseUuidModel {
 	use SoftDeletes;
 	protected $dates = ['deleted_at'];
 	protected $table = "booking_quotation";

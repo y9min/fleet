@@ -7,11 +7,11 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
  */
 namespace App\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kodeine\Metable\Metable;
 
-class Bookings extends Model {
+class Bookings extends BaseUuidModel {
 	use HasFactory;
 	use Metable;
 	use SoftDeletes;

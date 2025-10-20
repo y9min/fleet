@@ -11,9 +11,9 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 
 namespace App\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 
-class PasswordResetModel extends Model {
+class PasswordResetModel extends BaseUuidModel {
 	protected $table = "password_resets";
 	protected $fillable = ['email', 'token', 'created_at'];
 	public $timestamps = false;

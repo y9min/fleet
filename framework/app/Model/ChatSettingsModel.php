@@ -11,10 +11,10 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 namespace App\Model;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ChatSettingsModel extends Model {
+class ChatSettingsModel extends BaseUuidModel {
 	use HasFactory;
 	use SoftDeletes;
 

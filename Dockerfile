@@ -30,12 +30,15 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files and install dependencies
+# Copy composer files and install dependencies (without autoload/scripts yet)
 COPY framework/composer.json framework/composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --no-autoloader
 
 # Copy application code
 COPY framework/ ./
+
+# Generate optimized autoload now that full tree exists
+RUN composer dump-autoload -o
 
 # Set proper permissions
 RUN mkdir -p storage/framework/{cache,views,sessions} \

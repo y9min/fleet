@@ -41,6 +41,50 @@ class Handler extends ExceptionHandler {
 	 * @return \Illuminate\Http\Response
 	 */
 	public function render($request, Throwable $exception) {
+		// Hide SQL exceptions from end users in production
+		if ($exception instanceof \Illuminate\Database\QueryException && !config('app.debug')) {
+			// Log the actual error for debugging
+			\Log::error('Database Query Exception', [
+				'message' => $exception->getMessage(),
+				'sql' => $exception->getSql() ?? 'N/A',
+				'bindings' => $exception->getBindings() ?? [],
+				'url' => $request->fullUrl(),
+				'user_id' => auth()->id(),
+			]);
+			
+			// Return a user-friendly error message
+			if ($request->expectsJson()) {
+				return response()->json([
+					'error' => 'A database error occurred. Please try again later.',
+					'message' => 'Service temporarily unavailable'
+				], 500);
+			}
+			
+			return response()->view('errors.500', [
+				'message' => 'We\'re experiencing technical difficulties. Please try again later.'
+			], 500);
+		}
+		
+		// Hide other database-related exceptions in production
+		if ($exception instanceof \PDOException && !config('app.debug')) {
+			\Log::error('PDO Exception', [
+				'message' => $exception->getMessage(),
+				'url' => $request->fullUrl(),
+				'user_id' => auth()->id(),
+			]);
+			
+			if ($request->expectsJson()) {
+				return response()->json([
+					'error' => 'A database error occurred. Please try again later.',
+					'message' => 'Service temporarily unavailable'
+				], 500);
+			}
+			
+			return response()->view('errors.500', [
+				'message' => 'We\'re experiencing technical difficulties. Please try again later.'
+			], 500);
+		}
+		
 		return parent::render($request, $exception);
 	}
 

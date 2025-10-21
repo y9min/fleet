@@ -162,3 +162,4 @@ SELECT
     (SELECT COUNT(*) FROM permissions) as permissions_count,
     (SELECT COUNT(*) FROM model_has_roles) as user_assignments,
     (SELECT COUNT(*) FROM role_has_permissions) as role_permission_assignments;
+

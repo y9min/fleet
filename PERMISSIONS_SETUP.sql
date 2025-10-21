@@ -374,3 +374,4 @@ SELECT
     '🎉 PERMISSIONS SETUP COMPLETE!' as message,
     'All roles and permissions have been created and assigned' as details,
     'The 403 permission errors should now be resolved' as result;
+

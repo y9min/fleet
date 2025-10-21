@@ -265,3 +265,4 @@ FROM information_schema.columns
 WHERE table_name IN ('roles', 'permissions', 'role_has_permissions', 'model_has_roles', 'model_has_permissions')
 AND column_name = 'id'
 ORDER BY table_name;
+

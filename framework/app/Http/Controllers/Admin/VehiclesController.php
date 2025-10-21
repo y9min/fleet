@@ -74,7 +74,7 @@ class VehiclesController extends Controller {
                         $vehicles = collect([]);
                     } else {
                         // Boss Admin with a company assigned (rare): limit to their company
-                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('(array_agg(users.name))[1] as driver_name'), DB::raw('(array_agg(users.id))[1] as driver_id'))
                             ->where('vehicles.company_id', $user->company_id)
                             ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                             ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
@@ -87,7 +87,7 @@ class VehiclesController extends Controller {
                     if (is_null($user->company_id)) {
                         $vehicles = collect([]);
                     } else {
-                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('(array_agg(users.name))[1] as driver_name'), DB::raw('(array_agg(users.id))[1] as driver_id'))
                             ->where('vehicles.company_id', $user->company_id)
                             ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                             ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
@@ -98,7 +98,7 @@ class VehiclesController extends Controller {
                 } else {
                     // Driver - see only assigned vehicles
                     $vehicle_ids = $user->vehicles->pluck('id')->toArray();
-                    $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                    $vehicles = VehicleModel::select('vehicles.*', DB::raw('(array_agg(users.name))[1] as driver_name'), DB::raw('(array_agg(users.id))[1] as driver_id'))
                         ->whereIn('vehicles.id', $vehicle_ids)
                         ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                         ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
@@ -508,7 +508,7 @@ class VehiclesController extends Controller {
                                 if (is_null($user->company_id)) {
                                         $vehicles = VehicleModel::query()->whereRaw('1=0');
                                 } else {
-                                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('(array_agg(users.name))[1] as driver_name'), DB::raw('(array_agg(users.id))[1] as driver_id'))
                                                 ->where('vehicles.company_id', $user->company_id)
                                                 ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                                                 ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
@@ -519,7 +519,7 @@ class VehiclesController extends Controller {
                                 if (is_null($user->company_id)) {
                                         $vehicles = VehicleModel::query()->whereRaw('1=0');
                                 } else {
-                                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                                        $vehicles = VehicleModel::select('vehicles.*', DB::raw('(array_agg(users.name))[1] as driver_name'), DB::raw('(array_agg(users.id))[1] as driver_id'))
                                                 ->where('vehicles.company_id', $user->company_id)
                                                 ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                                                 ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
@@ -528,7 +528,7 @@ class VehiclesController extends Controller {
                         } else {
                                 // Driver - see only assigned vehicles
                                 $vehicle_ids = $user->vehicles->pluck('id')->toArray();
-                                $vehicles = VehicleModel::select('vehicles.*', DB::raw('MAX(users.name) as driver_name'), DB::raw('MAX(users.id) as driver_id'))
+                                $vehicles = VehicleModel::select('vehicles.*', DB::raw('(array_agg(users.name))[1] as driver_name'), DB::raw('(array_agg(users.id))[1] as driver_id'))
                                         ->whereIn('vehicles.id', $vehicle_ids)
                                         ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                                         ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')

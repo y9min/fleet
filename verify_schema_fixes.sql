@@ -1,8 +1,8 @@
--- SQL Verification Script for Critical Schema Fixes
--- Run this after migrations to verify the fixes are applied correctly
+-- POST-MIGRATION VERIFICATION SCRIPT
+-- Run this AFTER running migrations to confirm the fixes are applied correctly
 
 -- =============================================================================
--- VERIFICATION QUERIES
+-- VERIFICATION QUERIES (POST-MIGRATION)
 -- =============================================================================
 
 -- 1. Verify remember_token column exists in users table
@@ -48,7 +48,7 @@ WHERE table_name = 'vehicle_types'
 
 -- =============================================================================
 
--- 4. Test data integrity - check if vehicle_types data is accessible
+-- 4. Test data integrity - check if vehicle_types data is accessible with NEW column names
 SELECT 
     id,
     vehicletype,
@@ -81,7 +81,7 @@ LIMIT 3;
 
 -- Overall verification summary
 SELECT 
-    'Schema Fix Verification' as check_type,
+    'POST-MIGRATION VERIFICATION' as check_type,
     CASE 
         WHEN EXISTS (
             SELECT 1 FROM information_schema.columns 

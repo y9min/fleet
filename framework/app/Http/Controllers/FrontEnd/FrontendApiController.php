@@ -35,7 +35,7 @@ class FrontendApiController extends Controller {
 		$data['success'] = "1";
 		$data['message'] = "Data fetched!";
 		$l = explode('-', Hyvikk::get("language"));
-		$data['data'] = array('language' => $l[1]);
+		$data['data'] = array('language' => isset($l[1]) ? $l[1] : 'en');
 		return $data;
 	}
 	public function user_booking_history($id) {

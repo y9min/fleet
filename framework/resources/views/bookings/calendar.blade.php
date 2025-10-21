@@ -66,7 +66,7 @@
 @section("script")
 @if(Hyvikk::get('language')!="English-en")
 @php($lg = explode('-',Hyvikk::get('language')))
-@if($lg[1]!='al')
+@if(isset($lg[1]) && $lg[1]!='al')
 <script src="{{asset('assets/js/cdn/calendar/'.$lg[1].'.js')}}"></script>
 @endif
 @endif

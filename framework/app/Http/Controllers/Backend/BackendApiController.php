@@ -470,7 +470,7 @@ class BackendApiController extends Controller {
 				"email" => $user->email,
 				// "password" => $user->password,
 				"profile_pic" => $src,
-				"language" => ($language[1] == "en") ? "en-us" : $language[1],
+				"language" => (isset($language[1]) && $language[1] == "en") ? "en-us" : (isset($language[1]) ? $language[1] : 'en'),
 				"permissions" => $modules,
 				"access_token" => $accessToken,
 				'date_format' => $date_setting,

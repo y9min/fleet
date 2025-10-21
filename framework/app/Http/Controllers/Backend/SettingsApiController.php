@@ -327,7 +327,7 @@ class SettingsApiController extends Controller {
 			'date_format' => $date_setting,
 			'tax_no' => Hyvikk::get('tax_no'),
 			'invoice_text' => Hyvikk::get('invoice_text'),
-			'language' => ($language[1] == "en") ? "en-us" : $language[1],
+			'language' => (isset($language[1]) && $language[1] == "en") ? "en-us" : (isset($language[1]) ? $language[1] : 'en'),
 			'selected_lang' => $lang,
 			// 'tax' => $taxes,
 			'tax' => $new_taxes,

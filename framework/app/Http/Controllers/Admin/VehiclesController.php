@@ -703,7 +703,7 @@ class VehiclesController extends Controller {
                         $index['groups'] = VehicleGroupModel::where('id', Auth::user()->group_id)->get();
                 }
                 // $index['types'] = VehicleTypeModel::all();
-                $index['types'] = VehicleTypeModel::where('isenable', 1)->get();
+                $index['types'] = VehicleTypeModel::where('is_enabled', 1)->get();
                 $index['makes'] = VehicleModel::select('make_name')->distinct()->whereNotNull('make_name')->pluck('make_name')->toArray();
                 $index['models'] = VehicleModel::select('model_name')->distinct()->whereNotNull('model_name')->pluck('model_name')->toArray();
                 $index['colors'] = VehicleModel::select('color_name')->distinct()->whereNotNull('color_name')->pluck('color_name')->toArray();
@@ -847,7 +847,7 @@ class VehiclesController extends Controller {
                 $models = VehicleModel::select('model_name')->distinct()->whereNotNull('model_name')->pluck('model_name')->toArray();
                 $colors = VehicleModel::select('color_name')->distinct()->whereNotNull('color_name')->pluck('color_name')->toArray();
                 // $types = VehicleTypeModel::all();
-                $types = VehicleTypeModel::where('isenable', 1)->get();
+                $types = VehicleTypeModel::where('is_enabled', 1)->get();
                 return view("vehicles.edit", compact('vehicle', 'groups', 'drivers', 'udfs', 'types', 'makes', 'models', 'colors'));
         }
         private function upload_file($file, $field, $id) {

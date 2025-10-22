@@ -19,5 +19,5 @@ class VehicleTypeModel extends BaseUuidModel {
 	use SoftDeletes;
 	protected $dates = ['deleted_at'];
 	protected $table = 'vehicle_types';
-	protected $fillable = ['vehicletype', 'displayname', 'icon', 'isenable', 'seats'];
+	protected $fillable = ['vehicletype', 'displayname', 'icon', 'is_enabled', 'seats'];
 }

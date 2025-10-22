@@ -135,7 +135,7 @@ class VehicleTypesApiController extends Controller {
 			$new = VehicleTypeModel::create([
 				'vehicletype' => $request->vehicletype,
 				'displayname' => $request->displayname,
-				'isenable' => $request->isenable,
+				'is_enabled' => $request->isenable,
 				'seats' => $request->seats,
 			]);
 			$file = $request->file('icon');

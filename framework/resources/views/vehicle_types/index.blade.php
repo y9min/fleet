@@ -162,7 +162,7 @@
             {data: 'vehicletype', name: 'vehicletype'},
             {data: 'displayname', name: 'displayname'},
             {data: 'seats', name: 'seats'},
-            {data: 'isenable', name: 'isenable'},
+            {data: 'is_enabled', name: 'is_enabled'},
             {data: 'action',name:'action',  searchable:false, orderable:false}
         ],
         order: [[1, 'desc']],

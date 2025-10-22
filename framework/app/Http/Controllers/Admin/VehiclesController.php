@@ -128,21 +128,23 @@ class VehiclesController extends Controller {
                     'sample_ids' => $vehicles->take(3)->pluck('id')->toArray()
                 ]);
                 
-                // Append commonly-used metadata as direct properties for instant details display
+                // Convert vehicles to arrays with metadata for JSON serialization
                 $vehicles = $vehicles->map(function($vehicle) {
-                    // Append metadata fields that are needed for instant details
-                    $vehicle->mot_expiry = $vehicle->getMeta('mot_expiry_date');
-                    $vehicle->telematics_link = $vehicle->getMeta('telematics_link');
-                    $vehicle->scheme = $vehicle->getMeta('vehicle_scheme') ?: $vehicle->getMeta('scheme');
-                    $vehicle->fuel_type = $vehicle->engine_type; // Already a column
-                    $vehicle->initial_mileage = $vehicle->int_mileage; // Already a column
-                    $vehicle->is_active = $vehicle->in_service; // Already a column
-                    $vehicle->insurance_discount = $vehicle->getMeta('insurance_discount');
-                    $vehicle->vehicle_price = $vehicle->getMeta('vehicle_price') ?: $vehicle->getMeta('price');
-                    $vehicle->initial_cost = $vehicle->getMeta('initial_cost');
-                    $vehicle->group_name = $vehicle->group ? $vehicle->group->name : null;
+                    $vehicleArray = $vehicle->toArray();
                     
-                    return $vehicle;
+                    // Add metadata fields
+                    $vehicleArray['mot_expiry'] = $vehicle->getMeta('mot_expiry_date');
+                    $vehicleArray['telematics_link'] = $vehicle->getMeta('telematics_link');
+                    $vehicleArray['scheme'] = $vehicle->getMeta('vehicle_scheme') ?: $vehicle->getMeta('scheme');
+                    $vehicleArray['fuel_type'] = $vehicle->engine_type;
+                    $vehicleArray['initial_mileage'] = $vehicle->int_mileage;
+                    $vehicleArray['is_active'] = $vehicle->in_service;
+                    $vehicleArray['insurance_discount'] = $vehicle->getMeta('insurance_discount');
+                    $vehicleArray['vehicle_price'] = $vehicle->getMeta('vehicle_price') ?: $vehicle->getMeta('price');
+                    $vehicleArray['initial_cost'] = $vehicle->getMeta('initial_cost');
+                    $vehicleArray['group_name'] = $vehicle->group ? $vehicle->group->name : null;
+                    
+                    return $vehicleArray;
                 });
                 
                 return view("vehicles.index", compact('vehicles', 'groups', 'vehicle_types', 'drivers'));

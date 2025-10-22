@@ -139,15 +139,36 @@ class VehiclesController extends Controller {
                         // Get import statistics
                         $stats = $import->importStats;
                         
-                        // Prepare success message with statistics
-                        $message = "Import completed! ";
-                        $message .= "Total rows: {$stats['total_rows']}, ";
-                        $message .= "Successfully imported: {$stats['successfully_imported']}, ";
-                        $message .= "Duplicates skipped: {$stats['duplicates_skipped']}, ";
-                        $message .= "Validation failed: {$stats['validation_failed']}, ";
-                        $message .= "Errors: {$stats['errors']}";
-                        
-                        return back()->with('success', $message);
+                        // Prepare detailed success/error message
+                        if ($stats['successfully_imported'] > 0) {
+                                $message = "✅ Import completed successfully! ";
+                                $message .= "📊 Statistics: ";
+                                $message .= "{$stats['successfully_imported']} vehicles imported, ";
+                                $message .= "{$stats['duplicates_skipped']} duplicates skipped, ";
+                                $message .= "{$stats['validation_failed']} validation failures, ";
+                                $message .= "{$stats['errors']} errors";
+                                
+                                // Add error details if any
+                                if (!empty($stats['error_details'])) {
+                                        $message .= "\n\n❌ Errors encountered:\n" . implode("\n", $stats['error_details']);
+                                        return back()->with('warning', $message);
+                                }
+                                
+                                return back()->with('success', $message);
+                        } else {
+                                $message = "❌ Import failed! No vehicles were imported. ";
+                                $message .= "📊 Statistics: ";
+                                $message .= "Total rows: {$stats['total_rows']}, ";
+                                $message .= "Validation failed: {$stats['validation_failed']}, ";
+                                $message .= "Errors: {$stats['errors']}";
+                                
+                                // Add error details
+                                if (!empty($stats['error_details'])) {
+                                        $message .= "\n\n❌ Error details:\n" . implode("\n", $stats['error_details']);
+                                }
+                                
+                                return back()->withErrors(['error' => $message]);
+                        }
                         
                 } catch (\Exception $e) {
                         \Log::error('Vehicle import failed', [

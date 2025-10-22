@@ -1312,10 +1312,46 @@ class DriversController extends Controller {
                                 ->addColumn('action', function ($user) {
                                         $buttons = '<div class="d-flex justify-content-center gap-2">';
                                         
-                                        // View Details Button
-                                        $buttons .= '<button class="btn btn-sm btn-info" data-driver-id="' . $user->id . '" onclick="toggleDriverDetails(\'' . $user->id . '\')" title="View Details" style="padding: 6px 8px;">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>';
+                                        // Prepare driver data for instant display
+                                        $driverData = [
+                                                'id' => $user->id,
+                                                'name' => $user->name,
+                                                'email' => $user->email,
+                                                'phone' => $user->phone_code . ' ' . $user->phone,
+                                                'license_number' => $user->metas->firstWhere('key', 'license_number')?->value ?? 'N/A',
+                                                'is_active' => $user->is_active,
+                                                'assigned_vehicle' => null
+                                        ];
+                                        
+                                        // Add vehicle data if exists
+                                        $vehicle = $user->vehicles->first();
+                                        if ($vehicle) {
+                                                $driverData['assigned_vehicle'] = [
+                                                        'id' => $vehicle->id,
+                                                        'license_plate' => $vehicle->license_plate,
+                                                        'make_name' => $vehicle->make_name,
+                                                        'model_name' => $vehicle->model_name
+                                                ];
+                                        }
+                                        
+                                        // Add additional meta fields that are commonly displayed
+                                        foreach ($user->metas as $meta) {
+                                                if (!in_array($meta->key, ['license_number'])) {
+                                                        $driverData[$meta->key] = $meta->value;
+                                                }
+                                        }
+                                        
+                                        $jsonData = htmlspecialchars(json_encode($driverData), ENT_QUOTES, 'UTF-8');
+                                        
+                                        // View Details Button with embedded data
+                                        $buttons .= '<button class="btn btn-sm btn-info" 
+                                                        data-driver-id="' . $user->id . '" 
+                                                        data-driver-info=\'' . $jsonData . '\'
+                                                        onclick="toggleDriverDetailsInstant(this)" 
+                                                        title="View Details" 
+                                                        style="padding: 6px 8px;">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>';
                                         
                                         // Change Password Button
                                         $buttons .= '<button class="btn btn-sm btn-warning" data-id="' . $user->id . '" data-toggle="modal" data-target="#changepass" title="Change Password" style="padding: 6px 8px;">

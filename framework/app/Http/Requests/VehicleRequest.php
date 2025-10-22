@@ -43,7 +43,7 @@ class VehicleRequest extends FormRequest {
                                 'vehicle_image' => 'nullable|mimes:jpg,png,jpeg|max:5120',
                                 'icon' => 'nullable|mimes:jpg,png,jpeg|max:5120',
                                 'average' => 'nullable|numeric',
-                                'type_id' => 'nullable|integer|exists:vehicle_types,id',
+                                'type_id' => 'nullable|uuid|exists:vehicle_types,id',
                                 'traccar_device_id' => 'nullable',
                                 'vehicle_price' => 'nullable|numeric|min:0',
                                 'insurance_discount' => 'nullable|numeric|min:0',
@@ -51,8 +51,8 @@ class VehicleRequest extends FormRequest {
                                 'price_period' => 'nullable|in:monthly,weekly',
                                 'vehicle_scheme' => 'nullable|in:Rental,Rent To Buy,Other',
                                 'vehicle_status' => 'nullable|in:Available,Rented,Workshop,Disabled',
-                                'group_id' => 'nullable|integer',
-                                'driver_id' => 'nullable|integer',
+                                'group_id' => 'nullable|uuid',
+                                'driver_id' => 'nullable|uuid',
                                 'telematics_link' => 'nullable|url',
                         ];
                 }
@@ -71,7 +71,7 @@ class VehicleRequest extends FormRequest {
                                 'vehicle_image' => 'nullable|mimes:jpg,png,jpeg|max:5120',
                                 'icon' => 'nullable|mimes:jpg,png,jpeg|max:5120',
                                 'average' => 'nullable|numeric',
-                                'type_id' => 'nullable|integer|exists:vehicle_types,id',
+                                'type_id' => 'nullable|uuid|exists:vehicle_types,id',
                                 'traccar_device_id' => 'nullable',
                                 'vehicle_price' => 'nullable|numeric|min:0',
                                 'insurance_discount' => 'nullable|numeric|min:0',
@@ -79,8 +79,8 @@ class VehicleRequest extends FormRequest {
                                 'price_period' => 'nullable|in:monthly,weekly',
                                 'vehicle_scheme' => 'nullable|in:Rental,Rent To Buy,Other',
                                 'vehicle_status' => 'nullable|in:Available,Rented,Workshop,Disabled',
-                                'group_id' => 'nullable|integer',
-                                'driver_id' => 'nullable|integer',
+                                'group_id' => 'nullable|uuid',
+                                'driver_id' => 'nullable|uuid',
                                 'telematics_link' => 'nullable|url',
                         ];
                 }

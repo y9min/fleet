@@ -1505,29 +1505,19 @@ window.toggleVehicleDetails = function(id, vehicleData = null) {
     detailsCell.setAttribute('colspan', '11');
     detailsCell.style.padding = '20px';
     
-    // Start with a loading indicator
-    detailsCell.innerHTML = `
-        <div style="background: white; padding: 30px; border-radius: 8px; border: 1px solid #ddd; text-align: center;">
-            <div style="color: #7FD7E1; font-size: 18px; margin-bottom: 10px;">
-                <i class="fas fa-spinner fa-spin"></i> Loading Complete Vehicle Details...
-            </div>
-            <p style="color: #666; margin: 0;">Fetching purchase information, metadata, and comprehensive vehicle data...</p>
-        </div>
-    `;
-    
-    // Fetch complete vehicle data including metadata via AJAX
-    fetchCompleteVehicleData(id).then(completeVehicle => {
-        console.log('Complete vehicle data received:', completeVehicle);
-        console.log('Purchase info:', completeVehicle.purchase_info);
-        console.log('Group name:', completeVehicle.group_name);
-        console.log('Driver name:', completeVehicle.driver_name);
-        detailsCell.innerHTML = generateCompleteVehicleDetails(id, vehicle, completeVehicle);
-    }).catch(error => {
-        console.error('Error fetching complete vehicle data:', error);
-        console.log('Using fallback with basic vehicle data:', vehicle);
-        // Enhanced fallback with more basic vehicle data
-        detailsCell.innerHTML = generateEnhancedBasicVehicleDetails(id, vehicle);
-    });
+    // Render instantly from available row data
+    detailsCell.innerHTML = generateInstantVehicleDetails(id, vehicle);
+
+    // Fetch complete vehicle data including metadata in the background and enhance silently
+    fetchCompleteVehicleData(id)
+        .then(completeVehicle => {
+            console.log('Complete vehicle data received:', completeVehicle);
+            progressivelyEnhanceVehicleDetails(id, vehicle, completeVehicle);
+        })
+        .catch(error => {
+            console.error('Error fetching complete vehicle data (silent):', error);
+            // Do nothing; keep the instant-rendered content
+        });
     
     detailsRow.appendChild(detailsCell);
     
@@ -1554,6 +1544,106 @@ async function fetchCompleteVehicleData(id) {
     } catch (error) {
         console.error('Error fetching complete vehicle data:', error);
         throw error;
+    }
+}
+
+// Generate instant (non-blocking) vehicle details using fields already available in vehiclesGlobalData
+function generateInstantVehicleDetails(id, vehicle) {
+    const make = vehicle.make_name || vehicle.make || 'Unknown Make';
+    const model = vehicle.model_name || vehicle.model || 'Unknown Model';
+    const reg = vehicle.license_plate || vehicle.lic_plate || 'Not Set';
+    const status = vehicle.vehicle_status || 'Available';
+    const typeName = (vehicle.types && (vehicle.types.displayname || vehicle.types.type)) || vehicle.vehicle_type || 'Not Selected';
+    const driverName = vehicle.driver_name || 'Not Assigned';
+    const year = vehicle.year || '';
+    const color = vehicle.color || '';
+    const average = vehicle.average || '';
+    const engineType = vehicle.engine_type || '';
+    const imageUrl = vehicle.vehicle_image || vehicle.image || '';
+
+    return `
+        <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd; max-width: 100%; overflow-x: auto;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; display:flex; align-items:center; gap:16px;">
+                ${imageUrl ? `<img src="${imageUrl}" alt="Vehicle" style="width:72px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #eee;" />` : ''}
+                <div>
+                    <h3 style="margin: 0; color: #495057; font-size: 1.5rem;">${make} ${model} ${year ? '(' + year + ')' : ''}</h3>
+                    <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 0.95rem;">
+                        Vehicle ID: VEH-${String(id).padStart(4, '0')} | Registration: ${reg} | 
+                        Status: ${status}
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                <div><strong>Type:</strong> ${typeName}</div>
+                <div><strong>Driver:</strong> <span id="details-driver-${id}">${driverName}</span></div>
+                <div><strong>Color:</strong> ${color || '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Engine:</strong> ${engineType || '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Average:</strong> ${average || '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Group:</strong> <span id="details-group-${id}"><span class="text-muted">N/A</span></span></div>
+                <div><strong>Price:</strong> <span id="details-price-${id}"><span class="text-muted">N/A</span></span></div>
+                <div><strong>Initial Cost:</strong> <span id="details-initial-${id}"><span class="text-muted">N/A</span></span></div>
+            </div>
+
+            <div style="margin-top: 18px; display:flex; gap:10px;">
+                <a href="/admin/vehicles/${id}/edit" class="btn btn-warning" style="padding: 8px 14px;"><i class="fas fa-edit"></i> Edit Vehicle</a>
+                <a href="/admin/vehicles/${id}" class="btn btn-info" style="padding: 8px 14px;"><i class="fas fa-eye"></i> View Full Details</a>
+                <button class="btn btn-secondary" onclick="toggleVehicleDetails('${id}')" style="padding: 8px 14px;"><i class="fas fa-times"></i> Hide Details</button>
+            </div>
+        </div>
+    `;
+}
+
+// Enhance the instant details with data from completeVehicle without showing any loading UI
+function progressivelyEnhanceVehicleDetails(id, vehicle, completeVehicle) {
+    // Group name
+    if (completeVehicle && typeof completeVehicle.group_name !== 'undefined') {
+        const el = document.getElementById(`details-group-${id}`);
+        if (el) {
+            el.textContent = completeVehicle.group_name || 'N/A';
+        }
+    }
+
+    // Driver name (server may return authoritative value)
+    if (completeVehicle && typeof completeVehicle.driver_name !== 'undefined') {
+        const el = document.getElementById(`details-driver-${id}`);
+        if (el) {
+            el.textContent = completeVehicle.driver_name || 'Not Assigned';
+        }
+    }
+
+    // Price and initial cost from metadata or purchase_info
+    if (completeVehicle) {
+        let vehiclePrice = 0;
+        let initialCost = 0;
+
+        if (completeVehicle.metadata) {
+            vehiclePrice = parseFloat(completeVehicle.metadata.vehicle_price || completeVehicle.metadata.price || 0) || 0;
+            initialCost = parseFloat(completeVehicle.metadata.initial_cost || 0) || 0;
+        }
+
+        if ((!vehiclePrice || !initialCost) && Array.isArray(completeVehicle.purchase_info)) {
+            completeVehicle.purchase_info.forEach(item => {
+                if (!item || !item.exp_name) return;
+                const name = String(item.exp_name).toLowerCase();
+                const amount = parseFloat(item.exp_amount) || 0;
+                if (!vehiclePrice && (name.includes('price') || name.includes('purchase') || name.includes('total'))) {
+                    vehiclePrice = amount;
+                }
+                if (!initialCost && (name.includes('initial') || name.includes('down') || name.includes('deposit'))) {
+                    initialCost = amount;
+                }
+            });
+        }
+
+        const priceEl = document.getElementById(`details-price-${id}`);
+        if (priceEl && vehiclePrice) {
+            priceEl.textContent = vehiclePrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+        const initEl = document.getElementById(`details-initial-${id}`);
+        if (initEl && initialCost) {
+            initEl.textContent = initialCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
     }
 }
 

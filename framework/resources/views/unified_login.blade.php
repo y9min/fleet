@@ -436,10 +436,6 @@
                     </div>
 
                     <div class="form-options">
-                        <div class="checkbox-group">
-                            <input type="checkbox" class="checkbox" name="remember" id="remember">
-                            <label class="checkbox-label" for="remember">Remember</label>
-                        </div>
                         <a href="{{ url('forgot-password') }}" class="forgot-link">Forgot password</a>
                     </div>
 

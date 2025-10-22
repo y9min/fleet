@@ -1103,15 +1103,15 @@ body {
                                             <label class="custom-control-label" for="chk_all"></label>
                                         </div>
                                     </th>
-                                    <th>Vehicle ID</th>
-                                    <th>Registration Plate</th>
-                                    <th>Make</th>
-                                    <th>Model</th>
-                                    <th>Vehicle Type</th>
-                                    <th>Fuel Type</th>
-                                    <th>Status</th>
-                                    <th>Assigned Driver</th>
-                                    <th>Details</th>
+                                    <th style="width: 80px;">Vehicle ID</th>
+                                    <th style="width: 120px;">Registration Plate</th>
+                                    <th style="width: 100px;">Make</th>
+                                    <th style="width: 100px;">Model</th>
+                                    <th style="width: 120px;">Vehicle Type</th>
+                                    <th style="width: 100px;">Fuel Type</th>
+                                    <th style="width: 100px;">Status</th>
+                                    <th style="width: 150px;">Assigned Driver</th>
+                                    <th style="width: 80px;">Details</th>
                                     <th style="width: 120px;">Actions</th>
                                 </tr>
                             </thead>
@@ -1357,7 +1357,7 @@ function loadVehiclesSimple(filteredData = null) {
                     <label class="custom-control-label" for="checkbox-${safeId}"></label>
                 </div>
             </td>
-            <td><strong>VEH-${String(safeId).padStart(4, '0')}</strong></td>
+            <td style="width: 80px;"><strong>VEH-${String(safeId).substring(0, 4)}</strong></td>
             <td><span class="badge badge-yellow">${safePlate}</span></td>
             <td>${safeMake}</td>
             <td>${safeModel}</td>

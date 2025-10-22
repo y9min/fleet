@@ -293,6 +293,7 @@
         <div class="form-field">
           <label>Vehicle Type</label>
           <select name="type_id" class="form-control">
+            <option value="">Select Vehicle Type</option>
             @foreach($types as $type)
               <option value="{{ $type->id }}" @if($vehicle->type_id == $type->id) selected @endif>{{ $type->displayname }}</option>
             @endforeach

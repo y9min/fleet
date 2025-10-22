@@ -172,19 +172,19 @@ class OnboardingController extends Controller
                 $actions = '<div class="d-flex justify-content-center gap-1">';
                 
                 if ($driver->isSubmitted()) {
-                    $actions .= '<button class="btn btn-sm btn-success" onclick="approveDriver(' . $driver->id . ')" title="Approve" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                    $actions .= '<button class="btn btn-sm btn-success" onclick="approveDriver(\'' . $driver->id . '\')" title="Approve" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                         <i class="fas fa-check"></i>
                     </button>';
-                    $actions .= '<button class="btn btn-sm btn-warning" onclick="rejectDriver(' . $driver->id . ')" title="Reject" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                    $actions .= '<button class="btn btn-sm btn-warning" onclick="rejectDriver(\'' . $driver->id . '\')" title="Reject" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                         <i class="fas fa-times"></i>
                     </button>';
                 }
                 
-                $actions .= '<button class="btn btn-sm btn-info" data-driver-id="' . $driver->id . '" onclick="toggleDriverDetails(' . $driver->id . ')" title="Toggle Details" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                $actions .= '<button class="btn btn-sm btn-info" data-driver-id="' . $driver->id . '" onclick="toggleDriverDetails(\'' . $driver->id . '\')" title="Toggle Details" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                     <i class="fas fa-eye"></i>
                 </button>';
                 
-                $actions .= '<button class="btn btn-sm btn-danger" onclick="deleteDriver(' . $driver->id . ')" title="Delete" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                $actions .= '<button class="btn btn-sm btn-danger" onclick="deleteDriver(\'' . $driver->id . '\')" title="Delete" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                     <i class="fas fa-trash"></i>
                 </button>';
                 

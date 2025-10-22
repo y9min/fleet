@@ -1247,11 +1247,11 @@ class DriversController extends Controller {
         public function fetch_data(Request $request) {
                 if ($request->ajax()) {
                         $auth = \Auth::user();
+                        
+                        // Simplified query - remove JOINs, rely on eager loading
                         $users = User::select('users.*')
-                                ->leftJoin('users_meta', 'users_meta.user_id', '=', 'users.id')
-                                ->leftJoin('driver_vehicle', 'driver_vehicle.driver_id', '=', 'users.id')
-                                ->leftJoin('vehicles', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
-                                ->with(['metas'])->whereUser_type("D");
+                                ->with(['metas', 'vehicles']) // Eager load relationships
+                                ->whereUser_type("D");
 
                         // Company scoping
                         if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
@@ -1260,8 +1260,6 @@ class DriversController extends Controller {
                                 // Boss Admin without company sees no drivers
                                 $users = $users->whereRaw('1=0');
                         }
-
-                        $users = $users->groupBy('users.id');
                         return DataTables::eloquent($users)
                                 ->addColumn('check', function ($user) {
                                         return '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '" onclick=\'checkcheckbox();\'>';
@@ -1285,20 +1283,27 @@ class DriversController extends Controller {
                                         return $user->phone_code . ' ' . $user->phone;
                                 })
                                 ->addColumn('license_number', function ($user) {
-                                        return $user->getMeta('license_number') ?: 'N/A';
+                                        // Use preloaded metas instead of getMeta()
+                                        $meta = $user->metas->firstWhere('key', 'license_number');
+                                        return $meta ? $meta->value : 'N/A';
                                 })
                                 ->addColumn('documents', function ($user) {
+                                        // Access preloaded metas collection
+                                        $licensePath = $user->metas->firstWhere('key', 'license_upload_path');
+                                        $insurancePath = $user->metas->firstWhere('key', 'insurance_upload_path');
+                                        
                                         $docs = '';
-                                        if ($user->getMeta('license_upload_path')) {
-                                                $docs .= '<a href="' . asset('storage/' . $user->getMeta('license_upload_path')) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
+                                        if ($licensePath && $licensePath->value) {
+                                                $docs .= '<a href="' . asset('storage/' . $licensePath->value) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
                                         }
-                                        if ($user->getMeta('insurance_upload_path')) {
-                                                $docs .= '<a href="' . asset('storage/' . $user->getMeta('insurance_upload_path')) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
+                                        if ($insurancePath && $insurancePath->value) {
+                                                $docs .= '<a href="' . asset('storage/' . $insurancePath->value) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
                                         }
                                         return $docs ?: '<span class="text-muted">No documents</span>';
                                 })
                                 ->addColumn('assigned_vehicle', function ($user) {
-                                        $vehicle = $user->vehicles()->first();
+                                        // Use preloaded vehicles relationship
+                                        $vehicle = $user->vehicles->first();
                                         if ($vehicle) {
                                                 return '<a href="' . route('vehicles.show', $vehicle->id) . '" class="badge badge-warning text-dark" style="background-color: #EABE14; color: #333; border-radius: 4px; padding: 6px 12px; text-decoration: none; font-weight: bold;" title="View Vehicle Details">' . $vehicle->license_plate . '</a>';
                                         }

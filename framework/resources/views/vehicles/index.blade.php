@@ -1103,7 +1103,6 @@ body {
                                             <label class="custom-control-label" for="chk_all"></label>
                                         </div>
                                     </th>
-                                    <th style="width: 80px;">Vehicle ID</th>
                                     <th style="width: 120px;">Registration Plate</th>
                                     <th style="width: 100px;">Make</th>
                                     <th style="width: 100px;">Model</th>
@@ -1357,7 +1356,6 @@ function loadVehiclesSimple(filteredData = null) {
                     <label class="custom-control-label" for="checkbox-${safeId}"></label>
                 </div>
             </td>
-            <td style="width: 80px;"><strong>VEH-${String(safeId).substring(0, 4)}</strong></td>
             <td><span class="badge badge-yellow">${safePlate}</span></td>
             <td>${safeMake}</td>
             <td>${safeModel}</td>
@@ -1502,7 +1500,7 @@ window.toggleVehicleDetails = function(id, vehicleData = null) {
     detailsRow.style.backgroundColor = '#f8f9fa';
     
     const detailsCell = document.createElement('td');
-    detailsCell.setAttribute('colspan', '11');
+    detailsCell.setAttribute('colspan', '10');
     detailsCell.style.padding = '20px';
     
     // Render instantly from available row data

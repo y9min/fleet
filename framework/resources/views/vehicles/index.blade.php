@@ -1293,7 +1293,10 @@ function generateDriverOptions(vehicleId) {
     const drivers = window.driversGlobalData || [];
     let options = '';
     drivers.forEach(driver => {
-        options += `<a class="dropdown-item driver-change" href="#" data-driver-id="${driver.id}" data-vehicle-id="${vehicleId}">${driver.name}</a>`;
+        // Properly escape driver name to prevent JavaScript syntax errors
+        const safeDriverName = (driver.name || 'Unknown').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/`/g, '&#96;');
+        const safeDriverId = String(driver.id || '');
+        options += `<a class="dropdown-item driver-change" href="#" data-driver-id="${safeDriverId}" data-vehicle-id="${vehicleId}">${safeDriverName}</a>`;
     });
     return options;
 }
@@ -1412,7 +1415,7 @@ function loadVehiclesSimple(filteredData = null) {
                 <div class="driver-container position-relative">
                     <div class="driver-display">
                         <button class="btn btn-sm btn-outline-secondary custom-dropdown-toggle" type="button">
-                            ${vehicle.driver_name || '<span class="text-muted">Not Assigned</span>'} <span class="dropdown-arrow">▼</span>
+                            ${vehicle.driver_name ? (vehicle.driver_name.replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/`/g, '&#96;')) : '<span class="text-muted">Not Assigned</span>'} <span class="dropdown-arrow">▼</span>
                         </button>
                     </div>
                     <div class="custom-dropdown-menu" style="display: none;">
@@ -1424,7 +1427,7 @@ function loadVehiclesSimple(filteredData = null) {
                 </div>
             </td>
             <td>
-                <button class="btn btn-sm btn-outline-info btn-action" onclick="toggleVehicleDetails(${safeId})" title="View Complete Details" id="details-btn-${safeId}">
+                <button class="btn btn-sm btn-outline-info btn-action" onclick="toggleVehicleDetails('${safeId}')" title="View Complete Details" id="details-btn-${safeId}">
                     <i class="fas fa-eye"></i> View
                 </button>
             </td>
@@ -1712,7 +1715,7 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
                         <i class="fas fa-eye"></i> View Full Details
                     </a>
                 </div>
-                <button class="btn btn-secondary" onclick="toggleVehicleDetails(${id})" style="padding: 10px 20px;">
+                <button class="btn btn-secondary" onclick="toggleVehicleDetails('${id}')" style="padding: 10px 20px;">
                     <i class="fas fa-times"></i> Hide Details
                 </button>
             </div>
@@ -1838,7 +1841,7 @@ function generateEnhancedBasicVehicleDetails(id, vehicle) {
                         <i class="fas fa-sync-alt"></i> Refresh Page
                     </button>
                 </div>
-                <button class="btn btn-secondary" onclick="toggleVehicleDetails(${id})" style="padding: 10px 20px;">
+                <button class="btn btn-secondary" onclick="toggleVehicleDetails('${id}')" style="padding: 10px 20px;">
                     <i class="fas fa-times"></i> Hide Details
                 </button>
             </div>

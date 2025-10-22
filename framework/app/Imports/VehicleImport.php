@@ -39,6 +39,55 @@ class VehicleImport implements ToCollection, WithHeadingRow
         return strtoupper(str_replace([' ', '-'], '', trim($plate)));
     }
 
+    /**
+     * Normalize column names to handle variations
+     * Examples: "Insurance Discount" -> "insurance_discount", "Vehicle Type" -> "vehicle_type"
+     */
+    private function normalizeColumnName($name)
+    {
+        if (empty($name)) {
+            return '';
+        }
+        
+        // Convert to lowercase and replace spaces/underscores/hyphens with underscores
+        return strtolower(str_replace([' ', '-'], '_', trim($name)));
+    }
+
+    /**
+     * Map column names to expected field names
+     */
+    private function mapColumnName($columnName)
+    {
+        $normalized = $this->normalizeColumnName($columnName);
+        
+        $mapping = [
+            'registration_plate' => 'registration_plate',
+            'make' => 'make',
+            'model' => 'model',
+            'year' => 'year',
+            'color' => 'color',
+            'vehicle_type' => 'vehicle_type',
+            'fuel_type' => 'fuel_type',
+            'mileage' => 'mileage',
+            'price' => 'price',
+            'price_period' => 'price_period',
+            'initial_cost' => 'initial_cost',
+            'vehicle_scheme' => 'vehicle_scheme',
+            'insurance_discount' => 'insurance_discount',
+            'available' => 'available',
+            'vehicle_status' => 'vehicle_status',
+            'vehicle_group' => 'vehicle_group',
+            'mot_expiry_day' => 'mot_expiry_day',
+            'mot_expiry_month' => 'mot_expiry_month',
+            'mot_expiry_year' => 'mot_expiry_year',
+            'telematics_link' => 'telematics_link',
+            'assigned_driver_first_name' => 'assigned_driver_first_name',
+            'assigned_driver_last_name' => 'assigned_driver_last_name',
+        ];
+        
+        return $mapping[$normalized] ?? $normalized;
+    }
+
     public function collection(Collection $rows)
     {
         $this->importStats['total_rows'] = $rows->count();
@@ -48,15 +97,25 @@ class VehicleImport implements ToCollection, WithHeadingRow
             'sample_row' => $rows->first() ? $rows->first()->toArray() : null
         ]);
         
+        $rowNumber = 0;
         foreach ($rows as $row) {
+            $rowNumber++;
             try {
                 // Skip empty rows
                 if (empty($row['registration_plate'])) {
+                    Log::info("Skipping empty row $rowNumber");
                     continue;
                 }
 
                 // Validate required fields
                 $rowData = is_array($row) ? $row : $row->toArray();
+                
+                Log::info("Processing row $rowNumber", [
+                    'registration_plate' => $rowData['registration_plate'] ?? 'MISSING',
+                    'make' => $rowData['make'] ?? 'MISSING',
+                    'model' => $rowData['model'] ?? 'MISSING',
+                    'year' => $rowData['year'] ?? 'MISSING'
+                ]);
                 
                 // Normalize registration plate for duplicate checking
                 $normalizedPlate = $this->normalizeRegistrationPlate($rowData['registration_plate']);
@@ -200,6 +259,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'group_id' => $group ? $group->id : null,
                     'type_id' => $type->id,
                     'user_id' => auth()->id(),
+                    'company_id' => auth()->user()->company_id ?? null,
                 ]);
 
                 // Set metadata - ensure all fields are saved INCLUDING MOT expiry date
@@ -208,7 +268,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 $vehicle->setMeta('price', $rowData['price'] ?? '');
                 $vehicle->setMeta('price_period', $rowData['price_period'] ?? 'Weekly');
                 $vehicle->setMeta('initial_cost', $rowData['initial_cost'] ?? '');
-                $vehicle->setMeta('insurance_discount', $rowData['insurance_discount'] ?? '');
+                $vehicle->setMeta('insurance_discount', $rowData['insurance_discount'] ?? '0');
                 $vehicle->setMeta('telematics_link', $rowData['telematics_link'] ?? '');
                 
                 Log::info('Vehicle metadata set', [
@@ -254,9 +314,17 @@ class VehicleImport implements ToCollection, WithHeadingRow
             } catch (\Exception $e) {
                 $this->importStats['errors']++;
                 Log::error('Vehicle import failed', [
-                    'row' => $rowData,
-                    'error' => $e->getMessage()
+                    'row_number' => $rowNumber,
+                    'row' => $rowData ?? null,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
                 ]);
+                
+                // Add error details for user feedback
+                if (!isset($this->importStats['error_details'])) {
+                    $this->importStats['error_details'] = [];
+                }
+                $this->importStats['error_details'][] = "Row $rowNumber: " . $e->getMessage();
             }
         }
         

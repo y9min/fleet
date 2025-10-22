@@ -1,0 +1,6 @@
+Registration Plate,Make,Model,Year,Color,Vehicle Type,Fuel Type,Mileage,Price,Price Period,Initial Cost,Vehicle Scheme,Available,Vehicle Status,Vehicle Group,MOT Expiry Day,MOT Expiry Month,MOT Expiry Year,Telematics Link,Assigned Driver First Name,Assigned Driver Last Name
+WA61 MYG,Volkswagen,Scirocco,2014,Black,Hatchback,Petrol,135000,1500,Monthly,9800,Rental,FALSE,Workshop,1,21,3,26,https://www.instagram.com,,
+A333 OKG,Audi,A3,2008,White,Saloon,Diesel,97000,850,Monthly,4495,Rent to buy,TRUE,Rented,1,5,12,25,https://www.autotrader.co.uk/car-search?channel=cars&postcode=rm6+4bd&make=,,
+BM23 X5A,BMW,X5,2023,Black,SUV,Petrol,15000,850,Monthly,65000,Rental,TRUE,Available,1,15,6,25,https://tracking.example.com/bmwx5,James,Smith
+AU22 A4B,Audi,A4,2022,Silver,Saloon,Diesel,22000,650,Monthly,45000,Rent to buy,FALSE,Rented,1,20,8,25,https://tracking.example.com/audia4,Sarah,Johnson
+MB23 CC1,Mercedes-Benz,C-Class,2023,White,Saloon,Hybrid,8500,750,Monthly,52000,Rental,FALSE,Rented,1,10,12,25,https://tracking.example.com/mercedes-c,Michael,Brown

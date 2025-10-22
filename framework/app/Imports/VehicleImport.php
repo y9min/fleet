@@ -121,7 +121,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 $normalizedPlate = $this->normalizeRegistrationPlate($rowData['registration_plate']);
                 
                 // Check for existing vehicle with same normalized registration plate
-                $existingVehicle = VehicleModel::whereRaw('UPPER(REPLACE(REPLACE(license_plate, " ", ""), "-", "")) = ?', [$normalizedPlate])->first();
+                $existingVehicle = VehicleModel::whereRaw('UPPER(REPLACE(REPLACE(license_plate, \' \', \'\'), \'-\', \'\')) = ?', [$normalizedPlate])->first();
                 
                 if ($existingVehicle) {
                     $this->importStats['duplicates_skipped']++;

@@ -91,6 +91,58 @@
   input:checked + .slider:hover {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(32, 178, 170, 0.3);
   }
+
+  /* Enhanced Import Modal Styles */
+  .file-upload-section {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .file-upload-section:hover {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+  }
+
+  .file-upload-section.dragover {
+    border-color: #28a745;
+    background-color: #d4edda;
+  }
+
+  .upload-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 15px;
+  }
+
+  .upload-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 8px;
+  }
+
+  .upload-hint {
+    font-size: 12px;
+    color: #6c757d;
+  }
+
+  .modal-xl {
+    max-width: 800px;
+  }
+
+  .progress {
+    height: 20px;
+    border-radius: 10px;
+  }
+
+  .progress-bar {
+    border-radius: 10px;
+  }
 </style>
 @endsection
 @section("breadcrumb")
@@ -141,10 +193,16 @@
     <div class="card card-info">
       <div class="card-header">
         <h3 class="card-title">@lang('menu.drivers') &nbsp;
-          @can('Drivers add') <a href="{{ route('drivers.create') }}" class="btn btn-success"
-            title="@lang('fleet.addDriver')"> <i class="fa fa-plus"></i> </a> @endcan
-          @can('Drivers import') &nbsp;&nbsp;<button data-toggle="modal" data-target="#import"
-            class="btn btn-warning">@lang('fleet.import')</button>@endcan
+          @can('Drivers add') 
+            <a href="{{ route('drivers.create') }}" class="btn btn-success" title="@lang('fleet.addDriver')"> 
+              <i class="fa fa-plus"></i> Add Driver
+            </a> 
+          @endcan
+          @can('Drivers import') 
+            <button data-toggle="modal" data-target="#import" class="btn btn-warning">
+              <i class="fa fa-upload"></i> Import Drivers
+            </button>
+          @endcan
         </h3>
       </div>
 
@@ -174,44 +232,84 @@
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Enhanced Import Modal -->
 <div id="import" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">@lang('fleet.importDrivers')</h4>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        {!! Form::open(['url'=>'admin/import-drivers','method'=>'POST','files'=>true]) !!}
-        <div class="form-group">
-          {!! Form::label('excel',__('fleet.importDrivers'),['class'=>"form-label"]) !!}
-          {!! Form::file('excel',['class'=>"form-control",'required']) !!}
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><i class="fa fa-cloud-upload-alt"></i> Import Drivers</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                {!! Form::open(['url' => 'admin/import-drivers', 'method' => 'POST', 'files' => true, 'id' => 'importForm', 'enctype' => 'multipart/form-data']) !!}
+                
+                <!-- File Upload Section -->
+                <div class="file-upload-section" id="fileDropZone">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <div class="upload-text">Drop your Excel/CSV file here or click to browse</div>
+                    <div class="upload-hint">Maximum file size: 5MB • Supported formats: .xlsx, .xls, .csv</div>
+                    {!! Form::file('excel', ['class' => 'form-control', 'required', 'accept' => '.xlsx,.xls,.csv', 'style' => 'display: none;', 'id' => 'fileInput']) !!}
+                    <div id="fileName" class="mt-2" style="display: none;">
+                        <i class="fas fa-file-excel text-success"></i> <span id="fileNameText"></span>
+                        <button type="button" class="btn btn-sm btn-outline-danger ml-2" id="removeFile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <h6 class="text-primary"><i class="fas fa-download"></i> Download Sample File</h6>
+                            <a href="{{ asset('assets/samples/drivers.xlsx') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-file-excel"></i> Download Sample Excel
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <h6 class="text-info"><i class="fas fa-info-circle"></i> Import Guidelines</h6>
+                            <ul class="text-muted small">
+                                <li>Use the sample file format</li>
+                                <li>Email addresses must be unique</li>
+                                <li>Required fields: First Name, Last Name, Email, Password</li>
+                                <li>Duplicate emails will be skipped</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Section -->
+                <div id="importProgress" class="mt-3" style="display: none;">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span id="progressText">Preparing import...</span>
+                    </div>
+                </div>
+                
+                <!-- Import Results -->
+                <div id="importResults" class="mt-3" style="display: none;">
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-check-circle"></i> Import Completed Successfully!</h6>
+                        <div id="importStats"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-warning" type="submit" id="importBtn">
+                    <i class="fas fa-upload"></i> Import Drivers
+                </button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+            {!! Form::close() !!}
         </div>
-        <div class="form-group">
-          <a href="{{ asset('assets/samples/drivers.xlsx') }}">@lang('fleet.downloadSampleExcel')</a>
-        </div>
-        <div class="form-group">
-          <h6 class="text-muted">@lang('fleet.note'):</h6>
-          <ul class="text-muted">
-            <li>@lang('fleet.driverImportNote1')</li>
-            <li>@lang('fleet.driverImportNote2')</li>
-            <li>@lang('fleet.driverImportNote3')</li>
-            <li>@lang('fleet.excelNote')</li>
-            <li>@lang('fleet.skipNote')</li>
-          </ul>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-warning" type="submit">@lang('fleet.import')</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">@lang('fleet.close')</button>
-      </div>
-      {!! Form::close() !!}
     </div>
-  </div>
 </div>
-<!-- Modal -->
+<!-- Enhanced Import Modal -->
 
 <!-- Modal -->
 <div id="bulkModal" class="modal fade" role="dialog">
@@ -1038,6 +1136,224 @@ function toggleDriverDetails(driverId) {
 }
 </script>
 {{-- Driver details toggle script end --}}
+
+{{-- Enhanced Import Modal JavaScript --}}
+<script>
+$(document).ready(function() {
+    // File upload drag and drop functionality
+    const fileDropZone = $('#fileDropZone');
+    const fileInput = $('#fileInput');
+    const fileName = $('#fileName');
+    const fileNameText = $('#fileNameText');
+    const removeFile = $('#removeFile');
+    const importBtn = $('#importBtn');
+    const importForm = $('#importForm');
+    const importProgress = $('#importProgress');
+    const importResults = $('#importResults');
+    const progressBar = $('.progress-bar');
+    const progressText = $('#progressText');
+    const importStats = $('#importStats');
+
+    // Click to browse files
+    fileDropZone.on('click', function() {
+        fileInput.click();
+    });
+
+    // File input change
+    fileInput.on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            handleFileSelection(file);
+        }
+    });
+
+    // Drag and drop events
+    fileDropZone.on('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).addClass('dragover');
+    });
+
+    fileDropZone.on('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('dragover');
+    });
+
+    fileDropZone.on('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('dragover');
+        
+        const files = e.originalEvent.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            handleFileSelection(file);
+        }
+    });
+
+    // Remove file
+    removeFile.on('click', function(e) {
+        e.stopPropagation();
+        fileInput.val('');
+        fileName.hide();
+        fileDropZone.show();
+        importBtn.prop('disabled', true);
+    });
+
+    function handleFileSelection(file) {
+        // Validate file type
+        const allowedTypes = ['.xlsx', '.xls', '.csv'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (!allowedTypes.includes(fileExtension)) {
+            new PNotify({
+                title: 'Invalid File Type',
+                text: 'Please select an Excel (.xlsx, .xls) or CSV file.',
+                type: 'error'
+            });
+            return;
+        }
+
+        // Validate file size (5MB max)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+            new PNotify({
+                title: 'File Too Large',
+                text: 'File size must be less than 5MB.',
+                type: 'error'
+            });
+            return;
+        }
+
+        // Show file name
+        fileNameText.text(file.name);
+        fileName.show();
+        fileDropZone.hide();
+        importBtn.prop('disabled', false);
+    }
+
+    // Form submission with progress
+    importForm.on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        // Show progress
+        importProgress.show();
+        importResults.hide();
+        importBtn.prop('disabled', true);
+        
+        // Simulate progress
+        let progress = 0;
+        const progressInterval = setInterval(function() {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressBar.css('width', progress + '%');
+            progressText.text('Processing... ' + Math.round(progress) + '%');
+        }, 200);
+
+        // Submit form via AJAX
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                clearInterval(progressInterval);
+                progressBar.css('width', '100%');
+                progressText.text('Import completed!');
+                
+                setTimeout(function() {
+                    importProgress.hide();
+                    
+                    // Show results
+                    if (response.success) {
+                        importStats.html(`
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h5 class="text-success">${response.stats.successfully_imported || 0}</h5>
+                                        <small>Successfully Imported</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h5 class="text-warning">${response.stats.duplicates_skipped || 0}</h5>
+                                        <small>Duplicates Skipped</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h5 class="text-danger">${response.stats.validation_failed || 0}</h5>
+                                        <small>Validation Errors</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <h5 class="text-info">${response.stats.total_rows || 0}</h5>
+                                        <small>Total Rows</small>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                        importResults.show();
+                        
+                        // Reload the table
+                        $('#ajax_data_table').DataTable().ajax.reload();
+                        
+                        new PNotify({
+                            title: 'Import Successful!',
+                            text: `Successfully imported ${response.stats.successfully_imported || 0} drivers.`,
+                            type: 'success'
+                        });
+                    }
+                }, 1000);
+            },
+            error: function(xhr) {
+                clearInterval(progressInterval);
+                importProgress.hide();
+                
+                let errorMessage = 'An error occurred during import.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        // Use default error message
+                    }
+                }
+                
+                new PNotify({
+                    title: 'Import Failed',
+                    text: errorMessage,
+                    type: 'error'
+                });
+            },
+            complete: function() {
+                importBtn.prop('disabled', false);
+            }
+        });
+    });
+
+    // Reset modal when closed
+    $('#import').on('hidden.bs.modal', function() {
+        fileInput.val('');
+        fileName.hide();
+        fileDropZone.show();
+        importProgress.hide();
+        importResults.hide();
+        progressBar.css('width', '0%');
+        importBtn.prop('disabled', true);
+    });
+});
+</script>
+{{-- Enhanced Import Modal JavaScript end --}}
 
 <style>
 /* Driver details styling */

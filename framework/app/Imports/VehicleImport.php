@@ -43,6 +43,11 @@ class VehicleImport implements ToCollection, WithHeadingRow
     {
         $this->importStats['total_rows'] = $rows->count();
         
+        Log::info('Vehicle import started', [
+            'total_rows' => $this->importStats['total_rows'],
+            'sample_row' => $rows->first() ? $rows->first()->toArray() : null
+        ]);
+        
         foreach ($rows as $row) {
             try {
                 // Skip empty rows
@@ -71,6 +76,12 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 }
                 
                 $this->importStats['processed']++;
+                
+                // Convert year to integer if it's a string
+                if (isset($rowData['year']) && is_string($rowData['year'])) {
+                    $rowData['year'] = (int) $rowData['year'];
+                }
+                
                 $validator = Validator::make($rowData, [
                     'registration_plate' => 'required|string|max:255',
                     'make' => 'required|string|max:255',
@@ -200,6 +211,20 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 $vehicle->setMeta('insurance_discount', $rowData['insurance_discount'] ?? '');
                 $vehicle->setMeta('telematics_link', $rowData['telematics_link'] ?? '');
                 
+                Log::info('Vehicle metadata set', [
+                    'vehicle_id' => $vehicle->id,
+                    'registration_plate' => $vehicle->license_plate,
+                    'metadata' => [
+                        'vehicle_status' => $rowData['vehicle_status'] ?? 'Available',
+                        'vehicle_scheme' => $rowData['vehicle_scheme'] ?? '',
+                        'price' => $rowData['price'] ?? '',
+                        'price_period' => $rowData['price_period'] ?? 'Weekly',
+                        'initial_cost' => $rowData['initial_cost'] ?? '',
+                        'insurance_discount' => $rowData['insurance_discount'] ?? '',
+                        'telematics_link' => $rowData['telematics_link'] ?? ''
+                    ]
+                ]);
+                
                 // FIXED: Store MOT expiry date in metadata instead of non-existent exp_date column
                 if ($motExpiryDate) {
                     $vehicle->setMeta('mot_expiry_date', $motExpiryDate->format('Y-m-d'));
@@ -237,5 +262,8 @@ class VehicleImport implements ToCollection, WithHeadingRow
         
         // Log final import statistics
         Log::info('Vehicle import completed', $this->importStats);
+        
+        // Also log to Laravel's main log for easier debugging
+        \Log::info('VEHICLE IMPORT SUMMARY', $this->importStats);
     }
 }

@@ -1313,7 +1313,7 @@ class DriversController extends Controller {
                                         $buttons = '<div class="d-flex justify-content-center gap-2">';
                                         
                                         // View Details Button
-                                        $buttons .= '<button class="btn btn-sm btn-info" data-driver-id="' . $user->id . '" onclick="toggleDriverDetails(' . $user->id . ')" title="View Details" style="padding: 6px 8px;">
+                                        $buttons .= '<button class="btn btn-sm btn-info" data-driver-id="' . $user->id . '" onclick="toggleDriverDetails(\'' . $user->id . '\')" title="View Details" style="padding: 6px 8px;">
                                                         <i class="fas fa-eye"></i>
                                                     </button>';
                                         
@@ -1372,19 +1372,17 @@ class DriversController extends Controller {
         
         public function getDriverDetails($id) {
                 try {
-                        $driver = User::findOrFail($id);
+                        // Eager load relationships to avoid N+1 queries
+                        $driver = User::with(['vehicles', 'metas'])->findOrFail($id);
                         $driverData = $driver->toArray();
                         
-                        // Get all driver metadata using the Metable trait
-                        $metas = \App\Model\UserData::where('user_id', $driver->id)->get();
-                        
-                        // Add metadata to driver data
-                        foreach ($metas as $meta) {
+                        // Use preloaded metas instead of querying again
+                        foreach ($driver->metas as $meta) {
                                 $driverData[$meta->key] = $meta->value;
                         }
                         
-                        // Get assigned vehicle
-                        $vehicle = $driver->vehicles()->first();
+                        // Get assigned vehicle from preloaded relationship
+                        $vehicle = $driver->vehicles->first();
                         if ($vehicle) {
                                 $driverData['assigned_vehicle'] = [
                                         'id' => $vehicle->id,
@@ -1400,13 +1398,20 @@ class DriversController extends Controller {
                             if (isset($customData['vehicle_selection']) && $customData['vehicle_selection']) {
                                 $selectedVehicle = \App\Model\VehicleModel::find($customData['vehicle_selection']);
                                 if ($selectedVehicle) {
+                                    // Get fuel_type from preloaded metas if available
+                                    $fuelType = 'Petrol'; // Default value
+                                    $fuelMeta = $driver->metas->firstWhere('key', 'fuel_type');
+                                    if ($fuelMeta) {
+                                        $fuelType = $fuelMeta->value;
+                                    }
+                                    
                                     $driverData['vehicle_details'] = [
                                         'id' => $selectedVehicle->id,
                                         'license_plate' => $selectedVehicle->license_plate,
                                         'make_name' => $selectedVehicle->make_name,
                                         'model_name' => $selectedVehicle->model_name,
                                         'year' => $selectedVehicle->year,
-                                        'fuel_type' => $selectedVehicle->getMeta('fuel_type') ?? 'Petrol'
+                                        'fuel_type' => $fuelType
                                     ];
                                 }
                             }

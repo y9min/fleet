@@ -286,10 +286,10 @@ class VendorApiController extends Controller
                 'id' => $vehicle_type->id,
 
 
-                'vehicletype' => $vehicle_type->vehicletype,
+                'vehicletype' => $vehicle_type->name,
 
 
-                'displayname' => $vehicle_type->displayname,
+                'displayname' => $vehicle_type->display_name,
 
 
                 'icon' => $url,
@@ -2254,7 +2254,7 @@ class VendorApiController extends Controller
                                     'color' => $v->vehiclecolor->color,
 
 
-                                    'vehicletype' => $v->types->displayname,
+                                    'vehicletype' => $v->types->display_name,
 
 
                                 );
@@ -2581,7 +2581,7 @@ class VendorApiController extends Controller
     //                         'color' => $v->vehiclecolor->color,
 
 
-    //                         'vehicletype' => $v->types->displayname,
+    //                         'vehicletype' => $v->types->display_name,
 
 
     //                     );
@@ -5089,7 +5089,7 @@ class VendorApiController extends Controller
                 // "model" => ($row->vehiclemodel()->exists()) ? $row->vehiclemodel->model : "",
 
 
-                "vehicle_type" => ($row->type_id && $row->types()->exists()) ? $row->types->displayname : "",
+                "vehicle_type" => ($row->type_id && $row->types()->exists()) ? $row->types->display_name : "",
 
 
                 "type_id" => $row->type_id,

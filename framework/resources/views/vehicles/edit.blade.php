@@ -295,7 +295,7 @@
           <select name="type_id" class="form-control">
             <option value="">Select Vehicle Type</option>
             @foreach($types as $type)
-              <option value="{{ $type->id }}" @if($vehicle->type_id == $type->id) selected @endif>{{ $type->displayname }}</option>
+              <option value="{{ $type->id }}" @if($vehicle->type_id == $type->id) selected @endif>{{ $type->display_name }}</option>
             @endforeach
           </select>
         </div>

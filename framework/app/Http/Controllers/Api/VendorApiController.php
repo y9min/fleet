@@ -90,8 +90,8 @@ class VendorApiController extends Controller {
                         }
                         $vehicle_type_data[] = array(
                                 'id' => $vehicle_type->id,
-                                'vehicletype' => $vehicle_type->vehicletype,
-                                'displayname' => $vehicle_type->displayname,
+                                'vehicletype' => $vehicle_type->name,
+                                'displayname' => $vehicle_type->display_name,
                                 'icon' => $url,
                                 'no_seats' => $vehicle_type->seats,
                                 'timestamp' => date('Y-m-d H:i:s', strtotime($vehicle_type->updated_at)),
@@ -751,7 +751,7 @@ class VendorApiController extends Controller {
                                                                         'color_id' => $v->color_id,
                                                                         'vehicle_id' => $v->id,
                                                                         'color' => $v->vehiclecolor->color,
-                                                                        'vehicletype' => $v->types->displayname,
+                                                                        'vehicletype' => $v->types->display_name,
                                                                 );
                                                                 $vehicle = $v->license_plate;
                                                         } else {
@@ -860,7 +860,7 @@ class VendorApiController extends Controller {
         //                         'color_id' => $v->color_id,
         //                         'vehicle_id' => $v->id,
         //                         'color' => $v->vehiclecolor->color,
-        //                         'vehicletype' => $v->types->displayname,
+        //                         'vehicletype' => $v->types->display_name,
         //                     );
         //                     $vehicle = $v->license_plate;
         //                 } else {
@@ -1666,7 +1666,7 @@ class VendorApiController extends Controller {
                                 "model" => $row->model_name,
                                 // "make" => ($row->maker()->exists()) ? $row->maker->make : "",
                                 // "model" => ($row->vehiclemodel()->exists()) ? $row->vehiclemodel->model : "",
-                                "vehicle_type" => ($row->type_id && $row->types()->exists()) ? $row->types->displayname : "",
+                                "vehicle_type" => ($row->type_id && $row->types()->exists()) ? $row->types->display_name : "",
                                 "type_id" => $row->type_id,
                                 // "color" => ($row->color_id && $row->vehiclecolor()->exists()) ? $row->vehiclecolor->color : "",
                                 "color" => $row->color_name,

@@ -1,18 +1,24 @@
 -- Fix Vehicle Types Database
 -- This script ensures the vehicle_types table has the correct data
 
--- Clear existing vehicle types
-TRUNCATE TABLE vehicle_types;
+-- First, let's see what's currently in the table
+SELECT 'Current vehicle_types:' as status;
+SELECT * FROM vehicle_types ORDER BY name;
 
--- Insert the exact vehicle types requested by user
-INSERT INTO vehicle_types (id, vehicletype, displayname, seats, is_enabled, created_at, updated_at) VALUES
-(1, 'Convertible', 'Convertible', 2, 1, NOW(), NOW()),
-(2, 'Coupe', 'Coupe', 2, 1, NOW(), NOW()),
-(3, 'Estate', 'Estate', 5, 1, NOW(), NOW()),
-(4, 'Hatchback', 'Hatchback', 5, 1, NOW(), NOW()),
-(5, 'MPV', 'MPV', 7, 1, NOW(), NOW()),
-(6, 'Saloon', 'Saloon', 5, 1, NOW(), NOW()),
-(7, 'SUV', 'SUV', 7, 1, NOW(), NOW());
+-- Clear existing vehicle types (using DELETE instead of TRUNCATE to avoid foreign key issues)
+DELETE FROM vehicle_types;
 
--- Verify the data
-SELECT * FROM vehicle_types ORDER BY id;
+-- Insert the exact vehicle types requested by user with UUIDs
+-- Note: Using correct column names from actual schema: name, display_name, seats, is_enabled
+INSERT INTO vehicle_types (id, name, display_name, seats, is_enabled, created_at, updated_at) VALUES
+(gen_random_uuid(), 'Convertible', 'Convertible', 2, true, NOW(), NOW()),
+(gen_random_uuid(), 'Coupe', 'Coupe', 2, true, NOW(), NOW()),
+(gen_random_uuid(), 'Estate', 'Estate', 5, true, NOW(), NOW()),
+(gen_random_uuid(), 'Hatchback', 'Hatchback', 5, true, NOW(), NOW()),
+(gen_random_uuid(), 'MPV', 'MPV', 7, true, NOW(), NOW()),
+(gen_random_uuid(), 'Saloon', 'Saloon', 5, true, NOW(), NOW()),
+(gen_random_uuid(), 'SUV', 'SUV', 7, true, NOW(), NOW());
+
+-- Verify the final data
+SELECT 'Final vehicle_types:' as status;
+SELECT * FROM vehicle_types ORDER BY name;

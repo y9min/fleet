@@ -159,8 +159,8 @@
             {data: 'check',name:'check', searchable:false, orderable:false},
             {data: 'id',name:'id'},
             {data: 'icon',name:'icon', searchable:false, orderable:false},
-            {data: 'vehicletype', name: 'vehicletype'},
-            {data: 'displayname', name: 'displayname'},
+            {data: 'name', name: 'name'},
+            {data: 'display_name', name: 'display_name'},
             {data: 'seats', name: 'seats'},
             {data: 'is_enabled', name: 'is_enabled'},
             {data: 'action',name:'action',  searchable:false, orderable:false}

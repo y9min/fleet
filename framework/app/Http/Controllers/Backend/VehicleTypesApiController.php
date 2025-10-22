@@ -132,12 +132,12 @@ class VehicleTypesApiController extends Controller {
 			$data['message'] = implode(", ", $errors->all());
 			$data['data'] = "";
 		} else {
-			$new = VehicleTypeModel::create([
-				'vehicletype' => $request->vehicletype,
-				'displayname' => $request->displayname,
-				'is_enabled' => $request->isenable,
-				'seats' => $request->seats,
-			]);
+        $new = VehicleTypeModel::create([
+            'name' => $request->name,
+            'display_name' => $request->display_name,
+            'is_enabled' => $request->isenable,
+            'seats' => $request->seats,
+        ]);
 			$file = $request->file('icon');
 			if ($request->hasFile('icon') && $request->file('icon')->isValid()) {
 				$destinationPath = './uploads'; // upload path

@@ -87,16 +87,16 @@
 
       {!! Form::open(['route' => ['vehicle-types.update',$vehicle_type->id],'method'=>'PATCH','files'=>true]) !!}
       {!! Form::hidden('id',$vehicle_type->id) !!}
-      {!! Form::hidden('old_type',strtolower(str_replace(' ','',$vehicle_type->vehicletype))) !!}
+      {!! Form::hidden('old_type',strtolower(str_replace(' ','',$vehicle_type->name))) !!}
       <div class="row">
         <div class="form-group col-md-4">
-          {!! Form::label('vehicletype', __('fleet.vehicle_type'), ['class' => 'form-label']) !!}
-          {!! Form::text('vehicletype', $vehicle_type->vehicletype,['class' => 'form-control','required']) !!}
+          {!! Form::label('name', __('fleet.vehicle_type'), ['class' => 'form-label']) !!}
+          {!! Form::text('name', $vehicle_type->name,['class' => 'form-control','required']) !!}
         </div>
 
         <div class="form-group col-md-4">
-          {!! Form::label('displayname', __('fleet.displayname'), ['class' => 'form-label']) !!}
-          {!! Form::text('displayname', $vehicle_type->displayname,['class' => 'form-control','required']) !!}
+          {!! Form::label('display_name', __('fleet.displayname'), ['class' => 'form-label']) !!}
+          {!! Form::text('display_name', $vehicle_type->display_name,['class' => 'form-control','required']) !!}
         </div>
 
         <div class="form-group col-md-4">

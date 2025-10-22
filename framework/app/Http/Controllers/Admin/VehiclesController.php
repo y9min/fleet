@@ -116,22 +116,47 @@ class VehiclesController extends Controller {
         }
 
         public function importVehicles(ImportRequest $request) {
-                $file = $request->excel;
-                $destinationPath = './uploads/xml'; // upload path
-                $extension = $file->getClientOriginalExtension();
-                $fileName = Str::uuid() . '.' . $extension;
+                try {
+                        $file = $request->excel;
+                        $destinationPath = './uploads/xml'; // upload path
+                        $extension = $file->getClientOriginalExtension();
+                        $fileName = Str::uuid() . '.' . $extension;
 
-                // Ensure the uploads directory exists and is writable
-                if (!is_dir($destinationPath)) {
-                        mkdir($destinationPath, 0755, true); // Create directory if not exists
-                }
-                if (!is_writable($destinationPath)) {
-                        return back()->withErrors(['error' => 'The upload directory is not writable.']);
-                }
+                        // Ensure the uploads directory exists and is writable
+                        if (!is_dir($destinationPath)) {
+                                mkdir($destinationPath, 0755, true); // Create directory if not exists
+                        }
+                        if (!is_writable($destinationPath)) {
+                                return back()->withErrors(['error' => 'The upload directory is not writable.']);
+                        }
 
-                $file->move($destinationPath, $fileName);
-                Excel::import(new VehicleImport, $destinationPath . '/' . $fileName);
-                return back();
+                        $file->move($destinationPath, $fileName);
+                        
+                        // Import with statistics tracking
+                        $import = new VehicleImport();
+                        Excel::import($import, $destinationPath . '/' . $fileName);
+                        
+                        // Get import statistics
+                        $stats = $import->importStats;
+                        
+                        // Prepare success message with statistics
+                        $message = "Import completed! ";
+                        $message .= "Total rows: {$stats['total_rows']}, ";
+                        $message .= "Successfully imported: {$stats['successfully_imported']}, ";
+                        $message .= "Duplicates skipped: {$stats['duplicates_skipped']}, ";
+                        $message .= "Validation failed: {$stats['validation_failed']}, ";
+                        $message .= "Errors: {$stats['errors']}";
+                        
+                        return back()->with('success', $message);
+                        
+                } catch (\Exception $e) {
+                        \Log::error('Vehicle import failed', [
+                                'error' => $e->getMessage(),
+                                'file' => $request->file('excel')->getClientOriginalName()
+                        ]);
+                        
+                        return back()->withErrors(['error' => 'Import failed: ' . $e->getMessage()]);
+                }
         }
 
         public function index() {

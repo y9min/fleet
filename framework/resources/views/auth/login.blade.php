@@ -104,14 +104,7 @@
             </div>
           </div>
           <div class="row">
-            <div class="col-8">
-              <div class="icheck-primary">
-                <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }} id="remember">
-                <label for="remember"> @lang('passwords.remember')</label>
-              </div>
-            </div>
-            <!-- /.col -->
-            <div class="col-4">
+            <div class="col-12">
               <button type="submit" class="btn btn-primary btn-block">@lang('passwords.sign_in')
                 {{-- Sign In --}}
               </button>

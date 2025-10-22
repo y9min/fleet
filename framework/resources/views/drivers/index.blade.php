@@ -155,9 +155,9 @@
               <th>
                 <input type="checkbox" id="chk_all">
               </th>
-              <th>#</th>
                 <th>@lang('fleet.name')</th>
                 <th>@lang('fleet.email')</th>
+                <th>Phone</th>
                 <th>License Number</th>
               <th>Documents</th>
               <th>@lang('fleet.is_active')</th>
@@ -385,7 +385,7 @@
             text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
 
             exportOptions: {
-              columns: ([1,2,3,4,5,6,7]),
+              columns: ([1,2,3,4,5,6]),
             },
             customize: function ( win ) {
                  
@@ -400,7 +400,7 @@
                 extend: 'excel',
                 text: '<i class="fa fa-file-excel-o"></i> Excel',
                 exportOptions: {
-                    columns: [1, 2, 3, 4, 5, 6, 7]
+                    columns: [1, 2, 3, 4, 5, 6]
                 }
             }
         ],
@@ -418,9 +418,9 @@
          },
          columns: [
             {data: 'check',name:'check', searchable:false, orderable:false},
-            {data: 'id', name: 'users.id'},
             {data: 'name', name: 'name'},
             {data: 'email', name: 'email'},
+            {data: 'phone', name: 'phone'},
             {data: 'license_number', name: 'license_number'},
             {data: 'documents', name: 'documents', searchable:false, orderable:false},
             {data: 'is_active', name: 'is_active'},
@@ -661,7 +661,79 @@ $(document).ready(function() {
 
 {{-- Driver details toggle script --}}
 <script>
-// Toggle driver details dropdown
+// Instant toggle driver details dropdown (no AJAX delay)
+function toggleDriverDetailsInstant(button) {
+    var $button = $(button);
+    var $row = $button.closest('tr');
+    var $detailsRow = $row.next('.details-row');
+    
+    // If details row exists, remove it (instant)
+    if ($detailsRow.length > 0) {
+        $detailsRow.remove();
+        $button.removeClass('expanded').html('<i class="fas fa-eye"></i>');
+        return;
+    }
+    
+    // Get driver data from button's data attribute
+    var driver = $button.data('driver-info');
+    
+    // Build HTML instantly (no AJAX delay)
+    var html = '<div class="details-content">';
+    
+    // Basic Information
+    html += '<div class="mb-3">';
+    html += '<div class="inline-field"><strong>Name:</strong><span class="text-muted">' + (driver.name || 'N/A') + '</span></div>';
+    html += '<div class="inline-field"><strong>Email:</strong><span class="text-muted">' + (driver.email || 'N/A') + '</span></div>';
+    html += '<div class="inline-field"><strong>Phone:</strong><span class="text-muted">' + (driver.phone || 'N/A') + '</span></div>';
+    html += '<div class="inline-field"><strong>License Number:</strong><span class="text-muted">' + (driver.license_number || 'N/A') + '</span></div>';
+    var statusClass = driver.is_active == 1 ? 'success' : 'secondary';
+    html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + statusClass + '">' + (driver.is_active == 1 ? 'Active' : 'Inactive') + '</span></div>';
+    html += '</div>';
+    
+    // Assigned Vehicle
+    if (driver.assigned_vehicle) {
+        html += '<div class="mb-3">';
+        html += '<div class="inline-field"><strong>Assigned Vehicle:</strong><span class="text-muted">' + 
+                driver.assigned_vehicle.license_plate + ' (' + 
+                driver.assigned_vehicle.make_name + ' ' + 
+                driver.assigned_vehicle.model_name + ')</span></div>';
+        html += '</div>';
+    }
+    
+    // Additional Information (from meta fields)
+    var hasAdditionalInfo = false;
+    html += '<div class="mb-3">';
+    html += '<h6><strong>Additional Information:</strong></h6>';
+    
+    // Display additional meta fields
+    for (var key in driver) {
+        if (driver.hasOwnProperty(key) && 
+            !['id', 'name', 'email', 'phone', 'license_number', 'is_active', 'assigned_vehicle'].includes(key)) {
+            var value = driver[key];
+            if (value && value !== 'N/A' && value !== '') {
+                hasAdditionalInfo = true;
+                var displayName = key.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                html += '<div class="inline-field"><strong>' + displayName + ':</strong><span class="text-muted">' + value + '</span></div>';
+            }
+        }
+    }
+    
+    if (!hasAdditionalInfo) {
+        html += '<div class="text-muted">No additional information available</div>';
+    }
+    html += '</div>';
+    
+    html += '</div>';
+    
+    // Create and insert the details row instantly
+    var $detailsRow = $('<tr class="details-row"><td colspan="9">' + html + '</td></tr>');
+    $row.after($detailsRow);
+    
+    // Update button state
+    $button.addClass('expanded').html('<i class="fas fa-eye-slash"></i>');
+}
+
+// Legacy AJAX-based toggle function (kept as fallback)
 function toggleDriverDetails(driverId) {
     var $button = $('button[data-driver-id="' + driverId + '"]');
     var $row = $button.closest('tr');
@@ -945,7 +1017,7 @@ function toggleDriverDetails(driverId) {
                 html += '</div>';
                 
                 // Create and insert the details row
-                var $detailsRow = $('<tr class="details-row"><td colspan="10">' + html + '</td></tr>');
+                var $detailsRow = $('<tr class="details-row"><td colspan="9">' + html + '</td></tr>');
                 $row.after($detailsRow);
                 
                 // Update button state

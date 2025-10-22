@@ -47,6 +47,74 @@ class VehiclesController extends Controller {
                 $this->middleware('permission:VehicleInspection delete', ['only' => ['bulk_delete_reviews', 'destroy_vehicle_review']]);
                 $this->middleware('permission:VehicleInspection list', ['only' => ['vehicle_review_index', 'print_vehicle_review', 'view_vehicle_review']]);
         }
+        public function downloadSample() {
+                $filePath = public_path('assets/samples/vehicles_sample.txt');
+                
+                if (!file_exists($filePath)) {
+                        abort(404, 'Sample file not found');
+                }
+                
+                return response()->download($filePath, 'vehicles_sample.txt', [
+                        'Content-Type' => 'text/plain',
+                        'Content-Disposition' => 'attachment; filename="vehicles_sample.txt"'
+                ]);
+        }
+
+        public function downloadEmptyTemplate($format) {
+                $headers = [
+                        'Registration Plate',
+                        'Make',
+                        'Model',
+                        'Year',
+                        'Color',
+                        'Vehicle Type',
+                        'Fuel Type',
+                        'Mileage',
+                        'Price',
+                        'Price Period',
+                        'Initial Cost',
+                        'Vehicle Scheme',
+                        'Insurance Discount',
+                        'Available',
+                        'Vehicle Status',
+                        'Vehicle Group',
+                        'MOT Expiry Day',
+                        'MOT Expiry Month',
+                        'MOT Expiry Year',
+                        'Telematics Link',
+                        'Assigned Driver First Name',
+                        'Assigned Driver Last Name'
+                ];
+
+                if ($format === 'csv') {
+                        $filename = 'vehicles_template.csv';
+                        $content = implode(',', $headers) . "\n";
+                        
+                        return response($content)
+                                ->header('Content-Type', 'text/csv')
+                                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+                } else {
+                        // Generate Excel file using Laravel Excel
+                        $filename = 'vehicles_template.xlsx';
+                        
+                        return Excel::download(new class($headers) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
+                                private $headers;
+                                
+                                public function __construct($headers) {
+                                        $this->headers = $headers;
+                                }
+                                
+                                public function array(): array {
+                                        return []; // Empty array for template
+                                }
+                                
+                                public function headings(): array {
+                                        return $this->headers;
+                                }
+                        }, $filename);
+                }
+        }
+
         public function importVehicles(ImportRequest $request) {
                 $file = $request->excel;
                 $destinationPath = './uploads/xml'; // upload path
@@ -65,6 +133,7 @@ class VehiclesController extends Controller {
                 Excel::import(new VehicleImport, $destinationPath . '/' . $fileName);
                 return back();
         }
+
         public function index() {
                 $user = Auth::user();
                 // Get vehicles data for initial load - fix PostgreSQL GROUP BY issue

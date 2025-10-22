@@ -1556,33 +1556,44 @@ function generateInstantVehicleDetails(id, vehicle) {
     const typeName = (vehicle.types && (vehicle.types.displayname || vehicle.types.type)) || vehicle.vehicle_type || 'Not Selected';
     const driverName = vehicle.driver_name || 'Not Assigned';
     const year = vehicle.year || '';
-    const color = vehicle.color || '';
-    const average = vehicle.average || '';
-    const engineType = vehicle.engine_type || '';
+    const fuelType = vehicle.fuel_type || vehicle.fuel || '';
+    const initialMileage = vehicle.initial_mileage || vehicle.mileage || '';
+    const isActive = vehicle.is_active !== undefined ? (vehicle.is_active ? 'Yes' : 'No') : '';
+    const scheme = vehicle.scheme || '';
+    const telematicsLink = vehicle.telematics_link || '';
+    const motExpiry = vehicle.mot_expiry || '';
     const imageUrl = vehicle.vehicle_image || vehicle.image || '';
 
     return `
         <div style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd; max-width: 100%; overflow-x: auto;">
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; display:flex; align-items:center; gap:16px;">
-                ${imageUrl ? `<img src="${imageUrl}" alt="Vehicle" style="width:72px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #eee;" />` : ''}
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                ${imageUrl ? `<img src="${imageUrl}" alt="Vehicle" style="width:72px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #eee; margin-bottom: 12px;" />` : ''}
                 <div>
-                    <h3 style="margin: 0; color: #495057; font-size: 1.5rem;">${make} ${model} ${year ? '(' + year + ')' : ''}</h3>
+                    <h3 style="margin: 0; color: #495057; font-size: 1.5rem;">${make} ${model}${year ? ' (' + year + ')' : ''}</h3>
                     <p style="margin: 4px 0 0 0; color: #6c757d; font-size: 0.95rem;">
-                        Vehicle ID: VEH-${String(id).padStart(4, '0')} | Registration: ${reg} | 
-                        Status: ${status}
+                        Vehicle ID: VEH-${id} | Registration: ${reg} | Status: ${status}
                     </p>
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
-                <div><strong>Type:</strong> ${typeName}</div>
-                <div><strong>Driver:</strong> <span id="details-driver-${id}">${driverName}</span></div>
-                <div><strong>Color:</strong> ${color || '<span class="text-muted">N/A</span>'}</div>
-                <div><strong>Engine:</strong> ${engineType || '<span class="text-muted">N/A</span>'}</div>
-                <div><strong>Average:</strong> ${average || '<span class="text-muted">N/A</span>'}</div>
-                <div><strong>Group:</strong> <span id="details-group-${id}"><span class="text-muted">N/A</span></span></div>
-                <div><strong>Price:</strong> <span id="details-price-${id}"><span class="text-muted">N/A</span></span></div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px;">
+                <div><strong>Vehicle Make:</strong> ${make}</div>
+                <div><strong>Vehicle Model:</strong> ${model}</div>
+                <div><strong>Vehicle Type:</strong> ${typeName}</div>
+                <div><strong>Fuel Type:</strong> ${fuelType || '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Registration Plate:</strong> ${reg}</div>
+                <div><strong>Vehicle Year:</strong> ${year || '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Price (with insurance included):</strong> <span id="details-price-${id}"><span class="text-muted">N/A</span></span></div>
+                <div><strong>Insurance Discount:</strong> <span id="details-insurance-discount-${id}"><span class="text-muted">N/A</span></span></div>
+                <div><strong>Select Vehicle Group:</strong> <span id="details-group-${id}"><span class="text-muted">N/A</span></span></div>
+                <div><strong>Select Driver:</strong> <span id="details-driver-${id}">${driverName}</span></div>
+                <div><strong>Initial Mileage (miles):</strong> ${initialMileage || '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Is Active?:</strong> ${isActive || '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Initial Cost:</strong> <span id="details-initial-${id}"><span class="text-muted">N/A</span></span></div>
+                <div><strong>Scheme:</strong> ${scheme || '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Vehicle Status:</strong> ${status}</div>
+                <div><strong>Telematics Link:</strong> ${telematicsLink ? `<a href="${telematicsLink}" target="_blank">View</a>` : '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>MOT Expiry Date:</strong> ${motExpiry || '<span class="text-muted">N/A</span>'}</div>
             </div>
 
             <div style="margin-top: 18px; display:flex; gap:10px;">
@@ -1612,17 +1623,19 @@ function progressivelyEnhanceVehicleDetails(id, vehicle, completeVehicle) {
         }
     }
 
-    // Price and initial cost from metadata or purchase_info
+    // Price, initial cost, and insurance discount from metadata or purchase_info
     if (completeVehicle) {
         let vehiclePrice = 0;
         let initialCost = 0;
+        let insuranceDiscount = 0;
 
         if (completeVehicle.metadata) {
             vehiclePrice = parseFloat(completeVehicle.metadata.vehicle_price || completeVehicle.metadata.price || 0) || 0;
             initialCost = parseFloat(completeVehicle.metadata.initial_cost || 0) || 0;
+            insuranceDiscount = parseFloat(completeVehicle.metadata.insurance_discount || 0) || 0;
         }
 
-        if ((!vehiclePrice || !initialCost) && Array.isArray(completeVehicle.purchase_info)) {
+        if ((!vehiclePrice || !initialCost || !insuranceDiscount) && Array.isArray(completeVehicle.purchase_info)) {
             completeVehicle.purchase_info.forEach(item => {
                 if (!item || !item.exp_name) return;
                 const name = String(item.exp_name).toLowerCase();
@@ -1632,6 +1645,9 @@ function progressivelyEnhanceVehicleDetails(id, vehicle, completeVehicle) {
                 }
                 if (!initialCost && (name.includes('initial') || name.includes('down') || name.includes('deposit'))) {
                     initialCost = amount;
+                }
+                if (!insuranceDiscount && (name.includes('insurance') || name.includes('discount'))) {
+                    insuranceDiscount = amount;
                 }
             });
         }
@@ -1643,6 +1659,10 @@ function progressivelyEnhanceVehicleDetails(id, vehicle, completeVehicle) {
         const initEl = document.getElementById(`details-initial-${id}`);
         if (initEl && initialCost) {
             initEl.textContent = initialCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+        const insuranceEl = document.getElementById(`details-insurance-discount-${id}`);
+        if (insuranceEl && insuranceDiscount) {
+            insuranceEl.textContent = insuranceDiscount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
         }
     }
 }

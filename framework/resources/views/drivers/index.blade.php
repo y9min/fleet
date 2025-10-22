@@ -193,16 +193,12 @@
     <div class="card card-info">
       <div class="card-header">
         <h3 class="card-title">@lang('menu.drivers') &nbsp;
-          @can('Drivers add') 
-            <a href="{{ route('drivers.create') }}" class="btn btn-success" title="@lang('fleet.addDriver')"> 
-              <i class="fa fa-plus"></i> Add Driver
-            </a> 
-          @endcan
-          @can('Drivers import') 
-            <button data-toggle="modal" data-target="#import" class="btn btn-warning">
-              <i class="fa fa-upload"></i> Import Drivers
-            </button>
-          @endcan
+          <a href="{{ route('drivers.create') }}" class="btn btn-success" title="@lang('fleet.addDriver')"> 
+            <i class="fa fa-plus"></i> Add Driver
+          </a> 
+          <button data-toggle="modal" data-target="#import" class="btn btn-warning">
+            <i class="fa fa-upload"></i> Import Drivers
+          </button>
         </h3>
       </div>
 

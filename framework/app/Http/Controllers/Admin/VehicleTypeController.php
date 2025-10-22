@@ -61,7 +61,7 @@ class VehicleTypeController extends Controller {
 		$new = VehicleTypeModel::create([
 			'vehicletype' => $request->vehicletype,
 			'displayname' => $request->displayname,
-			'isenable' => $enable,
+			'is_enabled' => $enable,
 			'seats' => $request->seats,
 		]);
 		$file = $request->file('icon');
@@ -100,7 +100,7 @@ class VehicleTypeController extends Controller {
 		$data->update([
 			'vehicletype' => $request->vehicletype,
 			'displayname' => $request->displayname,
-			'isenable' => $enable,
+			'is_enabled' => $enable,
 			'seats' => $request->seats,
 		]);
 		$file = $request->file('icon');

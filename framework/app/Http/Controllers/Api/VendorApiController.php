@@ -75,7 +75,7 @@ class VendorApiController extends Controller {
                 return $data;
         }
         public function types(Request $request) {
-                $vehicle_types = VehicleTypeModel::where('isenable', 1);
+                $vehicle_types = VehicleTypeModel::where('is_enabled', 1);
                 if (isset($request->timestamp)) {
                         $time = date('Y-m-d H:i:s', strtotime($request->timestamp));
                         $vehicle_types = $vehicle_types->where("updated_at", ">", $time);

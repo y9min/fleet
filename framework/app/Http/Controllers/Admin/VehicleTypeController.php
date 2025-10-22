@@ -58,12 +58,12 @@ class VehicleTypeController extends Controller {
 	public function store(VehicleTypeRequest $request) {
 		// Handle isenable field - checkbox sends "1" when checked, "0" when unchecked (via hidden field)
 		$enable = ($request->isenable == 1) ? 1 : 0;
-		$new = VehicleTypeModel::create([
-			'vehicletype' => $request->vehicletype,
-			'displayname' => $request->displayname,
-			'is_enabled' => $enable,
-			'seats' => $request->seats,
-		]);
+        $new = VehicleTypeModel::create([
+            'name' => $request->name,
+            'display_name' => $request->display_name,
+            'is_enabled' => $enable,
+            'seats' => $request->seats,
+        ]);
 		$file = $request->file('icon');
 		if ($request->hasFile('icon') && $request->file('icon')->isValid()) {
 			$destinationPath = './uploads'; // upload path
@@ -97,12 +97,12 @@ class VehicleTypeController extends Controller {
 		$enable = ($request->isenable == 1) ? 1 : 0;
 		$data = VehicleTypeModel::find($request->get('id'));
 		
-		$data->update([
-			'vehicletype' => $request->vehicletype,
-			'displayname' => $request->displayname,
-			'is_enabled' => $enable,
-			'seats' => $request->seats,
-		]);
+        $data->update([
+            'name' => $request->name,
+            'display_name' => $request->display_name,
+            'is_enabled' => $enable,
+            'seats' => $request->seats,
+        ]);
 		$file = $request->file('icon');
 		if ($request->hasFile('icon') && $request->file('icon')->isValid()) {
 			$destinationPath = './uploads'; // upload path

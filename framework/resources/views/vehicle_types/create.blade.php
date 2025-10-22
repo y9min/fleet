@@ -88,13 +88,13 @@
       {!! Form::open(['route' => 'vehicle-types.store','method'=>'post','files'=>true,'class' => 'form-reset']) !!}
       <div class="row">
         <div class="form-group col-md-4">
-          {!! Form::label('vehicletype', __('fleet.vehicle_type'), ['class' => 'form-label']) !!}
-          {!! Form::text('vehicletype', null,['class' => 'form-control','required']) !!}
+          {!! Form::label('name', __('fleet.vehicle_type'), ['class' => 'form-label']) !!}
+          {!! Form::text('name', null,['class' => 'form-control','required']) !!}
         </div>
 
         <div class="form-group col-md-4">
-          {!! Form::label('displayname', __('fleet.displayname'), ['class' => 'form-label']) !!}
-          {!! Form::text('displayname', null,['class' => 'form-control','required']) !!}
+          {!! Form::label('display_name', __('fleet.displayname'), ['class' => 'form-label']) !!}
+          {!! Form::text('display_name', null,['class' => 'form-control','required']) !!}
         </div>
 
         <div class="form-group col-md-4">

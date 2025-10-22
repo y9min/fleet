@@ -1,0 +1,17 @@
+-- Database Schema Context (for reference only)
+-- This file contains the actual database schema to understand table structures
+-- DO NOT RUN THIS FILE - it's for context only
+
+-- vehicle_types table structure:
+-- CREATE TABLE public.vehicle_types (
+--   id uuid NOT NULL DEFAULT uuid_generate_v4(),
+--   name character varying NOT NULL,
+--   display_name character varying,
+--   icon character varying,
+--   seats integer DEFAULT 4,
+--   is_enabled boolean DEFAULT true,
+--   created_at timestamp with time zone DEFAULT now(),
+--   updated_at timestamp with time zone DEFAULT now(),
+--   deleted_at timestamp with time zone,
+--   CONSTRAINT vehicle_types_pkey PRIMARY KEY (id)
+-- );

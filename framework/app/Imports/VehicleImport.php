@@ -185,8 +185,6 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'engine_type' => $rowData['fuel_type'] ?? 'Petrol',
                     'mileage' => $rowData['mileage'] ?? 0,
                     'int_mileage' => $rowData['mileage'] ?? 0,
-                    'vin' => $rowData['vin'] ?? '',
-                    'horse_power' => $rowData['horse_power'] ?? 0,
                     'in_service' => $isAvailable,
                     'group_id' => $group ? $group->id : null,
                     'type_id' => $type->id,
@@ -199,7 +197,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 $vehicle->setMeta('price', $rowData['price'] ?? '');
                 $vehicle->setMeta('price_period', $rowData['price_period'] ?? 'Weekly');
                 $vehicle->setMeta('initial_cost', $rowData['initial_cost'] ?? '');
-                $vehicle->setMeta('fuel_efficiency', $rowData['fuel_efficiency'] ?? '');
+                $vehicle->setMeta('insurance_discount', $rowData['insurance_discount'] ?? '');
                 $vehicle->setMeta('telematics_link', $rowData['telematics_link'] ?? '');
                 
                 // FIXED: Store MOT expiry date in metadata instead of non-existent exp_date column

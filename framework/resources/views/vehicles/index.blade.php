@@ -984,16 +984,12 @@ body {
                 <p class="mb-0" style="opacity: 0.9; font-size: 16px; margin-top: 8px;">Manage your fleet vehicles with ease</p>
             </div>
             <div class="d-flex gap-3">
-                @can('Vehicles add')
-                    <a href="{{ route('vehicles.create') }}" class="btn" style="background-color: #C1C1C1; color: black; border: 1px solid #C1C1C1;" title="Add Vehicle">
-                        <i class="fas fa-plus"></i> Add Vehicle
-                    </a>
-                @endcan
-                @can('Vehicles import')
-                    <button type="button" class="btn" style="background-color: #7FD7E1; color: white; border: 1px solid #7FD7E1;" data-toggle="modal" data-target="#import" title="Import Vehicles">
-                        <i class="fas fa-file-import"></i> Import Vehicles
-                    </button>
-                @endcan
+                <a href="{{ route('vehicles.create') }}" class="btn" style="background-color: #C1C1C1; color: black; border: 1px solid #C1C1C1;" title="Add Vehicle">
+                    <i class="fas fa-plus"></i> Add Vehicle
+                </a>
+                <button type="button" class="btn" style="background-color: #7FD7E1; color: white; border: 1px solid #7FD7E1;" data-toggle="modal" data-target="#import" title="Import Vehicles">
+                    <i class="fas fa-file-import"></i> Import Vehicles
+                </button>
             </div>
         </div>
         
@@ -1190,19 +1186,33 @@ body {
                                     <div class="col-6">
                                         <h6 class="text-danger mb-2">Required Fields</h6>
                                         <ul class="list-unstyled small">
-                                            <li class="required-column"><i class="fas fa-asterisk fa-xs"></i> registration_plate</li>
-                                            <li class="required-column"><i class="fas fa-asterisk fa-xs"></i> make_name</li>
-                                            <li class="required-column"><i class="fas fa-asterisk fa-xs"></i> model_name</li>
+                                            <li class="required-column"><i class="fas fa-asterisk fa-xs"></i> Registration Plate</li>
+                                            <li class="required-column"><i class="fas fa-asterisk fa-xs"></i> Make</li>
+                                            <li class="required-column"><i class="fas fa-asterisk fa-xs"></i> Model</li>
+                                            <li class="required-column"><i class="fas fa-asterisk fa-xs"></i> Year</li>
                                         </ul>
                                     </div>
                                     <div class="col-6">
                                         <h6 class="text-muted mb-2">Optional Fields</h6>
                                         <ul class="list-unstyled small">
-                                            <li class="optional-column">engine_type</li>
-                                            <li class="optional-column">year</li>
-                                            <li class="optional-column">color_name</li>
-                                            <li class="optional-column">vin</li>
-                                            <li class="optional-column">mileage</li>
+                                            <li class="optional-column">Color</li>
+                                            <li class="optional-column">Vehicle Type</li>
+                                            <li class="optional-column">Fuel Type</li>
+                                            <li class="optional-column">Mileage</li>
+                                            <li class="optional-column">Price</li>
+                                            <li class="optional-column">Price Period</li>
+                                            <li class="optional-column">Initial Cost</li>
+                                            <li class="optional-column">Vehicle Scheme</li>
+                                            <li class="optional-column">Insurance Discount</li>
+                                            <li class="optional-column">Available</li>
+                                            <li class="optional-column">Vehicle Status</li>
+                                            <li class="optional-column">Vehicle Group</li>
+                                            <li class="optional-column">MOT Expiry Day</li>
+                                            <li class="optional-column">MOT Expiry Month</li>
+                                            <li class="optional-column">MOT Expiry Year</li>
+                                            <li class="optional-column">Telematics Link</li>
+                                            <li class="optional-column">Assigned Driver First Name</li>
+                                            <li class="optional-column">Assigned Driver Last Name</li>
                                         </ul>
                                     </div>
                                 </div>

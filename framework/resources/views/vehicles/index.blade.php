@@ -1553,7 +1553,7 @@ function generateInstantVehicleDetails(id, vehicle) {
     const model = vehicle.model_name || vehicle.model || 'Unknown Model';
     const reg = vehicle.license_plate || vehicle.lic_plate || 'Not Set';
     const status = vehicle.vehicle_status || 'Available';
-    const typeName = (vehicle.types && (vehicle.types.displayname || vehicle.types.type)) || vehicle.vehicle_type || 'Not Selected';
+    const typeName = (vehicle.types && (vehicle.types.display_name || vehicle.types.name)) || vehicle.vehicle_type || 'Not Selected';
     const driverName = vehicle.driver_name || 'Not Assigned';
     const year = vehicle.year || '';
     const fuelType = vehicle.fuel_type || vehicle.fuel || '';
@@ -1561,7 +1561,24 @@ function generateInstantVehicleDetails(id, vehicle) {
     const isActive = vehicle.is_active !== undefined ? (vehicle.is_active ? 'Yes' : 'No') : '';
     const scheme = vehicle.scheme || '';
     const telematicsLink = vehicle.telematics_link || '';
-    const motExpiry = vehicle.mot_expiry || '';
+    
+    // Format MOT date as DD/MM/YY
+    const motExpiry = vehicle.mot_expiry ? (() => {
+        const date = new Date(vehicle.mot_expiry);
+        if (!isNaN(date.getTime())) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            return `${day}/${month}/${year}`;
+        }
+        return '';
+    })() : '';
+    
+    // Get price and insurance data instantly
+    const vehiclePrice = vehicle.vehicle_price || vehicle.price || '';
+    const insuranceDiscount = vehicle.insurance_discount || '';
+    const initialCost = vehicle.initial_cost || '';
+    
     const imageUrl = vehicle.vehicle_image || vehicle.image || '';
 
     return `
@@ -1583,13 +1600,13 @@ function generateInstantVehicleDetails(id, vehicle) {
                 <div><strong>Fuel Type:</strong> ${fuelType || '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Registration Plate:</strong> ${reg}</div>
                 <div><strong>Vehicle Year:</strong> ${year || '<span class="text-muted">N/A</span>'}</div>
-                <div><strong>Price (with insurance included):</strong> <span id="details-price-${id}"><span class="text-muted">N/A</span></span></div>
-                <div><strong>Insurance Discount:</strong> <span id="details-insurance-discount-${id}"><span class="text-muted">N/A</span></span></div>
+                <div><strong>Price (with insurance included):</strong> ${vehiclePrice ? vehiclePrice : '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Insurance Discount:</strong> ${insuranceDiscount ? insuranceDiscount : '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Select Vehicle Group:</strong> <span id="details-group-${id}"><span class="text-muted">N/A</span></span></div>
                 <div><strong>Select Driver:</strong> <span id="details-driver-${id}">${driverName}</span></div>
                 <div><strong>Initial Mileage (miles):</strong> ${initialMileage || '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Is Active?:</strong> ${isActive || '<span class="text-muted">N/A</span>'}</div>
-                <div><strong>Initial Cost:</strong> <span id="details-initial-${id}"><span class="text-muted">N/A</span></span></div>
+                <div><strong>Initial Cost:</strong> ${initialCost ? initialCost : '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Scheme:</strong> ${scheme || '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Vehicle Status:</strong> ${status}</div>
                 <div><strong>Telematics Link:</strong> ${telematicsLink ? `<a href="${telematicsLink}" target="_blank">View</a>` : '<span class="text-muted">N/A</span>'}</div>
@@ -1623,48 +1640,8 @@ function progressivelyEnhanceVehicleDetails(id, vehicle, completeVehicle) {
         }
     }
 
-    // Price, initial cost, and insurance discount from metadata or purchase_info
-    if (completeVehicle) {
-        let vehiclePrice = 0;
-        let initialCost = 0;
-        let insuranceDiscount = 0;
-
-        if (completeVehicle.metadata) {
-            vehiclePrice = parseFloat(completeVehicle.metadata.vehicle_price || completeVehicle.metadata.price || 0) || 0;
-            initialCost = parseFloat(completeVehicle.metadata.initial_cost || 0) || 0;
-            insuranceDiscount = parseFloat(completeVehicle.metadata.insurance_discount || 0) || 0;
-        }
-
-        if ((!vehiclePrice || !initialCost || !insuranceDiscount) && Array.isArray(completeVehicle.purchase_info)) {
-            completeVehicle.purchase_info.forEach(item => {
-                if (!item || !item.exp_name) return;
-                const name = String(item.exp_name).toLowerCase();
-                const amount = parseFloat(item.exp_amount) || 0;
-                if (!vehiclePrice && (name.includes('price') || name.includes('purchase') || name.includes('total'))) {
-                    vehiclePrice = amount;
-                }
-                if (!initialCost && (name.includes('initial') || name.includes('down') || name.includes('deposit'))) {
-                    initialCost = amount;
-                }
-                if (!insuranceDiscount && (name.includes('insurance') || name.includes('discount'))) {
-                    insuranceDiscount = amount;
-                }
-            });
-        }
-
-        const priceEl = document.getElementById(`details-price-${id}`);
-        if (priceEl && vehiclePrice) {
-            priceEl.textContent = vehiclePrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-        }
-        const initEl = document.getElementById(`details-initial-${id}`);
-        if (initEl && initialCost) {
-            initEl.textContent = initialCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-        }
-        const insuranceEl = document.getElementById(`details-insurance-discount-${id}`);
-        if (insuranceEl && insuranceDiscount) {
-            insuranceEl.textContent = insuranceDiscount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-        }
-    }
+    // Note: Price, insurance discount, and initial cost are now displayed instantly
+    // from the vehicle data, so no progressive enhancement needed for these fields
 }
 
 // Generate comprehensive vehicle details HTML for inline display

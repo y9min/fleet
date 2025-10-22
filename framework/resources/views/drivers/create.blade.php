@@ -12,6 +12,22 @@
     display: flex;
     /* width: calc(100% / 2); */
   }
+  
+  /* Custom cyan color override */
+  .card-custom {
+    border-top: 3px solid #7fd7e1 !important;
+  }
+  
+  .btn-custom {
+    background-color: #7fd7e1 !important;
+    border-color: #7fd7e1 !important;
+    color: #fff !important;
+  }
+  
+  .btn-custom:hover {
+    background-color: #6bc5d1 !important;
+    border-color: #6bc5d1 !important;
+  }
 </style>
 @endsection
 @section("breadcrumb")
@@ -22,7 +38,7 @@
 @section('content')
 <div class="row">
   <div class="col-md-12">
-    <div class="card card-success">
+    <div class="card card-custom">
       <div class="card-header with-border">
         <h3 class="card-title">@lang('fleet.addDriver')</h3>
       </div>
@@ -42,19 +58,13 @@
         {!! Form::hidden('is_active',1) !!}
         {!! Form::hidden('is_available',0) !!}
         <div class="row">
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="form-group">
               {!! Form::label('first_name', __('fleet.firstname'), ['class' => 'form-label required','autofocus']) !!}
               {!! Form::text('first_name', null,['class' => 'form-control','required','autofocus']) !!}
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('middle_name', __('fleet.middlename'), ['class' => 'form-label']) !!}
-              {!! Form::text('middle_name', null,['class' => 'form-control']) !!}
-            </div>
-          </div>
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="form-group">
               {!! Form::label('last_name', __('fleet.lastname'), ['class' => 'form-label required']) !!}
               {!! Form::text('last_name', null,['class' => 'form-control','required']) !!}
@@ -62,18 +72,6 @@
           </div>
         </div>
         <div class="row">
-          
-          <div class="col-md-6">
-            <div class="form-group">
-              {!! Form::label('address', __('fleet.address'), ['class' => 'form-label required']) !!}
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text"><i class="fa fa-address-book-o"></i></span>
-                </div>
-                {!! Form::text('address', null,['class' => 'form-control','required']) !!}
-              </div>
-            </div>
-          </div>
           <div class="col-md-6">
             <div class="form-group">
               {!! Form::label('email', __('fleet.email'), ['class' => 'form-label required']) !!}
@@ -93,9 +91,7 @@
               <div class="invalid-feedback" id="emailError"></div>
             </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="form-group">
               {!! Form::label('phone', __('fleet.phone'), ['class' => 'form-label required']) !!}
               <div class="input-group">
@@ -107,39 +103,15 @@
               </div>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('emp_id', __('fleet.employee_id'), ['class' => 'form-label']) !!}
-              {!! Form::text('emp_id', null,['class' => 'form-control','required']) !!}
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('contract_number', __('fleet.contract'), ['class' => 'form-label']) !!}
-              {!! Form::text('contract_number', null,['class' => 'form-control','required']) !!}
-            </div>
-          </div>
         </div>
         <div class="row">
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="form-group">
               {!! Form::label('license_number', __('fleet.licenseNumber'), ['class' => 'form-label required']) !!}
               {!! Form::text('license_number', null,['class' => 'form-control','required']) !!}
             </div>
           </div>
-
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('issue_date', __('fleet.issueDate'), ['class' => 'form-label']) !!}
-              <div class="input-group date">
-                <div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                </div>
-                {!! Form::text('issue_date', null,['class' => 'form-control','required','id' => 'issue_date']) !!}
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="form-group">
               {!! Form::label('exp_date', __('fleet.expirationDate'), ['class' => 'form-label required']) !!}
               <div class="input-group date">
@@ -151,27 +123,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('start_date', __('fleet.join_date'), ['class' => 'form-label']) !!}
-              <div class="input-group date">
-                <div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                </div>
-                {!! Form::text('start_date', null,['class' => 'form-control','required']) !!}
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('end_date', __('fleet.leave_date'), ['class' => 'form-label']) !!}
-              <div class="input-group date">
-                <div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                </div>
-                {!! Form::text('end_date', null,['class' => 'form-control']) !!}
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="form-group">
               {!! Form::label('password', __('fleet.password'), ['class' => 'form-label']) !!}
               <div class="input-group">
@@ -191,21 +143,6 @@
                 </div>
                 <small class="text-muted" id="passwordStrengthText">Enter a password</small>
               </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('driver_commision_type', __('fleet.driver_commision_type'), ['class' => 'form-label']) !!}
-              
-                {!! Form::select('driver_commision_type',['amount'=>__('fleet.amount'), 'percent'=> __('fleet.percent')],null,['class' => 'form-control', 'placeholder' =>__('fleet.select'), 'required']) !!}            
-            </div>
-          </div>
-          <div class="col-md-4" id="driver_commision_container" style="display: none;">
-            <div class="form-group">
-              {!! Form::label('driver_commision', __('fleet.driver_commision'), ['class' => 'form-label']) !!}              
-                {!! Form::number('driver_commision',null,['class' => 'form-control']) !!}            
             </div>
           </div>
         </div>
@@ -241,8 +178,30 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              {!! Form::label('documents', __('fleet.documents'), ['class' => 'form-label']) !!}
+              {!! Form::file('documents',null,['class' => 'form-control','required']) !!}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              {!! Form::label('license_image', __('fleet.licenseImage'), ['class' => 'form-label']) !!}
+              {!! Form::file('license_image',null,['class' => 'form-control','required']) !!}
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group">
+              {!! Form::label('econtact', __('fleet.emergency_details'), ['class' => 'form-label']) !!}
+              {!! Form::textarea('econtact',null,['class' => 'form-control']) !!}
+            </div>
+          </div>
+        </div>
         <div class="col-md-12">
-          {!! Form::submit(__('fleet.saveDriver'), ['class' => 'btn btn-success']) !!}
+          {!! Form::submit(__('fleet.saveDriver'), ['class' => 'btn btn-custom']) !!}
         </div>
         {!! Form::close() !!}
       </div>
@@ -258,86 +217,16 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
-    $('#driver_commision_type').on('change', function(){
-      var val = $(this).val();
-      if(val==''){
-        $('#driver_commision_container').hide();
-      }else{
-        if(val =='amount'){
-          $('#driver_commision').attr('placeholder',"@lang('fleet.enter_amount')");
-        }else{
-          $('#driver_commision').attr('placeholder',"@lang('fleet.enter_percent')")
-        }
-        $('#driver_commision_container').show();
-      }
-    });
-
-
-    if($('#driver_commision').val()  != "")
-    {
-      $('#driver_commision_container').show();
-    }
-
-    
     $('.code').select2();
-    $('#vehicle_id').select2({
-      placeholder:"@lang('fleet.selectVehicle')"
-    });
     
     $("#first_name").focus();
-    $('#end_date').datepicker({
+    
+    $('#exp_date').datepicker({
       autoclose: true,
-      format: 'yyyy-mm-dd'
-    }).on('show', function() {
-    var pickupdate = $( "#start_date" ).datepicker('getDate');
-    if (pickupdate) {
-      // $("#end_date").datepicker('setStartDate', pickupdate);
-    }
-  
-  });
-  //   $('#exp_date').datepicker({
-  //     autoclose: true,
-  //     format: 'yyyy-mm-dd'
-  //   }).on('show', function() {
-  //   var pickupdate = $( "#issue_date" ).datepicker('getDate');
-  //   if (pickupdate) {
-  //     $("#exp_date").datepicker('setStartDate', pickupdate);
-  //   }
-  // });
-  //   $('#issue_date').datepicker({
-  //     autoclose: true,
-  //     format: 'yyyy-mm-dd',
-  //     endDate: new Date() 
-  //   });
-
-
-
-            $('#issue_date').datepicker({
-                autoclose: true,
-                format: 'yyyy-mm-dd',
-                todayHighlight: true,
-                startView: 2,
-                minViewMode: 0
-            }).on('changeDate', function (e) {
-                var startDate = e.date;
-                $('#exp_date').datepicker('setStartDate', startDate);
-                $('#exp_date').val(''); // Reset end_date if it's before new start_date
-            });
-
-            $('#exp_date').datepicker({
-                autoclose: true,
-                format: 'yyyy-mm-dd',
-                todayHighlight: true,
-                startView: 2,
-                minViewMode: 0
-            });
-
-      
-
-
-    $('#start_date').datepicker({
-      autoclose: true,
-      format: 'yyyy-mm-dd'
+      format: 'yyyy-mm-dd',
+      todayHighlight: true,
+      startView: 2,
+      minViewMode: 0
     });
 
     $("#driver-create-form").validate({

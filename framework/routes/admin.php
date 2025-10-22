@@ -127,6 +127,7 @@ Route::namespace ('Admin')->group(function () {
         Route::post('import-vehicles', 'VehiclesController@importVehicles');
         // Route::get("download-vehicle-sample", "VehiclesController@downloadSample")->name("download-vehicle-sample"); // MOVED TO PUBLIC ROUTES
         Route::post('import-drivers', 'DriversController@importDrivers');
+        Route::post('check-email', 'DriversController@checkEmail');
         Route::post('import-income', 'IncomeCategories@importIncome');
         Route::post('import-expense', 'ExpenseCategories@importExpense');
         Route::post('import-customers', 'CustomersController@importCutomers');

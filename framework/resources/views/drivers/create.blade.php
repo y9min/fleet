@@ -81,8 +81,16 @@
                 <div class="input-group-prepend">
                   <span class="input-group-text"><i class="fa fa-envelope"></i></span>
                 </div>
-                {!! Form::email('email', null,['class' => 'form-control','required']) !!}
+                {!! Form::email('email', null,['class' => 'form-control','required','id' => 'email']) !!}
+                <div class="input-group-append">
+                  <span class="input-group-text" id="emailStatus">
+                    <i class="fas fa-spinner fa-spin" id="emailSpinner" style="display: none;"></i>
+                    <i class="fas fa-check text-success" id="emailValid" style="display: none;"></i>
+                    <i class="fas fa-times text-danger" id="emailInvalid" style="display: none;"></i>
+                  </span>
+                </div>
               </div>
+              <div class="invalid-feedback" id="emailError"></div>
             </div>
           </div>
         </div>
@@ -170,7 +178,18 @@
                 <div class="input-group-prepend">
                   <span class="input-group-text"><i class="fa fa-lock"></i></span>
                 </div>
-                {!! Form::password('password', ['class' => 'form-control','required']) !!}
+                {!! Form::password('password', ['class' => 'form-control','required','id' => 'password']) !!}
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                    <i class="fas fa-eye" id="toggleIcon"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="password-strength mt-2">
+                <div class="progress" style="height: 5px;">
+                  <div class="progress-bar" id="passwordStrengthBar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <small class="text-muted" id="passwordStrengthText">Enter a password</small>
               </div>
             </div>
           </div>
@@ -375,6 +394,154 @@
     //   checkboxClass: 'icheckbox_flat-green',
     //   radioClass   : 'iradio_flat-green'
     // })
+
+    // Enhanced form functionality
+    let emailCheckTimeout;
+    
+    // Email validation with AJAX
+    $('#email').on('input', function() {
+        clearTimeout(emailCheckTimeout);
+        const email = $(this).val();
+        
+        if (email.length > 5 && email.includes('@')) {
+            emailCheckTimeout = setTimeout(function() {
+                checkEmailAvailability(email);
+            }, 500);
+        } else {
+            resetEmailStatus();
+        }
+    });
+    
+    function checkEmailAvailability(email) {
+        $('#emailSpinner').show();
+        $('#emailValid, #emailInvalid').hide();
+        
+        $.ajax({
+            url: '{{ url("admin/check-email") }}',
+            method: 'POST',
+            data: {
+                email: email,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                $('#emailSpinner').hide();
+                if (response.available) {
+                    $('#emailValid').show();
+                    $('#email').removeClass('is-invalid').addClass('is-valid');
+                } else {
+                    $('#emailInvalid').show();
+                    $('#email').removeClass('is-valid').addClass('is-invalid');
+                    $('#emailError').text('This email is already registered.');
+                }
+            },
+            error: function() {
+                $('#emailSpinner').hide();
+                resetEmailStatus();
+            }
+        });
+    }
+    
+    function resetEmailStatus() {
+        $('#emailSpinner, #emailValid, #emailInvalid').hide();
+        $('#email').removeClass('is-valid is-invalid');
+        $('#emailError').text('');
+    }
+    
+    // Password strength indicator
+    $('#password').on('input', function() {
+        const password = $(this).val();
+        const strength = calculatePasswordStrength(password);
+        updatePasswordStrengthUI(strength);
+    });
+    
+    function calculatePasswordStrength(password) {
+        let score = 0;
+        let feedback = [];
+        
+        if (password.length >= 8) score += 1;
+        else feedback.push('at least 8 characters');
+        
+        if (/[a-z]/.test(password)) score += 1;
+        else feedback.push('lowercase letters');
+        
+        if (/[A-Z]/.test(password)) score += 1;
+        else feedback.push('uppercase letters');
+        
+        if (/[0-9]/.test(password)) score += 1;
+        else feedback.push('numbers');
+        
+        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+        else feedback.push('special characters');
+        
+        return { score: score, feedback: feedback };
+    }
+    
+    function updatePasswordStrengthUI(strength) {
+        const bar = $('#passwordStrengthBar');
+        const text = $('#passwordStrengthText');
+        
+        const percentage = (strength.score / 5) * 100;
+        bar.css('width', percentage + '%');
+        
+        if (strength.score <= 1) {
+            bar.removeClass('bg-success bg-warning').addClass('bg-danger');
+            text.text('Weak password - add: ' + strength.feedback.join(', '));
+        } else if (strength.score <= 3) {
+            bar.removeClass('bg-danger bg-success').addClass('bg-warning');
+            text.text('Medium strength - add: ' + strength.feedback.join(', '));
+        } else {
+            bar.removeClass('bg-danger bg-warning').addClass('bg-success');
+            text.text('Strong password!');
+        }
+    }
+    
+    // Password visibility toggle
+    $('#togglePassword').on('click', function() {
+        const passwordField = $('#password');
+        const toggleIcon = $('#toggleIcon');
+        
+        if (passwordField.attr('type') === 'password') {
+            passwordField.attr('type', 'text');
+            toggleIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            passwordField.attr('type', 'password');
+            toggleIcon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+    
+    // Enhanced form submission with success notification
+    $("#driver-create-form").on("submit", function(e) {
+        // Check if email is valid before submission
+        if ($('#emailInvalid').is(':visible')) {
+            e.preventDefault();
+            new PNotify({
+                title: 'Invalid Email',
+                text: 'Please enter a valid and available email address.',
+                type: 'error'
+            });
+            return false;
+        }
+        
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Creating Driver...');
+        
+        // Let the form submit normally, but add success handling via page load
+        setTimeout(function() {
+            submitBtn.prop('disabled', false).html(originalText);
+        }, 3000);
+    });
+    
+    // Success notification on page load (if redirected from successful creation)
+    @if(session('success'))
+        new PNotify({
+            title: 'Success!',
+            text: '{{ session("success") }}',
+            type: 'success',
+            delay: 5000
+        });
+    @endif
   });
 </script>
 

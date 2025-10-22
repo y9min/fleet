@@ -1195,11 +1195,29 @@ class DriversController extends Controller {
     }
 
 
+        public function checkEmail(Request $request) {
+                $email = $request->input('email');
+                
+                if (empty($email)) {
+                        return response()->json(['available' => false, 'message' => 'Email is required']);
+                }
+                
+                $exists = User::where('email', $email)->where('user_type', 'D')->exists();
+                
+                return response()->json([
+                        'available' => !$exists,
+                        'message' => $exists ? 'Email already exists' : 'Email is available'
+                ]);
+        }
+        
         public function importDrivers(ImportRequest $request) {
                 try {
                         // Check if the file is uploaded and valid
                         if (!$request->hasFile('excel') || !$request->file('excel')->isValid()) {
-                                return back()->withErrors(['error' => 'The uploaded file is not valid.']);
+                                return response()->json([
+                                    'success' => false,
+                                    'message' => 'The uploaded file is not valid.'
+                                ], 400);
                         }
         
                         $file = $request->file('excel');
@@ -1212,16 +1230,52 @@ class DriversController extends Controller {
                                 mkdir($destinationPath, 0755, true); // Create directory if not exists
                         }
                         if (!is_writable($destinationPath)) {
-                                return back()->withErrors(['error' => 'The upload directory is not writable.']);
+                                return response()->json([
+                                    'success' => false,
+                                    'message' => 'The upload directory is not writable.'
+                                ], 500);
                         }
         
-                        
                         $file->move($destinationPath, $fileName);
         
-                        // Import Excel file
-                        Excel::import(new DriverImport, $destinationPath . '/' . $fileName);
-        
-                        return back()->with('success', 'Drivers imported successfully.');
+                        // Import Excel file with statistics tracking
+                        $import = new DriverImport();
+                        Excel::import($import, $destinationPath . '/' . $fileName);
+                        
+                        // Get import statistics
+                        $stats = $import->importStats;
+                        
+                        // Prepare detailed success/error message
+                        if ($stats['successfully_imported'] > 0) {
+                                $message = "Successfully imported {$stats['successfully_imported']} drivers";
+                                
+                                if ($stats['duplicates_skipped'] > 0) {
+                                    $message .= ", skipped {$stats['duplicates_skipped']} duplicates";
+                                }
+                                
+                                if ($stats['validation_failed'] > 0) {
+                                    $message .= ", {$stats['validation_failed']} validation errors";
+                                }
+                                
+                                if ($stats['errors'] > 0) {
+                                    $message .= ", {$stats['errors']} import errors";
+                                }
+                                
+                                $message .= ".";
+                                
+                                return response()->json([
+                                    'success' => true,
+                                    'message' => $message,
+                                    'stats' => $stats
+                                ]);
+                        } else {
+                                return response()->json([
+                                    'success' => false,
+                                    'message' => 'No drivers were imported. Please check your file format and data.',
+                                    'stats' => $stats
+                                ], 400);
+                        }
+                        
                 } catch (ValidationException $e) {
                         // Handle validation exceptions (if any validation rules fail in the import process)
                         $failures = $e->failures();
@@ -1231,13 +1285,22 @@ class DriversController extends Controller {
                                 $errorMessages[] = "Row " . $failure->row() . ": " . implode(", ", $failure->errors());
                         }
         
-                        return back()->withErrors($errorMessages);
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Validation failed: ' . implode('; ', $errorMessages),
+                            'errors' => $errorMessages
+                        ], 422);
+                        
                 } catch (\Exception $e) {
                         // Log the exact error to the Laravel log file for debugging
                         \Log::error('Error importing drivers: ' . $e->getMessage());
                         
                         // Return a more informative error to the user
-                        return back()->withErrors(['error' => 'An error occurred while importing drivers. Please check the server logs for more details.']);
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'An error occurred while importing drivers. Please check the server logs for more details.',
+                            'error' => $e->getMessage()
+                        ], 500);
                 }
         }
         

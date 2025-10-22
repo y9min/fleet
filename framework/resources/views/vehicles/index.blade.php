@@ -1613,7 +1613,7 @@ function generateInstantVehicleDetails(id, vehicle) {
                 <div><strong>MOT Expiry Date:</strong> ${motExpiry || '<span class="text-muted">N/A</span>'}</div>
             </div>
 
-            <div style="margin-top: 18px; display:flex; gap:10px; justify-content: center;">
+            <div style="margin-top: 18px; display:flex; gap:10px; justify-content: center; display: none;">
                 <a href="/admin/vehicles/${id}/edit" class="btn btn-warning" style="padding: 8px 14px;"><i class="fas fa-edit"></i> Edit Vehicle</a>
                 <a href="/admin/vehicles/${id}" class="btn btn-info" style="padding: 8px 14px;"><i class="fas fa-eye"></i> View Full Details</a>
                 <button class="btn btn-secondary" onclick="toggleVehicleDetails('${id}')" style="padding: 8px 14px;"><i class="fas fa-times"></i> Hide Details</button>

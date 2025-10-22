@@ -1360,7 +1360,7 @@ class VehiclesController extends Controller {
                         'lic_exp_date' => $request->get('lic_exp_date'),
                         'reg_exp_date' => $request->get('reg_exp_date'),
                         'in_service' => $request->get("in_service"),
-                        'type_id' => $request->get('type_id') ?: 1, // Default to type ID 1 if empty
+                        'type_id' => $request->get('type_id') ?: null, // Persist provided UUID or null
                         // 'vehicle_image' => $request->get('vehicle_image'),
                         'height' => $request->height,
                         'length' => $request->length,

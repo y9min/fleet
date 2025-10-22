@@ -1343,23 +1343,10 @@ function loadVehiclesSimple(filteredData = null) {
         const safeModel = (vehicle.model_name || 'N/A').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
         const safeEngineType = vehicle.engine_type ? vehicle.engine_type.charAt(0).toUpperCase() + vehicle.engine_type.slice(1) : 'N/A';
         
-        // Get vehicle type from database relationship
+        // Get vehicle type from relationship (UUID-based); fall back to Not Selected
         let vehicleType = 'Not Selected';
-        if (vehicle.types && vehicle.types.vehicletype) {
-            vehicleType = vehicle.types.vehicletype;
-        } else if (vehicle.type_id) {
-            // Fallback to type_id if relationship not loaded
-            switch(vehicle.type_id) {
-                case 1: vehicleType = 'Convertible'; break;
-                case 2: vehicleType = 'Coupe'; break;
-                case 3: vehicleType = 'Estate'; break;
-                case 4: vehicleType = 'Hatchback'; break;
-                case 5: vehicleType = 'MPV'; break;
-                case 6: vehicleType = 'Pickup'; break;
-                case 7: vehicleType = 'Saloon'; break;
-                case 8: vehicleType = 'SUV'; break;
-                default: vehicleType = 'Not Selected'; break;
-            }
+        if (vehicle.types && (vehicle.types.display_name || vehicle.types.name)) {
+            vehicleType = vehicle.types.display_name || vehicle.types.name;
         }
         
         tableHTML += `
@@ -1758,7 +1745,15 @@ function generateEnhancedBasicVehicleDetails(id, vehicle) {
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
                     <div><strong>Vehicle Make:</strong> ${vehicle.make_name || 'Not Selected'}</div>
                     <div><strong>Vehicle Model:</strong> ${vehicle.model_name || 'Not Selected'}</div>
-                    <div><strong>Vehicle Type:</strong> Not Available (AJAX Failed)</div>
+                    <div><strong>Vehicle Type:</strong> ${(() => {
+                        if (completeVehicle && completeVehicle.types && (completeVehicle.types.display_name || completeVehicle.types.name)) {
+                            return completeVehicle.types.display_name || completeVehicle.types.name;
+                        }
+                        if (vehicle && vehicle.types && (vehicle.types.display_name || vehicle.types.name)) {
+                            return vehicle.types.display_name || vehicle.types.name;
+                        }
+                        return 'Not Selected';
+                    })()}</div>
                     <div><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</div>
                     <div><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</div>
                     <div><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</div>

@@ -376,6 +376,9 @@
     
     var table = $('#ajax_data_table').DataTable({
           dom: 'Bfrtip',
+          pageLength: 10, // Start with 10 rows for faster initial load
+          lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]], // Page size options
+          deferRender: true, // Improve rendering performance for large datasets
           buttons: [
               {
             extend: 'print',

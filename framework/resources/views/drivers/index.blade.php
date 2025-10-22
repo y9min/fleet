@@ -143,6 +143,33 @@
   .progress-bar {
     border-radius: 10px;
   }
+
+  /* Enhanced page header with modern design - matching vehicles page */
+  .page-header {
+      background: linear-gradient(135deg, #7ed6e1, #6dc6d2);
+      color: white;
+      padding: 25px 30px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(126, 214, 225, 0.3);
+      border: none;
+  }
+
+  .page-header h1 {
+      color: white;
+      margin: 0;
+      font-weight: 600;
+      font-size: 28px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .page-header .btn {
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+  }
 </style>
 @endsection
 @section("breadcrumb")
@@ -190,18 +217,24 @@
 
     
 
-    <div class="card card-info">
-      <div class="card-header">
-        <h3 class="card-title">@lang('menu.drivers') &nbsp;
-          <a href="{{ route('drivers.create') }}" class="btn btn-success" title="@lang('fleet.addDriver')"> 
-            <i class="fa fa-plus"></i> Add Driver
-          </a> 
-          <button data-toggle="modal" data-target="#import" class="btn btn-warning">
-            <i class="fa fa-upload"></i> Import Drivers
-          </button>
-        </h3>
-      </div>
+    <!-- Enhanced Page Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1>Drivers</h1>
+            <p class="mb-0" style="opacity: 0.9; font-size: 16px; margin-top: 8px;">Manage your drivers with ease</p>
+        </div>
+        <div class="d-flex gap-3">
+            <a href="{{ route('drivers.create') }}" class="btn" style="background-color: #C1C1C1; color: black; border: 1px solid #C1C1C1;" title="@lang('fleet.addDriver')">
+                <i class="fas fa-plus"></i> Add Driver
+            </a>
+            <button type="button" class="btn" style="background-color: #7ed6e1; color: white; border: 1px solid #7ed6e1;" data-toggle="modal" data-target="#import" title="Import Drivers">
+                <i class="fas fa-file-import"></i> Import Drivers
+            </button>
+        </div>
+    </div>
 
+    <!-- Data Table Card -->
+    <div class="card">
       <div class="card-body table-responsive">
         <table class="table" id="ajax_data_table" style="padding-bottom: 15px">
           <thead class="thead-inverse">
@@ -226,7 +259,6 @@
       </div>
     </div>
   </div>
-</div>
 
 <!-- Enhanced Import Modal -->
 <div id="import" class="modal fade" role="dialog">

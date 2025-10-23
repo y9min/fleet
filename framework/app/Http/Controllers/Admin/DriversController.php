@@ -1844,10 +1844,6 @@ class DriversController extends Controller {
                 }
                 // dd($request->all());
                 $user->name = $request->get("first_name") . " " . $request->get("last_name");
-                $name = explode(' ', $request->name);
-                $user->first_name = $name[0] ?? '';
-                $user->middle_name = $name[1] ?? '';
-                $user->last_name = $name[2] ?? '';
                 $user->email = $request->get('email');
                 $user->save();
                 // $user->driver_image = $request->get('driver_image');

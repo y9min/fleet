@@ -78,7 +78,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return $this->hasMany(UserData::class, 'user_id', 'id');
     }
 
-	public function getUserTypeLabelAttribute() {
+    public function getUserTypeLabelAttribute() {
 			$code = $this->getRawOriginal('user_type');
 			switch ($code) {
 					case 'B':
@@ -94,5 +94,30 @@ class User extends Authenticatable implements MustVerifyEmail
 					default:
 							return $code;
 			}
+	}
+
+	// Helper methods to access metadata fields as attributes
+	public function getFirstNameAttribute() {
+		return $this->getMeta('first_name');
+	}
+
+	public function getMiddleNameAttribute() {
+		return $this->getMeta('middle_name');
+	}
+
+	public function getLastNameAttribute() {
+		return $this->getMeta('last_name');
+	}
+
+	public function getAddressAttribute() {
+		return $this->getMeta('address');
+	}
+
+	public function getPhoneAttribute() {
+		return $this->getMeta('phone');
+	}
+
+	public function getGenderAttribute() {
+		return $this->getMeta('gender');
 	}
 }

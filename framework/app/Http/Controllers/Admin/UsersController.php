@@ -117,8 +117,10 @@ class UsersController extends Controller {
 		$user->module = serialize($request->get('module'));
 		// $user->language = 'English-en';
 		$user->language = Auth::user()->language;
-		$user->first_name = $request->get("first_name");
-		$user->last_name = $request->get("last_name");
+		$user->setMeta([
+			'first_name' => $request->get("first_name"),
+			'last_name' => $request->get("last_name")
+		]);
 		$user->save();
 		$role = Role::find($request->role_id);
 		$user->assignRole($role);
@@ -139,8 +141,10 @@ class UsersController extends Controller {
 		$user->email = $request->get("email");
 		$user->group_id = $request->get("group_id");
 		$user->module = serialize($request->get('module'));
-		$user->first_name = $request->get("first_name");
-		$user->last_name = $request->get("last_name");
+		$user->setMeta([
+			'first_name' => $request->get("first_name"),
+			'last_name' => $request->get("last_name")
+		]);
 		$old = Role::find($user->roles->first()->id);
 		if ($old != null) {
 			$user->removeRole($old);

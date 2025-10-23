@@ -59,35 +59,38 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
             ]);
 
             $user->is_active = 1;
-            $user->is_available = 0;
-            $user->first_name = $driver['first_name'];
-            $user->middle_name = $driver['middle_name'] ?? '';
-            $user->last_name = $driver['last_name'];
-            $user->address = $driver['address'] ?? '';
-            $user->phone = $driver['phone'] ?? '';
-            $user->phone_code = "+" . ($driver['country_code'] ?? '44');
-            $user->emp_id = $driver['employee_id'] ?? '';
-            $user->contract_number = $driver['contract_number'] ?? '';
-            $user->license_number = $driver['licence_number'] ?? '';
+            
+            // Store driver-specific fields in metadata
+            $user->setMeta([
+                'is_available' => 0,
+                'first_name' => $driver['first_name'],
+                'middle_name' => $driver['middle_name'] ?? '',
+                'last_name' => $driver['last_name'],
+                'address' => $driver['address'] ?? '',
+                'phone' => $driver['phone'] ?? '',
+                'phone_code' => "+" . ($driver['country_code'] ?? '44'),
+                'emp_id' => $driver['employee_id'] ?? '',
+                'contract_number' => $driver['contract_number'] ?? '',
+                'license_number' => $driver['licence_number'] ?? '',
+                'gender' => (($driver['gender'] ?? 'male') == 'female') ? 0 : 1,
+                'econtact' => $driver['emergency_contact_details'] ?? '',
+            ]);
             
             if (!empty($driver['issue_date'])) {
-                $user->issue_date = date('Y-m-d', strtotime($driver['issue_date']));
+                $user->setMeta(['issue_date' => date('Y-m-d', strtotime($driver['issue_date']))]);
             }
 
             if (!empty($driver['expiration_date'])) {
-                $user->exp_date = date('Y-m-d', strtotime($driver['expiration_date']));
+                $user->setMeta(['exp_date' => date('Y-m-d', strtotime($driver['expiration_date']))]);
             }
 
             if (!empty($driver['join_date'])) {
-                $user->start_date = date('Y-m-d', strtotime($driver['join_date']));
+                $user->setMeta(['start_date' => date('Y-m-d', strtotime($driver['join_date']))]);
             }
 
             if (!empty($driver['leave_date'])) {
-                $user->end_date = date('Y-m-d', strtotime($driver['leave_date']));
+                $user->setMeta(['end_date' => date('Y-m-d', strtotime($driver['leave_date']))]);
             }
-
-            $user->gender = (($driver['gender'] ?? 'male') == 'female') ? 0 : 1;
-            $user->econtact = $driver['emergency_contact_details'] ?? '';
 
             $user->givePermissionTo([
                 'Notes add', 'Notes edit', 'Notes delete', 'Notes list',

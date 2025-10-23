@@ -45,9 +45,11 @@ class UtilityController extends Controller {
 		$user->email = $request->email;
 		$user->theme = $request->theme;
 		$name = explode(' ', $request->name);
-		$user->first_name = $name[0] ?? '';
-		$user->middle_name = $name[1] ?? '';
-		$user->last_name = $name[2] ?? '';
+		$user->setMeta([
+			'first_name' => $name[0] ?? '',
+			'middle_name' => $name[1] ?? '',
+			'last_name' => $name[2] ?? ''
+		]);
 		$user->language = $request->get('language');
 		// $user->password = bcrypt($request->passwd);
 		$user->save();

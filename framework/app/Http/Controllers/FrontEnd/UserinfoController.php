@@ -65,19 +65,15 @@ class UserinfoController extends Controller {
 
         $user=User::find(Auth::user()->id);
         $user->name=$name;
-        $user->first_name=$request->first_name;
-        $user->last_name=$request->last_name;
         $user->email=$request->email;
-        $user->gender=$request->gender;
-        $user->mobno=$request->phone;
-
-        if(isset($request->address))
-        {
-            $user->address=$request->address;
-        }
-
-
-
+        $user->setMeta([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'gender' => $request->gender,
+            'mobno' => $request->phone,
+            'address' => $request->address ?? null
+        ]);
+        
         if(isset($request->image))
         {
             $destinationImage='./uploads';

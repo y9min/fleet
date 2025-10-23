@@ -302,11 +302,13 @@ class HomeController extends Controller {
                         $user->name = $arr[0] . " " . $arr[1];
                         $user->user_type = "C";
                         $user->api_token = str_random(60);
-                        $user->first_name = $arr[0];
-                        $user->last_name = $arr[1];
                         $user->email = $request->email;
-                        $user->mobno = $request->phone;
-                        $user->gender = $request->gender;
+                        $user->setMeta([
+                            'first_name' => $arr[0],
+                            'last_name' => $arr[1],
+                            'mobno' => $request->phone,
+                            'gender' => $request->gender
+                        ]);
         
                         // if ($request->hasFile('image') && isset($request->image)) { 
                         //      $file = $request->file('image');
@@ -585,14 +587,12 @@ class HomeController extends Controller {
                 ])->id;
                 
                 $user = User::find($id);
-                $user->first_name = $request->first_name;
-                $user->last_name = $request->last_name;
-                $user->address = $request->address;
-                $user->mobno = $request->phone;
-                if(isset($request->address))
-                {
-                        $user->address=$request->address;
-                }
+                $user->setMeta([
+                    'first_name' => $request->first_name,
+                    'last_name' => $request->last_name,
+                    'address' => $request->address ?? null,
+                    'mobno' => $request->phone
+                ]);
                 $user->save();
                 
                 return response()->json(['status'=>100]);

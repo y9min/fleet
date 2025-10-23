@@ -115,11 +115,13 @@ class CustomersController extends Controller {
 		])->id;
 		$user = User::find($id);
 		$user->user_id = Auth::user()->id;
-		$user->first_name = $request->get("first_name");
-		$user->last_name = $request->get("last_name");
-		$user->address = $request->get("address");
-		$user->mobno = $request->get("phone");
-		$user->gender = $request->get('gender');
+		$user->setMeta([
+			'first_name' => $request->get("first_name"),
+			'last_name' => $request->get("last_name"),
+			'address' => $request->get("address"),
+			'mobno' => $request->get("phone"),
+			'gender' => $request->get('gender')
+		]);
 		$user->save();
 		$user->givePermissionTo(['Bookings add', 'Bookings edit', 'Bookings list', 'Bookings delete']);
 		return redirect()->route("customers.index");
@@ -144,11 +146,13 @@ class CustomersController extends Controller {
 				"api_token" => str_random(60),
 			])->id;
 			$user = User::find($id);
-			$user->first_name = $request->get("first_name");
-			$user->last_name = $request->get("last_name");
-			$user->address = $request->get("address");
-			$user->mobno = $request->get("phone");
-			$user->gender = $request->get('gender');
+			$user->setMeta([
+				'first_name' => $request->get("first_name"),
+				'last_name' => $request->get("last_name"),
+				'address' => $request->get("address"),
+				'mobno' => $request->get("phone"),
+				'gender' => $request->get('gender')
+			]);
 			$user->save();
 			$user->givePermissionTo(['Bookings add', 'Bookings edit', 'Bookings list', 'Bookings delete']);
 			$d = User::whereUser_type("C")->get(["id", "name as text"]);
@@ -182,11 +186,13 @@ class CustomersController extends Controller {
 		$user = User::find($request->id);
 		$user->name = $request->get("first_name") . " " . $request->get("last_name");
 		$user->email = $request->get('email');
-		$user->first_name = $request->get("first_name");
-		$user->last_name = $request->get("last_name");
-		$user->address = $request->get("address");
-		$user->mobno = $request->get("phone");
-		$user->gender = $request->get('gender');
+		$user->setMeta([
+			'first_name' => $request->get("first_name"),
+			'last_name' => $request->get("last_name"),
+			'address' => $request->get("address"),
+			'mobno' => $request->get("phone"),
+			'gender' => $request->get('gender')
+		]);
 		$user->save();
 		return redirect()->route("customers.index");
 	}

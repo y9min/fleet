@@ -101,19 +101,6 @@
               </div>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('emp_id', __('fleet.employee_id'), ['class' => 'form-label']) !!}
-              {!! Form::text('emp_id', $driver->getMeta('emp_id'),['class' => 'form-control','required']) !!}
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              {!! Form::label('contract_number', __('fleet.contract'), ['class' => 'form-label']) !!}
-              {!! Form::text('contract_number', $driver->getMeta('contract_number'),['class' =>
-              'form-control','required']) !!}
-            </div>
-          </div>
         </div>
         <div class="row">
           <div class="col-md-4">
@@ -189,16 +176,6 @@
                 <a href="{{ asset('uploads/' . $insuranceImage) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-shield-alt"></i> View Insurance</a>
               @endif
               {!! Form::file('insurance_image',null,['class' => 'form-control']) !!}
-            </div>
-            <div class="form-group">
-              {!! Form::label('documents', __('fleet.documents'), ['class' => 'form-label']) !!}
-              @php
-                $documents = $driver->getMeta('documents');
-              @endphp
-              @if($documents != null && !$insuranceImage)
-              <a href="{{ asset('uploads/'.$documents) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-eye"></i> View</a>
-              @endif
-              {!! Form::file('documents',null,['class' => 'form-control']) !!}
             </div>
           </div>
           <div class="col-md-6">

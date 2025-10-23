@@ -113,11 +113,11 @@
           </div>
           <div class="col-md-6">
             <div class="form-group">
-              {!! Form::label('exp_date', __('fleet.expirationDate'), ['class' => 'form-label required']) !!}
+              {!! Form::label('exp_date', __('fleet.expirationDate'), ['class' => 'form-label']) !!}
               <div class="input-group date">
                 <div class="input-group-prepend"><span class="input-group-text"><i class="fa fa-calendar"></i></span>
                 </div>
-                {!! Form::text('exp_date', null,['class' => 'form-control','required']) !!}
+                {!! Form::text('exp_date', null,['class' => 'form-control']) !!}
               </div>
             </div>
           </div>
@@ -130,7 +130,7 @@
                 <div class="input-group-prepend">
                   <span class="input-group-text"><i class="fa fa-lock"></i></span>
                 </div>
-                {!! Form::password('password', ['class' => 'form-control','required','id' => 'password']) !!}
+                {!! Form::password('password', ['class' => 'form-control','id' => 'password']) !!}
                 <div class="input-group-append">
                   <button type="button" class="btn btn-outline-secondary" id="togglePassword">
                     <i class="fas fa-eye" id="toggleIcon"></i>
@@ -148,52 +148,6 @@
         </div>
         <div class="row">
           <div class="col-md-6">
-            <div class="form-group">
-              {!! Form::label('gender', __('fleet.gender') , ['class' => 'form-label']) !!}<br>
-              <input type="radio" name="gender" class="flat-red gender" value="1" checked> @lang('fleet.male')<br>
-
-              <input type="radio" name="gender" class="flat-red gender" value="0"> @lang('fleet.female')
-            </div>
-
-            <div class="form-group">
-              {!! Form::label('driver_image', __('fleet.driverImage'), ['class' => 'form-label']) !!}
-
-              {!! Form::file('driver_image',null,['class' => 'form-control','required']) !!}
-            </div>
-            <div class="form-group">
-              {!! Form::label('documents', __('fleet.documents'), ['class' => 'form-label']) !!}
-              {!! Form::file('documents',null,['class' => 'form-control','required']) !!}
-            </div>
-
-
-            <div class="form-group">
-              {!! Form::label('license_image', __('fleet.licenseImage'), ['class' => 'form-label']) !!}
-              {!! Form::file('license_image',null,['class' => 'form-control','required']) !!}
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group">
-              {!! Form::label('econtact', __('fleet.emergency_details'), ['class' => 'form-label']) !!}
-              {!! Form::textarea('econtact',null,['class' => 'form-control']) !!}
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6">
-            <div class="form-group">
-              {!! Form::label('documents', __('fleet.documents'), ['class' => 'form-label']) !!}
-              {!! Form::file('documents',null,['class' => 'form-control','required']) !!}
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group">
-              {!! Form::label('license_image', __('fleet.licenseImage'), ['class' => 'form-label']) !!}
-              {!! Form::file('license_image',null,['class' => 'form-control','required']) !!}
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-12">
             <div class="form-group">
               {!! Form::label('econtact', __('fleet.emergency_details'), ['class' => 'form-label']) !!}
               {!! Form::textarea('econtact',null,['class' => 'form-control']) !!}
@@ -232,10 +186,6 @@
     $("#driver-create-form").validate({
       // in 'rules' user have to specify all the constraints for respective fields
       rules: {        
-        password: {
-          required:true,
-          minlength: 6
-        }
       },
       // in 'messages' user have to specify message as per rules
       messages: {

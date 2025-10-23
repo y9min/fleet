@@ -1817,12 +1817,29 @@ class DriversController extends Controller {
                 
                 if ($useS3) {
                         // Upload to S3
-                        $extension = $file->getClientOriginalExtension();
-                        $fileName = Str::uuid() . '.' . $extension;
-                        $path = Storage::disk('s3')->putFileAs('uploads', $file, $fileName);
-                        $user = User::find($id);
-                        $user->setMeta([$field => $fileName]);
-                        $user->save();
+                        try {
+                                $extension = $file->getClientOriginalExtension();
+                                $fileName = Str::uuid() . '.' . $extension;
+                                $path = Storage::disk('s3')->putFileAs('uploads', $file, $fileName);
+                                $user = User::find($id);
+                                $user->setMeta([$field => $fileName]);
+                                $user->save();
+                                \Log::info('File uploaded to S3 successfully', ['field' => $field, 'filename' => $fileName, 'path' => $path]);
+                        } catch (\Exception $e) {
+                                \Log::error('S3 upload failed', [
+                                        'field' => $field,
+                                        'error' => $e->getMessage(),
+                                        'trace' => $e->getTraceAsString()
+                                ]);
+                                // Fallback to local storage
+                                $destinationPath = public_path('uploads');
+                                $extension = $file->getClientOriginalExtension();
+                                $fileName = Str::uuid() . '.' . $extension;
+                                $file->move($destinationPath, $fileName);
+                                $user = User::find($id);
+                                $user->setMeta([$field => $fileName]);
+                                $user->save();
+                        }
                 } else {
                         // Fallback to local storage
                         $destinationPath = public_path('uploads');

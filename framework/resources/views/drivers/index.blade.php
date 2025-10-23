@@ -867,12 +867,13 @@ function toggleDriverDetailsInstant(button) {
         'id_proof_type', 'insurance_upload_path', 'license_upload_path', 'is_available',
         'first_name', 'last_name', 'phone_code', 'method', 'edit', 'user_id', 'emp_id',
         'contract_number', 'driver_image', 'token', 'license_image', 'insurance_image', 'documents',
-        'detail_id'
+        'detail_id', 'license_url', 'insurance_url'
     ];
     
     // Display additional meta fields
     for (var key in driver) {
-        if (driver.hasOwnProperty(key) && !excludedFields.includes(key)) {
+        var keyLower = key.toLowerCase();
+        if (driver.hasOwnProperty(key) && !excludedFields.includes(key) && !excludedFields.includes(keyLower)) {
             var value = driver[key];
             if (value && value !== 'N/A' && value !== '') {
                 hasAdditionalInfo = true;
@@ -1022,12 +1023,13 @@ function toggleDriverDetails(driverId) {
                     'license_upload_path', 'insurance_upload_path', 'license_image', 'insurance_image', 'documents',
                     'id_proof_type', 'is_available', 'first_name', 'last_name', 'phone_code', 'method', 
                     'edit', 'emp_id', 'contract_number', 'driver_image', 'license', 'terms', 'token',
-                    'detail_id'
+                    'detail_id', 'license_url', 'insurance_url'
                 ];
                 
                 // Display all driver metadata fields
                 for (var key in driver) {
-                    if (driver.hasOwnProperty(key) && !fieldsToExclude.includes(key)) {
+                    var keyLower = key.toLowerCase();
+                    if (driver.hasOwnProperty(key) && !fieldsToExclude.includes(key) && !fieldsToExclude.includes(keyLower)) {
                         var value = driver[key];
                         var displayName = '';
                         var displayValue = '';
@@ -1124,9 +1126,9 @@ function toggleDriverDetails(driverId) {
                             lowerDisplayName !== 'meta data' && lowerDisplayName !== 'license upload path' &&
                             lowerDisplayName !== 'documents' && lowerDisplayName !== 'id proof type' &&
                             lowerDisplayName !== 'license' && lowerDisplayName !== 'terms' &&
-                            lowerDisplayName !== 'token' && lowerKey !== 'documents' && 
-                            lowerKey !== 'id_proof_type' && lowerKey !== 'license' && 
-                            lowerKey !== 'terms' && lowerKey !== 'token') {
+                            lowerDisplayName !== 'token' && lowerDisplayName !== 'method' &&
+                            lowerKey !== 'documents' && lowerKey !== 'id_proof_type' && lowerKey !== 'license' && 
+                            lowerKey !== 'terms' && lowerKey !== 'token' && lowerKey !== 'method') {
                             hasAdditionalInfo = true;
                             html += '<div class="inline-field">';
                             html += '<strong>' + displayName + ':</strong>';
@@ -1251,9 +1253,9 @@ function toggleDriverDetails(driverId) {
                                 lowerCustomDisplayName !== 'meta data' && lowerCustomDisplayName !== 'license upload path' &&
                                 lowerCustomDisplayName !== 'documents' && lowerCustomDisplayName !== 'id proof type' &&
                                 lowerCustomDisplayName !== 'license' && lowerCustomDisplayName !== 'terms' &&
-                                lowerCustomDisplayName !== 'token' && lowerCustomKey !== 'documents' && 
-                                lowerCustomKey !== 'id_proof_type' && lowerCustomKey !== 'license' && 
-                                lowerCustomKey !== 'terms' && lowerCustomKey !== 'token') {
+                                lowerCustomDisplayName !== 'token' && lowerCustomDisplayName !== 'method' &&
+                                lowerCustomKey !== 'documents' && lowerCustomKey !== 'id_proof_type' && lowerCustomKey !== 'license' && 
+                                lowerCustomKey !== 'terms' && lowerCustomKey !== 'token' && lowerCustomKey !== 'method') {
                                 hasAdditionalInfo = true;
                                 html += '<div class="inline-field">';
                                 html += '<strong>' + customDisplayName + ':</strong>';

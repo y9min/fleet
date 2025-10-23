@@ -1423,7 +1423,7 @@ class DriversController extends Controller {
                                         
                                         // Add additional meta fields that are commonly displayed
                                         foreach ($user->metas as $meta) {
-                                                if (!in_array($meta->key, ['license_number'])) {
+                                                if (!in_array($meta->key, ['license_number', 'token', 'method', 'edit', 'user_id', 'emp_id', 'detail_id'])) {
                                                         $driverData[$meta->key] = $meta->value;
                                                 }
                                         }
@@ -1514,7 +1514,9 @@ class DriversController extends Controller {
                         
                         // Use preloaded metas instead of querying again
                         foreach ($driver->metas as $meta) {
-                                $driverData[$meta->key] = $meta->value;
+                                if (!in_array($meta->key, ['token', 'method', 'edit', 'user_id', 'emp_id', 'detail_id'])) {
+                                        $driverData[$meta->key] = $meta->value;
+                                }
                         }
                         
                         // Get assigned vehicle from preloaded relationship

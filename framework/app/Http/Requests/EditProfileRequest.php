@@ -31,9 +31,13 @@ class EditProfileRequest extends FormRequest {
 	 * @return array
 	 */
 	public function rules() {
+		// Get the ID value and handle empty string for UUID
+		$id = \Request::get("id");
+		$id = ($id === '' || $id === null) ? null : $id;
+		
 		return [
 			'name' => 'required',
-			'email' => 'required|email|max:255|unique:users,email,' . \Request::get("id"),
+			'email' => $id ? 'required|email|max:255|unique:users,email,' . $id : 'required|email|max:255|unique:users,email',
 			'image' => 'mimes:jpg,png,jpeg|max:2084',
 			'language' => 'required',
 		];

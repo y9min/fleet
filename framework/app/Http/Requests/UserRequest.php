@@ -26,11 +26,15 @@ class UserRequest extends FormRequest {
 	}
 
 	public function rules() {
+		// Get the ID value and handle empty string for UUID
+		$id = \Request::get("id");
+		$id = ($id === '' || $id === null) ? null : $id;
+		
 		return [
 			//'module' => 'required',
 			'first_name' => 'required',
 			'last_name' => 'required',
-			'email' => 'required|email|unique:users,email,' . \Request::get("id"),
+			'email' => $id ? 'required|email|unique:users,email,' . $id : 'required|email|unique:users,email',
 			'password' => 'required|min:6',
 			'profile_image' => 'nullable|mimes:jpg,png,jpeg|max:2084',
 		];

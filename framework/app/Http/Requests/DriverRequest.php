@@ -30,6 +30,10 @@ class DriverRequest extends FormRequest {
 	}
 
 	public function rules() {
+		// Get the ID value and handle empty string for UUID
+		$id = \Request::get("id");
+		$id = ($id === '' || $id === null) ? null : $id;
+		
 		if ($this->request->has("edit")) {
 			return [
 
@@ -37,7 +41,7 @@ class DriverRequest extends FormRequest {
 				'last_name' => 'required',
 				'address' => 'required',
 				'phone' => 'required|numeric|digits_between:7,15',
-				'email' => 'required|email|unique:users,email,' . \Request::get("id"),
+				'email' => $id ? 'required|email|unique:users,email,' . $id : 'required|email|unique:users,email',
 				'start_date' => 'date|date_format:Y-m-d',
 				'issue_date' => 'date|date_format:Y-m-d',
 				'end_date' => 'nullable|date|date_format:Y-m-d',
@@ -57,7 +61,7 @@ class DriverRequest extends FormRequest {
 				'last_name' => 'required',
 				'address' => 'required',
 				'phone' => 'required|numeric|digits_between:7,15',
-				'email' => 'required|email|unique:users,email,' . \Request::get("id"),
+				'email' => $id ? 'required|email|unique:users,email,' . $id : 'required|email|unique:users,email',
 				'exp_date' => 'required|date|date_format:Y-m-d|after:tomorrow',
 				'start_date' => 'date|date_format:Y-m-d',
 				'issue_date' => 'date|date_format:Y-m-d',

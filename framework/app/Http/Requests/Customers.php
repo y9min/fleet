@@ -35,10 +35,14 @@ class Customers extends FormRequest {
 	 * @return array
 	 */
 	public function rules() {
+		// Get the ID value and handle empty string for UUID
+		$id = \Request::get("id");
+		$id = ($id === '' || $id === null) ? null : $id;
+		
 		return [
 			'first_name' => 'required',
 			'last_name' => 'required',
-			'email' => 'unique:users,email,' . \Request::get("id"),
+			'email' => $id ? 'unique:users,email,' . $id : 'unique:users,email',
 			'phone' => 'required|numeric|digits_between:7,15',
 			'gender' => 'required',
 			'address' => 'required',

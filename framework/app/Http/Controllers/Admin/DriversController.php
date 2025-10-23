@@ -1371,22 +1371,12 @@ class DriversController extends Controller {
                                         
                                         $docs = '';
                                         if ($licenseMeta && $licenseMeta->value) {
-                                                // Check if path starts with uploads/ or storage/ prefix
-                                                $licensePath = $licenseMeta->value;
-                                                if (strpos($licensePath, 'uploads/') === 0) {
-                                                        $docs .= '<a href="' . asset($licensePath) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
-                                                } else {
-                                                        $docs .= '<a href="' . asset('storage/' . $licensePath) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
-                                                }
+                                                // Files are stored in uploads/ directory
+                                                $docs .= '<a href="' . asset('uploads/' . $licenseMeta->value) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
                                         }
                                         if ($insuranceMeta && $insuranceMeta->value) {
-                                                // Check if path starts with uploads/ or storage/ prefix
-                                                $insurancePath = $insuranceMeta->value;
-                                                if (strpos($insurancePath, 'uploads/') === 0) {
-                                                        $docs .= '<a href="' . asset($insurancePath) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
-                                                } else {
-                                                        $docs .= '<a href="' . asset('storage/' . $insurancePath) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
-                                                }
+                                                // Files are stored in uploads/ directory
+                                                $docs .= '<a href="' . asset('uploads/' . $insuranceMeta->value) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
                                         }
                                         return $docs ?: '<span class="text-muted">No documents</span>';
                                 })

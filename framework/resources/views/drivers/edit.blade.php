@@ -176,11 +176,7 @@
                 $licenseImage = $driver->getMeta('license_upload_path') ?: $driver->getMeta('license_image');
               @endphp
               @if($licenseImage != null)
-                @if(strpos($licenseImage, 'uploads/') === 0)
-                  <a href="{{ asset($licenseImage) }}" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-id-card"></i> View License</a>
-                @else
-                  <a href="{{ asset('storage/' . $licenseImage) }}" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-id-card"></i> View License</a>
-                @endif
+                <a href="{{ asset('uploads/' . $licenseImage) }}" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-id-card"></i> View License</a>
               @endif
               {!! Form::file('license_image',null,['class' => 'form-control']) !!}
             </div>
@@ -190,11 +186,7 @@
                 $insuranceImage = $driver->getMeta('insurance_upload_path') ?: $driver->getMeta('insurance_image') ?: $driver->getMeta('documents');
               @endphp
               @if($insuranceImage != null)
-                @if(strpos($insuranceImage, 'uploads/') === 0)
-                  <a href="{{ asset($insuranceImage) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-shield-alt"></i> View Insurance</a>
-                @else
-                  <a href="{{ asset('storage/' . $insuranceImage) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-shield-alt"></i> View Insurance</a>
-                @endif
+                <a href="{{ asset('uploads/' . $insuranceImage) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-shield-alt"></i> View Insurance</a>
               @endif
               {!! Form::file('insurance_image',null,['class' => 'form-control']) !!}
             </div>

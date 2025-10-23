@@ -53,26 +53,14 @@
                     <h5><i class="fas fa-file-alt me-2"></i>Documents</h5>
                     <div class="d-flex gap-2">
                         @if($licensePath)
-                            @if(strpos($licensePath, 'uploads/') === 0)
-                                <a href="{{ asset($licensePath) }}" target="_blank" class="btn btn-primary">
-                                    <i class="fa fa-id-card me-2"></i>View License
-                                </a>
-                            @else
-                                <a href="{{ asset('storage/' . $licensePath) }}" target="_blank" class="btn btn-primary">
-                                    <i class="fa fa-id-card me-2"></i>View License
-                                </a>
-                            @endif
+                            <a href="{{ asset('uploads/' . $licensePath) }}" target="_blank" class="btn btn-primary">
+                                <i class="fa fa-id-card me-2"></i>View License
+                            </a>
                         @endif
                         @if($insurancePath)
-                            @if(strpos($insurancePath, 'uploads/') === 0)
-                                <a href="{{ asset($insurancePath) }}" target="_blank" class="btn btn-info">
-                                    <i class="fa fa-shield-alt me-2"></i>View Insurance
-                                </a>
-                            @else
-                                <a href="{{ asset('storage/' . $insurancePath) }}" target="_blank" class="btn btn-info">
-                                    <i class="fa fa-shield-alt me-2"></i>View Insurance
-                                </a>
-                            @endif
+                            <a href="{{ asset('uploads/' . $insurancePath) }}" target="_blank" class="btn btn-info">
+                                <i class="fa fa-shield-alt me-2"></i>View Insurance
+                            </a>
                         @endif
                     </div>
                 </div>

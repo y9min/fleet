@@ -832,7 +832,7 @@ function toggleDriverDetailsInstant(button) {
         // License Image Button
         if (driver.license_image || driver.license_upload_path) {
             var licenseFile = driver.license_upload_path || driver.license_image;
-            var licenseUrl = '{{ asset("uploads") }}' + '/' + licenseFile;
+            var licenseUrl = driver.license_url || ('{{ asset("uploads") }}' + '/' + licenseFile);
             html += '<div class="inline-field">';
             html += '<strong>License Image:</strong>';
             html += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary ml-2">';
@@ -844,7 +844,7 @@ function toggleDriverDetailsInstant(button) {
         // Insurance Image Button
         if (driver.insurance_image || driver.insurance_upload_path || driver.documents) {
             var insuranceFile = driver.insurance_upload_path || driver.insurance_image || driver.documents;
-            var insuranceUrl = '{{ asset("uploads") }}' + '/' + insuranceFile;
+            var insuranceUrl = driver.insurance_url || ('{{ asset("uploads") }}' + '/' + insuranceFile);
             html += '<div class="inline-field">';
             html += '<strong>Insurance Image:</strong>';
             html += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';
@@ -977,7 +977,7 @@ function toggleDriverDetails(driverId) {
                     // License Image Button
                     if (driver.license_image || driver.license_upload_path) {
                         var licenseFile = driver.license_upload_path || driver.license_image;
-                        var licenseUrl = '{{ asset("uploads") }}' + '/' + licenseFile;
+                        var licenseUrl = driver.license_url || ('{{ asset("uploads") }}' + '/' + licenseFile);
                         html += '<div class="inline-field">';
                         html += '<strong>License Image:</strong>';
                         html += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary ml-2">';
@@ -989,7 +989,7 @@ function toggleDriverDetails(driverId) {
                     // Insurance Image Button
                     if (driver.insurance_image || driver.insurance_upload_path || driver.documents) {
                         var insuranceFile = driver.insurance_upload_path || driver.insurance_image || driver.documents;
-                        var insuranceUrl = '{{ asset("uploads") }}' + '/' + insuranceFile;
+                        var insuranceUrl = driver.insurance_url || ('{{ asset("uploads") }}' + '/' + insuranceFile);
                         html += '<div class="inline-field">';
                         html += '<strong>Insurance Image:</strong>';
                         html += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';

@@ -27,6 +27,7 @@ use DataTables;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use Maatwebsite\Excel\Facades\Excel;
@@ -1370,13 +1371,20 @@ class DriversController extends Controller {
                                         }
                                         
                                         $docs = '';
+                                        
+                                        // Check if S3 is configured
+                                        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                                        $s3BaseUrl = $useS3 ? 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/' : '';
+                                        
                                         if ($licenseMeta && $licenseMeta->value) {
                                                 // Files are stored in uploads/ directory
-                                                $docs .= '<a href="' . asset('uploads/' . $licenseMeta->value) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
+                                                $licenseUrl = $useS3 ? ($s3BaseUrl . 'uploads/' . $licenseMeta->value) : asset('uploads/' . $licenseMeta->value);
+                                                $docs .= '<a href="' . $licenseUrl . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
                                         }
                                         if ($insuranceMeta && $insuranceMeta->value) {
                                                 // Files are stored in uploads/ directory
-                                                $docs .= '<a href="' . asset('uploads/' . $insuranceMeta->value) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
+                                                $insuranceUrl = $useS3 ? ($s3BaseUrl . 'uploads/' . $insuranceMeta->value) : asset('uploads/' . $insuranceMeta->value);
+                                                $docs .= '<a href="' . $insuranceUrl . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
                                         }
                                         return $docs ?: '<span class="text-muted">No documents</span>';
                                 })
@@ -1417,6 +1425,19 @@ class DriversController extends Controller {
                                         foreach ($user->metas as $meta) {
                                                 if (!in_array($meta->key, ['license_number'])) {
                                                         $driverData[$meta->key] = $meta->value;
+                                                }
+                                        }
+                                        
+                                        // Add S3 URLs for document files if S3 is configured
+                                        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                                        if ($useS3) {
+                                                $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+                                                
+                                                if (isset($driverData['license_image']) || isset($driverData['license_upload_path'])) {
+                                                        $driverData['license_url'] = $s3BaseUrl . 'uploads/' . ($driverData['license_upload_path'] ?? $driverData['license_image'] ?? '');
+                                                }
+                                                if (isset($driverData['insurance_image']) || isset($driverData['insurance_upload_path']) || isset($driverData['documents'])) {
+                                                        $driverData['insurance_url'] = $s3BaseUrl . 'uploads/' . ($driverData['insurance_upload_path'] ?? $driverData['insurance_image'] ?? $driverData['documents'] ?? '');
                                                 }
                                         }
                                         
@@ -1791,29 +1812,57 @@ class DriversController extends Controller {
                 return view("drivers.edit", compact("driver", "phone_code", 'vehicles'));
         }
         private function upload_file($file, $field, $id) {
-                $destinationPath = public_path('uploads'); // upload path to public directory
-                $extension = $file->getClientOriginalExtension();
-                $fileName1 = Str::uuid() . '.' . $extension;
-                $file->move($destinationPath, $fileName1);
-                $user = User::find($id);
-                $user->setMeta([$field => $fileName1]);
-                $user->save();
+                // Check if S3 is configured, otherwise use local storage
+                $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                
+                if ($useS3) {
+                        // Upload to S3
+                        $extension = $file->getClientOriginalExtension();
+                        $fileName = Str::uuid() . '.' . $extension;
+                        $path = Storage::disk('s3')->putFileAs('uploads', $file, $fileName);
+                        $user = User::find($id);
+                        $user->setMeta([$field => $fileName]);
+                        $user->save();
+                } else {
+                        // Fallback to local storage
+                        $destinationPath = public_path('uploads');
+                        $extension = $file->getClientOriginalExtension();
+                        $fileName = Str::uuid() . '.' . $extension;
+                        $file->move($destinationPath, $fileName);
+                        $user = User::find($id);
+                        $user->setMeta([$field => $fileName]);
+                        $user->save();
+                }
         }
+        
+        private function delete_file($fileName) {
+                // Check if S3 is configured
+                $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                
+                if ($useS3 && $fileName) {
+                        // Delete from S3
+                        try {
+                                Storage::disk('s3')->delete('uploads/' . $fileName);
+                        } catch (\Exception $e) {
+                                // Silently fail if file doesn't exist
+                        }
+                } else if ($fileName && file_exists(public_path('uploads/' . $fileName))) {
+                        // Delete from local storage
+                        unlink(public_path('uploads/' . $fileName));
+                }
+        }
+        
         public function update(DriverRequest $request) {
                 $id = $request->get('id');
                 $user = User::find($id);
                 if ($request->file('driver_image') && $request->file('driver_image')->isValid()) {
                         $oldDriverImage = $user->getMeta('driver_image');
-                        if ($oldDriverImage && file_exists(public_path('uploads/' . $oldDriverImage))) {
-                                unlink(public_path('uploads/' . $oldDriverImage));
-                        }
+                        $this->delete_file($oldDriverImage);
                         $this->upload_file($request->file('driver_image'), "driver_image", $id);
                 }
                 if ($request->file('license_image') && $request->file('license_image')->isValid()) {
                         $oldLicenseImage = $user->getMeta('license_image');
-                        if ($oldLicenseImage && file_exists(public_path('uploads/' . $oldLicenseImage))) {
-                                unlink(public_path('uploads/' . $oldLicenseImage));
-                        }
+                        $this->delete_file($oldLicenseImage);
                         $this->upload_file($request->file('license_image'), "license_image", $id);
                         // Store id_proof_type in metadata instead of trying to save to users table
                         $user->setMeta(['id_proof_type' => 'License']);
@@ -1825,9 +1874,7 @@ class DriversController extends Controller {
                 }
                 if ($request->file('insurance_image') && $request->file('insurance_image')->isValid()) {
                         $oldInsurancePath = $user->metas->firstWhere('key', 'insurance_image')?->value;
-                        if ($oldInsurancePath && file_exists(public_path('uploads/' . $oldInsurancePath))) {
-                                unlink(public_path('uploads/' . $oldInsurancePath));
-                        }
+                        $this->delete_file($oldInsurancePath);
                         $this->upload_file($request->file('insurance_image'), "insurance_image", $id);
                         // Store insurance document path for consistency
                         $insurancePath = $user->metas->firstWhere('key', 'insurance_image')?->value;
@@ -1837,9 +1884,7 @@ class DriversController extends Controller {
                 }
                 if ($request->file('documents')) {
                         $oldDocuments = $user->getMeta('documents');
-                        if ($oldDocuments && file_exists(public_path('uploads/' . $oldDocuments))) {
-                                unlink(public_path('uploads/' . $oldDocuments));
-                        }
+                        $this->delete_file($oldDocuments);
                         $this->upload_file($request->file('documents'), "documents", $id);
                 }
                 // dd($request->all());

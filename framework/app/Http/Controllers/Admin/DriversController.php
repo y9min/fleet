@@ -1842,7 +1842,6 @@ class DriversController extends Controller {
                         'company_id' => Auth::user()->company_id,
                 ])->id;
                 $user = User::find($id);
-                $user->user_id = Auth::user()->id;
                 if ($request->file('driver_image') && $request->file('driver_image')->isValid()) {
                         $this->upload_file($request->file('driver_image'), "driver_image", $id);
                 }

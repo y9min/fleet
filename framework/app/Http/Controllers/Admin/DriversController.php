@@ -1857,8 +1857,7 @@ class DriversController extends Controller {
                 unset($form_data['driver_image']);
                 unset($form_data['documents']);
                 unset($form_data['license_image']);
-                $user->first_name = $request->get('first_name');
-                $user->last_name = $request->get('last_name');
+                // setMeta will handle storing first_name and last_name in users_meta table
                 $user->setMeta($form_data);
                 $user->save();
                 $user->givePermissionTo(['Notes add', 'Notes edit', 'Notes delete', 'Notes list', 'Drivers list', 'Fuel add', 'Fuel edit', 'Fuel delete', 'Fuel list', 'VehicleInspection add', 'Transactions list', 'Transactions add', 'Transactions edit', 'Transactions delete']);

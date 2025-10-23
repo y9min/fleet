@@ -426,6 +426,153 @@
 @section('script')
 <script type="text/javascript">
 
+// Embed drivers data in page for instant access
+window.driversGlobalData = @json($drivers ?? []);
+
+// Simple vanilla JavaScript approach to load drivers
+function loadDriversSimple(filteredData = null) {
+    const driversData = filteredData || window.driversGlobalData;
+    console.log('Drivers data:', driversData);
+    console.log('Number of drivers:', driversData ? driversData.length : 0);
+    
+    const tbody = document.querySelector('#ajax_data_table tbody');
+    
+    if (!tbody) {
+        console.error('Table tbody not found');
+        return;
+    }
+
+    if (!driversData || driversData.length === 0) {
+        console.log('No drivers data found');
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No drivers found</td></tr>';
+        return;
+    }
+
+    // Generate table rows
+    let tableHTML = '';
+    driversData.forEach((driver) => {
+        const isActive = driver.is_active == 1;
+        const checked = isActive ? 'checked' : '';
+        
+        // Phone display
+        const phoneDisplay = driver.phone_display || 'N/A';
+        
+        // Documents
+        let docsHTML = '';
+        const useS3 = '{{ env("AWS_BUCKET") && env("AWS_KEY") && env("AWS_SECRET") }}' === '1';
+        const s3BaseUrl = useS3 ? 'https://{{ env("AWS_BUCKET") }}.s3.{{ env("AWS_REGION") }}.amazonaws.com/' : '';
+        
+        if (driver.license_document) {
+            const licenseUrl = useS3 ? (s3BaseUrl + 'uploads/' + driver.license_document) : '{{ asset("uploads/") }}/' + driver.license_document;
+            docsHTML += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
+        }
+        if (driver.insurance_document) {
+            const insuranceUrl = useS3 ? (s3BaseUrl + 'uploads/' + driver.insurance_document) : '{{ asset("uploads/") }}/' + driver.insurance_document;
+            docsHTML += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
+        }
+        if (!docsHTML) {
+            docsHTML = '<span class="text-muted">No documents</span>';
+        }
+        
+        // Assigned vehicle
+        let vehicleHTML = 'N/A';
+        if (driver.vehicle && driver.vehicle.license_plate) {
+            vehicleHTML = '<a href="{{ url("admin/vehicles") }}/' + driver.vehicle.id + '" class="badge badge-warning text-dark" style="background-color: #EABE14; color: #333; border-radius: 4px; padding: 6px 12px; text-decoration: none; font-weight: bold;" title="View Vehicle Details">' + driver.vehicle.license_plate + '</a>';
+        }
+        
+        // Prepare driver data for instant display
+        const driverData = {
+            id: driver.id,
+            name: driver.name,
+            email: driver.email,
+            phone: phoneDisplay,
+            license_number: driver.license_number || 'N/A',
+            is_active: driver.is_active,
+            assigned_vehicle: driver.vehicle || null,
+            all_metas: driver.all_metas || {}
+        };
+        
+        const jsonData = JSON.stringify(driverData).replace(/"/g, '&quot;');
+        
+        // Action buttons
+        const actionButtons = '<div class="d-flex justify-content-center gap-2">' +
+            '<button class="btn btn-sm btn-info" data-driver-id="' + driver.id + '" data-driver-info=\'' + jsonData + '\' onclick="toggleDriverDetailsInstant(this)" title="View Details" style="padding: 6px 8px;"><i class="fas fa-eye"></i></button>' +
+            '<button class="btn btn-sm btn-warning" data-id="' + driver.id + '" data-toggle="modal" data-target="#changepass" title="Change Password" style="padding: 6px 8px;"><i class="fas fa-key"></i></button>' +
+            '<a href="{{ url("admin/drivers") }}/' + driver.id + '/edit" class="btn btn-sm btn-primary" title="Edit Driver" style="padding: 6px 8px;"><i class="fas fa-edit"></i></a>' +
+            '<button class="btn btn-sm btn-danger" data-id="' + driver.id + '" data-toggle="modal" data-target="#myModal" title="Delete Driver" style="padding: 6px 8px;"><i class="fas fa-trash"></i></button>' +
+            '</div>';
+        
+        tableHTML += '<tr>' +
+            '<td><input type="checkbox" name="ids[]" value="' + driver.id + '" class="checkbox" id="chk' + driver.id + '" onclick="checkcheckbox();"></td>' +
+            '<td><a href="{{ url("admin/drivers") }}/' + driver.id + '">' + driver.name + '</a></td>' +
+            '<td>' + driver.email + '</td>' +
+            '<td>' + phoneDisplay + '</td>' +
+            '<td>' + docsHTML + '</td>' +
+            '<td><div class="d-flex justify-content-center"><label class="switch"><input type="checkbox" class="driver-status-toggle" data-driver-id="' + driver.id + '" ' + checked + '><span class="slider round"></span></label></div></td>' +
+            '<td>' + vehicleHTML + '</td>' +
+            '<td>' + actionButtons + '</td>' +
+            '</tr>';
+    });
+    
+    tbody.innerHTML = tableHTML;
+    
+    // Re-attach event handlers
+    attachEventHandlers();
+}
+
+// Attach event handlers for interactive elements
+function attachEventHandlers() {
+    // Checkbox click handler
+    $('input[type="checkbox"]').off('click').on('click', function() {
+        if(this.checked){
+            $('#bulk_delete').prop('disabled', false);
+        } else {
+            if($("input[name='ids[]']:checked").length == 0){
+                $('#bulk_delete').prop('disabled', true);
+            }
+        }
+    });
+    
+    // Bulk delete handler
+    $('#bulk_delete').off('click').on('click', function() {
+        if($("input[name='ids[]']:checked").length == 0){
+            $('#bulk_delete').prop('type','button');
+            new PNotify({
+                title: 'Failed!',
+                text: "@lang('fleet.delete_error')",
+                type: 'error'
+            });
+            $('#bulk_delete').attr('disabled', true);
+        }
+        if($("input[name='ids[]']:checked").length > 0){
+            $.each($("input[name='ids[]']:checked"), function(){
+                $("#bulk_hidden").append('<input type=hidden name=ids[] value='+$(this).val()+'>');
+            });
+        }
+    });
+    
+    // Check all handler
+    $('#chk_all').off('click').on('click', function() {
+        if(this.checked){
+            $('.checkbox').each(function(){
+                $('.checkbox').prop("checked", true);
+            });
+        } else {
+            $('.checkbox').each(function(){
+                $('.checkbox').prop("checked", false);
+            });
+            $('#bulk_delete').prop('disabled', true);
+        }
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded - Starting driver initialization');
+    loadDriversSimple();
+    console.log('Driver loading function called');
+});
+
   $(document).on("click", "#del_btn", function(){
     var id=$(this).data("submit");
     console.log("Delete button clicked for driver ID:", id);
@@ -496,117 +643,6 @@
     });
     $('#changepass').modal("hide");
     e.preventDefault();
-  });
-  $(function(){
-    
-    var table = $('#ajax_data_table').DataTable({
-          dom: 'Bfrtip',
-          pageLength: 10, // Start with 10 rows for faster initial load
-          lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]], // Page size options
-          deferRender: true, // Improve rendering performance for large datasets
-          buttons: [
-              {
-            extend: 'print',
-            text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
-
-            exportOptions: {
-              columns: ([1,2,3,4,5]),
-            },
-            customize: function ( win ) {
-                 
-                    $(win.document.body).find( 'table' )
-                        .addClass( 'table-bordered' );
-                    // $(win.document.body).find( 'td' ).css( 'font-size', '10pt' );
-
-                },
-                
-              },
-              {
-                extend: 'excel',
-                text: '<i class="fa fa-file-excel-o"></i> Excel',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                }
-            }
-        ],
-          "language": {
-              "url": '{{ asset("assets/datatables/")."/".__("fleet.datatable_lang") }}',
-          },
-         processing: true,
-         serverSide: true,
-         ajax: {
-          url: "{{ url('admin/drivers-fetch') }}",
-          type: 'POST',
-          data: function(d) {
-            d._token = $('meta[name="csrf-token"]').attr('content');
-          }
-         },
-         columns: [
-            {data: 'check',name:'check', searchable:false, orderable:false},
-            {data: 'name', name: 'name'},
-            {data: 'email', name: 'email'},
-            {data: 'phone', name: 'phone'},
-            {data: 'documents', name: 'documents', searchable:false, orderable:false},
-            {data: 'is_active', name: 'is_active'},
-            {data: 'assigned_vehicle', name: 'assigned_vehicle', orderable: false},
-            {data: 'action',name:'action',  searchable:false, orderable:false}
-        ],
-        order: [[1, 'desc']], // Order by name column descending - backend will apply created_at sort
-        "initComplete": function() {
-              table.columns().every(function () {
-                var that = this;
-                $('input', this.footer()).on('keyup change', function () {
-                  // console.log($(this).parent().index());
-                    that.search(this.value).draw();
-                });
-              });
-            }
-    });
-  });
-  $(document).on('click','input[type="checkbox"]',function(){
-    if(this.checked){
-      $('#bulk_delete').prop('disabled',false);
-    }else { 
-      if($("input[name='ids[]']:checked").length == 0){
-        $('#bulk_delete').prop('disabled',true);
-      } 
-    } 
-    
-  });
-
-  $('#bulk_delete').on('click',function(){
-    // console.log($( "input[name='ids[]']:checked" ).length);
-    if($( "input[name='ids[]']:checked" ).length == 0){
-      $('#bulk_delete').prop('type','button');
-        new PNotify({
-            title: 'Failed!',
-            text: "@lang('fleet.delete_error')",
-            type: 'error'
-          });
-        $('#bulk_delete').attr('disabled',true);
-    }
-    if($("input[name='ids[]']:checked").length > 0){
-      // var favorite = [];
-      $.each($("input[name='ids[]']:checked"), function(){
-          // favorite.push($(this).val());
-          $("#bulk_hidden").append('<input type=hidden name=ids[] value='+$(this).val()+'>');
-      });
-      // console.log(favorite);
-    }
-  });
-
-
-  $('#chk_all').on('click',function(){
-    if(this.checked){
-      $('.checkbox').each(function(){
-        $('.checkbox').prop("checked",true);
-      });
-    }else{
-      $('.checkbox').each(function(){
-        $('.checkbox').prop("checked",false);
-      });
-      $('#bulk_delete').prop('disabled',true);
-    }
   });
 
     // Checkbox checked

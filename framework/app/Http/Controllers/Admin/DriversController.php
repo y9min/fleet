@@ -1306,7 +1306,80 @@ class DriversController extends Controller {
         }
         
         public function index() {
-                return view("drivers.index");
+                $auth = \Auth::user();
+                
+                // Pre-load all drivers with relationships and metadata
+                $users = User::select('users.*')
+                        ->with(['metas', 'vehicles']) // Eager load relationships
+                        ->whereUser_type("D");
+                
+                // Company scoping
+                if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+                        $users = $users->where('users.company_id', $auth->company_id);
+                } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+                        // Boss Admin without company sees no drivers
+                        $users = $users->whereRaw('1=0');
+                }
+                
+                // Default ordering: newest first
+                $users = $users->orderBy('users.created_at', 'desc')->get();
+                
+                // Convert to array format with all needed fields
+                $drivers = $users->map(function($user) {
+                        $driverArray = $user->toArray();
+                        
+                        // Add metadata fields
+                        $phoneCode = $user->metas->firstWhere('key', 'phone_code')?->value ?? '';
+                        $phone = $user->metas->firstWhere('key', 'phone')?->value ?? '';
+                        $driverArray['phone_code'] = $phoneCode;
+                        $driverArray['phone'] = $phone;
+                        $driverArray['phone_display'] = $phoneCode && $phone ? $phoneCode . ' ' . $phone : 'N/A';
+                        
+                        // License document
+                        $licenseMeta = $user->metas->firstWhere('key', 'license_upload_path');
+                        if (!$licenseMeta || !$licenseMeta->value) {
+                                $licenseMeta = $user->metas->firstWhere('key', 'license_image');
+                        }
+                        $driverArray['license_document'] = $licenseMeta?->value ?? null;
+                        
+                        // Insurance document
+                        $insuranceMeta = $user->metas->firstWhere('key', 'insurance_upload_path');
+                        if (!$insuranceMeta || !$insuranceMeta->value) {
+                                $insuranceMeta = $user->metas->firstWhere('key', 'insurance_image');
+                                if (!$insuranceMeta || !$insuranceMeta->value) {
+                                        $insuranceMeta = $user->metas->firstWhere('key', 'documents');
+                                }
+                        }
+                        $driverArray['insurance_document'] = $insuranceMeta?->value ?? null;
+                        
+                        // License number
+                        $driverArray['license_number'] = $user->metas->firstWhere('key', 'license_number')?->value ?? 'N/A';
+                        
+                        // Add all metas for easy access
+                        $driverArray['all_metas'] = [];
+                        foreach ($user->metas as $meta) {
+                                if (!in_array($meta->key, ['token', 'method', 'edit', 'user_id', 'emp_id', 'detail_id'])) {
+                                        $driverArray['all_metas'][$meta->key] = $meta->value;
+                                }
+                        }
+                        
+                        // Vehicle data
+                        $vehicle = $user->vehicles->first();
+                        if ($vehicle) {
+                                $driverArray['vehicle'] = [
+                                        'id' => $vehicle->id,
+                                        'license_plate' => $vehicle->license_plate,
+                                        'make_name' => $vehicle->make_name,
+                                        'model_name' => $vehicle->model_name
+                                ];
+                        } else {
+                                $driverArray['vehicle'] = null;
+                        }
+                        
+                        return $driverArray;
+                });
+                
+                return view("drivers.index", compact('drivers'));
         }
         public function fetch_data(Request $request) {
                 if ($request->ajax()) {

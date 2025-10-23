@@ -155,6 +155,22 @@
         <div class="row">
           <div class="col-md-6">
             <div class="form-group">
+              {!! Form::label('license_image', __('fleet.licenseImage'), ['class' => 'form-label']) !!}
+              {!! Form::file('license_image', ['class' => 'form-control']) !!}
+              <small class="form-text text-muted">Upload driver license image</small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              {!! Form::label('insurance_image', 'Insurance Document', ['class' => 'form-label']) !!}
+              {!! Form::file('insurance_image', ['class' => 'form-control']) !!}
+              <small class="form-text text-muted">Upload insurance document</small>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
               {!! Form::label('econtact', __('fleet.emergency_details'), ['class' => 'form-label']) !!}
               {!! Form::textarea('econtact',null,['class' => 'form-control']) !!}
             </div>

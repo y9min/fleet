@@ -1849,6 +1849,9 @@ class DriversController extends Controller {
                         $user->id_proof_type = "License";
                         $user->save();
                 }
+                if ($request->file('insurance_image') && $request->file('insurance_image')->isValid()) {
+                        $this->upload_file($request->file('insurance_image'), "insurance_image", $id);
+                }
                 if ($request->file('documents')) {
                         $this->upload_file($request->file('documents'), "documents", $id);
                 }
@@ -1856,6 +1859,7 @@ class DriversController extends Controller {
                 unset($form_data['driver_image']);
                 unset($form_data['documents']);
                 unset($form_data['license_image']);
+                unset($form_data['insurance_image']);
                 // setMeta will handle storing first_name and last_name in users_meta table
                 $user->setMeta($form_data);
                 $user->save();

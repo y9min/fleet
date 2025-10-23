@@ -832,7 +832,7 @@ function toggleDriverDetailsInstant(button) {
         // License Image Button
         if (driver.license_image || driver.license_upload_path) {
             var licenseFile = driver.license_upload_path || driver.license_image;
-            var licenseUrl = '{{ asset("uploads/") }}/' + licenseFile;
+            var licenseUrl = '{{ asset("uploads") }}' + '/' + licenseFile;
             html += '<div class="inline-field">';
             html += '<strong>License Image:</strong>';
             html += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary ml-2">';
@@ -844,7 +844,7 @@ function toggleDriverDetailsInstant(button) {
         // Insurance Image Button
         if (driver.insurance_image || driver.insurance_upload_path || driver.documents) {
             var insuranceFile = driver.insurance_upload_path || driver.insurance_image || driver.documents;
-            var insuranceUrl = '{{ asset("uploads/") }}/' + insuranceFile;
+            var insuranceUrl = '{{ asset("uploads") }}' + '/' + insuranceFile;
             html += '<div class="inline-field">';
             html += '<strong>Insurance Image:</strong>';
             html += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';
@@ -866,7 +866,8 @@ function toggleDriverDetailsInstant(button) {
         'id', 'name', 'email', 'phone', 'license_number', 'is_active', 'assigned_vehicle',
         'id_proof_type', 'insurance_upload_path', 'license_upload_path', 'is_available',
         'first_name', 'last_name', 'phone_code', 'method', 'edit', 'user_id', 'emp_id',
-        'contract_number', 'driver_image', 'token', 'license_image', 'insurance_image', 'documents'
+        'contract_number', 'driver_image', 'token', 'license_image', 'insurance_image', 'documents',
+        'detail_id'
     ];
     
     // Display additional meta fields
@@ -877,8 +878,16 @@ function toggleDriverDetailsInstant(button) {
                 hasAdditionalInfo = true;
                 var displayName = key.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
                 
-                // Format start date to dd/mm/yyyy
-                if (key.toLowerCase().includes('start') && key.toLowerCase().includes('date')) {
+                // Rename specific fields
+                if (key.toLowerCase() === 'exp_date' || key === 'Exp Date') {
+                    displayName = 'License Expiry Date';
+                }
+                if (key.toLowerCase() === 'econtact') {
+                    displayName = 'Emergency Contact';
+                }
+                
+                // Format all date fields to dd/mm/yyyy
+                if (key.toLowerCase().includes('date') || key.toLowerCase().includes('expiry') || key.toLowerCase().includes('exp')) {
                     if (value && typeof value === 'string') {
                         try {
                             var date = new Date(value);
@@ -968,7 +977,7 @@ function toggleDriverDetails(driverId) {
                     // License Image Button
                     if (driver.license_image || driver.license_upload_path) {
                         var licenseFile = driver.license_upload_path || driver.license_image;
-                        var licenseUrl = '{{ asset("uploads/") }}/' + licenseFile;
+                        var licenseUrl = '{{ asset("uploads") }}' + '/' + licenseFile;
                         html += '<div class="inline-field">';
                         html += '<strong>License Image:</strong>';
                         html += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary ml-2">';
@@ -980,7 +989,7 @@ function toggleDriverDetails(driverId) {
                     // Insurance Image Button
                     if (driver.insurance_image || driver.insurance_upload_path || driver.documents) {
                         var insuranceFile = driver.insurance_upload_path || driver.insurance_image || driver.documents;
-                        var insuranceUrl = '{{ asset("uploads/") }}/' + insuranceFile;
+                        var insuranceUrl = '{{ asset("uploads") }}' + '/' + insuranceFile;
                         html += '<div class="inline-field">';
                         html += '<strong>Insurance Image:</strong>';
                         html += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';
@@ -1012,7 +1021,8 @@ function toggleDriverDetails(driverId) {
                     'assigned_vehicle', 'vehicle_details', 'custom_data', // custom_data will be handled separately
                     'license_upload_path', 'insurance_upload_path', 'license_image', 'insurance_image', 'documents',
                     'id_proof_type', 'is_available', 'first_name', 'last_name', 'phone_code', 'method', 
-                    'edit', 'emp_id', 'contract_number', 'driver_image', 'license', 'terms', 'token'
+                    'edit', 'emp_id', 'contract_number', 'driver_image', 'license', 'terms', 'token',
+                    'detail_id'
                 ];
                 
                 // Display all driver metadata fields
@@ -1044,6 +1054,14 @@ function toggleDriverDetails(driverId) {
                             displayName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                         }
                         
+                        // Rename specific fields
+                        if (key.toLowerCase() === 'exp_date' || key === 'Exp Date') {
+                            displayName = 'License Expiry Date';
+                        }
+                        if (key.toLowerCase() === 'econtact') {
+                            displayName = 'Emergency Contact';
+                        }
+                        
                         // Check if it's a file field
                         if (key.includes('_upload_path') || key.includes('_image') || isFileField) {
                             isFileField = true;
@@ -1067,8 +1085,8 @@ function toggleDriverDetails(driverId) {
                             }
                         }
                         
-                        // Format start date to dd/mm/yyyy
-                        if (key.toLowerCase().includes('start') && key.toLowerCase().includes('date')) {
+                        // Format all date fields to dd/mm/yyyy
+                        if (key.toLowerCase().includes('date') || key.toLowerCase().includes('expiry') || key.toLowerCase().includes('exp')) {
                             if (value && typeof value === 'string') {
                                 try {
                                     var date = new Date(value);
@@ -1168,6 +1186,14 @@ function toggleDriverDetails(driverId) {
                                 customDisplayName = customKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                             }
                             
+                            // Rename specific fields
+                            if (customKey.toLowerCase() === 'exp_date' || customKey === 'Exp Date') {
+                                customDisplayName = 'License Expiry Date';
+                            }
+                            if (customKey.toLowerCase() === 'econtact') {
+                                customDisplayName = 'Emergency Contact';
+                            }
+                            
                             // Additional check: if the value looks like a file path, treat it as a file field
                             if (!customIsFileField && customValue && typeof customValue === 'string') {
                                 var fileExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.txt', '.zip', '.rar', '.xlsx', '.xls'];
@@ -1186,8 +1212,8 @@ function toggleDriverDetails(driverId) {
                                 }
                             }
                             
-                            // Format start date to dd/mm/yyyy for custom fields
-                            if (customKey.toLowerCase().includes('start') && customKey.toLowerCase().includes('date')) {
+                            // Format all date fields to dd/mm/yyyy for custom fields
+                            if (customKey.toLowerCase().includes('date') || customKey.toLowerCase().includes('expiry') || customKey.toLowerCase().includes('exp')) {
                                 if (customValue && typeof customValue === 'string') {
                                     try {
                                         var date = new Date(customValue);

@@ -28,6 +28,12 @@
     background-color: #6bc5d1 !important;
     border-color: #6bc5d1 !important;
   }
+  
+  /* Required field indicator */
+  .required-field::after {
+    content: " *";
+    color: #dc3545;
+  }
 </style>
 @endsection
 @section("breadcrumb")
@@ -60,13 +66,13 @@
         <div class="row">
           <div class="col-md-6">
             <div class="form-group">
-              {!! Form::label('first_name', __('fleet.firstname'), ['class' => 'form-label required','autofocus']) !!}
+              {!! Form::label('first_name', __('fleet.firstname'), ['class' => 'form-label required-field']) !!}
               {!! Form::text('first_name', null,['class' => 'form-control','required','autofocus']) !!}
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group">
-              {!! Form::label('last_name', __('fleet.lastname'), ['class' => 'form-label required']) !!}
+              {!! Form::label('last_name', __('fleet.lastname'), ['class' => 'form-label required-field']) !!}
               {!! Form::text('last_name', null,['class' => 'form-control','required']) !!}
             </div>
           </div>
@@ -74,7 +80,7 @@
         <div class="row">
           <div class="col-md-6">
             <div class="form-group">
-              {!! Form::label('email', __('fleet.email'), ['class' => 'form-label required']) !!}
+              {!! Form::label('email', __('fleet.email'), ['class' => 'form-label required-field']) !!}
               <div class="input-group">
                 <div class="input-group-prepend">
                   <span class="input-group-text"><i class="fa fa-envelope"></i></span>
@@ -93,7 +99,7 @@
           </div>
           <div class="col-md-6">
             <div class="form-group">
-              {!! Form::label('phone', __('fleet.phone'), ['class' => 'form-label required']) !!}
+              {!! Form::label('phone', __('fleet.phone'), ['class' => 'form-label required-field']) !!}
               <div class="input-group">
                 <div class="input-group-prepend">
                   {!! Form::select('phone_code',$phone_code,'+44',['class' => 'form-control
@@ -107,7 +113,7 @@
         <div class="row">
           <div class="col-md-6">
             <div class="form-group">
-              {!! Form::label('license_number', __('fleet.licenseNumber'), ['class' => 'form-label required']) !!}
+              {!! Form::label('license_number', __('fleet.licenseNumber'), ['class' => 'form-label required-field']) !!}
               {!! Form::text('license_number', null,['class' => 'form-control','required']) !!}
             </div>
           </div>

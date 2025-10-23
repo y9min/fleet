@@ -162,24 +162,51 @@
           <div class="col-md-6">
             <div class="form-group">
               {!! Form::label('driver_image', __('fleet.driverImage'), ['class' => 'form-label']) !!}
-              @if($driver->getMeta('driver_image') != null)
-              <a href="{{ asset('uploads/'.$driver->getMeta('driver_image')) }}" target="_blank">View</a>
+              @php
+                $driverImage = $driver->getMeta('driver_image');
+              @endphp
+              @if($driverImage != null)
+              <a href="{{ asset('uploads/'.$driverImage) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-eye"></i> View</a>
               @endif
-              {!! Form::file('driver_image',null,['class' => 'form-control','required']) !!}
-            </div>
-            <div class="form-group">
-              {!! Form::label('documents', __('fleet.documents'), ['class' => 'form-label']) !!}
-              @if($driver->getMeta('documents') != null)
-              <a href="{{ asset('uploads/'.$driver->getMeta('documents')) }}" target="_blank">View</a>
-              @endif
-              {!! Form::file('documents',null,['class' => 'form-control','required']) !!}
+              {!! Form::file('driver_image',null,['class' => 'form-control']) !!}
             </div>
             <div class="form-group">
               {!! Form::label('license_image', __('fleet.licenseImage'), ['class' => 'form-label']) !!}
-              @if($driver->getMeta('license_image') != null)
-              <a href="{{ asset('uploads/'.$driver->getMeta('license_image')) }}" target="_blank">View</a>
+              @php
+                $licenseImage = $driver->getMeta('license_upload_path') ?: $driver->getMeta('license_image');
+              @endphp
+              @if($licenseImage != null)
+                @if(strpos($licenseImage, 'uploads/') === 0)
+                  <a href="{{ asset($licenseImage) }}" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-id-card"></i> View License</a>
+                @else
+                  <a href="{{ asset('storage/' . $licenseImage) }}" target="_blank" class="btn btn-sm btn-primary"><i class="fa fa-id-card"></i> View License</a>
+                @endif
               @endif
-              {!! Form::file('license_image',null,['class' => 'form-control','required']) !!}
+              {!! Form::file('license_image',null,['class' => 'form-control']) !!}
+            </div>
+            <div class="form-group">
+              {!! Form::label('insurance_image', 'Insurance Document', ['class' => 'form-label']) !!}
+              @php
+                $insuranceImage = $driver->getMeta('insurance_upload_path') ?: $driver->getMeta('insurance_image') ?: $driver->getMeta('documents');
+              @endphp
+              @if($insuranceImage != null)
+                @if(strpos($insuranceImage, 'uploads/') === 0)
+                  <a href="{{ asset($insuranceImage) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-shield-alt"></i> View Insurance</a>
+                @else
+                  <a href="{{ asset('storage/' . $insuranceImage) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-shield-alt"></i> View Insurance</a>
+                @endif
+              @endif
+              {!! Form::file('insurance_image',null,['class' => 'form-control']) !!}
+            </div>
+            <div class="form-group">
+              {!! Form::label('documents', __('fleet.documents'), ['class' => 'form-label']) !!}
+              @php
+                $documents = $driver->getMeta('documents');
+              @endphp
+              @if($documents != null && !$insuranceImage)
+              <a href="{{ asset('uploads/'.$documents) }}" target="_blank" class="btn btn-sm btn-info"><i class="fa fa-eye"></i> View</a>
+              @endif
+              {!! Form::file('documents',null,['class' => 'form-control']) !!}
             </div>
           </div>
           <div class="col-md-6">

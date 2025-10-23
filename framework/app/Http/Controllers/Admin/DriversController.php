@@ -1354,15 +1354,39 @@ class DriversController extends Controller {
                                 })
                                 ->addColumn('documents', function ($user) {
                                         // Access preloaded metas collection
-                                        $licensePath = $user->metas->firstWhere('key', 'license_upload_path');
-                                        $insurancePath = $user->metas->firstWhere('key', 'insurance_upload_path');
+                                        // Check for license_upload_path first, then fall back to license_image
+                                        $licenseMeta = $user->metas->firstWhere('key', 'license_upload_path');
+                                        if (!$licenseMeta || !$licenseMeta->value) {
+                                                $licenseMeta = $user->metas->firstWhere('key', 'license_image');
+                                        }
+                                        
+                                        // Check for insurance_upload_path first, then fall back to documents
+                                        $insuranceMeta = $user->metas->firstWhere('key', 'insurance_upload_path');
+                                        if (!$insuranceMeta || !$insuranceMeta->value) {
+                                                $insuranceMeta = $user->metas->firstWhere('key', 'insurance_image');
+                                                if (!$insuranceMeta || !$insuranceMeta->value) {
+                                                        $insuranceMeta = $user->metas->firstWhere('key', 'documents');
+                                                }
+                                        }
                                         
                                         $docs = '';
-                                        if ($licensePath && $licensePath->value) {
-                                                $docs .= '<a href="' . asset('storage/' . $licensePath->value) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
+                                        if ($licenseMeta && $licenseMeta->value) {
+                                                // Check if path starts with uploads/ or storage/ prefix
+                                                $licensePath = $licenseMeta->value;
+                                                if (strpos($licensePath, 'uploads/') === 0) {
+                                                        $docs .= '<a href="' . asset($licensePath) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
+                                                } else {
+                                                        $docs .= '<a href="' . asset('storage/' . $licensePath) . '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
+                                                }
                                         }
-                                        if ($insurancePath && $insurancePath->value) {
-                                                $docs .= '<a href="' . asset('storage/' . $insurancePath->value) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
+                                        if ($insuranceMeta && $insuranceMeta->value) {
+                                                // Check if path starts with uploads/ or storage/ prefix
+                                                $insurancePath = $insuranceMeta->value;
+                                                if (strpos($insurancePath, 'uploads/') === 0) {
+                                                        $docs .= '<a href="' . asset($insurancePath) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
+                                                } else {
+                                                        $docs .= '<a href="' . asset('storage/' . $insurancePath) . '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
+                                                }
                                         }
                                         return $docs ?: '<span class="text-muted">No documents</span>';
                                 })
@@ -1799,8 +1823,25 @@ class DriversController extends Controller {
                                 unlink('./uploads/' . $user->license_image);
                         }
                         $this->upload_file($request->file('license_image'), "license_image", $id);
-                        $user->id_proof_type = "License";
-                        $user->save();
+                        // Store id_proof_type in metadata instead of trying to save to users table
+                        $user->setMeta(['id_proof_type' => 'License']);
+                        // Store license_upload_path for consistency with index view
+                        $licensePath = $user->metas->firstWhere('key', 'license_image')?->value;
+                        if ($licensePath) {
+                                $user->setMeta(['license_upload_path' => $licensePath]);
+                        }
+                }
+                if ($request->file('insurance_image') && $request->file('insurance_image')->isValid()) {
+                        $oldInsurancePath = $user->metas->firstWhere('key', 'insurance_image')?->value;
+                        if ($oldInsurancePath && file_exists('./uploads/' . $oldInsurancePath)) {
+                                unlink('./uploads/' . $oldInsurancePath);
+                        }
+                        $this->upload_file($request->file('insurance_image'), "insurance_image", $id);
+                        // Store insurance document path for consistency
+                        $insurancePath = $user->metas->firstWhere('key', 'insurance_image')?->value;
+                        if ($insurancePath) {
+                                $user->setMeta(['insurance_upload_path' => $insurancePath]);
+                        }
                 }
                 if ($request->file('documents')) {
                         if (file_exists('./uploads/' . $user->documents) && !is_dir('./uploads/' . $user->documents)) {
@@ -1849,14 +1890,24 @@ class DriversController extends Controller {
                 }
                 if ($request->file('license_image') && $request->file('license_image')->isValid()) {
                         $this->upload_file($request->file('license_image'), "license_image", $id);
-                        $user->id_proof_type = "License";
-                        $user->save();
+                        // Store id_proof_type in metadata instead of trying to save to users table
+                        $user->setMeta(['id_proof_type' => 'License']);
                 }
                 if ($request->file('insurance_image') && $request->file('insurance_image')->isValid()) {
                         $this->upload_file($request->file('insurance_image'), "insurance_image", $id);
+                        // Store insurance document path for consistency
+                        $insurancePath = $user->metas->firstWhere('key', 'insurance_image')?->value;
+                        if ($insurancePath) {
+                                $user->setMeta(['insurance_upload_path' => $insurancePath]);
+                        }
                 }
                 if ($request->file('documents')) {
                         $this->upload_file($request->file('documents'), "documents", $id);
+                }
+                // Store license_upload_path for consistency with index view
+                $licensePath = $user->metas->firstWhere('key', 'license_image')?->value;
+                if ($licensePath) {
+                        $user->setMeta(['license_upload_path' => $licensePath]);
                 }
                 $form_data = $request->all();
                 unset($form_data['driver_image']);

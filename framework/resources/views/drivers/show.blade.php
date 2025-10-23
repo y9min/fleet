@@ -43,20 +43,36 @@
             </div>
             
             <!-- Documents Section -->
-            @if($driver->getMeta('license_upload_path') || $driver->getMeta('insurance_upload_path'))
+            @php
+                $licensePath = $driver->getMeta('license_upload_path') ?: $driver->getMeta('license_image');
+                $insurancePath = $driver->getMeta('insurance_upload_path') ?: $driver->getMeta('insurance_image') ?: $driver->getMeta('documents');
+            @endphp
+            @if($licensePath || $insurancePath)
             <div class="row mt-3">
                 <div class="col-12">
                     <h5><i class="fas fa-file-alt me-2"></i>Documents</h5>
                     <div class="d-flex gap-2">
-                        @if($driver->getMeta('license_upload_path'))
-                            <a href="{{ asset('storage/' . $driver->getMeta('license_upload_path')) }}" target="_blank" class="btn btn-primary">
-                                <i class="fa fa-id-card me-2"></i>View License
-                            </a>
+                        @if($licensePath)
+                            @if(strpos($licensePath, 'uploads/') === 0)
+                                <a href="{{ asset($licensePath) }}" target="_blank" class="btn btn-primary">
+                                    <i class="fa fa-id-card me-2"></i>View License
+                                </a>
+                            @else
+                                <a href="{{ asset('storage/' . $licensePath) }}" target="_blank" class="btn btn-primary">
+                                    <i class="fa fa-id-card me-2"></i>View License
+                                </a>
+                            @endif
                         @endif
-                        @if($driver->getMeta('insurance_upload_path'))
-                            <a href="{{ asset('storage/' . $driver->getMeta('insurance_upload_path')) }}" target="_blank" class="btn btn-info">
-                                <i class="fa fa-shield-alt me-2"></i>View Insurance
-                            </a>
+                        @if($insurancePath)
+                            @if(strpos($insurancePath, 'uploads/') === 0)
+                                <a href="{{ asset($insurancePath) }}" target="_blank" class="btn btn-info">
+                                    <i class="fa fa-shield-alt me-2"></i>View Insurance
+                                </a>
+                            @else
+                                <a href="{{ asset('storage/' . $insurancePath) }}" target="_blank" class="btn btn-info">
+                                    <i class="fa fa-shield-alt me-2"></i>View Insurance
+                                </a>
+                            @endif
                         @endif
                     </div>
                 </div>

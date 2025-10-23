@@ -768,8 +768,21 @@ class DriversApiController extends Controller {
                         }
                         if ($request->file('license_image') && $request->file('license_image')->isValid()) {
                                 $this->upload_file($request->file('license_image'), "license_image", $id);
-                                $user->id_proof_type = "License";
-                                $user->save();
+                                // Store id_proof_type in metadata instead of trying to save to users table
+                                $user->setMeta(['id_proof_type' => 'License']);
+                                // Store license_upload_path for consistency with index view
+                                $licensePath = $user->metas->firstWhere('key', 'license_image')?->value;
+                                if ($licensePath) {
+                                        $user->setMeta(['license_upload_path' => $licensePath]);
+                                }
+                        }
+                        if ($request->file('insurance_image') && $request->file('insurance_image')->isValid()) {
+                                $this->upload_file($request->file('insurance_image'), "insurance_image", $id);
+                                // Store insurance document path for consistency
+                                $insurancePath = $user->metas->firstWhere('key', 'insurance_image')?->value;
+                                if ($insurancePath) {
+                                        $user->setMeta(['insurance_upload_path' => $insurancePath]);
+                                }
                         }
                         if ($request->file('documents')) {
                                 $this->upload_file($request->file('documents'), "documents", $id);

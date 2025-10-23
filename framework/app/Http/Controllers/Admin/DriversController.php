@@ -1323,6 +1323,10 @@ class DriversController extends Controller {
                                 // Boss Admin without company sees no drivers
                                 $users = $users->whereRaw('1=0');
                         }
+                        
+                        // Default ordering: newest first
+                        $users = $users->orderBy('users.created_at', 'desc');
+                        
                         return DataTables::eloquent($users)
                                 ->addColumn('check', function ($user) {
                                         return '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '" onclick=\'checkcheckbox();\'>';

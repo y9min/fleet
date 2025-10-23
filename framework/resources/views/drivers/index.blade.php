@@ -553,7 +553,7 @@
             {data: 'assigned_vehicle', name: 'assigned_vehicle', orderable: false},
             {data: 'action',name:'action',  searchable:false, orderable:false}
         ],
-        order: [[1, 'desc']],
+        order: [[1, 'desc']], // Order by name column descending - backend will apply created_at sort
         "initComplete": function() {
               table.columns().every(function () {
                 var that = this;

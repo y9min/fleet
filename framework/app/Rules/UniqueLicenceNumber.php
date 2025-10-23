@@ -11,13 +11,14 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 namespace App\Rules;
 
 use App\Model\User;
+use App\Model\UserData;
 use Illuminate\Contracts\Validation\Rule;
 
 class UniqueLicenceNumber implements Rule {
 
 	public function passes($attribute, $value) {
 		if (\Request::get("edit") == "1") {
-			$license_number = User::meta()
+			$license_number = UserData::query()
 				->where(function ($query) {
 					$query->where('users_meta.key', '=', 'license_number')
 						->where('users_meta.value', '=', \Request::get('license_number'))
@@ -29,7 +30,7 @@ class UniqueLicenceNumber implements Rule {
 				return false;
 			}
 		} else {
-			$license_number = User::meta()
+			$license_number = UserData::query()
 				->where(function ($query) {
 					$query->where('users_meta.key', '=', 'license_number')
 						->where('users_meta.value', '=', \Request::get('license_number'));

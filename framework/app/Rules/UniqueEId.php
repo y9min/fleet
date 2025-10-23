@@ -11,13 +11,14 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 namespace App\Rules;
 
 use App\Model\User;
+use App\Model\UserData;
 use Illuminate\Contracts\Validation\Rule;
 
 class UniqueEId implements Rule {
 
 	public function passes($attribute, $value) {
 		if (\Request::get("edit") == "1") {
-			$emp_id = User::meta()
+			$emp_id = UserData::query()
 				->where(function ($query) use ($value) {
 					$query->where('users_meta.key', '=', 'emp_id')
 						->where('users_meta.value', '=', $value)
@@ -30,7 +31,7 @@ class UniqueEId implements Rule {
 				return false;
 			}
 		} else {
-			$emp_id = User::meta()
+			$emp_id = UserData::query()
 				->where(function ($query) use ($value) {
 					$query->where('users_meta.key', '=', 'emp_id')
 						->where('users_meta.value', '=', $value);

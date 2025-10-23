@@ -824,19 +824,76 @@ function toggleDriverDetailsInstant(button) {
         html += '</div>';
     }
     
-    // Additional Information (from meta fields)
+    // Documents Section - License and Insurance Images
+    if (driver.license_image || driver.license_upload_path || driver.insurance_image || driver.insurance_upload_path || driver.documents) {
+        html += '<div class="mb-3">';
+        html += '<h6><strong>Documents:</strong></h6>';
+        
+        // License Image Button
+        if (driver.license_image || driver.license_upload_path) {
+            var licenseFile = driver.license_upload_path || driver.license_image;
+            var licenseUrl = '{{ asset("uploads/") }}/' + licenseFile;
+            html += '<div class="inline-field">';
+            html += '<strong>License Image:</strong>';
+            html += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary ml-2">';
+            html += '<i class="fas fa-eye"></i> View License';
+            html += '</a>';
+            html += '</div>';
+        }
+        
+        // Insurance Image Button
+        if (driver.insurance_image || driver.insurance_upload_path || driver.documents) {
+            var insuranceFile = driver.insurance_upload_path || driver.insurance_image || driver.documents;
+            var insuranceUrl = '{{ asset("uploads/") }}/' + insuranceFile;
+            html += '<div class="inline-field">';
+            html += '<strong>Insurance Image:</strong>';
+            html += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';
+            html += '<i class="fas fa-eye"></i> View Insurance';
+            html += '</a>';
+            html += '</div>';
+        }
+        
+        html += '</div>';
+    }
+    
+    // Additional Information (from meta fields) - excluding unwanted fields
     var hasAdditionalInfo = false;
     html += '<div class="mb-3">';
     html += '<h6><strong>Additional Information:</strong></h6>';
     
+    // Fields to exclude from display
+    var excludedFields = [
+        'id', 'name', 'email', 'phone', 'license_number', 'is_active', 'assigned_vehicle',
+        'id_proof_type', 'insurance_upload_path', 'license_upload_path', 'is_available',
+        'first_name', 'last_name', 'phone_code', 'method', 'edit', 'user_id', 'emp_id',
+        'contract_number', 'driver_image', 'token', 'license_image', 'insurance_image', 'documents'
+    ];
+    
     // Display additional meta fields
     for (var key in driver) {
-        if (driver.hasOwnProperty(key) && 
-            !['id', 'name', 'email', 'phone', 'license_number', 'is_active', 'assigned_vehicle'].includes(key)) {
+        if (driver.hasOwnProperty(key) && !excludedFields.includes(key)) {
             var value = driver[key];
             if (value && value !== 'N/A' && value !== '') {
                 hasAdditionalInfo = true;
                 var displayName = key.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                
+                // Format start date to dd/mm/yyyy
+                if (key.toLowerCase().includes('start') && key.toLowerCase().includes('date')) {
+                    if (value && typeof value === 'string') {
+                        try {
+                            var date = new Date(value);
+                            if (!isNaN(date.getTime())) {
+                                var day = String(date.getDate()).padStart(2, '0');
+                                var month = String(date.getMonth() + 1).padStart(2, '0');
+                                var year = date.getFullYear();
+                                value = day + '/' + month + '/' + year;
+                            }
+                        } catch (e) {
+                            // Keep original value if date parsing fails
+                        }
+                    }
+                }
+                
                 html += '<div class="inline-field"><strong>' + displayName + ':</strong><span class="text-muted">' + value + '</span></div>';
             }
         }
@@ -903,6 +960,38 @@ function toggleDriverDetails(driverId) {
                     html += '</div>';
                 }
                 
+                // Documents Section - License and Insurance Images
+                if (driver.license_image || driver.license_upload_path || driver.insurance_image || driver.insurance_upload_path || driver.documents) {
+                    html += '<div class="mb-3">';
+                    html += '<h6><strong>Documents:</strong></h6>';
+                    
+                    // License Image Button
+                    if (driver.license_image || driver.license_upload_path) {
+                        var licenseFile = driver.license_upload_path || driver.license_image;
+                        var licenseUrl = '{{ asset("uploads/") }}/' + licenseFile;
+                        html += '<div class="inline-field">';
+                        html += '<strong>License Image:</strong>';
+                        html += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary ml-2">';
+                        html += '<i class="fas fa-eye"></i> View License';
+                        html += '</a>';
+                        html += '</div>';
+                    }
+                    
+                    // Insurance Image Button
+                    if (driver.insurance_image || driver.insurance_upload_path || driver.documents) {
+                        var insuranceFile = driver.insurance_upload_path || driver.insurance_image || driver.documents;
+                        var insuranceUrl = '{{ asset("uploads/") }}/' + insuranceFile;
+                        html += '<div class="inline-field">';
+                        html += '<strong>Insurance Image:</strong>';
+                        html += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';
+                        html += '<i class="fas fa-eye"></i> View Insurance';
+                        html += '</a>';
+                        html += '</div>';
+                    }
+                    
+                    html += '</div>';
+                }
+                
                 // Additional Information (All Custom Fields and Onboarding Data)
                 var hasAdditionalInfo = false;
                 html += '<div class="mb-3">';
@@ -921,8 +1010,9 @@ function toggleDriverDetails(driverId) {
                     'id', 'name', 'email', 'phone', 'license_number', 'is_active', 'user_type', 'group_id', 
                     'api_token', 'password', 'remember_token', 'created_at', 'updated_at', 'user_id',
                     'assigned_vehicle', 'vehicle_details', 'custom_data', // custom_data will be handled separately
-                    'license_upload_path', // Remove license upload path from display
-                    'documents', 'id_proof_type', 'license', 'terms', 'token' // Remove unwanted fields
+                    'license_upload_path', 'insurance_upload_path', 'license_image', 'insurance_image', 'documents',
+                    'id_proof_type', 'is_available', 'first_name', 'last_name', 'phone_code', 'method', 
+                    'edit', 'emp_id', 'contract_number', 'driver_image', 'license', 'terms', 'token'
                 ];
                 
                 // Display all driver metadata fields
@@ -974,6 +1064,23 @@ function toggleDriverDetails(driverId) {
                             if (hasFileExtension || hasFilePathPattern) {
                                 isFileField = true;
                                 console.log('Detected file field by pattern:', key, value);
+                            }
+                        }
+                        
+                        // Format start date to dd/mm/yyyy
+                        if (key.toLowerCase().includes('start') && key.toLowerCase().includes('date')) {
+                            if (value && typeof value === 'string') {
+                                try {
+                                    var date = new Date(value);
+                                    if (!isNaN(date.getTime())) {
+                                        var day = String(date.getDate()).padStart(2, '0');
+                                        var month = String(date.getMonth() + 1).padStart(2, '0');
+                                        var year = date.getFullYear();
+                                        value = day + '/' + month + '/' + year;
+                                    }
+                                } catch (e) {
+                                    // Keep original value if date parsing fails
+                                }
                             }
                         }
                         
@@ -1076,6 +1183,23 @@ function toggleDriverDetails(driverId) {
                                 if (hasFileExtension || hasFilePathPattern) {
                                     customIsFileField = true;
                                     console.log('Detected custom file field by pattern:', customKey, customValue);
+                                }
+                            }
+                            
+                            // Format start date to dd/mm/yyyy for custom fields
+                            if (customKey.toLowerCase().includes('start') && customKey.toLowerCase().includes('date')) {
+                                if (customValue && typeof customValue === 'string') {
+                                    try {
+                                        var date = new Date(customValue);
+                                        if (!isNaN(date.getTime())) {
+                                            var day = String(date.getDate()).padStart(2, '0');
+                                            var month = String(date.getMonth() + 1).padStart(2, '0');
+                                            var year = date.getFullYear();
+                                            customValue = day + '/' + month + '/' + year;
+                                        }
+                                    } catch (e) {
+                                        // Keep original value if date parsing fails
+                                    }
                                 }
                             }
                             

@@ -2038,7 +2038,7 @@ class VendorApiController extends Controller {
                 return $data;
         }
         private function upload_file($file, $field, $id) {
-                $destinationPath = './uploads'; // upload path
+                $destinationPath = public_path('uploads'); // upload path to public directory
                 $extension = $file->getClientOriginalExtension();
                 $fileName1 = Str::uuid() . '.' . $extension;
                 $file->move($destinationPath, $fileName1);

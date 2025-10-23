@@ -1791,7 +1791,7 @@ class DriversController extends Controller {
                 return view("drivers.edit", compact("driver", "phone_code", 'vehicles'));
         }
         private function upload_file($file, $field, $id) {
-                $destinationPath = './uploads'; // upload path
+                $destinationPath = public_path('uploads'); // upload path to public directory
                 $extension = $file->getClientOriginalExtension();
                 $fileName1 = Str::uuid() . '.' . $extension;
                 $file->move($destinationPath, $fileName1);
@@ -1803,14 +1803,16 @@ class DriversController extends Controller {
                 $id = $request->get('id');
                 $user = User::find($id);
                 if ($request->file('driver_image') && $request->file('driver_image')->isValid()) {
-                        if (file_exists('./uploads/' . $user->driver_image) && !is_dir('./uploads/' . $user->driver_image)) {
-                                unlink('./uploads/' . $user->driver_image);
+                        $oldDriverImage = $user->getMeta('driver_image');
+                        if ($oldDriverImage && file_exists(public_path('uploads/' . $oldDriverImage))) {
+                                unlink(public_path('uploads/' . $oldDriverImage));
                         }
                         $this->upload_file($request->file('driver_image'), "driver_image", $id);
                 }
                 if ($request->file('license_image') && $request->file('license_image')->isValid()) {
-                        if (file_exists('./uploads/' . $user->license_image) && !is_dir('./uploads/' . $user->license_image)) {
-                                unlink('./uploads/' . $user->license_image);
+                        $oldLicenseImage = $user->getMeta('license_image');
+                        if ($oldLicenseImage && file_exists(public_path('uploads/' . $oldLicenseImage))) {
+                                unlink(public_path('uploads/' . $oldLicenseImage));
                         }
                         $this->upload_file($request->file('license_image'), "license_image", $id);
                         // Store id_proof_type in metadata instead of trying to save to users table
@@ -1823,8 +1825,8 @@ class DriversController extends Controller {
                 }
                 if ($request->file('insurance_image') && $request->file('insurance_image')->isValid()) {
                         $oldInsurancePath = $user->metas->firstWhere('key', 'insurance_image')?->value;
-                        if ($oldInsurancePath && file_exists('./uploads/' . $oldInsurancePath)) {
-                                unlink('./uploads/' . $oldInsurancePath);
+                        if ($oldInsurancePath && file_exists(public_path('uploads/' . $oldInsurancePath))) {
+                                unlink(public_path('uploads/' . $oldInsurancePath));
                         }
                         $this->upload_file($request->file('insurance_image'), "insurance_image", $id);
                         // Store insurance document path for consistency
@@ -1834,8 +1836,9 @@ class DriversController extends Controller {
                         }
                 }
                 if ($request->file('documents')) {
-                        if (file_exists('./uploads/' . $user->documents) && !is_dir('./uploads/' . $user->documents)) {
-                                unlink('./uploads/' . $user->documents);
+                        $oldDocuments = $user->getMeta('documents');
+                        if ($oldDocuments && file_exists(public_path('uploads/' . $oldDocuments))) {
+                                unlink(public_path('uploads/' . $oldDocuments));
                         }
                         $this->upload_file($request->file('documents'), "documents", $id);
                 }

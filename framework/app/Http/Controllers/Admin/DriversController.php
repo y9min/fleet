@@ -1839,6 +1839,7 @@ class DriversController extends Controller {
                         "password" => bcrypt($request->get("password")),
                         "user_type" => "D",
                         'api_token' => str_random(60),
+                        'company_id' => Auth::user()->company_id,
                 ])->id;
                 $user = User::find($id);
                 $user->user_id = Auth::user()->id;

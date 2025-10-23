@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Log;
 class DriverImport implements ToModel, WithHeadingRow, WithValidation
 {
     use Importable; // Enables importing and catching validation errors
+    
+    protected $companyId;
+
+    public function __construct($companyId = null)
+    {
+        $this->companyId = $companyId ?? \Auth::user()->company_id ?? null;
+    }
 
     public $importStats = [
         'total_rows' => 0,
@@ -48,6 +55,7 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
                 "password" => bcrypt($driver['password'] ?? 'password123'),
                 "user_type" => "D",
                 'api_token' => str_random(60),
+                'company_id' => $this->companyId,
             ]);
 
             $user->is_active = 1;

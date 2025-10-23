@@ -760,6 +760,7 @@ class DriversApiController extends Controller {
                                 "password" => bcrypt($request->password),
                                 "user_type" => "D",
                                 'api_token' => str_random(60),
+                                'company_id' => Auth::user()->company_id ?? null,
                         ])->id;
                         $user = User::find($id);
                         if ($request->file('driver_image') && $request->file('driver_image')->isValid()) {

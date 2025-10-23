@@ -1347,7 +1347,10 @@ class DriversController extends Controller {
                                                 </div>';
                                 })
                                 ->addColumn('phone', function ($user) {
-                                        return $user->phone_code . ' ' . $user->phone;
+                                        // Retrieve phone code and phone from metadata
+                                        $phoneCode = $user->metas->firstWhere('key', 'phone_code')?->value ?? '';
+                                        $phone = $user->metas->firstWhere('key', 'phone')?->value ?? '';
+                                        return $phoneCode && $phone ? $phoneCode . ' ' . $phone : 'N/A';
                                 })
                                 ->addColumn('documents', function ($user) {
                                         // Access preloaded metas collection

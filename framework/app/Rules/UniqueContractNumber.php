@@ -11,13 +11,14 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 namespace App\Rules;
 
 use App\Model\User;
+use App\Model\UserData;
 use Illuminate\Contracts\Validation\Rule;
 
 class UniqueContractNumber implements Rule {
 
 	public function passes($attribute, $value) {
 		if (\Request::get("edit") == "1") {
-			$contract_no = User::meta()
+			$contract_no = UserData::query()
 				->where(function ($query) {
 					$query->where('users_meta.key', '=', 'contract_number')
 						->where('users_meta.value', '=', \Request::get('contract_number'))
@@ -29,7 +30,7 @@ class UniqueContractNumber implements Rule {
 				return false;
 			}
 		} else {
-			$contract_no = User::meta()
+			$contract_no = UserData::query()
 				->where(function ($query) {
 					$query->where('users_meta.key', '=', 'contract_number')
 						->where('users_meta.value', '=', \Request::get('contract_number'));

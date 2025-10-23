@@ -245,7 +245,6 @@
                 <th>@lang('fleet.name')</th>
                 <th>@lang('fleet.email')</th>
                 <th>Phone</th>
-                <th>License Number</th>
               <th>Documents</th>
               <th>@lang('fleet.is_active')</th>
               <th>Assigned Vehicle</th>
@@ -511,7 +510,7 @@
             text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
 
             exportOptions: {
-              columns: ([1,2,3,4,5,6]),
+              columns: ([1,2,3,4,5]),
             },
             customize: function ( win ) {
                  
@@ -526,7 +525,7 @@
                 extend: 'excel',
                 text: '<i class="fa fa-file-excel-o"></i> Excel',
                 exportOptions: {
-                    columns: [1, 2, 3, 4, 5, 6]
+                    columns: [1, 2, 3, 4, 5]
                 }
             }
         ],
@@ -547,7 +546,6 @@
             {data: 'name', name: 'name'},
             {data: 'email', name: 'email'},
             {data: 'phone', name: 'phone'},
-            {data: 'license_number', name: 'license_number'},
             {data: 'documents', name: 'documents', searchable:false, orderable:false},
             {data: 'is_active', name: 'is_active'},
             {data: 'assigned_vehicle', name: 'assigned_vehicle', orderable: false},

@@ -1349,11 +1349,6 @@ class DriversController extends Controller {
                                 ->addColumn('phone', function ($user) {
                                         return $user->phone_code . ' ' . $user->phone;
                                 })
-                                ->addColumn('license_number', function ($user) {
-                                        // Use preloaded metas instead of getMeta()
-                                        $meta = $user->metas->firstWhere('key', 'license_number');
-                                        return $meta ? $meta->value : 'N/A';
-                                })
                                 ->addColumn('documents', function ($user) {
                                         // Access preloaded metas collection
                                         $licensePath = $user->metas->firstWhere('key', 'license_upload_path');

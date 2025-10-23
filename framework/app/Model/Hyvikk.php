@@ -17,11 +17,19 @@ use App\Model\FareSettings;
 use App\Model\FrontendModel;
 use App\Model\Settings;
 use App\Model\TwilioSettings;
+use Illuminate\Support\Facades\Cache;
 
 class Hyvikk {
 
+        // Cache duration in seconds (24 hours)
+        private static $cacheDuration = 86400;
+
         public static function twilio($key) {
-                $settings = array_pluck(TwilioSettings::all()->toArray(), 'value', 'name');
+                $cacheKey = 'hyvikk_twilio';
+                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                    return array_pluck(TwilioSettings::all()->toArray(), 'value', 'name');
+                });
+                
                 if (is_array($key)) {
                     return array_only($settings, $key);
                 }
@@ -29,7 +37,11 @@ class Hyvikk {
         }
 
         public static function get($key) {
-                $settings = array_pluck(Settings::all()->toArray(), 'value', 'name');
+                $cacheKey = 'hyvikk_settings';
+                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                    return array_pluck(Settings::all()->toArray(), 'value', 'name');
+                });
+                
                 if (is_array($key)) {
                     return array_only($settings, $key);
                 }
@@ -40,11 +52,15 @@ class Hyvikk {
                 $settings = Settings::firstOrNew(array('name' => $key));
                 $settings->value = $val;
                 $settings->save();
-                Cache::flush();
+                Cache::forget('hyvikk_settings');
         }
 
         public static function api($key) {
-                $settings = array_pluck(ApiSettings::all()->toArray(), 'key_value', 'key_name');
+                $cacheKey = 'hyvikk_api';
+                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                    return array_pluck(ApiSettings::all()->toArray(), 'key_value', 'key_name');
+                });
+                
                 if (is_array($key)) {
                     return array_only($settings, $key);
                 }
@@ -53,7 +69,11 @@ class Hyvikk {
 
         public static function fare($key) {
                 $key = str_replace(' ', '', $key);
-                $settings = array_pluck(FareSettings::all()->toArray(), 'key_value', 'key_name');
+                $cacheKey = 'hyvikk_fare';
+                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                    return array_pluck(FareSettings::all()->toArray(), 'key_value', 'key_name');
+                });
+                
                 if (is_array($key)) {
                     return array_only($settings, $key);
                 }
@@ -61,7 +81,11 @@ class Hyvikk {
         }
 
         public static function email_msg($key) {
-                $settings = array_pluck(EmailContent::all()->toArray(), 'value', 'key');
+                $cacheKey = 'hyvikk_email';
+                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                    return array_pluck(EmailContent::all()->toArray(), 'value', 'key');
+                });
+                
                 if (is_array($key)) {
                     return array_only($settings, $key);
                 }
@@ -69,7 +93,11 @@ class Hyvikk {
         }
 
         public static function frontend($key) {
-                $settings = array_pluck(FrontendModel::all()->toArray(), 'key_value', 'key_name');
+                $cacheKey = 'hyvikk_frontend';
+                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                    return array_pluck(FrontendModel::all()->toArray(), 'key_value', 'key_name');
+                });
+                
                 if (is_array($key)) {
                     return array_only($settings, $key);
                 }
@@ -77,7 +105,11 @@ class Hyvikk {
         }
 
         public static function payment($key) {
-                $settings = array_pluck(PaymentSettings::all()->toArray(), 'value', 'name');
+                $cacheKey = 'hyvikk_payment';
+                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                    return array_pluck(PaymentSettings::all()->toArray(), 'value', 'name');
+                });
+                
                 if (is_array($key)) {
                     return array_only($settings, $key);
                 }
@@ -85,7 +117,11 @@ class Hyvikk {
         }
 
         public static function chat($key) {
-                $settings = array_pluck(ChatSettingsModel::all()->toArray(), 'value', 'name');
+                $cacheKey = 'hyvikk_chat';
+                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                    return array_pluck(ChatSettingsModel::all()->toArray(), 'value', 'name');
+                });
+                
                 if (is_array($key)) {
                     return array_only($settings, $key);
                 }

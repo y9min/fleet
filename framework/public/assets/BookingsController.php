@@ -1689,6 +1689,8 @@ public function get_vehicle(Request $request) {
 				$ch = curl_init();
 				curl_setopt($ch, CURLOPT_URL, $url);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 				
 				// Turn off SSL certificate verification
 				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -1758,6 +1760,8 @@ public function get_vehicle(Request $request) {
 					$ch2 = curl_init();
 					curl_setopt($ch2, CURLOPT_URL, $url2);
 					curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($ch2, CURLOPT_TIMEOUT, 10);
+					curl_setopt($ch2, CURLOPT_CONNECTTIMEOUT, 5);
 					
 					// Turn off SSL certificate verification
 					curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, false);
@@ -2016,6 +2020,8 @@ public function get_vehicle(Request $request) {
 			$ch1 = curl_init();
 			curl_setopt($ch1, CURLOPT_URL, $url1);
 			curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch1, CURLOPT_TIMEOUT, 10);
+			curl_setopt($ch1, CURLOPT_CONNECTTIMEOUT, 5);
 			
 			// Turn off SSL certificate verification
 			curl_setopt($ch1, CURLOPT_SSL_VERIFYPEER, false);

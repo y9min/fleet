@@ -170,6 +170,52 @@
       font-weight: 500;
       transition: all 0.3s ease;
   }
+
+  /* Pagination Styles */
+  #pagination-container {
+      margin-top: 20px;
+      padding: 10px 0;
+  }
+
+  #drivers-info {
+      color: #666;
+      font-size: 14px;
+  }
+
+  #drivers-pagination .pagination {
+      margin: 0;
+  }
+
+  #drivers-pagination .page-item {
+      margin: 0 2px;
+  }
+
+  #drivers-pagination .page-link {
+      color: #007bff;
+      padding: 6px 12px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+  }
+
+  #drivers-pagination .page-link:hover {
+      background-color: #e9ecef;
+      border-color: #007bff;
+  }
+
+  #drivers-pagination .page-item.active .page-link {
+      background-color: #007bff;
+      border-color: #007bff;
+      color: white;
+  }
+
+  #drivers-pagination .page-item.disabled .page-link {
+      color: #6c757d;
+      pointer-events: none;
+      background-color: #fff;
+      border-color: #dee2e6;
+      cursor: not-allowed;
+  }
 </style>
 @endsection
 @section("breadcrumb")
@@ -255,6 +301,14 @@
 
           </tbody>
         </table>
+        
+        <!-- Pagination Controls -->
+        <div class="d-flex justify-content-between align-items-center mt-3" id="pagination-container" style="display: none;">
+            <div class="dataTables_info" id="drivers-info">Showing 0 to 0 of 0 entries</div>
+            <div class="dataTables_paginate paging_simple_numbers" id="drivers-pagination">
+                <ul class="pagination mb-0"></ul>
+            </div>
+        </div>
       </div>
     </div>
   </div>
@@ -429,8 +483,12 @@
 // Embed drivers data in page for instant access
 window.driversGlobalData = @json($drivers ?? []);
 
+// Pagination state
+let currentPage = 1;
+const itemsPerPage = 10;
+
 // Simple vanilla JavaScript approach to load drivers
-function loadDriversSimple(filteredData = null) {
+function loadDriversSimple(filteredData = null, page = 1) {
     const driversData = filteredData || window.driversGlobalData;
     console.log('Drivers data:', driversData);
     console.log('Number of drivers:', driversData ? driversData.length : 0);
@@ -445,12 +503,21 @@ function loadDriversSimple(filteredData = null) {
     if (!driversData || driversData.length === 0) {
         console.log('No drivers data found');
         tbody.innerHTML = '<tr><td colspan="8" class="text-center">No drivers found</td></tr>';
+        document.getElementById('pagination-container').style.display = 'none';
         return;
     }
 
+    // Calculate pagination
+    const totalPages = Math.ceil(driversData.length / itemsPerPage);
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, driversData.length);
+    const paginatedData = driversData.slice(startIndex, endIndex);
+    
+    currentPage = page;
+
     // Generate table rows
     let tableHTML = '';
-    driversData.forEach((driver) => {
+    paginatedData.forEach((driver) => {
         const isActive = driver.is_active == 1;
         const checked = isActive ? 'checked' : '';
         
@@ -516,8 +583,64 @@ function loadDriversSimple(filteredData = null) {
     
     tbody.innerHTML = tableHTML;
     
+    // Render pagination
+    renderPagination(driversData.length, totalPages, page);
+    
     // Re-attach event handlers
     attachEventHandlers();
+}
+
+// Render pagination controls
+function renderPagination(totalItems, totalPages, currentPage) {
+    const container = document.getElementById('pagination-container');
+    const info = document.getElementById('drivers-info');
+    const paginationUl = document.querySelector('#drivers-pagination ul');
+    
+    if (totalPages <= 1) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    container.style.display = 'flex';
+    
+    // Update info text
+    const startIndex = (currentPage - 1) * itemsPerPage + 1;
+    const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
+    info.textContent = `Showing ${startIndex} to ${endIndex} of ${totalItems} entries`;
+    
+    // Clear previous pagination
+    paginationUl.innerHTML = '';
+    
+    // Previous button
+    const prevLi = document.createElement('li');
+    prevLi.className = `paginate_button page-item previous ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a href="#" class="page-link" data-page="${currentPage - 1}">Previous</a>`;
+    paginationUl.appendChild(prevLi);
+    
+    // Page number buttons
+    for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.className = `paginate_button page-item ${i === currentPage ? 'active' : ''}`;
+        li.innerHTML = `<a href="#" class="page-link" data-page="${i}">${i}</a>`;
+        paginationUl.appendChild(li);
+    }
+    
+    // Next button
+    const nextLi = document.createElement('li');
+    nextLi.className = `paginate_button page-item next ${currentPage === totalPages ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a href="#" class="page-link" data-page="${currentPage + 1}">Next</a>`;
+    paginationUl.appendChild(nextLi);
+    
+    // Attach click handlers
+    paginationUl.querySelectorAll('a.page-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = parseInt(this.getAttribute('data-page'));
+            if (page >= 1 && page <= totalPages && page !== currentPage) {
+                loadDriversSimple(null, page);
+            }
+        });
+    });
 }
 
 // Attach event handlers for interactive elements

@@ -266,16 +266,42 @@ class OnboardingController extends Controller
      */
     public function generateLink(Request $request)
     {
-        $link = OnboardingLink::create([
-            'link' => url('/onboarding/form/' . Str::random(32)),
-            'created_by' => Auth::id(),
-            'is_active' => true
-        ]);
+        try {
+            // Generate a unique token
+            $token = Str::random(32);
+            
+            // Create the full link URL
+            $linkUrl = url('/onboarding/form/' . $token);
+            
+            // Get the authenticated user's company_id
+            $user = Auth::user();
+            $companyId = $user->company_id ?? null;
+            
+            // Create the onboarding link with all required fields
+            $link = OnboardingLink::create([
+                'company_id' => $companyId,
+                'token' => $token,
+                'link' => $linkUrl,
+                'expires_at' => now()->addDays(30), // Link expires in 30 days
+                'is_used' => false,
+                'is_active' => true,
+                'usage_count' => 0,
+                'created_by' => Auth::id()
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'link' => $link->link
-        ]);
+            return response()->json([
+                'success' => true,
+                'link' => $link->link,
+                'token' => $link->token,
+                'expires_at' => $link->expires_at->format('Y-m-d H:i:s')
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error generating onboarding link: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error generating link: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -702,7 +728,9 @@ class OnboardingController extends Controller
 
         // Find the onboarding link and increment usage count
         $token = $request->input('token');
-        $link = OnboardingLink::where('link', 'like', '%' . $token)->where('is_active', true)->first();
+        $link = OnboardingLink::where('token', $token)
+            ->where('is_active', true)
+            ->first();
         
         if ($link) {
             $link->incrementUsage();

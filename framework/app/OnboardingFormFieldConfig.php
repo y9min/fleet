@@ -147,12 +147,44 @@ class OnboardingFormFieldConfig extends Model
                 'sort_order' => 6
             ],
             [
+                'field_key' => 'license_expiry',
+                'field_label' => 'License Expiry Date',
+                'field_type' => self::TYPE_TEXT,
+                'is_visible' => false,
+                'is_required' => false,
+                'sort_order' => 7
+            ],
+            [
+                'field_key' => 'address',
+                'field_label' => 'Address',
+                'field_type' => self::TYPE_TEXT,
+                'is_visible' => false,
+                'is_required' => false,
+                'sort_order' => 8
+            ],
+            [
+                'field_key' => 'emergency_contact',
+                'field_label' => 'Emergency Contact',
+                'field_type' => self::TYPE_TEXT,
+                'is_visible' => false,
+                'is_required' => false,
+                'sort_order' => 9
+            ],
+            [
+                'field_key' => 'emergency_phone',
+                'field_label' => 'Emergency Phone',
+                'field_type' => self::TYPE_PHONE,
+                'is_visible' => false,
+                'is_required' => false,
+                'sort_order' => 10
+            ],
+            [
                 'field_key' => 'vehicle_selection',
                 'field_label' => 'Vehicle Selection',
                 'field_type' => self::TYPE_VEHICLE_SELECT,
                 'is_visible' => true,
                 'is_required' => true,
-                'sort_order' => 7
+                'sort_order' => 11
             ],
             [
                 'field_key' => 'scheme_selection',
@@ -160,7 +192,7 @@ class OnboardingFormFieldConfig extends Model
                 'field_type' => self::TYPE_SCHEME_SELECT,
                 'is_visible' => true,
                 'is_required' => true,
-                'sort_order' => 8
+                'sort_order' => 12
             ]
         ];
     }

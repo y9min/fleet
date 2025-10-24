@@ -406,6 +406,34 @@
                                         <input type="text" class="form-control" name="license_number" value="{{ old('license_number') }}" {{ $config->is_required ? 'required' : '' }}>
                                     </div>
                                 </div>
+                            @elseif($config->field_key === 'license_expiry')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <input type="date" class="form-control" name="license_expiry" value="{{ old('license_expiry') }}" {{ $config->is_required ? 'required' : '' }}>
+                                    </div>
+                                </div>
+                            @elseif($config->field_key === 'address')
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <textarea class="form-control" name="address" rows="3" {{ $config->is_required ? 'required' : '' }}>{{ old('address') }}</textarea>
+                                    </div>
+                                </div>
+                            @elseif($config->field_key === 'emergency_contact')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <input type="text" class="form-control" name="emergency_contact" value="{{ old('emergency_contact') }}" {{ $config->is_required ? 'required' : '' }}>
+                                    </div>
+                                </div>
+                            @elseif($config->field_key === 'emergency_phone')
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label {{ $config->is_required ? 'required-label' : '' }}">{{ $config->field_label }}</label>
+                                        <input type="tel" class="form-control" name="emergency_phone" value="{{ old('emergency_phone') }}" {{ $config->is_required ? 'required' : '' }}>
+                                    </div>
+                                </div>
                             @endif
                         @endforeach
                     </div>

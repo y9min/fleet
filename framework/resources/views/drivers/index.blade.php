@@ -951,7 +951,7 @@ $(document).ready(function() {
                 });
                 
                 // Reload the table to reflect changes
-                $('#ajax_data_table').DataTable().ajax.reload();
+                loadDriversSimple();
             },
             error: function(xhr) {
                 console.log('Error:', xhr);
@@ -1014,7 +1014,7 @@ $(document).ready(function() {
                 });
                 
                 // Reload the table to reflect changes
-                $('#ajax_data_table').DataTable().ajax.reload();
+                loadDriversSimple();
             },
             error: function(xhr) {
                 console.log('Error:', xhr);
@@ -1754,8 +1754,8 @@ $(document).ready(function() {
                         `);
                         importResults.show();
                         
-                        // Reload the table
-                        $('#ajax_data_table').DataTable().ajax.reload();
+                        // Reload the table data from server
+                        loadDriversSimple();
                         
                         new PNotify({
                             title: 'Import Successful!',

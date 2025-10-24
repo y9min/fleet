@@ -201,6 +201,28 @@
         .alert {
             border-radius: 8px;
             border: none;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .alert .btn-close {
+            opacity: 0.5;
+        }
+        
+        .alert .btn-close:hover {
+            opacity: 1;
         }
         
         .document-requirements {
@@ -356,6 +378,14 @@
                     <div class="step-label">Review</div>
                 </div>
             </div>
+
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Success!</strong> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
             @if ($errors->any())
                 <div class="alert alert-danger">

@@ -671,7 +671,7 @@ class OnboardingController extends Controller
         $vehicleConfig = $fieldConfigs->get('vehicle_selection');
         if ($vehicleConfig && $vehicleConfig->is_visible) {
             $rules = $vehicleConfig->is_required ? 'required' : 'nullable';
-            $validationRules['vehicle_selection'] = $rules . '|integer|exists:vehicles,id';
+            $validationRules['vehicle_selection'] = $rules . '|string|exists:vehicles,id';
             $validationRules['insurance_selection'] = $rules . '|in:with_insurance,without_insurance';
         }
 

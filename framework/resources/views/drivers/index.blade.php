@@ -372,7 +372,7 @@
                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
                     <div class="upload-text">Drop your Excel/CSV file here or click to browse</div>
                     <div class="upload-hint">Maximum file size: 5MB • Supported formats: .xlsx, .xls, .csv</div>
-                    {!! Form::file('excel', ['class' => 'form-control', 'required', 'accept' => '.xlsx,.xls,.csv', 'style' => 'display: none;', 'id' => 'fileInput']) !!}
+                    {!! Form::file('excel', ['class' => 'form-control', 'accept' => '.xlsx,.xls,.csv', 'style' => 'display: none;', 'id' => 'fileInput']) !!}
                     <div id="fileName" class="mt-2" style="display: none;">
                         <i class="fas fa-file-excel text-success"></i> <span id="fileNameText"></span>
                         <button type="button" class="btn btn-sm btn-outline-danger ml-2" id="removeFile">
@@ -420,14 +420,16 @@
                         <div id="importStats"></div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-warning" type="submit" id="importBtn">
-                    <i class="fas fa-upload"></i> Import Drivers
-                </button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">
-                    <i class="fas fa-times"></i> Close
-                </button>
+                
+                <!-- Submit Button -->
+                <div class="modal-footer">
+                    <button class="btn btn-warning" type="submit" id="importBtn">
+                        <i class="fas fa-upload"></i> Import Drivers
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
             </div>
             {!! Form::close() !!}
         </div>
@@ -1674,6 +1676,16 @@ $(document).ready(function() {
     // Form submission with progress
     importForm.on('submit', function(e) {
         e.preventDefault();
+        
+        // Check if file is selected
+        if (!fileInput[0].files.length) {
+            new PNotify({
+                title: 'No File Selected',
+                text: 'Please select a file to import.',
+                type: 'error'
+            });
+            return;
+        }
         
         const formData = new FormData(this);
         

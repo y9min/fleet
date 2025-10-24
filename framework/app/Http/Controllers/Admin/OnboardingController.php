@@ -624,33 +624,62 @@ class OnboardingController extends Controller
      */
     public function submitPublicForm(Request $request)
     {
-        // Build validation rules dynamically based on field configurations
-        $validationRules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'license_number' => 'required|string|max:50',
-            'license_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'insurance_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048'
+        // Get all field configurations
+        $fieldConfigs = OnboardingFormFieldConfig::all()->keyBy('field_key');
+
+        // Build validation rules dynamically
+        $validationRules = [];
+
+        // Map field_key to form input name
+        $fieldMapping = [
+            'full_name' => 'name',
+            'email' => 'email',
+            'phone' => 'phone',
+            'license_number' => 'license_number',
+            'license_file' => 'license_file',
+            'insurance_file' => 'insurance_file',
         ];
 
-        // Add vehicle selection validation if it's required
-        $vehicleFieldConfig = OnboardingFormFieldConfig::where('field_key', 'vehicle_selection')
-            ->where('is_visible', true)
-            ->first();
-        
-        if ($vehicleFieldConfig && $vehicleFieldConfig->is_required) {
-            $validationRules['vehicle_selection'] = 'required|integer|exists:vehicles,id';
-            $validationRules['insurance_selection'] = 'required|in:with_insurance,without_insurance';
+        foreach ($fieldMapping as $fieldKey => $inputName) {
+            $config = $fieldConfigs->get($fieldKey);
+            if ($config && $config->is_visible) {
+                $rules = [];
+                if ($config->is_required) {
+                    $rules[] = 'required';
+                } else {
+                    $rules[] = 'nullable';
+                }
+                
+                // Add type-specific rules
+                if ($fieldKey === 'email') {
+                    $rules[] = 'email';
+                }
+                if (in_array($fieldKey, ['license_file', 'insurance_file'])) {
+                    $rules[] = 'file';
+                    $rules[] = 'mimes:pdf,jpg,jpeg,png';
+                    $rules[] = 'max:2048';
+                } else {
+                    // Only add max:255 for non-file fields
+                    $rules[] = 'max:255';
+                }
+                
+                $validationRules[$inputName] = implode('|', $rules);
+            }
         }
 
-        // Add scheme selection validation if it's required
-        $schemeFieldConfig = OnboardingFormFieldConfig::where('field_key', 'scheme_selection')
-            ->where('is_visible', true)
-            ->first();
-        
-        if ($schemeFieldConfig && $schemeFieldConfig->is_required) {
-            $validationRules['scheme_selection'] = 'required|in:Rental,Rent to Buy';
+        // Handle vehicle selection
+        $vehicleConfig = $fieldConfigs->get('vehicle_selection');
+        if ($vehicleConfig && $vehicleConfig->is_visible) {
+            $rules = $vehicleConfig->is_required ? 'required' : 'nullable';
+            $validationRules['vehicle_selection'] = $rules . '|integer|exists:vehicles,id';
+            $validationRules['insurance_selection'] = $rules . '|in:with_insurance,without_insurance';
+        }
+
+        // Handle scheme selection
+        $schemeConfig = $fieldConfigs->get('scheme_selection');
+        if ($schemeConfig && $schemeConfig->is_visible) {
+            $rules = $schemeConfig->is_required ? 'required' : 'nullable';
+            $validationRules['scheme_selection'] = $rules . '|in:Rental,Rent to Buy';
         }
 
         $validator = Validator::make($request->all(), $validationRules);
@@ -659,54 +688,34 @@ class OnboardingController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Check if files were actually uploaded
-        if (!$request->hasFile('license_file')) {
-            \Log::info('License file not found in request', ['files' => $request->allFiles()]);
-            return back()->withErrors(['license_file' => 'License file is required.'])->withInput();
+        // Store files only if they exist and are configured as visible
+        $licensePath = null;
+        $insurancePath = null;
+
+        $licenseConfig = $fieldConfigs->get('license_file');
+        if ($licenseConfig && $licenseConfig->is_visible && $request->hasFile('license_file')) {
+            try {
+                $licenseFile = $request->file('license_file');
+                if ($licenseFile && $licenseFile->isValid()) {
+                    $licensePath = $licenseFile->store('onboarding/documents', 'public');
+                }
+            } catch (\Exception $e) {
+                \Log::error('License file upload failed', ['error' => $e->getMessage()]);
+                return back()->withErrors(['license_file' => 'License file upload failed.'])->withInput();
+            }
         }
 
-        if (!$request->hasFile('insurance_file')) {
-            \Log::info('Insurance file not found in request', ['files' => $request->allFiles()]);
-            return back()->withErrors(['insurance_file' => 'Insurance file is required.'])->withInput();
-        }
-
-        // Log file details for debugging
-        $licenseFile = $request->file('license_file');
-        $insuranceFile = $request->file('insurance_file');
-        
-        \Log::info('File upload attempt', [
-            'license_file' => [
-                'name' => $licenseFile->getClientOriginalName(),
-                'size' => $licenseFile->getSize(),
-                'mime' => $licenseFile->getMimeType(),
-                'is_valid' => $licenseFile->isValid(),
-                'error' => $licenseFile->getError()
-            ],
-            'insurance_file' => [
-                'name' => $insuranceFile->getClientOriginalName(),
-                'size' => $insuranceFile->getSize(),
-                'mime' => $insuranceFile->getMimeType(),
-                'is_valid' => $insuranceFile->isValid(),
-                'error' => $insuranceFile->getError()
-            ]
-        ]);
-
-        // Check if files are valid
-        if (!$licenseFile->isValid()) {
-            \Log::error('License file upload failed', ['error' => $licenseFile->getError()]);
-            return back()->withErrors(['license_file' => 'License file upload failed. Error: ' . $licenseFile->getErrorMessage()])->withInput();
-        }
-
-        if (!$insuranceFile->isValid()) {
-            \Log::error('Insurance file upload failed', ['error' => $insuranceFile->getError()]);
-            return back()->withErrors(['insurance_file' => 'Insurance file upload failed. Error: ' . $insuranceFile->getErrorMessage()])->withInput();
-        }
-
-        try {
-            $licensePath = $request->file('license_file')->store('onboarding/documents', 'public');
-            $insurancePath = $request->file('insurance_file')->store('onboarding/documents', 'public');
-        } catch (\Exception $e) {
-            return back()->withErrors(['file_upload' => 'File upload failed. Please try again.'])->withInput();
+        $insuranceConfig = $fieldConfigs->get('insurance_file');
+        if ($insuranceConfig && $insuranceConfig->is_visible && $request->hasFile('insurance_file')) {
+            try {
+                $insuranceFile = $request->file('insurance_file');
+                if ($insuranceFile && $insuranceFile->isValid()) {
+                    $insurancePath = $insuranceFile->store('onboarding/documents', 'public');
+                }
+            } catch (\Exception $e) {
+                \Log::error('Insurance file upload failed', ['error' => $e->getMessage()]);
+                return back()->withErrors(['insurance_file' => 'Insurance file upload failed.'])->withInput();
+            }
         }
 
         // Process custom file fields

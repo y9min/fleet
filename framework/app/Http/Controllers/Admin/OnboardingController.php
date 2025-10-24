@@ -270,8 +270,8 @@ class OnboardingController extends Controller
             // Generate a unique token
             $token = Str::random(32);
             
-            // Create the full link URL
-            $linkUrl = url('/onboarding/form/' . $token);
+            // Create the full link URL - matching the route definition
+            $linkUrl = url('/driver-onboarding/' . $token);
             
             // Get the authenticated user's company_id
             $user = Auth::user();

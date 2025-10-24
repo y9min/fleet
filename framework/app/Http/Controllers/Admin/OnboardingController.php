@@ -745,6 +745,7 @@ class OnboardingController extends Controller
             $link->incrementUsage();
         }
 
+        // Build driver data matching Supabase schema
         $driverData = [
             'name' => $request->name,
             'email' => $request->email,
@@ -756,7 +757,11 @@ class OnboardingController extends Controller
             'scheme' => $request->scheme_selection,
             'insurance_selection' => $request->insurance_selection,
             'status' => 'submitted',
-            'custom_data' => $customData
+            'license_expiry' => $request->license_expiry,
+            'address' => $request->address,
+            'emergency_contact' => $request->emergency_contact,
+            'emergency_phone' => $request->emergency_phone,
+            'form_data' => $customData
         ];
 
         OnboardingDriver::create($driverData);

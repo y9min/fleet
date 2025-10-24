@@ -27,12 +27,18 @@ class OnboardingDriver extends Model
         'scheme',
         'insurance_selection',
         'custom_data',
+        'form_data',
         'status',
-        'unique_token'
+        'unique_token',
+        'license_expiry',
+        'address',
+        'emergency_contact',
+        'emergency_phone'
     ];
 
     protected $casts = [
-        'custom_data' => 'array'
+        'custom_data' => 'array',
+        'form_data' => 'array'
     ];
 
     // Status constants

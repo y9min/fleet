@@ -1466,6 +1466,46 @@ function toggleDriverDetails(driverId) {
                 html += '<div class="inline-field"><strong>Email:</strong><span class="text-muted">' + (driver.email || 'N/A') + '</span></div>';
                 html += '<div class="inline-field"><strong>Phone:</strong><span class="text-muted">' + (driver.phone || 'N/A') + '</span></div>';
                 html += '<div class="inline-field"><strong>License:</strong><span class="text-muted">' + (driver.license_number || 'N/A') + '</span></div>';
+                
+                // License Expiry Date
+                if (driver.license_expiry) {
+                    html += '<div class="inline-field"><strong>License Expiry:</strong><span class="text-muted">' + driver.license_expiry + '</span></div>';
+                }
+                
+                // Address
+                if (driver.address) {
+                    html += '<div class="inline-field"><strong>Address:</strong><span class="text-muted">' + driver.address + '</span></div>';
+                }
+                
+                // Emergency Contact
+                if (driver.emergency_contact) {
+                    html += '<div class="inline-field"><strong>Emergency Contact:</strong><span class="text-muted">' + driver.emergency_contact + '</span></div>';
+                }
+                
+                // Emergency Phone
+                if (driver.emergency_phone) {
+                    html += '<div class="inline-field"><strong>Emergency Phone:</strong><span class="text-muted">' + driver.emergency_phone + '</span></div>';
+                }
+                
+                // Vehicle Selection
+                if (driver.vehicle_details) {
+                    var vehicleDisplay = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
+                    html += '<div class="inline-field"><strong>Vehicle:</strong><span class="text-muted">' + vehicleDisplay + '</span></div>';
+                } else if (driver.vehicle_id) {
+                    html += '<div class="inline-field"><strong>Vehicle ID:</strong><span class="text-muted">' + driver.vehicle_id + '</span></div>';
+                }
+                
+                // Scheme Selection
+                if (driver.scheme) {
+                    html += '<div class="inline-field"><strong>Scheme:</strong><span class="text-muted">' + driver.scheme + '</span></div>';
+                }
+                
+                // Insurance Selection
+                if (driver.insurance_selection) {
+                    var insuranceDisplay = driver.insurance_selection === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
+                    html += '<div class="inline-field"><strong>Insurance:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
+                }
+                
                 var statusClass = driver.status === 'approved' ? 'success' : (driver.status === 'rejected' ? 'danger' : 'warning');
                 html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + statusClass + '">' + (driver.status || 'N/A') + '</span></div>';
                 html += '<div class="inline-field"><strong>Submitted:</strong><span class="text-muted">' + (driver.created_at || 'N/A') + '</span></div>';

@@ -180,7 +180,44 @@ class OnboardingController extends Controller
                     </button>';
                 }
                 
-                $actions .= '<button class="btn btn-sm btn-info" data-driver-id="' . $driver->id . '" onclick="toggleDriverDetails(\'' . $driver->id . '\')" title="Toggle Details" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                // Prepare driver data for instant display (embedded in button to avoid AJAX calls)
+                $driverData = [
+                    'id' => $driver->id,
+                    'name' => $driver->name,
+                    'email' => $driver->email,
+                    'phone' => $driver->phone,
+                    'license_number' => $driver->license_number,
+                    'license_expiry' => $driver->license_expiry,
+                    'address' => $driver->address,
+                    'emergency_contact' => $driver->emergency_contact,
+                    'emergency_phone' => $driver->emergency_phone,
+                    'vehicle_id' => $driver->vehicle_id,
+                    'scheme' => $driver->scheme,
+                    'insurance_selection' => $driver->insurance_selection,
+                    'status' => $driver->status,
+                    'created_at' => $driver->created_at,
+                    'license_upload_path' => $driver->license_upload_path,
+                    'insurance_upload_path' => $driver->insurance_upload_path,
+                    'license_url' => $driver->license_url,
+                    'insurance_url' => $driver->insurance_url,
+                    'custom_data' => $driver->custom_data,
+                    'form_data' => $driver->form_data
+                ];
+                
+                // Add vehicle details if available
+                if ($driver->vehicle_id) {
+                    $vehicle = \App\Model\VehicleModel::find($driver->vehicle_id);
+                    if ($vehicle) {
+                        $driverData['vehicle_details'] = [
+                            'make_name' => $vehicle->make_name,
+                            'model_name' => $vehicle->model_name,
+                            'license_plate' => $vehicle->license_plate,
+                        ];
+                    }
+                }
+                
+                $jsonData = json_encode($driverData);
+                $actions .= '<button class="btn btn-sm btn-info" data-driver-id="' . $driver->id . '" data-driver-info=\'' . htmlspecialchars($jsonData, ENT_QUOTES) . '\' onclick="toggleDriverDetailsInstant(this)" title="Toggle Details" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                     <i class="fas fa-eye"></i>
                 </button>';
                 

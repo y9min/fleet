@@ -1431,7 +1431,194 @@ function rejectDriver(driverId) {
     }
 }
 
-// Toggle driver details dropdown
+// Instant toggle driver details dropdown (no AJAX delay) - optimized for performance
+function toggleDriverDetailsInstant(button) {
+    var $button = $(button);
+    var $row = $button.closest('tr');
+    var $detailsRow = $row.next('.details-row');
+    
+    // If details row exists, remove it (instant)
+    if ($detailsRow.length > 0) {
+        $detailsRow.remove();
+        $button.removeClass('expanded').html('<i class="fa fa-eye"></i>');
+        return;
+    }
+    
+    // Get driver data from button's data attribute (already embedded - no AJAX needed)
+    var driver = $button.data('driver-info');
+    
+    // Build HTML instantly (no AJAX delay)
+    var html = '<div class="details-content">';
+    
+    // Basic Information - Inline layout
+    html += '<div class="mb-3">';
+    html += '<div class="inline-field"><strong>Name:</strong><span class="text-muted">' + (driver.name || 'N/A') + '</span></div>';
+    html += '<div class="inline-field"><strong>Email:</strong><span class="text-muted">' + (driver.email || 'N/A') + '</span></div>';
+    html += '<div class="inline-field"><strong>Phone:</strong><span class="text-muted">' + (driver.phone || 'N/A') + '</span></div>';
+    html += '<div class="inline-field"><strong>License:</strong><span class="text-muted">' + (driver.license_number || 'N/A') + '</span></div>';
+    
+    // License Expiry Date
+    if (driver.license_expiry) {
+        html += '<div class="inline-field"><strong>License Expiry:</strong><span class="text-muted">' + driver.license_expiry + '</span></div>';
+    }
+    
+    // Address
+    if (driver.address) {
+        html += '<div class="inline-field"><strong>Address:</strong><span class="text-muted">' + driver.address + '</span></div>';
+    }
+    
+    // Emergency Contact
+    if (driver.emergency_contact) {
+        html += '<div class="inline-field"><strong>Emergency Contact:</strong><span class="text-muted">' + driver.emergency_contact + '</span></div>';
+    }
+    
+    // Emergency Phone
+    if (driver.emergency_phone) {
+        html += '<div class="inline-field"><strong>Emergency Phone:</strong><span class="text-muted">' + driver.emergency_phone + '</span></div>';
+    }
+    
+    // Vehicle Selection
+    if (driver.vehicle_details) {
+        var vehicleDisplay = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
+        html += '<div class="inline-field"><strong>Vehicle:</strong><span class="text-muted">' + vehicleDisplay + '</span></div>';
+    } else if (driver.vehicle_id) {
+        html += '<div class="inline-field"><strong>Vehicle ID:</strong><span class="text-muted">' + driver.vehicle_id + '</span></div>';
+    }
+    
+    // Scheme Selection
+    if (driver.scheme) {
+        html += '<div class="inline-field"><strong>Scheme:</strong><span class="text-muted">' + driver.scheme + '</span></div>';
+    }
+    
+    // Insurance Selection
+    if (driver.insurance_selection) {
+        var insuranceDisplay = driver.insurance_selection === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
+        html += '<div class="inline-field"><strong>Insurance:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
+    }
+    
+    var statusClass = driver.status === 'approved' ? 'success' : (driver.status === 'rejected' ? 'danger' : 'warning');
+    html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + statusClass + '">' + (driver.status || 'N/A') + '</span></div>';
+    html += '<div class="inline-field"><strong>Submitted:</strong><span class="text-muted">' + (driver.created_at || 'N/A') + '</span></div>';
+    html += '</div>';
+    
+    // Documents Section - Inline layout with proper spacing
+    html += '<div class="mb-3">';
+    html += '<div class="inline-field"><strong>Documents:</strong>';
+    if (driver.license_upload_path) {
+        html += '<a href="' + driver.license_url + '" class="btn btn-outline-primary" target="_blank" style="border: 1px solid #007bff; color: #007bff; padding: 8px 16px; font-size: 14px; margin-left: 8px; margin-right: 8px; min-width: 100px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center;">';
+        html += '<i class="fas fa-eye"></i> License';
+        html += '</a>';
+    }
+    if (driver.insurance_upload_path) {
+        html += '<a href="' + driver.insurance_url + '" class="btn btn-outline-info" target="_blank" style="border: 1px solid #17a2b8; color: #17a2b8; padding: 8px 16px; font-size: 14px; margin-left: 8px; margin-right: 8px; min-width: 100px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center;">';
+        html += '<i class="fas fa-eye"></i> Insurance';
+        html += '</a>';
+    }
+    html += '</div>';
+    html += '</div>';
+    
+    // Custom Fields Data - Inline layout
+    if (driver.custom_data && Object.keys(driver.custom_data).length > 0) {
+        html += '<div class="mb-3">';
+        html += '<div class="inline-field"><strong>Additional Information:</strong>';
+        
+        // Create field name mapping for better display
+        var fieldNameMap = {
+            'scheme_selection': 'Scheme Selection',
+            'vehicle_selection': 'Vehicle Selection',
+            'insurance_selection': 'Insurance Selection',
+            'ni_number': 'NI Number',
+            'address': 'Address',
+            'city': 'City',
+            'state': 'State',
+            'country': 'Country',
+            'postal_code': 'Postal Code',
+            'date_of_birth': 'Date of Birth',
+            'gender': 'Gender',
+            'emergency_contact_name': 'Emergency Contact Name',
+            'emergency_contact_phone': 'Emergency Contact Phone',
+            'driver_license_expiry': 'Driver License Expiry',
+            'insurance_expiry': 'Insurance Expiry'
+        };
+        
+        for (var key in driver.custom_data) {
+            if (driver.custom_data.hasOwnProperty(key) && key !== 'token' && key !== 'terms' && !key.endsWith('_url')) {
+                var value = driver.custom_data[key];
+                var displayValue = '';
+                
+                var fieldName = key;
+                var isFileField = false;
+                
+                // Check if key starts with 'custom_' and extract the field ID
+                if (key.startsWith('custom_')) {
+                    var fieldId = key.replace('custom_', '');
+                    // Skip field name lookup for performance - use key as is
+                    isFileField = (key.includes('file') || key.includes('document'));
+                } else {
+                    fieldName = fieldNameMap[key] || key;
+                }
+                
+                // Special handling for specific fields
+                if (key === 'vehicle_selection' && value) {
+                    if (driver.vehicle_details) {
+                        displayValue = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
+                    } else {
+                        displayValue = 'Vehicle ID: ' + value;
+                    }
+                } else if (key === 'scheme_selection' && value) {
+                    displayValue = value;
+                } else if (key === 'insurance_selection' && value) {
+                    displayValue = value === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
+                } else {
+                    if (Array.isArray(value)) {
+                        if (value.length === 0) {
+                            displayValue = '<span class="text-muted">No data provided</span>';
+                        } else {
+                            displayValue = value.join(', ');
+                        }
+                    } else if (typeof value === 'object' && value !== null) {
+                        displayValue = JSON.stringify(value);
+                    } else if (value !== null && value !== undefined && value !== '' && value.toString().trim() !== '' && value.toString().trim() !== 'null' && value.toString().trim() !== 'undefined') {
+                        displayValue = value.toString();
+                    } else {
+                        displayValue = '<span class="text-muted">No data provided</span>';
+                    }
+                }
+                
+                html += '<div class="inline-field"><strong>' + fieldName + ':</strong>';
+                
+                if (isFileField && value && value.toString().trim() !== '') {
+                    var fileUrl = driver.custom_data[key + '_url'] || value;
+                    html += '<a href="' + fileUrl + '" class="btn btn-outline-primary" target="_blank" style="border: 1px solid #007bff; color: #007bff; padding: 8px 16px; font-size: 14px; margin-left: 8px; margin-right: 8px; min-width: 100px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center;">';
+                    html += '<i class="fas fa-eye"></i> View';
+                    html += '</a>';
+                } else {
+                    html += '<span class="text-muted">' + displayValue + '</span>';
+                }
+                
+                html += '</div>';
+            }
+        }
+        
+        html += '</div>';
+        html += '</div>';
+    } else {
+        html += '<div class="mb-3">';
+        html += '<div class="inline-field"><strong>Additional Information:</strong><span class="text-muted">No additional information provided.</span></div>';
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    
+    // Create and insert the details row instantly
+    var $detailsRow = $('<tr class="details-row"><td colspan="9">' + html + '</td></tr>');
+    $row.after($detailsRow);
+    
+    // Update button state
+    $button.addClass('expanded').html('<i class="fa fa-eye-slash"></i>');
+}
+
+// Toggle driver details dropdown (Legacy AJAX version - kept as fallback)
 function toggleDriverDetails(driverId) {
     var $button = $('button[data-driver-id="' + driverId + '"]');
     var $row = $button.closest('tr');

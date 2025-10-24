@@ -362,6 +362,17 @@ class OnboardingController extends Controller
     }
 
     /**
+     * Delete onboarding link
+     */
+    public function deleteLink($id)
+    {
+        $link = OnboardingLink::findOrFail($id);
+        $link->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Delete custom field
      */
     public function deleteField($id)

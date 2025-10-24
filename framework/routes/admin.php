@@ -325,6 +325,7 @@ Route::namespace ('Admin')->group(function () {
         Route::get('onboarding/stats', 'OnboardingController@getStats')->name('onboarding.stats');
         Route::post('onboarding/update-field-order', 'OnboardingController@updateFieldOrder')->name('onboarding.update_field_order');
         Route::post('onboarding/deactivate-link/{id}', 'OnboardingController@deactivateLink')->name('onboarding.deactivate_link');
+        Route::delete('onboarding/delete-link/{id}', 'OnboardingController@deleteLink')->name('onboarding.delete_link');
 
         // Fines and Penalties Routes
         Route::get('/fines-fetch', 'FinesController@fetch_data')->name('fines.fetch');

@@ -908,6 +908,11 @@ body {
 .toggle-btn.expanded:hover {
     background-color: #c82333;
 }
+
+/* Grey out inactive links */
+.opacity-50 {
+    opacity: 0.5;
+}
 </style>
 @endsection
 
@@ -1081,13 +1086,17 @@ body {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($saved_links as $link)
-                                            <tr>
+                                        @foreach($saved_links as $index => $link)
+                                            @php
+                                                $isMostRecent = $index === 0;
+                                                $trClass = $isMostRecent ? '' : 'opacity-50';
+                                            @endphp
+                                            <tr class="{{ $trClass }}">
                                                 <td>
                                                     <div class="input-group input-group-sm">
                                                         <input type="text" class="form-control form-control-sm" value="{{ $link->link }}" readonly id="savedLink{{ $link->id }}">
                                                         <div class="input-group-append">
-                                                            <button class="btn btn-outline-secondary btn-sm" onclick="copySavedLink({{ $link->id }})">
+                                                            <button class="btn btn-outline-secondary btn-sm" onclick="copySavedLink({{ $link->id }})" data-link-id="{{ $link->id }}">
                                                                 <i class="fa fa-copy"></i>
                                                             </button>
                                                         </div>
@@ -1097,9 +1106,13 @@ body {
                                                 <td><span class="badge badge-info">{{ $link->usage_count }}</span></td>
                                                 <td>{{ $link->created_at->format('M d, Y H:i') }}</td>
                                                 <td>
-                                                    <button class="btn btn-danger btn-sm" onclick="deactivateLink({{ $link->id }})">
-                                                        <i class="fa fa-trash"></i> Deactivate
-                                                    </button>
+                                                    @if($isMostRecent)
+                                                        <span class="badge badge-success">Active</span>
+                                                    @else
+                                                        <button class="btn btn-danger btn-sm" onclick="deleteLink({{ $link->id }})">
+                                                            <i class="fa fa-trash"></i> Delete
+                                                        </button>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -1878,23 +1891,28 @@ function copyLink() {
 function copySavedLink(linkId) {
     var linkInput = document.getElementById('savedLink' + linkId);
     var linkText = linkInput.value;
+    var button = $('button[data-link-id="' + linkId + '"]');
+    var originalHtml = button.html();
     
     // Use modern Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(linkText).then(function() {
-            showToast('success', 'Link copied to clipboard!');
+            button.html('<i class="fa fa-check"></i> Copied');
+            setTimeout(function() {
+                button.html(originalHtml);
+            }, 2000);
         }).catch(function(err) {
             console.error('Failed to copy:', err);
-            fallbackCopyTextToClipboard(linkText);
+            fallbackCopyTextToClipboard(linkText, button, originalHtml);
         });
     } else {
         // Fallback for older browsers
-        fallbackCopyTextToClipboard(linkText);
+        fallbackCopyTextToClipboard(linkText, button, originalHtml);
     }
 }
 
 // Fallback copy function for older browsers
-function fallbackCopyTextToClipboard(text) {
+function fallbackCopyTextToClipboard(text, button, originalHtml) {
     var textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "fixed";
@@ -1907,7 +1925,12 @@ function fallbackCopyTextToClipboard(text) {
     try {
         var successful = document.execCommand('copy');
         if (successful) {
-            showToast('success', 'Link copied to clipboard!');
+            if (button && originalHtml) {
+                button.html('<i class="fa fa-check"></i> Copied');
+                setTimeout(function() {
+                    button.html(originalHtml);
+                }, 2000);
+            }
         } else {
             showToast('error', 'Failed to copy link. Please select and copy manually.');
         }
@@ -1919,7 +1942,31 @@ function fallbackCopyTextToClipboard(text) {
     document.body.removeChild(textArea);
 }
 
-// Deactivate saved link
+// Delete onboarding link
+function deleteLink(linkId) {
+    if (confirm('Are you sure you want to delete this link? This action cannot be undone.')) {
+        $.ajax({
+            url: '{{ url("admin/onboarding/delete-link") }}/' + linkId,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast('success', 'Link deleted successfully');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 500);
+                }
+            },
+            error: function(xhr) {
+                showToast('error', 'Error deleting link');
+            }
+        });
+    }
+}
+
+// Deactivate saved link (kept for compatibility but deprecated)
 function deactivateLink(linkId) {
     if (confirm('Are you sure you want to deactivate this link? This will prevent it from being used for new applications.')) {
         $.ajax({

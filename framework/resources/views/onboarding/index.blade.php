@@ -1631,17 +1631,65 @@ function deleteDriver(driverId) {
 // Copy link to clipboard
 function copyLink() {
     var linkInput = document.getElementById('generatedLink');
-    linkInput.select();
-    document.execCommand('copy');
-    alert('Link copied to clipboard!');
+    var linkText = linkInput.value;
+    
+    // Use modern Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(linkText).then(function() {
+            showToast('success', 'Link copied to clipboard!');
+        }).catch(function(err) {
+            console.error('Failed to copy:', err);
+            fallbackCopyTextToClipboard(linkText);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(linkText);
+    }
 }
 
 // Copy saved link to clipboard
 function copySavedLink(linkId) {
     var linkInput = document.getElementById('savedLink' + linkId);
-    linkInput.select();
-    document.execCommand('copy');
-    alert('Link copied to clipboard!');
+    var linkText = linkInput.value;
+    
+    // Use modern Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(linkText).then(function() {
+            showToast('success', 'Link copied to clipboard!');
+        }).catch(function(err) {
+            console.error('Failed to copy:', err);
+            fallbackCopyTextToClipboard(linkText);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(linkText);
+    }
+}
+
+// Fallback copy function for older browsers
+function fallbackCopyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        var successful = document.execCommand('copy');
+        if (successful) {
+            showToast('success', 'Link copied to clipboard!');
+        } else {
+            showToast('error', 'Failed to copy link. Please select and copy manually.');
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showToast('error', 'Failed to copy link. Please select and copy manually.');
+    }
+    
+    document.body.removeChild(textArea);
 }
 
 // Deactivate saved link

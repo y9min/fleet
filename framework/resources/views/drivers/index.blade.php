@@ -216,6 +216,26 @@
       border-color: #dee2e6;
       cursor: not-allowed;
   }
+
+  /* Bulk Actions Toolbar */
+  .bulk-actions-toolbar {
+      animation: slideDown 0.3s ease-out;
+  }
+  
+  @keyframes slideDown {
+      from {
+          opacity: 0;
+          transform: translateY(-10px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  .row-selected {
+      background-color: #f0fdff !important;
+  }
 </style>
 @endsection
 @section("breadcrumb")
@@ -276,6 +296,29 @@
             <button type="button" class="btn" style="background-color: #7ed6e1; color: white; border: 1px solid #7ed6e1;" data-toggle="modal" data-target="#import" title="Import Drivers">
                 <i class="fas fa-file-import"></i> Import Drivers
             </button>
+        </div>
+    </div>
+
+    <!-- Enhanced Bulk Actions Toolbar -->
+    <div class="bulk-actions-toolbar" id="bulkToolbar" style="display: none;">
+        <div class="d-flex align-items-center justify-content-between p-4" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <div class="d-flex align-items-center">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #7FD7E1, #6BC5D2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                    <i class="fas fa-check-circle text-white"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0" style="font-weight: 600; color: #333;">Bulk Actions</h6>
+                    <small class="text-muted" id="selectedCount">0</small> driver(s) selected
+                </div>
+            </div>
+            <div class="bulk-actions d-flex gap-2">
+                <button class="btn btn-outline-secondary" onclick="clearDriverSelection()" style="border-radius: 6px; padding: 8px 16px;">
+                    <i class="fas fa-times"></i> Clear Selection
+                </button>
+                <button class="btn btn-danger" onclick="bulkDeleteDrivers()" style="border-radius: 6px; padding: 8px 16px; background: linear-gradient(135deg, #dc3545, #c82333); border: none;">
+                    <i class="fas fa-trash-alt"></i> Delete Selected
+                </button>
+            </div>
         </div>
     </div>
 
@@ -645,48 +688,106 @@ function renderPagination(totalItems, totalPages, currentPage) {
 
 // Attach event handlers for interactive elements
 function attachEventHandlers() {
-    // Checkbox click handler
-    $('input[type="checkbox"]').off('click').on('click', function() {
-        if(this.checked){
-            $('#bulk_delete').prop('disabled', false);
-        } else {
-            if($("input[name='ids[]']:checked").length == 0){
-                $('#bulk_delete').prop('disabled', true);
-            }
-        }
-    });
-    
-    // Bulk delete handler
-    $('#bulk_delete').off('click').on('click', function() {
-        if($("input[name='ids[]']:checked").length == 0){
-            $('#bulk_delete').prop('type','button');
-            new PNotify({
-                title: 'Failed!',
-                text: "@lang('fleet.delete_error')",
-                type: 'error'
-            });
-            $('#bulk_delete').attr('disabled', true);
-        }
-        if($("input[name='ids[]']:checked").length > 0){
-            $.each($("input[name='ids[]']:checked"), function(){
-                $("#bulk_hidden").append('<input type=hidden name=ids[] value='+$(this).val()+'>');
-            });
-        }
+    // Update selection when checkboxes change
+    $('input[name="ids[]"]').off('change').on('change', function() {
+        updateDriverSelection();
     });
     
     // Check all handler
-    $('#chk_all').off('click').on('click', function() {
-        if(this.checked){
-            $('.checkbox').each(function(){
-                $('.checkbox').prop("checked", true);
-            });
-        } else {
-            $('.checkbox').each(function(){
-                $('.checkbox').prop("checked", false);
-            });
-            $('#bulk_delete').prop('disabled', true);
-        }
+    $('#chk_all').off('change').on('change', function() {
+        $('.checkbox').prop("checked", this.checked);
+        updateDriverSelection();
     });
+    
+    // Call update on page load
+    updateDriverSelection();
+}
+
+// Update driver selection and show/hide bulk toolbar
+function updateDriverSelection() {
+    const checkboxes = document.querySelectorAll('input[name="ids[]"]');
+    const checkedBoxes = document.querySelectorAll('input[name="ids[]"]:checked');
+    const selectAllCheckbox = document.getElementById('chk_all');
+    const bulkToolbar = document.getElementById('bulkToolbar');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    // Update select all checkbox state
+    if (checkedBoxes.length === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+    } else if (checkedBoxes.length === checkboxes.length) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+    } else {
+        selectAllCheckbox.indeterminate = true;
+    }
+    
+    // Show/hide bulk toolbar
+    if (checkedBoxes.length > 0) {
+        bulkToolbar.style.display = 'block';
+        selectedCount.textContent = checkedBoxes.length;
+        
+        // Highlight selected rows
+        checkboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            if (cb.checked) {
+                row.classList.add('row-selected');
+            } else {
+                row.classList.remove('row-selected');
+            }
+        });
+    } else {
+        bulkToolbar.style.display = 'none';
+        // Remove all row highlights
+        checkboxes.forEach(cb => {
+            cb.closest('tr').classList.remove('row-selected');
+        });
+    }
+}
+
+// Clear driver selection
+function clearDriverSelection() {
+    const checkboxes = document.querySelectorAll('input[name="ids[]"]');
+    const selectAllCheckbox = document.getElementById('chk_all');
+    
+    checkboxes.forEach(cb => {
+        cb.checked = false;
+    });
+    selectAllCheckbox.checked = false;
+    selectAllCheckbox.indeterminate = false;
+    
+    updateDriverSelection();
+}
+
+// Bulk delete drivers
+function bulkDeleteDrivers() {
+    const selectedCheckboxes = document.querySelectorAll('input[name="ids[]"]:checked');
+    if (selectedCheckboxes.length === 0) {
+        alert('Please select at least one driver to delete.');
+        return;
+    }
+    
+    const driverNames = Array.from(selectedCheckboxes).map(checkbox => {
+        const row = checkbox.closest('tr');
+        const name = row.querySelector('td:nth-child(2) a').textContent;
+        return name;
+    }).join(', ');
+    
+    if (confirm(`Are you sure you want to delete ${selectedCheckboxes.length} driver(s)?\n\nDrivers: ${driverNames}\n\nThis action cannot be undone and will delete all associated records.`)) {
+        // Create bulk delete form
+        const form = document.createElement('form');
+        form.action = '{{ url("admin/delete-drivers") }}';
+        form.method = 'POST';
+        
+        let formHtml = '@csrf';
+        selectedCheckboxes.forEach(checkbox => {
+            formHtml += `<input type="hidden" name="ids[]" value="${checkbox.value}">`;
+        });
+        
+        form.innerHTML = formHtml;
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 
 // Initialize on page load

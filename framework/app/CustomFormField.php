@@ -4,12 +4,16 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class CustomFormField extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'custom_form_fields';
+    
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = [
         'field_name',

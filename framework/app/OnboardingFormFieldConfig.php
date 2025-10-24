@@ -4,12 +4,16 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class OnboardingFormFieldConfig extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'onboarding_form_field_configs';
+    
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = [
         'field_key',

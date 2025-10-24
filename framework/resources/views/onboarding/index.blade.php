@@ -1715,6 +1715,9 @@ function updateFieldConfig(fieldId, fieldType, value) {
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
     console.log('CSRF Token:', csrfToken);
     
+    // Get field label for user feedback
+    var fieldLabel = $('#visible_' + fieldId).closest('.field-config-item').find('.field-label strong').text();
+    
     $.ajax({
         url: '{{ url("admin/onboarding/update-field-config") }}/' + fieldId,
         type: 'POST',
@@ -1726,6 +1729,8 @@ function updateFieldConfig(fieldId, fieldType, value) {
             console.log('Response:', response);
             if (response.success) {
                 console.log('Field configuration updated successfully');
+                // Show success toast
+                showToast('success', fieldLabel + ' configuration updated successfully');
             } else {
                 console.error('Error updating field configuration:', response);
                 // Revert the toggle state
@@ -1734,6 +1739,7 @@ function updateFieldConfig(fieldId, fieldType, value) {
                 } else if (fieldType === 'required') {
                     $('#required_' + fieldId).prop('checked', !value);
                 }
+                showToast('error', 'Failed to update ' + fieldLabel + ' configuration');
             }
         },
         error: function(xhr) {
@@ -1746,8 +1752,35 @@ function updateFieldConfig(fieldId, fieldType, value) {
             } else if (fieldType === 'required') {
                 $('#required_' + fieldId).prop('checked', !value);
             }
+            var errorMsg = 'Failed to update ' + fieldLabel + ' configuration';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMsg = xhr.responseJSON.message;
+            }
+            showToast('error', errorMsg);
         }
     });
+}
+
+// Simple toast notification function
+function showToast(type, message) {
+    // Remove existing toasts
+    $('.toast-notification').remove();
+    
+    var icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+    var bgColor = type === 'success' ? '#28a745' : '#dc3545';
+    
+    var toast = $('<div class="toast-notification" style="position: fixed; top: 20px; right: 20px; background: ' + bgColor + '; color: white; padding: 15px 20px; border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 9999; min-width: 300px;">' +
+        '<i class="fas fa-' + icon + '"></i> ' + message +
+        '</div>');
+    
+    $('body').append(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(function() {
+        toast.fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 3000);
 }
 </script>
 @endsection

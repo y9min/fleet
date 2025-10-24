@@ -769,48 +769,84 @@ class OnboardingController extends Controller
      */
     public function updateFieldConfig(Request $request, $id)
     {
-        \Log::info('Field config update request', [
-            'id' => $id,
-            'data' => $request->all()
-        ]);
+        try {
+            \Log::info('Field config update request', [
+                'id' => $id,
+                'data' => $request->all()
+            ]);
 
-        // Convert string values to proper booleans
-        $data = $request->all();
-        if (isset($data['is_visible'])) {
-            $data['is_visible'] = filter_var($data['is_visible'], FILTER_VALIDATE_BOOLEAN);
+            // Convert string values to proper booleans
+            $data = $request->all();
+            if (isset($data['is_visible'])) {
+                $data['is_visible'] = filter_var($data['is_visible'], FILTER_VALIDATE_BOOLEAN);
+            }
+            if (isset($data['is_required'])) {
+                $data['is_required'] = filter_var($data['is_required'], FILTER_VALIDATE_BOOLEAN);
+            }
+
+            $validator = Validator::make($data, [
+                'is_visible' => 'nullable|boolean',
+                'is_required' => 'nullable|boolean'
+            ]);
+
+            if ($validator->fails()) {
+                \Log::error('Validation failed', ['errors' => $validator->errors()]);
+                return response()->json([
+                    'success' => false, 
+                    'errors' => $validator->errors(),
+                    'message' => 'Validation failed'
+                ], 422);
+            }
+
+            $fieldConfig = OnboardingFormFieldConfig::findOrFail($id);
+            
+            $updateData = [];
+            if ($request->has('is_visible')) {
+                $updateData['is_visible'] = $data['is_visible'];
+            }
+            if ($request->has('is_required')) {
+                $updateData['is_required'] = $data['is_required'];
+            }
+
+            \Log::info('Updating field config', [
+                'id' => $id,
+                'update_data' => $updateData,
+                'old_state' => [
+                    'is_visible' => $fieldConfig->is_visible,
+                    'is_required' => $fieldConfig->is_required
+                ]
+            ]);
+
+            $fieldConfig->update($updateData);
+
+            \Log::info('Field config updated successfully', [
+                'id' => $id,
+                'new_state' => [
+                    'is_visible' => $fieldConfig->fresh()->is_visible,
+                    'is_required' => $fieldConfig->fresh()->is_required
+                ]
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Field configuration updated successfully',
+                'data' => [
+                    'is_visible' => $fieldConfig->fresh()->is_visible,
+                    'is_required' => $fieldConfig->fresh()->is_required
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating field config', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating field configuration: ' . $e->getMessage()
+            ], 500);
         }
-        if (isset($data['is_required'])) {
-            $data['is_required'] = filter_var($data['is_required'], FILTER_VALIDATE_BOOLEAN);
-        }
-
-        $validator = Validator::make($data, [
-            'is_visible' => 'nullable|boolean',
-            'is_required' => 'nullable|boolean'
-        ]);
-
-        if ($validator->fails()) {
-            \Log::error('Validation failed', ['errors' => $validator->errors()]);
-            return response()->json(['success' => false, 'errors' => $validator->errors()]);
-        }
-
-        $fieldConfig = OnboardingFormFieldConfig::findOrFail($id);
-        
-        $updateData = [];
-        if ($request->has('is_visible')) {
-            $updateData['is_visible'] = $data['is_visible'];
-        }
-        if ($request->has('is_required')) {
-            $updateData['is_required'] = $data['is_required'];
-        }
-
-        \Log::info('Updating field config', [
-            'id' => $id,
-            'update_data' => $updateData
-        ]);
-
-        $fieldConfig->update($updateData);
-
-        return response()->json(['success' => true]);
     }
 
     /**

@@ -164,8 +164,13 @@ class OnboardingFormFieldConfig extends Model
     // Initialize default fields if none exist
     public static function initializeDefaultFields()
     {
-        if (self::count() === 0) {
-            foreach (self::getDefaultFields() as $field) {
+        $defaultFields = self::getDefaultFields();
+        
+        foreach ($defaultFields as $field) {
+            // Check if this specific field exists
+            $exists = self::where('field_key', $field['field_key'])->exists();
+            
+            if (!$exists) {
                 self::create($field);
             }
         }

@@ -546,8 +546,8 @@
               <a href="{{url('admin/drivers/create')}}" class="action-btn">
                 <i class="fa fa-plus"></i> Add Driver
               </a>
-              <a href="{{url('admin/customers/create')}}" class="action-btn">
-                <i class="fa fa-plus"></i> Add Customer
+              <a href="{{url('admin/fines/create')}}" class="action-btn">
+                <i class="fa fa-plus"></i> New Fine/Penalty
               </a>
               <a href="{{url('admin/invitations/create')}}" class="action-btn">
                 <i class="fa fa-plus"></i> New Pickup Invitation

@@ -1628,6 +1628,10 @@ $(document).ready(function() {
         const files = e.originalEvent.dataTransfer.files;
         if (files.length > 0) {
             const file = files[0];
+            // Create a new FileList and assign to the input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput[0].files = dataTransfer.files;
             handleFileSelection(file);
         }
     });

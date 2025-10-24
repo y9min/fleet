@@ -147,7 +147,16 @@ class OnboardingController extends Controller
             'status',
             'license_upload_path',
             'insurance_upload_path',
-            'created_at'
+            'created_at',
+            'license_expiry',
+            'address',
+            'emergency_contact',
+            'emergency_phone',
+            'vehicle_id',
+            'scheme',
+            'insurance_selection',
+            'custom_data',
+            'form_data'
         ]);
 
         // Company scoping via vehicle_id - consistent with stats logic

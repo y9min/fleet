@@ -926,7 +926,7 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 12px;
+    padding: 0;
     background-color: #fff;
     border: 1px solid #dee2e6;
     border-radius: 6px;
@@ -934,6 +934,7 @@ body {
     transition: all 0.2s ease;
     min-width: 40px;
     height: 34px;
+    vertical-align: middle;
 }
 
 .copy-button-enhanced:hover {
@@ -949,13 +950,18 @@ body {
     position: relative;
     width: 16px;
     height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
 }
 
 .copy-button-enhanced .copy-icon,
 .copy-button-enhanced .check-icon {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 16px;
     height: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -963,22 +969,22 @@ body {
 
 .copy-button-enhanced .copy-icon {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .copy-button-enhanced .check-icon {
     opacity: 0;
-    transform: scale(0);
+    transform: translate(-50%, -50%) scale(0);
 }
 
 .copy-button-enhanced.copied .copy-icon {
     opacity: 0;
-    transform: scale(0);
+    transform: translate(-50%, -50%) scale(0);
 }
 
 .copy-button-enhanced.copied .check-icon {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .copy-button-enhanced .copy-icon svg,
@@ -1021,7 +1027,7 @@ body {
 /* Small size variant for table */
 .input-group-enhanced .form-control-sm + .copy-button-enhanced {
     height: 31px;
-    padding: 4px 8px;
+    padding: 0;
 }
 
 .input-group-enhanced .form-control-sm + .copy-button-enhanced .icon-wrapper {

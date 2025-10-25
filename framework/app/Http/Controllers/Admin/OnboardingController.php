@@ -171,10 +171,15 @@ class OnboardingController extends Controller
         if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
             $vehicleIds = \App\Model\VehicleModel::where('company_id', $auth->company_id)->pluck('id');
             // Include records with matching vehicle_id OR null vehicle_id for historic data
-            $query->where(function($q) use ($vehicleIds) {
-                $q->whereIn('vehicle_id', $vehicleIds)
-                  ->orWhereNull('vehicle_id');
-            });
+            if ($vehicleIds->isNotEmpty()) {
+                $query->where(function($q) use ($vehicleIds) {
+                    $q->whereIn('vehicle_id', $vehicleIds)
+                      ->orWhereNull('vehicle_id');
+                });
+            } else {
+                // If no vehicles exist for this company, show only records with null vehicle_id
+                $query->whereNull('vehicle_id');
+            }
         } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
             // For broker users without company, show all records
             // Remove the whereRaw('1=0') restriction to show historic data

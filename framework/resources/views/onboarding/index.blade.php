@@ -2066,27 +2066,8 @@ function copyLinkEnhanced() {
     
     console.log('Attempting to copy:', linkText);
     
-    // Use modern Clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(linkText).then(function() {
-            console.log('Clipboard API success');
-            // Add 'copied' class for animation
-            button.classList.add('copied');
-            
-            // Remove 'copied' class after 2 seconds
-            setTimeout(function() {
-                button.classList.remove('copied');
-            }, 2000);
-        }).catch(function(err) {
-            console.error('Clipboard API failed:', err);
-            // Fallback to old method
-            fallbackCopyTextToClipboardEnhanced(linkText, button);
-        });
-    } else {
-        console.log('Clipboard API not available, using fallback');
-        // Fallback for older browsers
-        fallbackCopyTextToClipboardEnhanced(linkText, button);
-    }
+    // Always use the reliable fallback method
+    fallbackCopyTextToClipboardEnhanced(linkText, button);
 }
 
 // Copy saved link to clipboard
@@ -2121,27 +2102,8 @@ function copySavedLinkEnhanced(linkId) {
     
     console.log('Attempting to copy saved link:', linkText);
     
-    // Use modern Clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(linkText).then(function() {
-            console.log('Clipboard API success for saved link');
-            // Add 'copied' class for animation
-            button.classList.add('copied');
-            
-            // Remove 'copied' class after 2 seconds
-            setTimeout(function() {
-                button.classList.remove('copied');
-            }, 2000);
-        }).catch(function(err) {
-            console.error('Clipboard API failed for saved link:', err);
-            // Fallback to old method
-            fallbackCopyTextToClipboardEnhanced(linkText, button);
-        });
-    } else {
-        console.log('Clipboard API not available for saved link, using fallback');
-        // Fallback for older browsers
-        fallbackCopyTextToClipboardEnhanced(linkText, button);
-    }
+    // Always use the reliable fallback method
+    fallbackCopyTextToClipboardEnhanced(linkText, button);
 }
 
 // Fallback copy function for enhanced button
@@ -2151,10 +2113,13 @@ function fallbackCopyTextToClipboardEnhanced(text, button) {
     // Try to select the input field first
     var inputElement = button.parentElement.querySelector('input');
     if (inputElement) {
+        // Focus and select the input
+        inputElement.focus();
         inputElement.select();
         inputElement.setSelectionRange(0, 99999); // For mobile devices
         
         try {
+            // Try to copy using execCommand
             var successful = document.execCommand('copy');
             if (successful) {
                 console.log('Fallback copy successful via input selection');
@@ -2164,6 +2129,8 @@ function fallbackCopyTextToClipboardEnhanced(text, button) {
                         button.classList.remove('copied');
                     }, 2000);
                 }
+                // Show success message
+                showToast('success', 'Link copied to clipboard!');
                 return;
             }
         } catch (err) {
@@ -2171,14 +2138,22 @@ function fallbackCopyTextToClipboardEnhanced(text, button) {
         }
     }
     
-    // Create temporary textarea as last resort
+    // Create temporary textarea as fallback
     var textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "fixed";
-    textArea.style.left = "-999999px";
-    textArea.style.top = "-999999px";
+    textArea.style.left = "0";
+    textArea.style.top = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
     textArea.style.opacity = "0";
-    textArea.style.pointerEvents = "none";
+    textArea.style.zIndex = "-1";
+    
     document.body.appendChild(textArea);
     
     try {
@@ -2195,15 +2170,24 @@ function fallbackCopyTextToClipboardEnhanced(text, button) {
                     button.classList.remove('copied');
                 }, 2000);
             }
+            showToast('success', 'Link copied to clipboard!');
         } else {
             console.log('Fallback copy failed');
-            alert('Failed to copy link. Please select and copy manually.');
-            showToast('error', 'Failed to copy link. Please select and copy manually.');
+            // Select the text manually
+            inputElement.focus();
+            inputElement.select();
+            showToast('info', 'Please press Ctrl+C (or Cmd+C on Mac) to copy');
         }
     } catch (err) {
         console.error('Fallback copy failed:', err);
-        alert('Failed to copy link. Please select and copy manually.');
-        showToast('error', 'Failed to copy link. Please select and copy manually.');
+        // Select the input field so user can manually copy
+        if (inputElement) {
+            inputElement.focus();
+            inputElement.select();
+            showToast('info', 'Please press Ctrl+C (or Cmd+C on Mac) to copy');
+        } else {
+            showToast('error', 'Failed to copy link. Please select and copy manually.');
+        }
     }
     
     document.body.removeChild(textArea);

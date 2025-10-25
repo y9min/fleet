@@ -1872,18 +1872,23 @@ function deleteDriver(driverId) {
 function copyLink() {
     var linkInput = document.getElementById('generatedLink');
     var linkText = linkInput.value;
+    var button = event.target.closest('button');
+    var originalHtml = button.innerHTML;
     
     // Use modern Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(linkText).then(function() {
-            showToast('success', 'Link copied to clipboard!');
+            button.innerHTML = '<i class="fa fa-check"></i> Copied';
+            setTimeout(function() {
+                button.innerHTML = originalHtml;
+            }, 2000);
         }).catch(function(err) {
             console.error('Failed to copy:', err);
-            fallbackCopyTextToClipboard(linkText);
+            fallbackCopyTextToClipboard(linkText, button, originalHtml);
         });
     } else {
         // Fallback for older browsers
-        fallbackCopyTextToClipboard(linkText);
+        fallbackCopyTextToClipboard(linkText, button, originalHtml);
     }
 }
 

@@ -1234,7 +1234,7 @@ body {
                                                 <td>
                                                     <div class="input-group-enhanced">
                                                         <input type="text" class="form-control form-control-sm" value="{{ $link->link }}" readonly id="savedLink{{ $link->id }}">
-                                                        <button class="copy-button-enhanced" onclick="copySavedLinkEnhanced({{ $link->id }})" data-link-id="{{ $link->id }}" aria-label="Copy link">
+                                                        <button class="copy-button-enhanced" onclick="copySavedLinkEnhanced('{{ $link->id }}')" data-link-id="{{ $link->id }}" aria-label="Copy link">
                                                             <div class="icon-wrapper">
                                                                 <div class="copy-icon">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

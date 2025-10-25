@@ -103,13 +103,28 @@ class OnboardingDriver extends Model
             return null;
         }
         
-        // Handle both old and new file path formats
-        if (strpos($this->license_upload_path, 'onboarding/documents/') === 0) {
-            // New format: onboarding/documents/filename
-            return asset('storage/' . $this->license_upload_path);
+        // Check if S3 is configured, otherwise use local storage
+        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+        
+        if ($useS3) {
+            $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+            // Handle both old and new path formats
+            if (strpos($this->license_upload_path, 'onboarding/documents/') === 0) {
+                // Old format: onboarding/documents/filename
+                return $s3BaseUrl . $this->license_upload_path;
+            } else {
+                // New format: filename (stored in uploads/onboarding/)
+                return $s3BaseUrl . 'uploads/onboarding/' . $this->license_upload_path;
+            }
         } else {
-            // Old format: filename (stored in uploads/onboarding/)
-            return asset('uploads/onboarding/' . $this->license_upload_path);
+            // Local storage - handle both old and new formats
+            if (strpos($this->license_upload_path, 'onboarding/documents/') === 0) {
+                // Old format: onboarding/documents/filename
+                return asset('storage/' . $this->license_upload_path);
+            } else {
+                // New format: filename (stored in uploads/onboarding/)
+                return asset('uploads/onboarding/' . $this->license_upload_path);
+            }
         }
     }
 
@@ -119,13 +134,28 @@ class OnboardingDriver extends Model
             return null;
         }
         
-        // Handle both old and new file path formats
-        if (strpos($this->insurance_upload_path, 'onboarding/documents/') === 0) {
-            // New format: onboarding/documents/filename
-            return asset('storage/' . $this->insurance_upload_path);
+        // Check if S3 is configured, otherwise use local storage
+        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+        
+        if ($useS3) {
+            $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+            // Handle both old and new path formats
+            if (strpos($this->insurance_upload_path, 'onboarding/documents/') === 0) {
+                // Old format: onboarding/documents/filename
+                return $s3BaseUrl . $this->insurance_upload_path;
+            } else {
+                // New format: filename (stored in uploads/onboarding/)
+                return $s3BaseUrl . 'uploads/onboarding/' . $this->insurance_upload_path;
+            }
         } else {
-            // Old format: filename (stored in uploads/onboarding/)
-            return asset('uploads/onboarding/' . $this->insurance_upload_path);
+            // Local storage - handle both old and new formats
+            if (strpos($this->insurance_upload_path, 'onboarding/documents/') === 0) {
+                // Old format: onboarding/documents/filename
+                return asset('storage/' . $this->insurance_upload_path);
+            } else {
+                // New format: filename (stored in uploads/onboarding/)
+                return asset('uploads/onboarding/' . $this->insurance_upload_path);
+            }
         }
     }
 

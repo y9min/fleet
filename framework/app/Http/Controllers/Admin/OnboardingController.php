@@ -754,7 +754,25 @@ class OnboardingController extends Controller
             try {
                 $licenseFile = $request->file('license_file');
                 if ($licenseFile && $licenseFile->isValid()) {
-                    $licensePath = $licenseFile->store('onboarding/documents', 'public');
+                    // Check if S3 is configured, otherwise use local storage
+                    $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                    
+                    if ($useS3) {
+                        // Upload to S3
+                        $fileName = Str::uuid() . '.' . $licenseFile->getClientOriginalExtension();
+                        $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $licenseFile, $fileName);
+                        $licensePath = $fileName;
+                        \Log::info('License file uploaded to S3 successfully', ['filename' => $fileName, 'path' => $path]);
+                    } else {
+                        // Fallback to local storage
+                        $destinationPath = public_path('uploads/onboarding');
+                        if (!file_exists($destinationPath)) {
+                            mkdir($destinationPath, 0755, true);
+                        }
+                        $fileName = Str::uuid() . '.' . $licenseFile->getClientOriginalExtension();
+                        $licenseFile->move($destinationPath, $fileName);
+                        $licensePath = $fileName;
+                    }
                 }
             } catch (\Exception $e) {
                 \Log::error('License file upload failed', ['error' => $e->getMessage()]);
@@ -767,7 +785,25 @@ class OnboardingController extends Controller
             try {
                 $insuranceFile = $request->file('insurance_file');
                 if ($insuranceFile && $insuranceFile->isValid()) {
-                    $insurancePath = $insuranceFile->store('onboarding/documents', 'public');
+                    // Check if S3 is configured, otherwise use local storage
+                    $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                    
+                    if ($useS3) {
+                        // Upload to S3
+                        $fileName = Str::uuid() . '.' . $insuranceFile->getClientOriginalExtension();
+                        $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $insuranceFile, $fileName);
+                        $insurancePath = $fileName;
+                        \Log::info('Insurance file uploaded to S3 successfully', ['filename' => $fileName, 'path' => $path]);
+                    } else {
+                        // Fallback to local storage
+                        $destinationPath = public_path('uploads/onboarding');
+                        if (!file_exists($destinationPath)) {
+                            mkdir($destinationPath, 0755, true);
+                        }
+                        $fileName = Str::uuid() . '.' . $insuranceFile->getClientOriginalExtension();
+                        $insuranceFile->move($destinationPath, $fileName);
+                        $insurancePath = $fileName;
+                    }
                 }
             } catch (\Exception $e) {
                 \Log::error('Insurance file upload failed', ['error' => $e->getMessage()]);
@@ -783,8 +819,25 @@ class OnboardingController extends Controller
             $fieldKey = 'custom_' . $field->id;
             if ($field->field_type === 'file' && $request->hasFile($fieldKey)) {
                 try {
-                    $filePath = $request->file($fieldKey)->store('onboarding/documents', 'public');
-                    $customData[$fieldKey] = $filePath;
+                    // Check if S3 is configured, otherwise use local storage
+                    $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                    
+                    if ($useS3) {
+                        // Upload to S3
+                        $fileName = Str::uuid() . '.' . $request->file($fieldKey)->getClientOriginalExtension();
+                        $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $request->file($fieldKey), $fileName);
+                        $customData[$fieldKey] = $fileName;
+                        \Log::info('Custom file uploaded to S3 successfully', ['field' => $fieldKey, 'filename' => $fileName, 'path' => $path]);
+                    } else {
+                        // Fallback to local storage
+                        $destinationPath = public_path('uploads/onboarding');
+                        if (!file_exists($destinationPath)) {
+                            mkdir($destinationPath, 0755, true);
+                        }
+                        $fileName = Str::uuid() . '.' . $request->file($fieldKey)->getClientOriginalExtension();
+                        $request->file($fieldKey)->move($destinationPath, $fileName);
+                        $customData[$fieldKey] = $fileName;
+                    }
                 } catch (\Exception $e) {
                     \Log::error('Custom file upload failed for field: ' . $fieldKey, ['error' => $e->getMessage()]);
                     // Continue processing other fields even if one fails

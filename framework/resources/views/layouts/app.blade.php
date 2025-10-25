@@ -19,7 +19,77 @@
 
 
 
-  <title>{{ Hyvikk::get('app_name') }}</title>
+  <title>
+    @if(Route::currentRouteName() == "admin.dashboard" || Request::is('admin') || Request::is('admin/'))
+        PCOFlow | Dashboard
+    @elseif(Route::currentRouteName() == "drivers.index")
+        PCOFlow | Drivers
+    @elseif(Route::currentRouteName() == "drivers.create")
+        PCOFlow | Add Driver
+    @elseif(Route::currentRouteName() == "drivers.show")
+        PCOFlow | Driver Details
+    @elseif(Route::currentRouteName() == "drivers.edit")
+        PCOFlow | Edit Driver
+    @elseif(Route::currentRouteName() == "vehicles.index")
+        PCOFlow | Vehicles
+    @elseif(Route::currentRouteName() == "vehicles.create")
+        PCOFlow | Add Vehicle
+    @elseif(Route::currentRouteName() == "vehicles.show")
+        PCOFlow | Vehicle Details
+    @elseif(Route::currentRouteName() == "vehicles.edit")
+        PCOFlow | Edit Vehicle
+    @elseif(Route::currentRouteName() == "invitations.index")
+        PCOFlow | Manage Pickup Invitations
+    @elseif(Route::currentRouteName() == "invitations.create")
+        PCOFlow | New Pickup Invitation
+    @elseif(Route::currentRouteName() == "invitations.show")
+        PCOFlow | Booking Details
+    @elseif(Route::currentRouteName() == "invitations.edit")
+        PCOFlow | Edit Booking
+    @elseif(Route::currentRouteName() == "bookings.calendar")
+        PCOFlow | Vehicle Pickup Calendar
+    @elseif(Route::currentRouteName() == "customers.index")
+        PCOFlow | Customers
+    @elseif(Route::currentRouteName() == "customers.create")
+        PCOFlow | Add Customer
+    @elseif(Route::currentRouteName() == "customers.show")
+        PCOFlow | Customer Details
+    @elseif(Route::currentRouteName() == "customers.edit")
+        PCOFlow | Edit Customer
+    @elseif(Route::currentRouteName() == "onboarding.index")
+        PCOFlow | Onboarding
+    @elseif(Route::currentRouteName() == "onboarding.show")
+        PCOFlow | Onboarding Details
+    @elseif(Request::is('admin/vehicle-types*'))
+        PCOFlow | Vehicle Types
+    @elseif(Request::is('admin/vehicle_group*'))
+        PCOFlow | Vehicle Groups
+    @elseif(Route::currentRouteName() == "vehicle_inspection")
+        PCOFlow | Vehicle Inspection
+    @elseif(Request::is('admin/income*'))
+        PCOFlow | Income Management
+    @elseif(Request::is('admin/expense*'))
+        PCOFlow | Expense Management
+    @elseif(Request::is('admin/reports*'))
+        PCOFlow | Reports
+    @elseif(Request::is('admin/settings*'))
+        PCOFlow | Settings
+    @elseif(Request::is('admin/users*'))
+        PCOFlow | User Management
+    @elseif(Request::is('admin/fines*'))
+        PCOFlow | Fines & Penalties
+    @elseif(Request::is('admin/fuel*'))
+        PCOFlow | Fuel Management
+    @elseif(Request::is('admin/parts*'))
+        PCOFlow | Parts Management
+    @elseif(Request::is('admin/chat*'))
+        PCOFlow | Messages
+    @elseif(Request::is('admin/change-details*'))
+        PCOFlow | Change Password
+    @else
+        @yield('page_title', 'PCOFlow')
+    @endif
+  </title>
 
   <!-- Tell the browser to be responsive to screen width -->
 

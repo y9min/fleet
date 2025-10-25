@@ -1,7 +1,7 @@
 @extends('customer_dashboard.layouts.app')
 
 @section('title')
-    <title>@lang('frontend.login') | {{ Hyvikk::get('app_name') }}</title>
+    <title>PCOFlow | Login</title>
 @endsection
 
 @section('content')

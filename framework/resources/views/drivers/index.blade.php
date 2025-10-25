@@ -1,5 +1,10 @@
 @extends('layouts.app')
 @php($date_format_setting=(Hyvikk::get('date_format'))?Hyvikk::get('date_format'):'d-m-Y')
+
+@section('page_title')
+PCOFlow | Drivers
+@endsection
+
 @section('extra_css')
 <style type="text/css">
 .show-password-button{

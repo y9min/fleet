@@ -2,7 +2,7 @@
 
 
 @section('title')
-    <title>@lang('frontend.Dashboard') | {{ Hyvikk::get('app_name') }}</title>
+    <title>PCOFlow | Dashboard</title>
 @endsection
 
 @section('css')

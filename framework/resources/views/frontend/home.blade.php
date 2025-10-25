@@ -1,7 +1,7 @@
 @extends('frontend.layouts.app')
 
 @section('title') 
-    <title>Streamline Your PCO Operations, One Click at a Time | PCO Flow</title>
+    <title>PCOFlow</title>
 @endsection
 
 @section('css')

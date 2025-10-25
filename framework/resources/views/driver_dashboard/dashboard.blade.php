@@ -1,7 +1,7 @@
 @extends('driver_dashboard.layouts.app')
 
 @section('title')
-    <title>Driver Dashboard | {{ Hyvikk::get('app_name') }}</title>
+    <title>PCOFlow | Dashboard</title>
 @endsection
 
 @section('css')

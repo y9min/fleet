@@ -1,7 +1,7 @@
 @extends('frontend.layouts.app')
 
 @section('title')
-    <title>@lang('frontend.about') | {{ Hyvikk::get('app_name') }}</title>
+    <title>PCOFlow | About</title>
 @endsection
 
 

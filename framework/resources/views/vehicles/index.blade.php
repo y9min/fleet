@@ -1,4 +1,9 @@
 @extends('layouts.app')
+
+@section('page_title')
+PCOFlow | Vehicles
+@endsection
+
 @section('extra_css')
 <!-- FontAwesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

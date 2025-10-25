@@ -1,6 +1,10 @@
 
 @extends('layouts.app')
 
+@section('page_title')
+PCOFlow | Dashboard
+@endsection
+
 @section('extra_css')
 <style>
   :root {

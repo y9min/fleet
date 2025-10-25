@@ -165,9 +165,4 @@ class OnboardingDriver extends Model
         }
     }
 
-    // Vehicle relationship
-    public function vehicle()
-    {
-        return $this->belongsTo(\App\Model\VehicleModel::class, 'vehicle_id');
-    }
 }

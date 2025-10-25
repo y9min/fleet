@@ -8,7 +8,8 @@
 
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>PCOFlow | Login</title>
-  <link rel="icon" href="{{ asset('assets/images/pco-flow-favicon.png') }}" type="image/png" sizes="32x32">
+  <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png" sizes="32x32">
+  <link rel="shortcut icon" href="{{ asset('favicon.png') }}" type="image/png">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">

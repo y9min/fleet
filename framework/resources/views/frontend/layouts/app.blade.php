@@ -12,7 +12,8 @@
 
     @yield('title')
 
-    <link rel="icon" href="{{ asset('assets/images/pco-flow-favicon.png') }}" type="image/png" sizes="32x32">
+    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png" sizes="32x32">
+    <link rel="shortcut icon" href="{{ asset('favicon.png') }}" type="image/png">
 
     <link rel="stylesheet" href="{{ asset('assets/css/frontend-slick.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/owl.carousel.min.css') }}">

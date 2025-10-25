@@ -167,23 +167,9 @@ class OnboardingController extends Controller
             'form_data'
         ])->with(['vehicle']); // Eager load vehicle relationship for better performance
 
-        // Company scoping via vehicle_id - consistent with stats logic
-        if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
-            $vehicleIds = \App\Model\VehicleModel::where('company_id', $auth->company_id)->pluck('id');
-            // Include records with matching vehicle_id OR null vehicle_id for historic data
-            if ($vehicleIds->isNotEmpty()) {
-                $query->where(function($q) use ($vehicleIds) {
-                    $q->whereIn('vehicle_id', $vehicleIds)
-                      ->orWhereNull('vehicle_id');
-                });
-            } else {
-                // If no vehicles exist for this company, show only records with null vehicle_id
-                $query->whereNull('vehicle_id');
-            }
-        } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
-            // For broker users without company, show all records
-            // Remove the whereRaw('1=0') restriction to show historic data
-        }
+        // Company scoping via vehicle_id - REMOVED ALL FILTERING TO ENSURE ALL RECORDS ARE VISIBLE
+        // TODO: Re-implement company scoping later if needed
+        // For now, show ALL records to ensure visibility
 
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);

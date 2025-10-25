@@ -3143,6 +3143,7 @@ input:checked + .slider:before {
   {{-- <script>var google_api = "{{ Hyvikk::api('google_api') }}"; </script>  --}}
   <script src="{{ asset('assets/js/pnotify.custom.min.js')}}"></script>
   <script src="{{asset('assets/js/admin-custom.js')}}"></script>
+  <script src="{{asset('assets/js/performance-monitor.js')}}"></script>
   @yield('script')
   <script> var base_url = '{{ url("/") }}'; </script>
 </body>

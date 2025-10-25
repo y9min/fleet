@@ -165,7 +165,7 @@ class OnboardingController extends Controller
             'insurance_selection',
             'custom_data',
             'form_data'
-        ]);
+        ])->with(['vehicle']); // Eager load vehicle relationship for better performance
 
         // Company scoping via vehicle_id - consistent with stats logic
         if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
@@ -197,7 +197,7 @@ class OnboardingController extends Controller
                     </button>';
                 }
                 
-                // Prepare driver data for instant display (embedded in button to avoid AJAX calls)
+                // Prepare comprehensive driver data for instant display (embedded in button to avoid AJAX calls)
                 $driverData = [
                     'id' => $driver->id,
                     'name' => $driver->name,
@@ -222,14 +222,20 @@ class OnboardingController extends Controller
                 ];
                 
                 // Add vehicle details if available
-                if ($driver->vehicle_id) {
-                    $vehicle = \App\Model\VehicleModel::find($driver->vehicle_id);
-                    if ($vehicle) {
-                        $driverData['vehicle_details'] = [
-                            'make_name' => $vehicle->make_name,
-                            'model_name' => $vehicle->model_name,
-                            'license_plate' => $vehicle->license_plate,
-                        ];
+                if ($driver->vehicle_id && $driver->vehicle) {
+                    $driverData['vehicle_details'] = [
+                        'make_name' => $driver->vehicle->make_name,
+                        'model_name' => $driver->vehicle->model_name,
+                        'license_plate' => $driver->vehicle->license_plate,
+                    ];
+                }
+                
+                // Add custom fields data for display
+                if ($driver->custom_data && is_array($driver->custom_data)) {
+                    foreach ($driver->custom_data as $key => $value) {
+                        if (!isset($driverData[$key])) {
+                            $driverData[$key] = is_array($value) ? json_encode($value) : $value;
+                        }
                     }
                 }
                 

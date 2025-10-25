@@ -90,6 +90,12 @@ class OnboardingDriver extends Model
         return $this->status === self::STATUS_REJECTED;
     }
 
+    // Relationship with vehicle
+    public function vehicle()
+    {
+        return $this->belongsTo(\App\Model\VehicleModel::class, 'vehicle_id');
+    }
+
     // Get onboarding link
     public function getOnboardingLinkAttribute()
     {

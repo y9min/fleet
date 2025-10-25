@@ -1319,15 +1319,19 @@ function initializeOnboardingTable() {
     }
     
     console.log('Initializing DataTables...');
-    // Initialize DataTable with simple_numbers pagination and inline layout
+    // Initialize DataTable with optimized settings for better performance
     var table = $('#onboardTable').DataTable({
         processing: true,
         serverSide: true,
         responsive: true,
         autoWidth: false,
         pagingType: 'simple_numbers',
+        pageLength: 25, // Increased page size for better performance
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]], // More options
         ajax: {
-            url: '{{ url("admin/onboarding/fetch-data") }}'
+            url: '{{ url("admin/onboarding/fetch-data") }}',
+            type: 'GET', // Use GET for better caching
+            cache: true // Enable caching
         },
         columns: [
             {data: 'id', name: 'id'},

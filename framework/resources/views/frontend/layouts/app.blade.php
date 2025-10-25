@@ -12,7 +12,7 @@
 
     @yield('title')
 
-    <link rel="icon" href="{{ asset('assets/images/' . Hyvikk::get('icon_img')) }}" type="icon_img">
+    <link rel="icon" href="{{ asset('assets/images/pco-flow-favicon.png') }}" type="image/png" sizes="32x32">
 
     <link rel="stylesheet" href="{{ asset('assets/css/frontend-slick.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/owl.carousel.min.css') }}">

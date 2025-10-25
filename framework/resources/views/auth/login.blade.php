@@ -7,8 +7,8 @@
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>{{ Hyvikk::get('app_name') }}</title>
-  <link rel="icon" href="{{ asset('assets/images/'. Hyvikk::get('icon_img') ) }}" type="icon_img">
+  <title>PCOFlow | Login</title>
+  <link rel="icon" href="{{ asset('assets/images/pco-flow-favicon.png') }}" type="image/png" sizes="32x32">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">

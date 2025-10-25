@@ -913,6 +913,127 @@ body {
 .opacity-50 {
     opacity: 0.5;
 }
+
+/* Enhanced Copy Button Styles */
+.copy-button-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.copy-button-enhanced {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 40px;
+    height: 34px;
+}
+
+.copy-button-enhanced:hover {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.copy-button-enhanced:active {
+    transform: scale(0.95);
+}
+
+.copy-button-enhanced .icon-wrapper {
+    position: relative;
+    width: 16px;
+    height: 16px;
+}
+
+.copy-button-enhanced .copy-icon,
+.copy-button-enhanced .check-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.copy-button-enhanced .copy-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.copy-button-enhanced .check-icon {
+    opacity: 0;
+    transform: scale(0);
+}
+
+.copy-button-enhanced.copied .copy-icon {
+    opacity: 0;
+    transform: scale(0);
+}
+
+.copy-button-enhanced.copied .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.copy-button-enhanced .copy-icon svg,
+.copy-button-enhanced .check-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.copy-button-enhanced.copied {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+/* Input group styling for enhanced button */
+.input-group-enhanced {
+    display: flex;
+    align-items: stretch;
+}
+
+.input-group-enhanced .form-control {
+    flex: 1;
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group-enhanced .copy-button-enhanced {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: 1px solid #ced4da;
+}
+
+/* Small size variant for table */
+.input-group-enhanced .form-control-sm + .copy-button-enhanced {
+    height: 31px;
+    padding: 4px 8px;
+}
+
+.input-group-enhanced .form-control-sm + .copy-button-enhanced .icon-wrapper {
+    width: 14px;
+    height: 14px;
+}
+
+.input-group-enhanced .form-control-sm + .copy-button-enhanced .copy-icon,
+.input-group-enhanced .form-control-sm + .copy-button-enhanced .check-icon {
+    width: 14px;
+    height: 14px;
+}
 </style>
 @endsection
 
@@ -1060,11 +1181,23 @@ body {
                     <div id="onboardingLinkSection" style="display: none;">
                         <div class="onboarding-link">
                             <h6>Onboarding Link Generated:</h6>
-                            <div class="input-group">
+                            <div class="input-group-enhanced">
                                 <input type="text" class="form-control" id="generatedLink" readonly>
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" onclick="copyLink()">Copy</button>
-                                </div>
+                                <button class="copy-button-enhanced" onclick="copyLinkEnhanced()" aria-label="Copy link">
+                                    <div class="icon-wrapper">
+                                        <div class="copy-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="check-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </button>
                             </div>
                             <small class="text-muted">Share this link with drivers to allow them to submit their onboarding information.</small>
                         </div>
@@ -1093,13 +1226,23 @@ body {
                                             @endphp
                                             <tr class="{{ $trClass }}">
                                                 <td>
-                                                    <div class="input-group input-group-sm">
+                                                    <div class="input-group-enhanced">
                                                         <input type="text" class="form-control form-control-sm" value="{{ $link->link }}" readonly id="savedLink{{ $link->id }}">
-                                                        <div class="input-group-append">
-                                                            <button class="btn btn-outline-secondary btn-sm" onclick="copySavedLink({{ $link->id }})" data-link-id="{{ $link->id }}">
-                                                                <i class="fa fa-copy"></i>
-                                                            </button>
-                                                        </div>
+                                                        <button class="copy-button-enhanced" onclick="copySavedLinkEnhanced({{ $link->id }})" data-link-id="{{ $link->id }}" aria-label="Copy link">
+                                                            <div class="icon-wrapper">
+                                                                <div class="copy-icon">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                                    </svg>
+                                                                </div>
+                                                                <div class="check-icon">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </button>
                                                     </div>
                                                 </td>
                                                 <td>{{ $link->createdBy->name ?? 'Unknown' }}</td>
@@ -1892,6 +2035,33 @@ function copyLink() {
     }
 }
 
+// Enhanced copy link to clipboard with animations
+function copyLinkEnhanced() {
+    var linkInput = document.getElementById('generatedLink');
+    var linkText = linkInput.value;
+    var button = document.querySelector('#onboardingLinkSection .copy-button-enhanced');
+    
+    // Use modern Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(linkText).then(function() {
+            // Add 'copied' class for animation
+            button.classList.add('copied');
+            
+            // Remove 'copied' class after 2 seconds
+            setTimeout(function() {
+                button.classList.remove('copied');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Failed to copy:', err);
+            // Fallback to old method
+            fallbackCopyTextToClipboardEnhanced(linkText, button);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboardEnhanced(linkText, button);
+    }
+}
+
 // Copy saved link to clipboard
 function copySavedLink(linkId) {
     var linkInput = document.getElementById('savedLink' + linkId);
@@ -1914,6 +2084,64 @@ function copySavedLink(linkId) {
         // Fallback for older browsers
         fallbackCopyTextToClipboard(linkText, button, originalHtml);
     }
+}
+
+// Enhanced copy saved link to clipboard with animations
+function copySavedLinkEnhanced(linkId) {
+    var linkInput = document.getElementById('savedLink' + linkId);
+    var linkText = linkInput.value;
+    var button = document.querySelector('button[data-link-id="' + linkId + '"]');
+    
+    // Use modern Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(linkText).then(function() {
+            // Add 'copied' class for animation
+            button.classList.add('copied');
+            
+            // Remove 'copied' class after 2 seconds
+            setTimeout(function() {
+                button.classList.remove('copied');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Failed to copy:', err);
+            // Fallback to old method
+            fallbackCopyTextToClipboardEnhanced(linkText, button);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboardEnhanced(linkText, button);
+    }
+}
+
+// Fallback copy function for enhanced button
+function fallbackCopyTextToClipboardEnhanced(text, button) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        var successful = document.execCommand('copy');
+        if (successful) {
+            if (button) {
+                button.classList.add('copied');
+                setTimeout(function() {
+                    button.classList.remove('copied');
+                }, 2000);
+            }
+        } else {
+            showToast('error', 'Failed to copy link. Please select and copy manually.');
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showToast('error', 'Failed to copy link. Please select and copy manually.');
+    }
+    
+    document.body.removeChild(textArea);
 }
 
 // Fallback copy function for older browsers

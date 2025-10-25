@@ -1258,7 +1258,7 @@ body {
                                                     @if($isMostRecent)
                                                         <span class="badge badge-success">Active</span>
                                                     @else
-                                                        <button class="btn btn-danger btn-sm" onclick="deleteLink({{ $link->id }})">
+                                                        <button class="btn btn-danger btn-sm" onclick="deleteLink('{{ $link->id }}')">
                                                             <i class="fa fa-trash"></i> Delete
                                                         </button>
                                                     @endif
@@ -2248,6 +2248,7 @@ function deleteLink(linkId) {
                 }
             },
             error: function(xhr) {
+                console.error('Error deleting link:', xhr);
                 showToast('error', 'Error deleting link');
             }
         });

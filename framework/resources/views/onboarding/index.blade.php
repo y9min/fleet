@@ -946,7 +946,7 @@ body {
     transform: scale(0.95);
 }
 
-.copy-button-enhanced .icon-wrapper {
+.copy-button-enhanced .copy-icon {
     position: relative;
     width: 16px;
     height: 16px;
@@ -954,8 +954,7 @@ body {
     margin: 0 auto;
 }
 
-.copy-button-enhanced .copy-icon,
-.copy-button-enhanced .check-icon {
+.copy-button-enhanced .copy-icon svg {
     position: absolute;
     top: 0;
     left: 0;
@@ -964,30 +963,27 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.copy-button-enhanced .copy-icon {
+.copy-button-enhanced .copy-icon svg:first-child {
     opacity: 1;
     transform: scale(1);
 }
 
-.copy-button-enhanced .check-icon {
+.copy-button-enhanced .copy-icon svg:last-child {
     opacity: 0;
     transform: scale(0);
 }
 
-.copy-button-enhanced.copied .copy-icon {
+.copy-button-enhanced.copied .copy-icon svg:first-child {
     opacity: 0;
     transform: scale(0);
 }
 
-.copy-button-enhanced.copied .check-icon {
+.copy-button-enhanced.copied .copy-icon svg:last-child {
     opacity: 1;
     transform: scale(1);
 }
 
-.copy-button-enhanced .copy-icon svg,
-.copy-button-enhanced .check-icon svg {
-    width: 100%;
-    height: 100%;
+.copy-button-enhanced .copy-icon svg {
     stroke: currentColor;
     fill: none;
     stroke-width: 2;
@@ -1027,13 +1023,12 @@ body {
     padding: 0;
 }
 
-.input-group-enhanced .form-control-sm + .copy-button-enhanced .icon-wrapper {
+.input-group-enhanced .form-control-sm + .copy-button-enhanced .copy-icon {
     width: 14px;
     height: 14px;
 }
 
-.input-group-enhanced .form-control-sm + .copy-button-enhanced .copy-icon,
-.input-group-enhanced .form-control-sm + .copy-button-enhanced .check-icon {
+.input-group-enhanced .form-control-sm + .copy-button-enhanced .copy-icon svg {
     width: 14px;
     height: 14px;
 }
@@ -1187,18 +1182,14 @@ body {
                             <div class="input-group-enhanced">
                                 <input type="text" class="form-control" id="generatedLink" readonly>
                                 <button class="copy-button-enhanced" onclick="copyLinkEnhanced()" aria-label="Copy link">
-                                    <div class="icon-wrapper">
-                                        <div class="copy-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="check-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </div>
+                                    <div class="copy-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
                                     </div>
                                 </button>
                             </div>
@@ -1232,18 +1223,14 @@ body {
                                                     <div class="input-group-enhanced">
                                                         <input type="text" class="form-control form-control-sm" value="{{ $link->link }}" readonly id="savedLink{{ $link->id }}">
                                                         <button class="copy-button-enhanced" onclick="copySavedLinkEnhanced('{{ $link->id }}')" data-link-id="{{ $link->id }}" aria-label="Copy link">
-                                                            <div class="icon-wrapper">
-                                                                <div class="copy-icon">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                                                    </svg>
-                                                                </div>
-                                                                <div class="check-icon">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                                    </svg>
-                                                                </div>
+                                                            <div class="copy-icon">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                                </svg>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                                </svg>
                                                             </div>
                                                         </button>
                                                     </div>

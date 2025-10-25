@@ -1132,6 +1132,30 @@ body {
                         </div>
                     </div>
 
+                    <!-- Current Custom Fields -->
+                    <div class="form-builder-box">
+                        <h5>Current Custom Fields</h5>
+                        <div id="customFieldsList">
+                            @forelse($custom_fields as $field)
+                                <div class="field-item" data-field-id="{{ $field->id }}">
+                                    <span class="delete-field" onclick="deleteField({{ $field->id }})">
+                                        <i class="fa fa-trash"></i>
+                                    </span>
+                                    <strong>{{ $field->field_name }}</strong>
+                                    <span class="badge badge-info">{{ $field_types[$field->field_type] ?? $field->field_type }}</span>
+                                    @if($field->is_required)
+                                        <span class="badge badge-warning">Required</span>
+                                    @endif
+                                    @if($field->field_type === 'dropdown' && $field->field_options)
+                                        <br><small class="text-muted">Options: {{ implode(', ', $field->field_options['options'] ?? []) }}</small>
+                                    @endif
+                                </div>
+                            @empty
+                                <p class="text-muted">No custom fields added yet.</p>
+                            @endforelse
+                        </div>
+                    </div>
+
                     <!-- Add Custom Fields -->
                     <div class="form-builder-box">
                         <h5>Add Custom Fields</h5>
@@ -1257,29 +1281,6 @@ body {
                         @endif
                     </div>
 
-                    <!-- Current Custom Fields -->
-                    <div class="mt-4">
-                        <h5 class="section-title">Current Custom Fields</h5>
-                        <div id="customFieldsList">
-                            @forelse($custom_fields as $field)
-                                <div class="field-item" data-field-id="{{ $field->id }}">
-                                    <span class="delete-field" onclick="deleteField({{ $field->id }})">
-                                        <i class="fa fa-trash"></i>
-                                    </span>
-                                    <strong>{{ $field->field_name }}</strong>
-                                    <span class="badge badge-info">{{ $field_types[$field->field_type] ?? $field->field_type }}</span>
-                                    @if($field->is_required)
-                                        <span class="badge badge-warning">Required</span>
-                                    @endif
-                                    @if($field->field_type === 'dropdown' && $field->field_options)
-                                        <br><small class="text-muted">Options: {{ implode(', ', $field->field_options['options'] ?? []) }}</small>
-                                    @endif
-                                </div>
-                            @empty
-                                <p class="text-muted">No custom fields added yet.</p>
-                            @endforelse
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1317,6 +1318,18 @@ function initializeOnboardingTable() {
     if ($.fn.DataTable.isDataTable('#onboardTable')) {
         return;
     }
+    
+    // Store custom fields mapping for use in toggleDriverDetailsInstant
+    window.customFieldsMap = {
+        @foreach($custom_fields as $field)
+        {{ $field->id }}: {
+            id: {{ $field->id }},
+            field_name: '{{ $field->field_name }}',
+            field_type: '{{ $field->field_type }}',
+            is_required: {{ $field->is_required ? 'true' : 'false' }}
+        },
+        @endforeach
+    };
     
     console.log('Initializing DataTables...');
     // Initialize DataTable with optimized settings for better performance
@@ -1702,8 +1715,16 @@ function toggleDriverDetailsInstant(button) {
                 // Check if key starts with 'custom_' and extract the field ID
                 if (key.startsWith('custom_')) {
                     var fieldId = key.replace('custom_', '');
-                    // Skip field name lookup for performance - use key as is
-                    isFileField = (key.includes('file') || key.includes('document'));
+                    // Look up field from custom fields map
+                    if (window.customFieldsMap && window.customFieldsMap[fieldId]) {
+                        var customField = window.customFieldsMap[fieldId];
+                        fieldName = customField.field_name;
+                        isFileField = (customField.field_type === 'file');
+                    } else {
+                        // Fallback: guess by key name
+                        fieldName = key;
+                        isFileField = (key.includes('file') || key.includes('document'));
+                    }
                 } else {
                     fieldName = fieldNameMap[key] || key;
                 }

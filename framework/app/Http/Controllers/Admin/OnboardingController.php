@@ -230,11 +230,45 @@ class OnboardingController extends Controller
                     ];
                 }
                 
-                // Add custom fields data for display
+                // Add custom fields data for display and generate URLs for file fields
                 if ($driver->custom_data && is_array($driver->custom_data)) {
+                    // Get all custom fields to build the mapping
+                    $customFields = CustomFormField::ordered()->get();
+                    
+                    // Initialize custom_data array in driverData if it doesn't exist
+                    if (!isset($driverData['custom_data'])) {
+                        $driverData['custom_data'] = [];
+                    }
+                    
+                    // Copy all custom data first
                     foreach ($driver->custom_data as $key => $value) {
-                        if (!isset($driverData[$key])) {
-                            $driverData[$key] = is_array($value) ? json_encode($value) : $value;
+                        $driverData['custom_data'][$key] = $value;
+                        
+                        // Generate URL for custom file fields
+                        if (strpos($key, 'custom_') === 0) {
+                            $fieldId = str_replace('custom_', '', $key);
+                            $field = $customFields->find($fieldId);
+                            
+                            if ($field && $field->field_type === 'file' && $value) {
+                                // Generate URL similar to how we do for license and insurance
+                                $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                                $filePath = $value;
+                                
+                                if ($useS3) {
+                                    $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+                                    if (strpos($filePath, 'onboarding/documents/') === 0) {
+                                        $driverData['custom_data'][$key . '_url'] = $s3BaseUrl . $filePath;
+                                    } else {
+                                        $driverData['custom_data'][$key . '_url'] = $s3BaseUrl . 'uploads/onboarding/' . $filePath;
+                                    }
+                                } else {
+                                    if (strpos($filePath, 'onboarding/documents/') === 0) {
+                                        $driverData['custom_data'][$key . '_url'] = asset('storage/' . $filePath);
+                                    } else {
+                                        $driverData['custom_data'][$key . '_url'] = asset('uploads/onboarding/' . $filePath);
+                                    }
+                                }
+                            }
                         }
                     }
                 }

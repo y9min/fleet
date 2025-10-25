@@ -2035,15 +2035,41 @@ function copyLink() {
     }
 }
 
+// Test function to verify copy functionality
+function testCopyFunction() {
+    console.log('Testing copy functionality...');
+    console.log('Clipboard API available:', !!navigator.clipboard);
+    console.log('Clipboard writeText available:', !!(navigator.clipboard && navigator.clipboard.writeText));
+    
+    // Test with a simple string
+    var testText = 'Test copy functionality';
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(testText).then(function() {
+            console.log('Test copy successful');
+            alert('Test copy successful!');
+        }).catch(function(err) {
+            console.error('Test copy failed:', err);
+            alert('Test copy failed: ' + err.message);
+        });
+    } else {
+        console.log('Clipboard API not available');
+        alert('Clipboard API not available');
+    }
+}
+
 // Enhanced copy link to clipboard with animations
 function copyLinkEnhanced() {
     var linkInput = document.getElementById('generatedLink');
     var linkText = linkInput.value;
     var button = document.querySelector('#onboardingLinkSection .copy-button-enhanced');
     
+    console.log('Attempting to copy:', linkText);
+    
     // Use modern Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(linkText).then(function() {
+            console.log('Clipboard API success');
             // Add 'copied' class for animation
             button.classList.add('copied');
             
@@ -2052,11 +2078,12 @@ function copyLinkEnhanced() {
                 button.classList.remove('copied');
             }, 2000);
         }).catch(function(err) {
-            console.error('Failed to copy:', err);
+            console.error('Clipboard API failed:', err);
             // Fallback to old method
             fallbackCopyTextToClipboardEnhanced(linkText, button);
         });
     } else {
+        console.log('Clipboard API not available, using fallback');
         // Fallback for older browsers
         fallbackCopyTextToClipboardEnhanced(linkText, button);
     }
@@ -2092,9 +2119,12 @@ function copySavedLinkEnhanced(linkId) {
     var linkText = linkInput.value;
     var button = document.querySelector('button[data-link-id="' + linkId + '"]');
     
+    console.log('Attempting to copy saved link:', linkText);
+    
     // Use modern Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(linkText).then(function() {
+            console.log('Clipboard API success for saved link');
             // Add 'copied' class for animation
             button.classList.add('copied');
             
@@ -2103,11 +2133,12 @@ function copySavedLinkEnhanced(linkId) {
                 button.classList.remove('copied');
             }, 2000);
         }).catch(function(err) {
-            console.error('Failed to copy:', err);
+            console.error('Clipboard API failed for saved link:', err);
             // Fallback to old method
             fallbackCopyTextToClipboardEnhanced(linkText, button);
         });
     } else {
+        console.log('Clipboard API not available for saved link, using fallback');
         // Fallback for older browsers
         fallbackCopyTextToClipboardEnhanced(linkText, button);
     }
@@ -2115,18 +2146,49 @@ function copySavedLinkEnhanced(linkId) {
 
 // Fallback copy function for enhanced button
 function fallbackCopyTextToClipboardEnhanced(text, button) {
+    console.log('Using fallback copy method');
+    
+    // Try to select the input field first
+    var inputElement = button.parentElement.querySelector('input');
+    if (inputElement) {
+        inputElement.select();
+        inputElement.setSelectionRange(0, 99999); // For mobile devices
+        
+        try {
+            var successful = document.execCommand('copy');
+            if (successful) {
+                console.log('Fallback copy successful via input selection');
+                if (button) {
+                    button.classList.add('copied');
+                    setTimeout(function() {
+                        button.classList.remove('copied');
+                    }, 2000);
+                }
+                return;
+            }
+        } catch (err) {
+            console.log('Input selection copy failed:', err);
+        }
+    }
+    
+    // Create temporary textarea as last resort
     var textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "fixed";
     textArea.style.left = "-999999px";
     textArea.style.top = "-999999px";
+    textArea.style.opacity = "0";
+    textArea.style.pointerEvents = "none";
     document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
     
     try {
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, 99999); // For mobile devices
+        
         var successful = document.execCommand('copy');
         if (successful) {
+            console.log('Fallback copy successful via textarea');
             if (button) {
                 button.classList.add('copied');
                 setTimeout(function() {
@@ -2134,10 +2196,13 @@ function fallbackCopyTextToClipboardEnhanced(text, button) {
                 }, 2000);
             }
         } else {
+            console.log('Fallback copy failed');
+            alert('Failed to copy link. Please select and copy manually.');
             showToast('error', 'Failed to copy link. Please select and copy manually.');
         }
     } catch (err) {
         console.error('Fallback copy failed:', err);
+        alert('Failed to copy link. Please select and copy manually.');
         showToast('error', 'Failed to copy link. Please select and copy manually.');
     }
     

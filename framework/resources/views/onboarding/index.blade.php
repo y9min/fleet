@@ -950,18 +950,15 @@ body {
     position: relative;
     width: 16px;
     height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     margin: 0 auto;
 }
 
 .copy-button-enhanced .copy-icon,
 .copy-button-enhanced .check-icon {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
     width: 16px;
     height: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -969,22 +966,22 @@ body {
 
 .copy-button-enhanced .copy-icon {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
 }
 
 .copy-button-enhanced .check-icon {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0);
+    transform: scale(0);
 }
 
 .copy-button-enhanced.copied .copy-icon {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0);
+    transform: scale(0);
 }
 
 .copy-button-enhanced.copied .check-icon {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
 }
 
 .copy-button-enhanced .copy-icon svg,

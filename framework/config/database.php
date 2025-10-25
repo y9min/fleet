@@ -49,9 +49,9 @@ return [
             'schema' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
             'options' => [
-                PDO::ATTR_PERSISTENT => false,
+                PDO::ATTR_PERSISTENT => true, // Enable persistent connections for better performance
                 PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::ATTR_TIMEOUT => 5,
+                PDO::ATTR_TIMEOUT => 15,
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             ],
         ],

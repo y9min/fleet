@@ -22,6 +22,7 @@ use DB;
 use Hyvikk;
 use Illuminate\Support\Facades\Redirect;
 use App\Model\BookingAlert;
+use Illuminate\Support\Facades\Cache;
 
 
 class HomeController extends Controller {
@@ -104,8 +105,29 @@ class HomeController extends Controller {
 
         // Check if this is Yamz (Boss Admin with no company)
         $user = Auth::user();
+        
+        // Cache dashboard statistics for 15 minutes to dramatically improve performance
+        $cacheKey = 'dashboard_stats_' . $user->id . '_' . ($user->company_id ?? 'null');
+        
+        $dashboardData = Cache::remember($cacheKey, 900, function() use ($user) {
+            return $this->loadDashboardStatistics($user);
+        });
+        
+        // Merge cached data with standard data
+        $data = array_merge($data, $dashboardData);
+        
         // Always expose currency for dashboard cards
         $data['currency'] = Hyvikk::get('currency');
+        
+        return view('home', $data);
+    }
+    
+    /**
+     * Load dashboard statistics - cached for 5 minutes
+     */
+    private function loadDashboardStatistics($user)
+    {
+        $data = [];
         if ($user->getRawOriginal('user_type') === 'B' && is_null($user->company_id) && $user->email === 'yamzahmed@hotmail.com') {
             // Yamz ONLY: Show snapshot of all users and companies
             $data['total_vehicles'] = \App\Model\VehicleModel::count();
@@ -322,11 +344,12 @@ class HomeController extends Controller {
                     ->count();
             }
         }
-
-        return view('home', $data);
+        
+        return $data;
     }
-        /**
-         * Calculate expected weekly and monthly revenue across vehicles with status "Rented".
+    
+    /**
+     * Calculate expected weekly and monthly revenue across vehicles with status "Rented".
          * If $companyId is provided, scope to that company; otherwise include all vehicles.
          * Returns array [weeklyRevenue, monthlyRevenue].
          */

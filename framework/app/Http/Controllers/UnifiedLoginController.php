@@ -79,8 +79,15 @@ class UnifiedLoginController extends Controller
             $request->session()->regenerateToken();
             
             // Create static user for Firebase if needed (for admin/driver users)
+            // Firebase sync is now optional and non-blocking - only sync if configured
             if (in_array($user->user_type, ['B', 'S', 'O', 'D'])) {
-                $this->createStaticUser($user->email, $request->password);
+                try {
+                    if (Hyvikk::api('firebase_url') != null) {
+                        $this->createStaticUser($user->email, $request->password);
+                    }
+                } catch (\Exception $e) {
+                    // Silently ignore Firebase errors - don't block login
+                }
             }
 
             // Check if driver is using default password and prompt for change

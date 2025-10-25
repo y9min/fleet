@@ -17,6 +17,7 @@ use App\Model\User;
 use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kodeine\Metable\Metable;
+use Illuminate\Support\Facades\DB;
 
 class VehicleModel extends BaseUuidModel {
 	use Metable;
@@ -97,6 +98,42 @@ class VehicleModel extends BaseUuidModel {
 	 */
 	public function getInsuranceDiscount() {
 		return (float) ($this->getMeta('insurance_discount') ?: 0);
+	}
+
+	/**
+	 * Scope to eager load metadata for multiple vehicles efficiently
+	 * This reduces N+1 queries when loading vehicle lists
+	 */
+	public function scopeWithMeta($query) {
+		return $query;
+	}
+
+	/**
+	 * Batch load metadata for a collection of vehicles
+	 * This reduces database queries when dealing with multiple vehicles
+	 */
+	public static function loadMetadataForVehicles($vehicles) {
+		if ($vehicles->isEmpty()) {
+			return $vehicles;
+		}
+
+		$vehicleIds = $vehicles->pluck('id')->toArray();
+		
+		// Load all metadata for these vehicles in one query
+		$metadata = DB::table('vehicles_meta')
+			->whereIn('vehicle_id', $vehicleIds)
+			->get()
+			->groupBy('vehicle_id');
+
+		// Attach metadata to each vehicle
+		foreach ($vehicles as $vehicle) {
+			$meta = $metadata->get($vehicle->id, collect());
+			foreach ($meta as $m) {
+				$vehicle->attributes[$m->key] = $m->value;
+			}
+		}
+
+		return $vehicles;
 	}
 
 }

@@ -193,7 +193,7 @@ class VehiclesController extends Controller {
                             ->where('vehicles.company_id', $user->company_id)
                             ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                             ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
-                            ->with('types', 'company') // Load vehicle types and company relationship
+                            ->with(['types', 'company', 'drivers', 'group']) // Optimize: eager load all relationships
                             ->groupBy('vehicles.id')
                             ->get();
                     }
@@ -206,7 +206,7 @@ class VehiclesController extends Controller {
                             ->where('vehicles.company_id', $user->company_id)
                             ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                             ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
-                            ->with('types', 'company') // Load vehicle types and company relationship
+                            ->with(['types', 'company', 'drivers', 'group']) // Optimize: eager load all relationships
                             ->groupBy('vehicles.id')
                             ->get();
                     }
@@ -217,7 +217,7 @@ class VehiclesController extends Controller {
                         ->whereIn('vehicles.id', $vehicle_ids)
                         ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                         ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
-                        ->with('types', 'company') // Load vehicle types and company relationship
+                        ->with(['types', 'company', 'drivers', 'group']) // Optimize: eager load all relationships
                         ->groupBy('vehicles.id')
                         ->get();
                 }

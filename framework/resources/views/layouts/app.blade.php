@@ -2812,34 +2812,34 @@ input:checked + .slider:before {
   <!-- ./wrapper -->
   @yield('script2')
   <!-- jQuery already loaded above -->
-  <script src="{{ asset('assets/js/cdn-canvasjs.min.js')}}"></script>
-  <script src="{{asset('assets/js/jquery-ui.min.js')}}"></script>
+  <script src="{{ asset('assets/js/cdn-canvasjs.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/jquery-ui.min.js')}}" defer></script>
   {{-- <script>
     $.widget.bridge('uibutton', $.ui.button)
   </script> --}}
-  <script src="{{ asset('assets/js/moment.js') }}"></script>
-  <script src="{{ asset('assets/js/datetimepicker.js') }}"></script>
-  <script src="{{asset('assets/js/bootstrap-datepicker.min.js')}}"></script>
+  <script src="{{ asset('assets/js/moment.js') }}" defer></script>
+  <script src="{{ asset('assets/js/datetimepicker.js') }}" defer></script>
+  <script src="{{asset('assets/js/bootstrap-datepicker.min.js')}}" defer></script>
   {{-- <!-- fullCalendar 2.2.5 --> --}}
-  <script src="{{asset('assets/js/new_moment.min.js')}}"></script>
-  <script src="{{asset('assets/js/plugins-fullcalendar.min.js')}}"></script>
+  <script src="{{asset('assets/js/new_moment.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/plugins-fullcalendar.min.js')}}" defer></script>
   {{-- <script src="{{asset('assets/plugins/iCheck/icheck.min.js')}}"></script> --}}
   {{-- <script src="{{asset('assets/js/plugins-icheck.min.js')}}"></script> --}}
-  <script src="{{asset('assets/js/plugins-bootstrap.bundle.min.js')}}"></script>
-  <script src="{{asset('assets/js/plugins-select2.full.min.js')}}"></script>
-  <script src="{{asset('assets/js/plugins-fastclick.js')}}"></script>
-  <script src="{{asset('assets/js/cdn-jquery.dataTables.min.js')}}"></script>
-  <script src="{{asset('assets/js/plugins-dataTables.bootstrap4.min.js')}}"></script>
-  <script src="{{ asset('assets/js/cdn-dataTables.buttons.min.js')}}"></script>
-  <script src="{{ asset('assets/js/cdn-buttons.print.min.js')}}"></script>
-  <script src="{{asset('assets/js/adminlte.js')}}"></script>
+  <script src="{{asset('assets/js/plugins-bootstrap.bundle.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/plugins-select2.full.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/plugins-fastclick.js')}}" defer></script>
+  <script src="{{asset('assets/js/cdn-jquery.dataTables.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/plugins-dataTables.bootstrap4.min.js')}}" defer></script>
+  <script src="{{ asset('assets/js/cdn-dataTables.buttons.min.js')}}" defer></script>
+  <script src="{{ asset('assets/js/cdn-buttons.print.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/adminlte.js')}}" defer></script>
   <script src="{{asset('web-sw.js?v3') }}"></script>
-  <script type="text/javascript" src="{{ asset('assets/js/cdn-jszip.min.js')}}"></script>
-  <script type="text/javascript" src="{{ asset('assets/js/cdn-pdfmake.min.js')}}"></script>
-  <script type="text/javascript" src="{{ asset('assets/js/cdn-vfs_fonts.js')}}"></script>
-  <script type="text/javascript" src="{{ asset('assets/js/cdn-buttons.html5.min.js')}}"></script>
-  <script src="{{ asset('assets/js/cdn-Chart.bundle.min.js')}}"></script>
-  <script src="{{ asset('assets/js/cdn-ckeditor.js')}}"></script>
+  <script type="text/javascript" src="{{ asset('assets/js/cdn-jszip.min.js')}}" defer></script>
+  <script type="text/javascript" src="{{ asset('assets/js/cdn-pdfmake.min.js')}}" defer></script>
+  <script type="text/javascript" src="{{ asset('assets/js/cdn-vfs_fonts.js')}}" defer></script>
+  <script type="text/javascript" src="{{ asset('assets/js/cdn-buttons.html5.min.js')}}" defer></script>
+  <script src="{{ asset('assets/js/cdn-Chart.bundle.min.js')}}" defer></script>
+  <script src="{{ asset('assets/js/cdn-ckeditor.js')}}" defer></script>
   <script>
     if (typeof $ !== 'undefined') {
         $('[title]').tooltip();

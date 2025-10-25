@@ -53,7 +53,14 @@ class LoginController extends Controller
         else
         {
             // Admin users (S, O, D) should go to admin dashboard
-            $this->createStaticUser($user->email,$request->password);
+            // Firebase sync is now optional and non-blocking - only sync if configured
+            try {
+                if (Hyvikk::api('firebase_url') != null) {
+                    $this->createStaticUser($user->email,$request->password);
+                }
+            } catch (\Exception $e) {
+                // Silently ignore Firebase errors - don't block login
+            }
             return redirect()->intended($this->redirectTo);
         }
     }

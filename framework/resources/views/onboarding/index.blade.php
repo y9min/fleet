@@ -1896,15 +1896,15 @@ function copyLink() {
 function copySavedLink(linkId) {
     var linkInput = document.getElementById('savedLink' + linkId);
     var linkText = linkInput.value;
-    var button = $('button[data-link-id="' + linkId + '"]');
-    var originalHtml = button.html();
+    var button = document.querySelector('button[data-link-id="' + linkId + '"]');
+    var originalHtml = button.innerHTML;
     
     // Use modern Clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(linkText).then(function() {
-            button.html('<i class="fa fa-check"></i> Copied');
+            button.innerHTML = '<i class="fa fa-check"></i> Copied';
             setTimeout(function() {
-                button.html(originalHtml);
+                button.innerHTML = originalHtml;
             }, 2000);
         }).catch(function(err) {
             console.error('Failed to copy:', err);
@@ -1931,9 +1931,9 @@ function fallbackCopyTextToClipboard(text, button, originalHtml) {
         var successful = document.execCommand('copy');
         if (successful) {
             if (button && originalHtml) {
-                button.html('<i class="fa fa-check"></i> Copied');
+                button.innerHTML = '<i class="fa fa-check"></i> Copied';
                 setTimeout(function() {
-                    button.html(originalHtml);
+                    button.innerHTML = originalHtml;
                 }, 2000);
             }
         } else {

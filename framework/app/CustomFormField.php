@@ -17,10 +17,12 @@ class CustomFormField extends Model
 
     protected $fillable = [
         'field_name',
+        'field_label',
         'field_type',
         'field_options',
         'is_required',
-        'sort_order'
+        'sort_order',
+        'company_id'
     ];
 
     protected $casts = [
@@ -77,6 +79,12 @@ class CustomFormField extends Model
     public function isFileUpload()
     {
         return $this->field_type === self::TYPE_FILE;
+    }
+
+    // Company relationship
+    public function company()
+    {
+        return $this->belongsTo(\App\Model\Company::class, 'company_id');
     }
 
     // Get dropdown options

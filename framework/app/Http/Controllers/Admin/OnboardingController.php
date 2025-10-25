@@ -116,10 +116,18 @@ class OnboardingController extends Controller
             $total_count = $onboarding_total + $approved_count;
         }
 
+        // Get custom fields filtered by company
+        $customFieldsQuery = CustomFormField::ordered();
+        if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+            $customFieldsQuery->where('company_id', $auth->company_id);
+        } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+            // Broker users without company see all fields
+        }
+
         $data = [
             'page_title' => 'Driver Onboarding',
             'page_description' => 'Manage driver onboarding process',
-            'custom_fields' => CustomFormField::ordered()->get(),
+            'custom_fields' => $customFieldsQuery->get(),
             'field_types' => CustomFormField::getFieldTypes(),
             'field_configs' => OnboardingFormFieldConfig::ordered()->get(),
             'pending_count' => $pending_count,
@@ -291,9 +299,11 @@ class OnboardingController extends Controller
 
         $fieldData = [
             'field_name' => $request->field_name,
+            'field_label' => $request->field_name, // Use field_name as field_label for now
             'field_type' => $request->field_type,
             'is_required' => $request->has('is_required'),
-            'sort_order' => CustomFormField::max('sort_order') + 1
+            'sort_order' => CustomFormField::max('sort_order') + 1,
+            'company_id' => Auth::user()->company_id
         ];
 
         if ($request->field_type === 'dropdown' && $request->has('dropdown_options')) {
@@ -640,7 +650,13 @@ class OnboardingController extends Controller
             abort(404);
         }
 
-        $customFields = CustomFormField::ordered()->get();
+        // Get custom fields filtered by the link's company
+        $customFieldsQuery = CustomFormField::ordered();
+        if ($link->company_id) {
+            $customFieldsQuery->where('company_id', $link->company_id);
+        }
+        
+        $customFields = $customFieldsQuery->get();
         $custom_fields = $customFields; // Alias for view compatibility
         $fieldConfigs = OnboardingFormFieldConfig::visible()->ordered()->get();
         

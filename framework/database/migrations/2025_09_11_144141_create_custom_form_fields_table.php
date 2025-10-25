@@ -12,16 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('custom_form_fields', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->uuid('company_id')->nullable();
             $table->string('field_name');
+            $table->string('field_label');
             $table->enum('field_type', ['text', 'email', 'phone', 'dropdown', 'date', 'file', 'textarea']);
             $table->json('field_options')->nullable(); // For dropdown options, validation rules, etc.
             $table->boolean('is_required')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
             
             $table->index(['sort_order']);
             $table->index(['is_required']);
+            $table->index(['company_id']);
         });
     }
 

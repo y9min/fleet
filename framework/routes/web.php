@@ -200,7 +200,8 @@ Route::get('sample-payment', function () {
 
 
 // Public Driver Onboarding Routes (no authentication required)
-Route::group(['middleware' => ['web', 'IsInstalled']], function () {
+// Must be OUTSIDE the main middleware group for public access
+Route::group(['middleware' => ['web']], function () {
     Route::get('driver-onboarding/{token?}', 'Admin\OnboardingController@showPublicForm')->name('onboarding.public_form');
     Route::post('driver-onboarding/submit', 'Admin\OnboardingController@submitPublicForm')->name('onboarding.submit');
 });

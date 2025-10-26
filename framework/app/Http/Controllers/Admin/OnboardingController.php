@@ -663,13 +663,32 @@ class OnboardingController extends Controller
      */
     public function reject($id)
     {
-        $driver = OnboardingDriver::findOrFail($id);
-        $driver->update(['status' => 'rejected']);
+        \Log::info('[REJECT] reject() called with ID:', ['id' => $id, 'type' => gettype($id)]);
         
-        // Clear performance caches since we're modifying data
-        $this->clearOnboardingCaches(\Auth::user());
+        try {
+            $driver = OnboardingDriver::findOrFail($id);
+            \Log::info('[REJECT] Found driver:', ['id' => $driver->id, 'name' => $driver->name, 'email' => $driver->email]);
+            
+            // Delete the driver instead of just updating status
+            $driver->delete();
+            \Log::info('[REJECT] Driver deleted successfully');
+            
+            // Clear performance caches since we're modifying data
+            $this->clearOnboardingCaches(\Auth::user());
 
-        return response()->json(['success' => true]);
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \Log::error('[REJECT] Error rejecting driver:', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error rejecting driver: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

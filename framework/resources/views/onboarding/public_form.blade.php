@@ -792,25 +792,30 @@
             var xhr = new XMLHttpRequest();
             
             xhr.addEventListener('load', function() {
-                if (xhr.status === 200) {
-                    // Success - redirect or show success message
-                    var response = xhr.responseText;
+                try {
+                    // Try to parse JSON response
+                    var response = JSON.parse(xhr.responseText);
                     
-                    // Check if response contains success redirect
-                    if (response.includes('success')) {
-                        // Show success message and redirect
+                    if (response.success) {
+                        // Success - show message and reload
                         alert('Application submitted successfully!');
                         window.location.reload();
                     } else {
-                        // Server returned the form again (likely with errors)
-                        alert('Please check the form for errors and try again.');
-                        window.location.reload();
+                        // Server returned error
+                        alert('Error: ' + (response.message || 'An error occurred'));
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
                     }
-                } else {
-                    // Error response
-                    alert('An error occurred while submitting your application. Please try again.');
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
+                } catch (e) {
+                    // Not JSON - might be HTML redirect response
+                    if (xhr.status === 200) {
+                        alert('Application submitted successfully!');
+                        window.location.reload();
+                    } else {
+                        alert('An error occurred while submitting your application. Please try again.');
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
                 }
             });
             

@@ -1001,6 +1001,14 @@ class OnboardingController extends Controller
 
             \Log::info('Onboarding form submitted successfully');
 
+            // Return JSON response for AJAX requests
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Application submitted successfully!'
+                ]);
+            }
+            
             return redirect()->back()->with('success', 'Application submitted successfully!');
             
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -1008,6 +1016,15 @@ class OnboardingController extends Controller
                 'errors' => $e->errors(),
                 'input' => $request->except(['_token', 'license_file', 'insurance_file'])
             ]);
+            
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed. Please check your input.',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            
             return back()->withErrors($e->validator)->withInput();
             
         } catch (\Exception $e) {
@@ -1018,6 +1035,14 @@ class OnboardingController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'request_data' => $request->except(['_token', 'license_file', 'insurance_file'])
             ]);
+            
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while submitting your application. Please try again or contact support.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
             
             return back()->withErrors(['form_error' => 'An error occurred while submitting your application. Please try again or contact support.'])->withInput();
         }

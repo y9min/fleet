@@ -387,6 +387,10 @@ class OnboardingController extends Controller
 
         CustomFormField::create($fieldData);
 
+        // Clear cache for the current user so new fields appear immediately
+        $auth = Auth::user();
+        Cache::forget('onboarding_custom_fields_' . $auth->id . '_' . ($auth->company_id ?? 'null'));
+
         return response()->json(['success' => true]);
     }
 

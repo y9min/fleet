@@ -1432,7 +1432,6 @@ function initializeOnboardingTable() {
             }
         },
         columns: [
-            {data: 'id', name: 'id', visible: false}, // Hidden ID column for debugging
             {data: 'name', name: 'name'},
             {data: 'email', name: 'email'},
             {data: 'phone', name: 'phone'},

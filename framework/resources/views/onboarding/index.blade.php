@@ -2087,21 +2087,36 @@ function toggleDriverDetails(driverId) {
 
 // Delete driver
 function deleteDriver(driverId) {
+    console.log('[DELETE] deleteDriver called with driverId:', driverId);
+    console.log('[DELETE] driverId type:', typeof driverId);
+    console.log('[DELETE] driverId length:', driverId ? driverId.length : 'null/undefined');
+    
     if (confirm('Are you sure you want to delete this driver application? This will permanently remove it from the onboarding table.')) {
+        var deleteUrl = '{{ url("admin/onboarding") }}/' + driverId;
+        console.log('[DELETE] Sending DELETE request to:', deleteUrl);
+        console.log('[DELETE] CSRF Token:', $('meta[name="csrf-token"]').attr('content'));
+        
         $.ajax({
-            url: '{{ url("admin/onboarding") }}/' + driverId,
+            url: deleteUrl,
             type: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
+                console.log('[DELETE] Success response:', response);
                 if (response.success) {
                     alert('Driver application deleted successfully');
                     $('#onboardTable').DataTable().ajax.reload();
                 }
             },
-            error: function(xhr) {
-                alert('Error deleting driver application');
+            error: function(xhr, status, error) {
+                console.error('[DELETE] Error response:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    responseText: xhr.responseText,
+                    error: error
+                });
+                alert('Error deleting driver application: ' + (xhr.responseText || xhr.statusText));
             }
         });
     }

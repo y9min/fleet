@@ -307,6 +307,14 @@ class OnboardingController extends Controller
                 }
                 
                 $jsonData = json_encode($driverData);
+                
+                // Debug logging for driver ID
+                \Log::info('ACTIONS] Generating button for driver:', [
+                    'driver_id' => $driver->id,
+                    'driver_id_type' => gettype($driver->id),
+                    'driver_name' => $driver->name
+                ]);
+                
                 $actions .= '<button class="btn btn-sm btn-info" data-driver-id="' . $driver->id . '" data-driver-info=\'' . htmlspecialchars($jsonData, ENT_QUOTES) . '\' onclick="toggleDriverDetailsInstant(this)" title="Toggle Details" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                     <i class="fas fa-eye"></i>
                 </button>';
@@ -716,13 +724,31 @@ class OnboardingController extends Controller
      */
     public function destroy($id)
     {
-        $driver = OnboardingDriver::findOrFail($id);
-        $driver->delete();
+        \Log::info('DESTROY] destroy() called with ID:', ['id' => $id, 'type' => gettype($id)]);
         
-        // Clear performance caches since we're modifying data
-        $this->clearOnboardingCaches(\Auth::user());
+        try {
+            $driver = OnboardingDriver::findOrFail($id);
+            \Log::info('DESTROY] Found driver:', ['id' => $driver->id, 'name' => $driver->name, 'email' => $driver->email]);
+            
+            $driver->delete();
+            \Log::info('DESTROY] Driver deleted successfully');
+            
+            // Clear performance caches since we're modifying data
+            $this->clearOnboardingCaches(\Auth::user());
 
-        return response()->json(['success' => true]);
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            \Log::error('DESTROY] Error deleting driver:', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error deleting driver: ' . $e->getMessage()
+            ], 500);
+        }
     }
     
     /**

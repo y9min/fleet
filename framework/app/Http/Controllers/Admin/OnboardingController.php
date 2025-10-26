@@ -193,11 +193,25 @@ class OnboardingController extends Controller
         });
         
         // DEBUG: Log total count before any queries
-        $totalCount = OnboardingDriver::count();
-        \Log::info('Total OnboardingDriver records: ' . $totalCount);
+        try {
+            $totalCount = OnboardingDriver::count();
+            \Log::info('Total OnboardingDriver records: ' . $totalCount);
+            
+            // Get column names from schema to debug
+            $columns = \Schema::getColumnListing('onboarding_drivers');
+            \Log::info('Onboarding drivers table columns: ' . implode(', ', $columns));
+        } catch (\Exception $e) {
+            \Log::error('Error counting OnboardingDriver records: ' . $e->getMessage());
+        }
         
-        // SIMPLE WORKING QUERY - Model all columns, eager load vehicle relationship
-        $query = OnboardingDriver::with(['vehicle']);
+        // SIMPLE WORKING QUERY - explicitly select all necessary columns
+        $query = OnboardingDriver::select([
+            'id', 'name', 'email', 'phone', 'license_number', 
+            'license_upload_path', 'insurance_upload_path', 'vehicle_id',
+            'scheme', 'insurance_selection', 'custom_data', 'form_data',
+            'status', 'unique_token', 'license_expiry', 'address',
+            'emergency_contact', 'emergency_phone', 'created_at', 'updated_at'
+        ])->with(['vehicle']);
 
         // NO FILTERING AT ALL - SHOW EVERYTHING
 

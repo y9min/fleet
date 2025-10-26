@@ -4,17 +4,13 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
 
 class OnboardingDriver extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
 
     protected $table = 'onboarding_drivers';
-    
-    protected $keyType = 'string';
-    public $incrementing = false;
 
     protected $fillable = [
         'name',
@@ -94,6 +90,24 @@ class OnboardingDriver extends Model
     public function vehicle()
     {
         return $this->belongsTo(\App\Model\VehicleModel::class, 'vehicle_id');
+    }
+    
+    /**
+     * Override newQuery to handle the case where database uses BIGINT but model expects UUID
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new \Illuminate\Database\Eloquent\Builder($query);
+    }
+    
+    /**
+     * Get the primary key for the model.
+     *
+     * @return string
+     */
+    public function getKeyName()
+    {
+        return 'id';
     }
 
     // Get onboarding link

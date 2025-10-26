@@ -1298,16 +1298,18 @@ $(document).ready(function() {
     console.log('DOM ready, checking DataTables availability...');
     
     // Store custom fields mapping for use in toggleDriverDetailsInstant
-    window.customFieldsMap = {
-        @foreach($custom_fields as $field)
-        {{ $field->id }}: {
-            id: {{ $field->id }},
-            field_name: '{{ $field->field_name }}',
-            field_type: '{{ $field->field_type }}',
-            is_required: {{ $field->is_required ? 'true' : 'false' }}
-        },
-        @endforeach
-    };
+    @php
+        $customFieldsMap = [];
+        foreach($custom_fields as $field) {
+            $customFieldsMap[$field->id] = [
+                'id' => $field->id,
+                'field_name' => $field->field_name,
+                'field_type' => $field->field_type,
+                'is_required' => $field->is_required
+            ];
+        }
+    @endphp
+    window.customFieldsMap = {!! json_encode($customFieldsMap) !!};
     
     // Wait for DataTables to be available (scripts are loaded with defer attribute)
     if (typeof $.fn.DataTable === 'undefined') {

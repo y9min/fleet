@@ -771,17 +771,66 @@
         });
 
 
-        // Form submission with confirmation and loading state
+        // Form submission with confirmation and loading state - AJAX to prevent connection drop issues
         document.getElementById('onboardingForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Always prevent default to handle via AJAX
+            
             // Show confirmation dialog
             if (!confirm('Are you sure you want to submit your application? Please make sure all information is correct before proceeding.')) {
-                e.preventDefault();
                 return false;
             }
             
             var submitBtn = document.querySelector('.submit-btn');
+            var originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
             submitBtn.disabled = true;
+            
+            // Get form data
+            var formData = new FormData(this);
+            
+            // Create XMLHttpRequest for better error handling
+            var xhr = new XMLHttpRequest();
+            
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    // Success - redirect or show success message
+                    var response = xhr.responseText;
+                    
+                    // Check if response contains success redirect
+                    if (response.includes('success')) {
+                        // Show success message and redirect
+                        alert('Application submitted successfully!');
+                        window.location.reload();
+                    } else {
+                        // Server returned the form again (likely with errors)
+                        alert('Please check the form for errors and try again.');
+                        window.location.reload();
+                    }
+                } else {
+                    // Error response
+                    alert('An error occurred while submitting your application. Please try again.');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+            
+            xhr.addEventListener('error', function() {
+                alert('Network error occurred. Please check your internet connection and try again.');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+            
+            xhr.addEventListener('timeout', function() {
+                alert('Request timed out. Please try again.');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+            
+            // Set timeout to 60 seconds
+            xhr.timeout = 60000;
+            
+            xhr.open('POST', '{{ url("/driver-onboarding/submit") }}');
+            xhr.send(formData);
         });
     </script>
 </body>

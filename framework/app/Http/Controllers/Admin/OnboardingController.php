@@ -151,7 +151,7 @@ class OnboardingController extends Controller
         $totalCount = OnboardingDriver::count();
         \Log::info('Total OnboardingDriver records: ' . $totalCount);
         
-        $query = OnboardingDriver::query(); // SIMPLEST POSSIBLE QUERY - NO SELECT, NO FILTERING
+        $query = OnboardingDriver::with(['vehicle']); // Load vehicle relationship to prevent errors
 
         // NO FILTERING AT ALL - SHOW EVERYTHING
         // NO SELECT RESTRICTIONS - GET ALL COLUMNS

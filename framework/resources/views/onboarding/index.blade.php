@@ -1688,6 +1688,18 @@ function rejectDriver(driverId) {
     }
 }
 
+// Date formatting helper function
+function formatDate(dateString) {
+    if (!dateString || dateString === 'N/A') return 'N/A';
+    var date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // Return as-is if invalid
+    
+    var day = ('0' + date.getDate()).slice(-2);
+    var month = ('0' + (date.getMonth() + 1)).slice(-2);
+    var year = date.getFullYear();
+    return day + '/' + month + '/' + year;
+}
+
 // Instant toggle driver details dropdown (no AJAX delay) - optimized for performance
 function toggleDriverDetailsInstant(button) {
     var $button = $(button);
@@ -1716,7 +1728,7 @@ function toggleDriverDetailsInstant(button) {
     
     // License Expiry Date
     if (driver.license_expiry) {
-        html += '<div class="inline-field"><strong>License Expiry:</strong><span class="text-muted">' + driver.license_expiry + '</span></div>';
+        html += '<div class="inline-field"><strong>License Expiry:</strong><span class="text-muted">' + formatDate(driver.license_expiry) + '</span></div>';
     }
     
     // Address
@@ -1755,7 +1767,7 @@ function toggleDriverDetailsInstant(button) {
     
     var statusClass = driver.status === 'approved' ? 'success' : (driver.status === 'rejected' ? 'danger' : 'warning');
     html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + statusClass + '">' + (driver.status || 'N/A') + '</span></div>';
-    html += '<div class="inline-field"><strong>Submitted:</strong><span class="text-muted">' + (driver.created_at || 'N/A') + '</span></div>';
+    html += '<div class="inline-field"><strong>Submitted:</strong><span class="text-muted">' + formatDate(driver.created_at) + '</span></div>';
     html += '</div>';
     
     // Documents Section - Inline layout with proper spacing
@@ -1798,8 +1810,11 @@ function toggleDriverDetailsInstant(button) {
             'insurance_expiry': 'Insurance Expiry'
         };
         
+        // Fields already shown in basic info - exclude from Additional Information
+        var excludedFields = ['token', 'terms', 'license_number', 'license_expiry', 'vehicle_selection', 'scheme_selection', 'insurance_selection', 'address', 'emergency_contact', 'emergency_phone'];
+        
         for (var key in driver.custom_data) {
-            if (driver.custom_data.hasOwnProperty(key) && key !== 'token' && key !== 'terms' && !key.endsWith('_url')) {
+            if (driver.custom_data.hasOwnProperty(key) && excludedFields.indexOf(key) === -1 && !key.endsWith('_url')) {
                 var value = driver.custom_data[key];
                 var displayValue = '';
                 

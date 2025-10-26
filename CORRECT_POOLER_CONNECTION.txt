@@ -1,0 +1,20 @@
+# CORRECT SUPABASE TRANSACTION POOLER CONNECTION
+# Use this EXACT connection string in your Render environment variables
+
+DATABASE_URL="postgresql://postgres.byjigntaprgwvvfodirl:J1eEYfAYvnZyjxTO@aws-1-eu-west-2.pooler.supabase.com:6543/postgres?sslmode=require"
+
+Key points:
+- Username: postgres.byjigntaprgwvvfodirl (matches your project ref)
+- Host: aws-1-eu-west-2.pooler.supabase.com (aws-1, not aws-0!)
+- Port: 6543 (transaction mode pooler)
+- This allows 100+ concurrent connections
+
+OPTIONAL: Update other DB variables for consistency
+DB_CONNECTION=pgsql
+DB_HOST=aws-1-eu-west-2.pooler.supabase.com
+DB_PORT=6543
+DB_DATABASE=postgres
+DB_USERNAME=postgres.byjigntaprgwvvfodirl
+DB_PASSWORD=J1eEYfAYvnZyjxTO
+DB_SSLMODE=require
+

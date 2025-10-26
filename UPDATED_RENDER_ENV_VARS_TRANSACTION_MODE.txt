@@ -14,7 +14,8 @@ APP_URL=https://fleet-f6fw.onrender.com
 # This allows 100+ concurrent connections vs 15 in session mode
 
 # Primary connection - Transaction Pooler (HIGH CONCURRENCY)
-DATABASE_URL="postgresql://postgres.gbyjigntaprgwvvfodirl:J1eEYfAYvnZyjxTO@aws-0-eu-west-2.pooler.supabase.com:6543/postgres?sslmode=require"
+# CORRECT POOLER URL from Supabase Dashboard
+DATABASE_URL="postgresql://postgres.byjigntaprgwvvfodirl:J1eEYfAYvnZyjxTO@aws-1-eu-west-2.pooler.supabase.com:6543/postgres?sslmode=require"
 
 # Fallback direct connection
 DB_CONNECTION=pgsql

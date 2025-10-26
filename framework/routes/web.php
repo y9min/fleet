@@ -204,6 +204,11 @@ Route::get('sample-payment', function () {
 Route::group(['middleware' => ['web']], function () {
     Route::get('driver-onboarding/{token?}', 'Admin\OnboardingController@showPublicForm')->name('onboarding.public_form');
     Route::post('driver-onboarding/submit', 'Admin\OnboardingController@submitPublicForm')->name('onboarding.submit');
+    
+    // Fallback GET route to handle accidental GET requests with proper error message
+    Route::get('driver-onboarding/submit', function() {
+        return back()->withErrors(['form_error' => 'Invalid form submission method. Please use the submit button on the form.']);
+    });
 });
 
 // Include test routes (remove in production)

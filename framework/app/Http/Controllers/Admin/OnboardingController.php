@@ -796,202 +796,231 @@ class OnboardingController extends Controller
      */
     public function submitPublicForm(Request $request)
     {
-        // Get all field configurations
-        $fieldConfigs = OnboardingFormFieldConfig::all()->keyBy('field_key');
-
-        // Build validation rules dynamically
-        $validationRules = [];
-
-        // Map field_key to form input name
-        $fieldMapping = [
-            'full_name' => 'name',
-            'email' => 'email',
-            'phone' => 'phone',
-            'license_number' => 'license_number',
-            'license_file' => 'license_file',
-            'insurance_file' => 'insurance_file',
-        ];
-
-        foreach ($fieldMapping as $fieldKey => $inputName) {
-            $config = $fieldConfigs->get($fieldKey);
-            if ($config && $config->is_visible) {
-                $rules = [];
-                if ($config->is_required) {
-                    $rules[] = 'required';
-                } else {
-                    $rules[] = 'nullable';
-                }
-                
-                // Add type-specific rules
-                if ($fieldKey === 'email') {
-                    $rules[] = 'email';
-                }
-                if (in_array($fieldKey, ['license_file', 'insurance_file'])) {
-                    $rules[] = 'file';
-                    $rules[] = 'mimes:pdf,jpg,jpeg,png';
-                    $rules[] = 'max:2048';
-                } else {
-                    // Only add max:255 for non-file fields
-                    $rules[] = 'max:255';
-                }
-                
-                $validationRules[$inputName] = implode('|', $rules);
-            }
-        }
-
-        // Handle vehicle selection
-        $vehicleConfig = $fieldConfigs->get('vehicle_selection');
-        if ($vehicleConfig && $vehicleConfig->is_visible) {
-            $rules = $vehicleConfig->is_required ? 'required' : 'nullable';
-            $validationRules['vehicle_selection'] = $rules . '|string|exists:vehicles,id';
-            $validationRules['insurance_selection'] = $rules . '|in:with_insurance,without_insurance';
-        }
-
-        // Handle scheme selection
-        $schemeConfig = $fieldConfigs->get('scheme_selection');
-        if ($schemeConfig && $schemeConfig->is_visible) {
-            $rules = $schemeConfig->is_required ? 'required' : 'nullable';
-            $validationRules['scheme_selection'] = $rules . '|in:Rental,Rent to Buy';
-        }
-
-        $validator = Validator::make($request->all(), $validationRules);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        // Store files only if they exist and are configured as visible
-        $licensePath = null;
-        $insurancePath = null;
-
-        $licenseConfig = $fieldConfigs->get('license_file');
-        if ($licenseConfig && $licenseConfig->is_visible && $request->hasFile('license_file')) {
-            try {
-                $licenseFile = $request->file('license_file');
-                if ($licenseFile && $licenseFile->isValid()) {
-                    // Check if S3 is configured, otherwise use local storage
-                    $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
-                    
-                    if ($useS3) {
-                        // Upload to S3
-                        $fileName = Str::uuid() . '.' . $licenseFile->getClientOriginalExtension();
-                        $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $licenseFile, $fileName);
-                        $licensePath = $fileName;
-                        \Log::info('License file uploaded to S3 successfully', ['filename' => $fileName, 'path' => $path]);
-                    } else {
-                        // Fallback to local storage
-                        $destinationPath = public_path('uploads/onboarding');
-                        if (!file_exists($destinationPath)) {
-                            mkdir($destinationPath, 0755, true);
-                        }
-                        $fileName = Str::uuid() . '.' . $licenseFile->getClientOriginalExtension();
-                        $licenseFile->move($destinationPath, $fileName);
-                        $licensePath = $fileName;
-                    }
-                }
-            } catch (\Exception $e) {
-                \Log::error('License file upload failed', ['error' => $e->getMessage()]);
-                return back()->withErrors(['license_file' => 'License file upload failed.'])->withInput();
-            }
-        }
-
-        $insuranceConfig = $fieldConfigs->get('insurance_file');
-        if ($insuranceConfig && $insuranceConfig->is_visible && $request->hasFile('insurance_file')) {
-            try {
-                $insuranceFile = $request->file('insurance_file');
-                if ($insuranceFile && $insuranceFile->isValid()) {
-                    // Check if S3 is configured, otherwise use local storage
-                    $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
-                    
-                    if ($useS3) {
-                        // Upload to S3
-                        $fileName = Str::uuid() . '.' . $insuranceFile->getClientOriginalExtension();
-                        $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $insuranceFile, $fileName);
-                        $insurancePath = $fileName;
-                        \Log::info('Insurance file uploaded to S3 successfully', ['filename' => $fileName, 'path' => $path]);
-                    } else {
-                        // Fallback to local storage
-                        $destinationPath = public_path('uploads/onboarding');
-                        if (!file_exists($destinationPath)) {
-                            mkdir($destinationPath, 0755, true);
-                        }
-                        $fileName = Str::uuid() . '.' . $insuranceFile->getClientOriginalExtension();
-                        $insuranceFile->move($destinationPath, $fileName);
-                        $insurancePath = $fileName;
-                    }
-                }
-            } catch (\Exception $e) {
-                \Log::error('Insurance file upload failed', ['error' => $e->getMessage()]);
-                return back()->withErrors(['insurance_file' => 'Insurance file upload failed.'])->withInput();
-            }
-        }
-
-        // Process custom file fields
-        $customData = $request->except(['name', 'email', 'phone', 'license_number', 'license_file', 'insurance_file', '_token']);
-        $customFields = CustomFormField::all();
+        \Log::info('Onboarding form submission started', [
+            'method' => $request->method(),
+            'has_files' => $request->hasFile('license_file') || $request->hasFile('insurance_file')
+        ]);
         
-        foreach ($customFields as $field) {
-            $fieldKey = 'custom_' . $field->id;
-            if ($field->field_type === 'file' && $request->hasFile($fieldKey)) {
-                try {
-                    // Check if S3 is configured, otherwise use local storage
-                    $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
-                    
-                    if ($useS3) {
-                        // Upload to S3
-                        $fileName = Str::uuid() . '.' . $request->file($fieldKey)->getClientOriginalExtension();
-                        $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $request->file($fieldKey), $fileName);
-                        $customData[$fieldKey] = $fileName;
-                        \Log::info('Custom file uploaded to S3 successfully', ['field' => $fieldKey, 'filename' => $fileName, 'path' => $path]);
+        try {
+            // Get all field configurations
+            $fieldConfigs = OnboardingFormFieldConfig::all()->keyBy('field_key');
+
+            // Build validation rules dynamically
+            $validationRules = [];
+
+            // Map field_key to form input name
+            $fieldMapping = [
+                'full_name' => 'name',
+                'email' => 'email',
+                'phone' => 'phone',
+                'license_number' => 'license_number',
+                'license_file' => 'license_file',
+                'insurance_file' => 'insurance_file',
+            ];
+
+            foreach ($fieldMapping as $fieldKey => $inputName) {
+                $config = $fieldConfigs->get($fieldKey);
+                if ($config && $config->is_visible) {
+                    $rules = [];
+                    if ($config->is_required) {
+                        $rules[] = 'required';
                     } else {
-                        // Fallback to local storage
-                        $destinationPath = public_path('uploads/onboarding');
-                        if (!file_exists($destinationPath)) {
-                            mkdir($destinationPath, 0755, true);
+                        $rules[] = 'nullable';
+                    }
+                    
+                    // Add type-specific rules
+                    if ($fieldKey === 'email') {
+                        $rules[] = 'email';
+                    }
+                    if (in_array($fieldKey, ['license_file', 'insurance_file'])) {
+                        $rules[] = 'file';
+                        $rules[] = 'mimes:pdf,jpg,jpeg,png';
+                        $rules[] = 'max:2048';
+                    } else {
+                        // Only add max:255 for non-file fields
+                        $rules[] = 'max:255';
+                    }
+                    
+                    $validationRules[$inputName] = implode('|', $rules);
+                }
+            }
+
+            // Handle vehicle selection
+            $vehicleConfig = $fieldConfigs->get('vehicle_selection');
+            if ($vehicleConfig && $vehicleConfig->is_visible) {
+                $rules = $vehicleConfig->is_required ? 'required' : 'nullable';
+                $validationRules['vehicle_selection'] = $rules . '|string|exists:vehicles,id';
+                $validationRules['insurance_selection'] = $rules . '|in:with_insurance,without_insurance';
+            }
+
+            // Handle scheme selection
+            $schemeConfig = $fieldConfigs->get('scheme_selection');
+            if ($schemeConfig && $schemeConfig->is_visible) {
+                $rules = $schemeConfig->is_required ? 'required' : 'nullable';
+                $validationRules['scheme_selection'] = $rules . '|in:Rental,Rent to Buy';
+            }
+
+            $validator = Validator::make($request->all(), $validationRules);
+
+            if ($validator->fails()) {
+                return back()->withErrors($validator)->withInput();
+            }
+
+            // Store files only if they exist and are configured as visible
+            $licensePath = null;
+            $insurancePath = null;
+
+            $licenseConfig = $fieldConfigs->get('license_file');
+            if ($licenseConfig && $licenseConfig->is_visible && $request->hasFile('license_file')) {
+                try {
+                    $licenseFile = $request->file('license_file');
+                    if ($licenseFile && $licenseFile->isValid()) {
+                        // Check if S3 is configured, otherwise use local storage
+                        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                        
+                        if ($useS3) {
+                            // Upload to S3
+                            $fileName = Str::uuid() . '.' . $licenseFile->getClientOriginalExtension();
+                            $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $licenseFile, $fileName);
+                            $licensePath = $fileName;
+                            \Log::info('License file uploaded to S3 successfully', ['filename' => $fileName, 'path' => $path]);
+                        } else {
+                            // Fallback to local storage
+                            $destinationPath = public_path('uploads/onboarding');
+                            if (!file_exists($destinationPath)) {
+                                mkdir($destinationPath, 0755, true);
+                            }
+                            $fileName = Str::uuid() . '.' . $licenseFile->getClientOriginalExtension();
+                            $licenseFile->move($destinationPath, $fileName);
+                            $licensePath = $fileName;
                         }
-                        $fileName = Str::uuid() . '.' . $request->file($fieldKey)->getClientOriginalExtension();
-                        $request->file($fieldKey)->move($destinationPath, $fileName);
-                        $customData[$fieldKey] = $fileName;
                     }
                 } catch (\Exception $e) {
-                    \Log::error('Custom file upload failed for field: ' . $fieldKey, ['error' => $e->getMessage()]);
-                    // Continue processing other fields even if one fails
+                    \Log::error('License file upload failed', ['error' => $e->getMessage()]);
+                    return back()->withErrors(['license_file' => 'License file upload failed.'])->withInput();
                 }
             }
+
+            $insuranceConfig = $fieldConfigs->get('insurance_file');
+            if ($insuranceConfig && $insuranceConfig->is_visible && $request->hasFile('insurance_file')) {
+                try {
+                    $insuranceFile = $request->file('insurance_file');
+                    if ($insuranceFile && $insuranceFile->isValid()) {
+                        // Check if S3 is configured, otherwise use local storage
+                        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                        
+                        if ($useS3) {
+                            // Upload to S3
+                            $fileName = Str::uuid() . '.' . $insuranceFile->getClientOriginalExtension();
+                            $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $insuranceFile, $fileName);
+                            $insurancePath = $fileName;
+                            \Log::info('Insurance file uploaded to S3 successfully', ['filename' => $fileName, 'path' => $path]);
+                        } else {
+                            // Fallback to local storage
+                            $destinationPath = public_path('uploads/onboarding');
+                            if (!file_exists($destinationPath)) {
+                                mkdir($destinationPath, 0755, true);
+                            }
+                            $fileName = Str::uuid() . '.' . $insuranceFile->getClientOriginalExtension();
+                            $insuranceFile->move($destinationPath, $fileName);
+                            $insurancePath = $fileName;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Insurance file upload failed', ['error' => $e->getMessage()]);
+                    return back()->withErrors(['insurance_file' => 'Insurance file upload failed.'])->withInput();
+                }
+            }
+
+            // Process custom file fields
+            $customData = $request->except(['name', 'email', 'phone', 'license_number', 'license_file', 'insurance_file', '_token']);
+            $customFields = CustomFormField::all();
+            
+            foreach ($customFields as $field) {
+                $fieldKey = 'custom_' . $field->id;
+                if ($field->field_type === 'file' && $request->hasFile($fieldKey)) {
+                    try {
+                        // Check if S3 is configured, otherwise use local storage
+                        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                        
+                        if ($useS3) {
+                            // Upload to S3
+                            $fileName = Str::uuid() . '.' . $request->file($fieldKey)->getClientOriginalExtension();
+                            $path = Storage::disk('s3')->putFileAs('uploads/onboarding', $request->file($fieldKey), $fileName);
+                            $customData[$fieldKey] = $fileName;
+                            \Log::info('Custom file uploaded to S3 successfully', ['field' => $fieldKey, 'filename' => $fileName, 'path' => $path]);
+                        } else {
+                            // Fallback to local storage
+                            $destinationPath = public_path('uploads/onboarding');
+                            if (!file_exists($destinationPath)) {
+                                mkdir($destinationPath, 0755, true);
+                            }
+                            $fileName = Str::uuid() . '.' . $request->file($fieldKey)->getClientOriginalExtension();
+                            $request->file($fieldKey)->move($destinationPath, $fileName);
+                            $customData[$fieldKey] = $fileName;
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Custom file upload failed for field: ' . $fieldKey, ['error' => $e->getMessage()]);
+                        // Continue processing other fields even if one fails
+                    }
+                }
+            }
+
+            // Find the onboarding link and increment usage count
+            $token = $request->input('token');
+            $link = OnboardingLink::where('token', $token)
+                ->where('is_active', true)
+                ->first();
+            
+            if ($link) {
+                $link->incrementUsage();
+            }
+
+            // Build driver data matching Supabase schema
+            $driverData = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'license_number' => $request->license_number,
+                'license_upload_path' => $licensePath,
+                'insurance_upload_path' => $insurancePath,
+                'vehicle_id' => $request->vehicle_selection,
+                'scheme' => $request->scheme_selection,
+                'insurance_selection' => $request->insurance_selection,
+                'status' => 'submitted',
+                'license_expiry' => $request->license_expiry,
+                'address' => $request->address,
+                'emergency_contact' => $request->emergency_contact,
+                'emergency_phone' => $request->emergency_phone,
+                'form_data' => $customData
+            ];
+
+            \Log::info('Creating onboarding driver record', ['driver_data' => $driverData]);
+            
+            OnboardingDriver::create($driverData);
+
+            \Log::info('Onboarding form submitted successfully');
+
+            return redirect()->back()->with('success', 'Application submitted successfully!');
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed in onboarding form', [
+                'errors' => $e->errors(),
+                'input' => $request->except(['_token', 'license_file', 'insurance_file'])
+            ]);
+            return back()->withErrors($e->validator)->withInput();
+            
+        } catch (\Exception $e) {
+            \Log::error('Critical error in onboarding form submission', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['_token', 'license_file', 'insurance_file'])
+            ]);
+            
+            return back()->withErrors(['form_error' => 'An error occurred while submitting your application. Please try again or contact support.'])->withInput();
         }
-
-        // Find the onboarding link and increment usage count
-        $token = $request->input('token');
-        $link = OnboardingLink::where('token', $token)
-            ->where('is_active', true)
-            ->first();
-        
-        if ($link) {
-            $link->incrementUsage();
-        }
-
-        // Build driver data matching Supabase schema
-        $driverData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'license_number' => $request->license_number,
-            'license_upload_path' => $licensePath,
-            'insurance_upload_path' => $insurancePath,
-            'vehicle_id' => $request->vehicle_selection,
-            'scheme' => $request->scheme_selection,
-            'insurance_selection' => $request->insurance_selection,
-            'status' => 'submitted',
-            'license_expiry' => $request->license_expiry,
-            'address' => $request->address,
-            'emergency_contact' => $request->emergency_contact,
-            'emergency_phone' => $request->emergency_phone,
-            'form_data' => $customData
-        ];
-
-        OnboardingDriver::create($driverData);
-
-        return redirect()->back()->with('success', 'Application submitted successfully!');
     }
 
     /**

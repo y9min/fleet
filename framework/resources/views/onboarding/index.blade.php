@@ -1295,7 +1295,7 @@ body {
 <script>
 // Wait for everything to load
 $(document).ready(function() {
-    console.log('DOM ready, initializing DataTables...');
+    console.log('DOM ready, checking DataTables availability...');
     
     // Store custom fields mapping for use in toggleDriverDetailsInstant
     window.customFieldsMap = {
@@ -1309,17 +1309,55 @@ $(document).ready(function() {
         @endforeach
     };
     
-    initializeOnboardingTable();
+    // Wait for DataTables to be available (scripts are loaded with defer attribute)
+    if (typeof $.fn.DataTable === 'undefined') {
+        console.log('DataTables not loaded yet, waiting...');
+        // Retry after a short delay
+        var initAttempts = 0;
+        var maxAttempts = 10;
+        
+        var checkDataTables = setInterval(function() {
+            initAttempts++;
+            console.log('Checking DataTables availability (attempt ' + initAttempts + ')...');
+            
+            if (typeof $.fn.DataTable !== 'undefined') {
+                console.log('DataTables is now available!');
+                clearInterval(checkDataTables);
+                initializeOnboardingTable();
+            } else if (initAttempts >= maxAttempts) {
+                console.error('DataTables failed to load after ' + maxAttempts + ' attempts');
+                clearInterval(checkDataTables);
+                $('#onboardTable').after('<div class="alert alert-danger">DataTables library failed to load. Please refresh the page.</div>');
+            }
+        }, 100);
+    } else {
+        initializeOnboardingTable();
+    }
 });
 
 function initializeOnboardingTable() {
+    console.log('Initializing DataTable, checking if already initialized...');
+    
     // Prevent double initialization
-    if ($.fn.DataTable.isDataTable('#onboardTable')) {
-        console.log('DataTable already initialized');
+    if ($.fn.DataTable && $.fn.DataTable.isDataTable('#onboardTable')) {
+        console.log('DataTable already initialized, destroying and recreating...');
+        try {
+            $('#onboardTable').DataTable().destroy();
+        } catch(e) {
+            console.log('Error destroying existing DataTable:', e);
+        }
+    }
+    
+    console.log('Creating new DataTable instance...');
+    
+    // Check if jQuery DataTable function is available
+    if (typeof $.fn.DataTable === 'undefined') {
+        console.error('ERROR: $.fn.DataTable is undefined! DataTables library did not load properly.');
         return;
     }
     
-    console.log('Initializing DataTables...');
+    console.log('DataTable function is available, initializing with AJAX URL: {{ url("admin/onboarding/fetch-data") }}');
+    
     // Initialize DataTable with optimized settings for better performance
     var table = $('#onboardTable').DataTable({
         processing: true,
@@ -1333,7 +1371,21 @@ function initializeOnboardingTable() {
         ajax: {
             url: '{{ url("admin/onboarding/fetch-data") }}',
             type: 'GET',
-            cache: true // Enable client-side caching
+            cache: true, // Enable client-side caching
+            error: function(xhr, error, thrown) {
+                console.error('DataTable AJAX Error:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    error: error,
+                    thrown: thrown,
+                    responseText: xhr.responseText
+                });
+                
+                // Show user-friendly error message
+                if ($('#dataTableError').length === 0) {
+                    $('#onboardTable').after('<div id="dataTableError" class="alert alert-danger">Failed to load onboarding data. Error: ' + xhr.status + ' ' + xhr.statusText + '</div>');
+                }
+            }
         },
         columns: [
             {data: 'id', name: 'id'},

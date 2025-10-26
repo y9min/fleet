@@ -1392,6 +1392,19 @@ function initializeOnboardingTable() {
                     console.warn('[DATATABLES] Response contains 0 records');
                 } else {
                     console.log('[DATATABLES] Returning', json.data.length, 'records to DataTables');
+                    // Log first record's actions column to inspect the button HTML
+                    if (json.data[0] && json.data[0].actions) {
+                        console.log('[DATATABLES] First record actions column:', json.data[0].actions);
+                        // Extract driver ID from the actions column
+                        var actionsHtml = json.data[0].actions;
+                        var match = actionsHtml.match(/deleteDriver\('([^']+)'\)/);
+                        if (match) {
+                            console.log('[DATATABLES] ID found in actions:', match[1]);
+                        } else {
+                            console.error('[DATATABLES] NO ID FOUND IN ACTIONS COLUMN!');
+                            console.log('[DATATABLES] Actions HTML:', actionsHtml.substring(0, 500));
+                        }
+                    }
                 }
                 
                 return json.data;

@@ -228,7 +228,8 @@ class OnboardingController extends Controller
                     'driver_id_raw' => $driver->getOriginal('id'),
                     'driver_id_type' => gettype($driver->id),
                     'driver_name' => $driver->name ?? 'N/A',
-                    'driver_email' => $driver->email ?? 'N/A'
+                    'driver_email' => $driver->email ?? 'N/A',
+                    'full_driver_object' => json_encode($driver->toArray())
                 ]);
                 
                 $actions = '<div class="d-flex justify-content-center gap-1">';

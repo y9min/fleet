@@ -160,8 +160,8 @@ class OnboardingController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Use eloquent() instead of of() for proper column mapping
-        return DataTables::eloquent($query)
+        // Use of() for proper column handling with our model
+        return DataTables::of($query)
             ->addColumn('actions', function ($driver) {
                 $actions = '<div class="d-flex justify-content-center gap-1">';
                 

@@ -221,6 +221,10 @@ class OnboardingController extends Controller
 
         // Use of() for proper column handling with our model
         return DataTables::of($query)
+            ->addColumn('id', function ($driver) {
+                // Explicitly return the driver ID to ensure it's included in the response
+                return $driver->id;
+            })
             ->addColumn('actions', function ($driver) use ($customFields) {
                 // CRITICAL DEBUG: Log the driver ID being processed
                 \Log::info('FETCHDATA] Processing driver for actions column:', [

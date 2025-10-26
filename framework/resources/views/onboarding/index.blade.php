@@ -1432,6 +1432,7 @@ function initializeOnboardingTable() {
             }
         },
         columns: [
+            {data: 'id', name: 'id', visible: false}, // Hidden ID column for debugging
             {data: 'name', name: 'name'},
             {data: 'email', name: 'email'},
             {data: 'phone', name: 'phone'},
@@ -2104,6 +2105,13 @@ function deleteDriver(driverId) {
     console.log('[DELETE] driverId type:', typeof driverId);
     console.log('[DELETE] driverId length:', driverId ? driverId.length : 'null/undefined');
     
+    // Validate driverId before proceeding
+    if (!driverId || driverId === '0' || driverId === 0 || driverId === 'undefined' || driverId === 'null') {
+        console.error('[DELETE] INVALID DRIVER ID:', driverId);
+        alert('Error: Invalid driver ID. Please refresh the page and try again.');
+        return;
+    }
+    
     if (confirm('Are you sure you want to delete this driver application? This will permanently remove it from the onboarding table.')) {
         var deleteUrl = '{{ url("admin/onboarding") }}/' + driverId;
         console.log('[DELETE] Sending DELETE request to:', deleteUrl);
@@ -2129,7 +2137,21 @@ function deleteDriver(driverId) {
                     responseText: xhr.responseText,
                     error: error
                 });
-                alert('Error deleting driver application: ' + (xhr.responseText || xhr.statusText));
+                
+                var errorMsg = 'Error deleting driver application';
+                if (xhr.responseText) {
+                    try {
+                        var errorJson = JSON.parse(xhr.responseText);
+                        if (errorJson.message) {
+                            errorMsg += ': ' + errorJson.message;
+                        }
+                    } catch(e) {
+                        errorMsg += ': ' + xhr.statusText;
+                    }
+                } else {
+                    errorMsg += ': ' + xhr.statusText;
+                }
+                alert(errorMsg);
             }
         });
     }

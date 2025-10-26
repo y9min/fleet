@@ -146,30 +146,15 @@ class OnboardingController extends Controller
     public function fetchData(Request $request)
     {
         $auth = \Auth::user();
-        $query = OnboardingDriver::select([
-            'id',
-            'name',
-            'email',
-            'phone',
-            'license_number',
-            'status',
-            'license_upload_path',
-            'insurance_upload_path',
-            'created_at',
-            'license_expiry',
-            'address',
-            'emergency_contact',
-            'emergency_phone',
-            'vehicle_id',
-            'scheme',
-            'insurance_selection',
-            'custom_data',
-            'form_data'
-        ])->with(['vehicle']); // Eager load vehicle relationship for better performance
+        
+        // DEBUG: Log total count before any queries
+        $totalCount = OnboardingDriver::count();
+        \Log::info('Total OnboardingDriver records: ' . $totalCount);
+        
+        $query = OnboardingDriver::query(); // SIMPLEST POSSIBLE QUERY - NO SELECT, NO FILTERING
 
-        // Company scoping via vehicle_id - REMOVED ALL FILTERING TO ENSURE ALL RECORDS ARE VISIBLE
-        // TODO: Re-implement company scoping later if needed
-        // For now, show ALL records to ensure visibility
+        // NO FILTERING AT ALL - SHOW EVERYTHING
+        // NO SELECT RESTRICTIONS - GET ALL COLUMNS
 
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);

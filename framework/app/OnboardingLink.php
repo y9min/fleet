@@ -49,7 +49,8 @@ class OnboardingLink extends Model
     // Scope for active links
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        // Use raw SQL with explicit boolean comparison for PostgreSQL compatibility
+        return $query->whereRaw('is_active IS TRUE');
     }
 
     // Scope for non-expired links

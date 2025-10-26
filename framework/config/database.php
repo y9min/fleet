@@ -53,6 +53,7 @@ return [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
                 PDO::ATTR_EMULATE_PREPARES => true,  // Required for Supabase connection pooling
+                \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
             ],
             'dump' => [
                 'dump_binary_path' => '/usr/bin',

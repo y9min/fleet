@@ -842,7 +842,7 @@ class OnboardingController extends Controller
      */
     public function showPublicForm($token)
     {
-        $link = OnboardingLink::where('link', 'like', '%' . $token)->where('is_active', true)->first();
+        $link = OnboardingLink::where('link', 'like', '%' . $token)->whereRaw('is_active IS TRUE')->first();
         
         if (!$link) {
             abort(404);
@@ -1068,7 +1068,7 @@ class OnboardingController extends Controller
             // Find the onboarding link and increment usage count
             $token = $request->input('token');
             $link = OnboardingLink::where('token', $token)
-                ->where('is_active', true)
+                ->whereRaw('is_active IS TRUE')
                 ->first();
             
             if ($link) {

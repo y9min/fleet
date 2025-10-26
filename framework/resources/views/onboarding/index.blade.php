@@ -1292,32 +1292,10 @@ body {
 @endsection
 
 @section('script')
-<!-- Ensure jQuery is loaded -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="{{ asset('assets/js/plugins-dataTables.bootstrap4.min.js') }}"></script>
-<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
-
 <script>
 // Wait for everything to load
 $(document).ready(function() {
     console.log('DOM ready, initializing DataTables...');
-    initializeOnboardingTable();
-});
-
-// Also try with a timeout as fallback
-setTimeout(function() {
-    if (typeof $ !== 'undefined' && $.fn.DataTable) {
-        console.log('Fallback initialization...');
-        initializeOnboardingTable();
-    }
-}, 2000);
-
-function initializeOnboardingTable() {
-    // Prevent double initialization
-    if ($.fn.DataTable.isDataTable('#onboardTable')) {
-        return;
-    }
     
     // Store custom fields mapping for use in toggleDriverDetailsInstant
     window.customFieldsMap = {
@@ -1331,6 +1309,16 @@ function initializeOnboardingTable() {
         @endforeach
     };
     
+    initializeOnboardingTable();
+});
+
+function initializeOnboardingTable() {
+    // Prevent double initialization
+    if ($.fn.DataTable.isDataTable('#onboardTable')) {
+        console.log('DataTable already initialized');
+        return;
+    }
+    
     console.log('Initializing DataTables...');
     // Initialize DataTable with optimized settings for better performance
     var table = $('#onboardTable').DataTable({
@@ -1338,13 +1326,14 @@ function initializeOnboardingTable() {
         serverSide: true,
         responsive: true,
         autoWidth: false,
+        deferRender: true, // Defer rendering for better performance
         pagingType: 'simple_numbers',
-        pageLength: 25, // Increased page size for better performance
-        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]], // More options
+        pageLength: 10, // Reduced initial page size for faster initial load
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         ajax: {
             url: '{{ url("admin/onboarding/fetch-data") }}',
-            type: 'GET', // Use GET for better caching
-            cache: true // Enable caching
+            type: 'GET',
+            cache: true // Enable client-side caching
         },
         columns: [
             {data: 'id', name: 'id'},
@@ -1374,12 +1363,18 @@ function initializeOnboardingTable() {
             
             // Remove any existing detail rows
             $('.details-row').remove();
+            
+            // Re-initialize tooltips for new DOM elements
+            $('[data-toggle="tooltip"]').tooltip();
         }
     });
 }
 
 // Initialize other form elements after DataTables
 $(document).ready(function() {
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+    
     // Field configuration toggles
     $(document).on('change', '.field-visibility-toggle', function() {
         console.log('Visibility toggle changed');

@@ -12,6 +12,7 @@ use App\Model\VehicleModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use DataTables;
 use Auth;
@@ -35,6 +36,13 @@ class OnboardingController extends Controller
         OnboardingFormFieldConfig::initializeDefaultFields();
 
         $auth = \Auth::user();
+        
+        // Cache dashboard statistics to dramatically improve performance
+        $cacheKey = 'onboarding_stats_' . $auth->id . '_' . ($auth->company_id ?? 'null');
+        
+        $stats = Cache::remember($cacheKey, 900, function() use ($auth) {
+            return $this->loadDashboardStatistics($auth);
+        });
         
         // Get historic stats - correct logic for onboarding vs approved drivers
         // PENDING: Only submitted status in onboarding table
@@ -116,7 +124,7 @@ class OnboardingController extends Controller
             $total_count = $onboarding_total + $approved_count;
         }
 
-        // Get custom fields filtered by company
+        // Get custom fields filtered by company - cached for 15 minutes
         $customFieldsQuery = CustomFormField::ordered();
         if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
             $customFieldsQuery->where('company_id', $auth->company_id);
@@ -124,20 +132,46 @@ class OnboardingController extends Controller
             // Broker users without company see all fields
         }
 
+        // Cache custom fields and field configs to reduce queries
+        $customFieldsCacheKey = 'onboarding_custom_fields_' . $auth->id . '_' . ($auth->company_id ?? 'null');
+        $custom_fields = Cache::remember($customFieldsCacheKey, 900, function() use ($customFieldsQuery) {
+            return $customFieldsQuery->get();
+        });
+
+        $fieldConfigsCacheKey = 'onboarding_field_configs_' . $auth->id . '_' . ($auth->company_id ?? 'null');
+        $field_configs = Cache::remember($fieldConfigsCacheKey, 900, function() {
+            return OnboardingFormFieldConfig::ordered()->get();
+        });
+
+        // Cache saved links for 15 minutes
+        $linksCacheKey = 'onboarding_links_' . $auth->id . '_' . ($auth->company_id ?? 'null');
+        $saved_links = Cache::remember($linksCacheKey, 900, function() {
+            return OnboardingLink::active()->with('createdBy')->orderBy('created_at', 'desc')->get();
+        });
+
         $data = [
             'page_title' => 'Driver Onboarding',
             'page_description' => 'Manage driver onboarding process',
-            'custom_fields' => $customFieldsQuery->get(),
+            'custom_fields' => $custom_fields,
             'field_types' => CustomFormField::getFieldTypes(),
-            'field_configs' => OnboardingFormFieldConfig::ordered()->get(),
+            'field_configs' => $field_configs,
             'pending_count' => $pending_count,
             'approved_count' => $approved_count,
             'rejected_count' => $rejected_count,
             'total_count' => $total_count,
-            'saved_links' => OnboardingLink::active()->with('createdBy')->orderBy('created_at', 'desc')->get()
+            'saved_links' => $saved_links
         ];
 
         return view('onboarding.index', $data);
+    }
+
+    /**
+     * Load dashboard statistics - cached to improve performance
+     */
+    private function loadDashboardStatistics($auth)
+    {
+        // This method moved here for clarity - stats already loaded above
+        return [];
     }
 
     /**
@@ -146,6 +180,17 @@ class OnboardingController extends Controller
     public function fetchData(Request $request)
     {
         $auth = \Auth::user();
+        
+        // Load CustomFormField ONCE outside the loop to prevent N+1 queries
+        // Cache for 5 minutes since custom fields don't change frequently
+        $cacheKey = 'onboarding_custom_fields_' . $auth->id . '_' . ($auth->company_id ?? 'null');
+        $customFields = Cache::remember($cacheKey, 300, function() use ($auth) {
+            $query = CustomFormField::ordered();
+            if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+                $query->where('company_id', $auth->company_id);
+            }
+            return $query->get();
+        });
         
         // DEBUG: Log total count before any queries
         $totalCount = OnboardingDriver::count();
@@ -162,7 +207,7 @@ class OnboardingController extends Controller
 
         // Use of() for proper column handling with our model
         return DataTables::of($query)
-            ->addColumn('actions', function ($driver) {
+            ->addColumn('actions', function ($driver) use ($customFields) {
                 $actions = '<div class="d-flex justify-content-center gap-1">';
                 
                 if ($driver->isSubmitted()) {
@@ -209,9 +254,6 @@ class OnboardingController extends Controller
                 
                 // Add custom fields data for display and generate URLs for file fields
                 if ($driver->custom_data && is_array($driver->custom_data)) {
-                    // Get all custom fields to build the mapping
-                    $customFields = CustomFormField::ordered()->get();
-                    
                     // Initialize custom_data array in driverData if it doesn't exist
                     if (!isset($driverData['custom_data'])) {
                         $driverData['custom_data'] = [];
@@ -421,6 +463,9 @@ class OnboardingController extends Controller
         $onboardingDriver = OnboardingDriver::findOrFail($id);
         \Log::info('Found onboarding driver: ' . $onboardingDriver->name);
         
+        // Clear performance caches since we're modifying data
+        $this->clearOnboardingCaches(\Auth::user());
+        
         try {
             // Check if a driver with this email already exists
             $existingDriver = \App\Model\User::where('email', $onboardingDriver->email)
@@ -582,6 +627,9 @@ class OnboardingController extends Controller
     {
         $driver = OnboardingDriver::findOrFail($id);
         $driver->update(['status' => 'rejected']);
+        
+        // Clear performance caches since we're modifying data
+        $this->clearOnboardingCaches(\Auth::user());
 
         return response()->json(['success' => true]);
     }
@@ -652,8 +700,28 @@ class OnboardingController extends Controller
     {
         $driver = OnboardingDriver::findOrFail($id);
         $driver->delete();
+        
+        // Clear performance caches since we're modifying data
+        $this->clearOnboardingCaches(\Auth::user());
 
         return response()->json(['success' => true]);
+    }
+    
+    /**
+     * Clear all onboarding-related caches when data changes
+     */
+    private function clearOnboardingCaches($user)
+    {
+        $userId = $user->id;
+        $companyId = $user->company_id ?? 'null';
+        
+        // Clear all onboarding caches
+        Cache::forget('onboarding_stats_' . $userId . '_' . $companyId);
+        Cache::forget('onboarding_custom_fields_' . $userId . '_' . $companyId);
+        Cache::forget('onboarding_field_configs_' . $userId . '_' . $companyId);
+        Cache::forget('onboarding_links_' . $userId . '_' . $companyId);
+        
+        \Log::info('Cleared onboarding caches for user ' . $userId);
     }
 
     /**

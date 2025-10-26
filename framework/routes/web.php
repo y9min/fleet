@@ -199,9 +199,6 @@ Route::get('sample-payment', function () {
 
 
 
-# Admin login redirect to unified login (permanent)
-Route::permanentRedirect('/admin/login', '/login')->name('admin.login');
-
 // Public Driver Onboarding Routes (no authentication required)
 Route::group(['middleware' => ['web', 'IsInstalled']], function () {
     Route::get('driver-onboarding/{token?}', 'Admin\OnboardingController@showPublicForm')->name('onboarding.public_form');

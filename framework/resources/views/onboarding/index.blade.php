@@ -1062,7 +1062,6 @@ body {
                     <table id="onboardTable" class="table table-striped table-bordered">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
@@ -1420,7 +1419,6 @@ function initializeOnboardingTable() {
             }
         },
         columns: [
-            {data: 'id', name: 'id'},
             {data: 'name', name: 'name'},
             {data: 'email', name: 'email'},
             {data: 'phone', name: 'phone'},
@@ -1430,7 +1428,7 @@ function initializeOnboardingTable() {
             {data: 'created_at', name: 'created_at'},
             {data: 'actions', name: 'actions', orderable: false, searchable: false}
         ],
-        order: [[0, 'desc']],
+        order: [[6, 'desc']],
         language: {
             processing: "Loading driver applications..."
         },
@@ -1865,7 +1863,7 @@ function toggleDriverDetailsInstant(button) {
     html += '</div>';
     
     // Create and insert the details row instantly
-    var $detailsRow = $('<tr class="details-row"><td colspan="9">' + html + '</td></tr>');
+    var $detailsRow = $('<tr class="details-row"><td colspan="8">' + html + '</td></tr>');
     $row.after($detailsRow);
     
     // Update button state
@@ -2074,7 +2072,7 @@ function toggleDriverDetails(driverId) {
                 html += '</div>';
                 
                 // Create and insert the details row
-                var $detailsRow = $('<tr class="details-row"><td colspan="9">' + html + '</td></tr>');
+                var $detailsRow = $('<tr class="details-row"><td colspan="8">' + html + '</td></tr>');
                 $row.after($detailsRow);
                 
                 // Update button state

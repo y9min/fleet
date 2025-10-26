@@ -151,16 +151,17 @@ class OnboardingController extends Controller
         $totalCount = OnboardingDriver::count();
         \Log::info('Total OnboardingDriver records: ' . $totalCount);
         
-        $query = OnboardingDriver::with(['vehicle']); // Load vehicle relationship to prevent errors
+        // SIMPLE WORKING QUERY - Model all columns, eager load vehicle relationship
+        $query = OnboardingDriver::with(['vehicle']);
 
         // NO FILTERING AT ALL - SHOW EVERYTHING
-        // NO SELECT RESTRICTIONS - GET ALL COLUMNS
 
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
-        return DataTables::of($query)
+        // Use eloquent() instead of of() for proper column mapping
+        return DataTables::eloquent($query)
             ->addColumn('actions', function ($driver) {
                 $actions = '<div class="d-flex justify-content-center gap-1">';
                 

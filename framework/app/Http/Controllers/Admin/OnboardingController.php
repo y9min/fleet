@@ -316,6 +316,44 @@ class OnboardingController extends Controller
                     }
                 }
                 
+                // If custom_data is empty, use form_data instead (fallback for legacy/new submissions)
+                if ((!$driver->custom_data || empty($driver->custom_data)) && $driver->form_data && is_array($driver->form_data)) {
+                    if (!isset($driverData['custom_data'])) {
+                        $driverData['custom_data'] = [];
+                    }
+                    
+                    // Copy all form_data into custom_data for display
+                    foreach ($driver->form_data as $key => $value) {
+                        $driverData['custom_data'][$key] = $value;
+                        
+                        // Generate URL for custom file fields from form_data
+                        if (strpos($key, 'custom_') === 0) {
+                            $fieldId = str_replace('custom_', '', $key);
+                            $field = $customFields->find($fieldId);
+                            
+                            if ($field && $field->field_type === 'file' && $value) {
+                                $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                                $filePath = $value;
+                                
+                                if ($useS3) {
+                                    $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+                                    if (strpos($filePath, 'onboarding/documents/') === 0) {
+                                        $driverData['custom_data'][$key . '_url'] = $s3BaseUrl . $filePath;
+                                    } else {
+                                        $driverData['custom_data'][$key . '_url'] = $s3BaseUrl . 'uploads/onboarding/' . $filePath;
+                                    }
+                                } else {
+                                    if (strpos($filePath, 'onboarding/documents/') === 0) {
+                                        $driverData['custom_data'][$key . '_url'] = asset('storage/' . $filePath);
+                                    } else {
+                                        $driverData['custom_data'][$key . '_url'] = asset('uploads/onboarding/' . $filePath);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 $jsonData = json_encode($driverData);
                 
                 // Debug logging for driver ID

@@ -1,0 +1,31 @@
+# CRITICAL: Update Render Environment Variables to Use Transaction Mode
+
+# The error "max clients reached in Session mode" means you need to switch
+# from session mode pooler to transaction mode pooler.
+
+# Update your Render environment variables with these:
+
+# Use TRANSACTION MODE instead of session mode
+# Transaction mode has much higher connection limits (100+ vs ~15 for session)
+DATABASE_URL="postgresql://postgres.gbyjigntaprgwvvfodirl:J1eEYfAYvnZyjxTO@aws-0-eu-west-2.pooler.supabase.com:6543/postgres?sslmode=require"
+
+# Keep the direct connection as fallback
+DB_HOST=db.byjigntaprgwvvfodirl.supabase.co
+DB_PORT=5432
+DB_DATABASE=postgres
+DB_USERNAME=postgres.gbyjigntaprgwvvfodirl
+DB_PASSWORD=J1eEYfAYvnZyjxTO
+DB_SSLMODE=require
+
+# The pooler connection string format:
+# postgresql://[user.g_xxx]:[password]@[region.pooler.supabase.com]:6543/[database]?sslmode=require
+
+# Key differences:
+# 1. Username format: postgres.g{project_ref} instead of postgres
+# 2. Port: 6543 (transaction mode pooler) instead of 5432
+# 3. Host: aws-X-region.pooler.supabase.com
+# 4. No session limits - much more concurrent connections allowed
+
+# Find your project reference at: Supabase Dashboard > Settings > Database
+# Your connection string should look like: aws-0-eu-west-2.pooler.supabase.com
+

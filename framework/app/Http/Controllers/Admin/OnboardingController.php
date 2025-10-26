@@ -222,6 +222,15 @@ class OnboardingController extends Controller
         // Use of() for proper column handling with our model
         return DataTables::of($query)
             ->addColumn('actions', function ($driver) use ($customFields) {
+                // CRITICAL DEBUG: Log the driver ID being processed
+                \Log::info('FETCHDATA] Processing driver for actions column:', [
+                    'driver_id' => $driver->id,
+                    'driver_id_raw' => $driver->getOriginal('id'),
+                    'driver_id_type' => gettype($driver->id),
+                    'driver_name' => $driver->name ?? 'N/A',
+                    'driver_email' => $driver->email ?? 'N/A'
+                ]);
+                
                 $actions = '<div class="d-flex justify-content-center gap-1">';
                 
                 if ($driver->isSubmitted()) {
@@ -309,19 +318,21 @@ class OnboardingController extends Controller
                 $jsonData = json_encode($driverData);
                 
                 // Debug logging for driver ID
-                \Log::info('ACTIONS] Generating button for driver:', [
+                $deleteButtonHtml = '<button class="btn btn-sm btn-danger" onclick="deleteDriver(\'' . $driver->id . '\')" title="Delete" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
+                    <i class="fas fa-trash"></i>
+                </button>';
+                
+                \Log::info('BUTTON] Delete button HTML:', [
                     'driver_id' => $driver->id,
-                    'driver_id_type' => gettype($driver->id),
-                    'driver_name' => $driver->name
+                    'button_html' => $deleteButtonHtml,
+                    'id_in_html' => 'deleteDriver(\'' . $driver->id . '\')'
                 ]);
                 
                 $actions .= '<button class="btn btn-sm btn-info" data-driver-id="' . $driver->id . '" data-driver-info=\'' . htmlspecialchars($jsonData, ENT_QUOTES) . '\' onclick="toggleDriverDetailsInstant(this)" title="Toggle Details" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
                     <i class="fas fa-eye"></i>
                 </button>';
                 
-                $actions .= '<button class="btn btn-sm btn-danger" onclick="deleteDriver(\'' . $driver->id . '\')" title="Delete" style="padding: 6px 8px; min-width: 32px; height: 32px; border-radius: 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease-in-out;">
-                    <i class="fas fa-trash"></i>
-                </button>';
+                $actions .= $deleteButtonHtml;
                 
                 $actions .= '</div>';
 

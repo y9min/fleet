@@ -29,7 +29,8 @@ class OnboardingDriver extends Model
         'license_expiry',
         'address',
         'emergency_contact',
-        'emergency_phone'
+        'emergency_phone',
+        'company_id' // Added to link submissions to company
     ];
 
     protected $casts = [

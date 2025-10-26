@@ -976,6 +976,12 @@ class OnboardingController extends Controller
                 $link->incrementUsage();
             }
 
+            // Get company_id from the onboarding link
+            $companyId = null;
+            if ($link && $link->company_id) {
+                $companyId = $link->company_id;
+            }
+            
             // Build driver data matching Supabase schema
             $driverData = [
                 'name' => $request->name,
@@ -992,7 +998,8 @@ class OnboardingController extends Controller
                 'address' => $request->address,
                 'emergency_contact' => $request->emergency_contact,
                 'emergency_phone' => $request->emergency_phone,
-                'form_data' => $customData
+                'form_data' => $customData,
+                'company_id' => $companyId // Add company_id to the submission
             ];
 
             \Log::info('Creating onboarding driver record', ['driver_data' => $driverData]);
@@ -1000,6 +1007,13 @@ class OnboardingController extends Controller
             OnboardingDriver::create($driverData);
 
             \Log::info('Onboarding form submitted successfully');
+            
+            // Clear cache for the admin user viewing the dashboard
+            // This ensures new submissions appear immediately in the admin panel
+            if (\Auth::check()) {
+                $auth = \Auth::user();
+                $this->clearOnboardingCaches($auth);
+            }
 
             // Return JSON response for AJAX requests
             if ($request->expectsJson() || $request->ajax()) {

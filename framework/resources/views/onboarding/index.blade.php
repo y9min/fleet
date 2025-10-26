@@ -2087,7 +2087,7 @@ function toggleDriverDetails(driverId) {
 
 // Delete driver
 function deleteDriver(driverId) {
-    if (confirm('Are you sure you want to reject this driver application? This will permanently remove it from the onboarding table.')) {
+    if (confirm('Are you sure you want to delete this driver application? This will permanently remove it from the onboarding table.')) {
         $.ajax({
             url: '{{ url("admin/onboarding") }}/' + driverId,
             type: 'DELETE',
@@ -2096,12 +2096,12 @@ function deleteDriver(driverId) {
             },
             success: function(response) {
                 if (response.success) {
-                    alert('Driver rejected successfully');
+                    alert('Driver application deleted successfully');
                     $('#onboardTable').DataTable().ajax.reload();
                 }
             },
             error: function(xhr) {
-                alert('Error rejecting driver');
+                alert('Error deleting driver application');
             }
         });
     }

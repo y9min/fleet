@@ -49,19 +49,17 @@ return [
             'schema' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
             'options' => [
-                PDO::ATTR_TIMEOUT => 30, // Increased timeout for Supabase
+                PDO::ATTR_TIMEOUT => 10,
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+                PDO::ATTR_EMULATE_PREPARES => false,
             ],
             'dump' => [
                 'dump_binary_path' => '/usr/bin',
                 'use_single_transaction' => false,
                 'timeout' => 60,
             ],
-            // Disable persistent connections to avoid pooler timeout issues
-            'persistent' => false,
-            // Connection timeout settings
-            'connect_timeout' => 30,
+            'connect_timeout' => 10,
         ],
 
     ],

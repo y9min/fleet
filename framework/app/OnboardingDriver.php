@@ -11,6 +11,10 @@ class OnboardingDriver extends Model
     use HasFactory;
 
     protected $table = 'onboarding_drivers';
+    
+    // Set primary key type to UUID for Supabase
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = [
         'name',

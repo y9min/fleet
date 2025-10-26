@@ -93,21 +93,43 @@
             const startTime = performance.now();
             marks.apiCallsStart[requestId] = startTime;
             
-            xhr.addEventListener('loadend', function() {
-                const endTime = performance.now();
-                const duration = endTime - startTime;
-                totalApiTime += duration;
-                
-                apiCallDetails.push({
-                    url: settings.url,
-                    method: settings.type,
-                    status: xhr.status,
-                    duration: Math.round(duration),
-                    timestamp: new Date().toISOString()
+            // Check if xhr has addEventListener (some wrapped xhr objects don't)
+            if (xhr && typeof xhr.addEventListener === 'function') {
+                xhr.addEventListener('loadend', function() {
+                    const endTime = performance.now();
+                    const duration = endTime - startTime;
+                    totalApiTime += duration;
+                    
+                    apiCallDetails.push({
+                        url: settings.url,
+                        method: settings.type,
+                        status: xhr.status,
+                        duration: Math.round(duration),
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    console.log(`[PERF] jQuery AJAX: ${settings.type} ${settings.url} - ${Math.round(duration)}ms`);
                 });
-                
-                console.log(`[PERF] jQuery AJAX: ${settings.type} ${settings.url} - ${Math.round(duration)}ms`);
-            });
+            } else {
+                // Fallback: track via ajaxComplete event
+                $(document).one('ajaxComplete', function(event, xhr, settings) {
+                    if (settings && settings.url) {
+                        const endTime = performance.now();
+                        const duration = endTime - startTime;
+                        totalApiTime += duration;
+                        
+                        apiCallDetails.push({
+                            url: settings.url,
+                            method: settings.type,
+                            status: xhr && xhr.status ? xhr.status : 0,
+                            duration: Math.round(duration),
+                            timestamp: new Date().toISOString()
+                        });
+                        
+                        console.log(`[PERF] jQuery AJAX Complete: ${settings.type} ${settings.url} - ${Math.round(duration)}ms`);
+                    }
+                });
+            }
         });
     }
     

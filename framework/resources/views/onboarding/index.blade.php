@@ -1374,14 +1374,44 @@ function initializeOnboardingTable() {
             url: '{{ url("admin/onboarding/fetch-data") }}',
             type: 'GET',
             cache: true, // Enable client-side caching
+            beforeSend: function(xhr, settings) {
+                console.log('[DATATABLES] AJAX beforeSend triggered');
+                console.log('[DATATABLES] URL:', settings.url);
+                console.log('[DATATABLES] XHR Object:', xhr);
+            },
+            dataSrc: function(json) {
+                console.log('[DATATABLES] AJAX Response received');
+                console.log('[DATATABLES] Response JSON:', json);
+                console.log('[DATATABLES] Records in response:', json.recordsTotal || (json.data ? json.data.length : 'unknown'));
+                
+                if (!json || !json.data) {
+                    console.error('[DATATABLES] Invalid response format - no data array');
+                    return [];
+                }
+                
+                if (json.data.length === 0) {
+                    console.warn('[DATATABLES] Response contains 0 records');
+                } else {
+                    console.log('[DATATABLES] Returning', json.data.length, 'records to DataTables');
+                }
+                
+                return json.data;
+            },
             error: function(xhr, error, thrown) {
-                console.error('DataTable AJAX Error:', {
+                console.error('[DATATABLES] AJAX Error Details:', {
                     status: xhr.status,
                     statusText: xhr.statusText,
                     error: error,
                     thrown: thrown,
-                    responseText: xhr.responseText
+                    responseText: xhr.responseText,
+                    readyState: xhr.readyState,
+                    url: xhr.responseURL || 'unknown'
                 });
+                
+                // Log response if available
+                if (xhr.responseText) {
+                    console.error('[DATATABLES] Response Text:', xhr.responseText);
+                }
                 
                 // Show user-friendly error message
                 if ($('#dataTableError').length === 0) {
@@ -1408,6 +1438,10 @@ function initializeOnboardingTable() {
              '<"row"<"col-sm-12"tr>>' +
              '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dataTables_info"i><"dataTables_paginate"p>>>>',
         drawCallback: function(settings) {
+            console.log('[DATATABLES] drawCallback triggered');
+            console.log('[DATATABLES] Total records:', settings.json ? settings.json.recordsTotal : 'unknown');
+            console.log('[DATATABLES] Displayed records:', settings.json ? settings.json.data.length : 'unknown');
+            
             // Ensure pagination buttons are inline
             $('.dataTables_paginate').css('display', 'inline-block');
             $('.dataTables_paginate .paginate_button').css('display', 'inline-block');

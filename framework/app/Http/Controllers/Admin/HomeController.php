@@ -23,6 +23,7 @@ use Hyvikk;
 use Illuminate\Support\Facades\Redirect;
 use App\Model\BookingAlert;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 
 
 class HomeController extends Controller {
@@ -106,10 +107,10 @@ class HomeController extends Controller {
         // Check if this is Yamz (Boss Admin with no company)
         $user = Auth::user();
         
-        // Cache dashboard statistics for 15 minutes to dramatically improve performance
+        // Cache dashboard statistics for 30 minutes to dramatically improve performance
         $cacheKey = 'dashboard_stats_' . $user->id . '_' . ($user->company_id ?? 'null');
         
-        $dashboardData = Cache::remember($cacheKey, 900, function() use ($user) {
+        $dashboardData = Cache::remember($cacheKey, 1800, function() use ($user) {
             return $this->loadDashboardStatistics($user);
         });
         
@@ -123,7 +124,34 @@ class HomeController extends Controller {
     }
     
     /**
-     * Load dashboard statistics - cached for 5 minutes
+     * Warm cache for dashboard statistics (called during login)
+     */
+    public function warmCache($user)
+    {
+        $cacheKey = 'dashboard_stats_' . $user->id . '_' . ($user->company_id ?? 'null');
+        // Clear old cache to ensure fresh data
+        Cache::forget($cacheKey);
+        // Warm new cache
+        return $this->loadDashboardStatistics($user);
+    }
+    
+    /**
+     * AJAX endpoint for loading dashboard statistics
+     */
+    public function getDashboardStats(Request $request)
+    {
+        $user = Auth::user();
+        $cacheKey = 'dashboard_stats_' . $user->id . '_' . ($user->company_id ?? 'null');
+        
+        $data = Cache::remember($cacheKey, 1800, function() use ($user) {
+            return $this->loadDashboardStatistics($user);
+        });
+        
+        return response()->json($data);
+    }
+    
+    /**
+     * Load dashboard statistics - cached for 30 minutes
      */
     private function loadDashboardStatistics($user)
     {

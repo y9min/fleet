@@ -336,6 +336,31 @@ PCOFlow | Dashboard
       height: 55px !important;
     }
   }
+  
+  /* Skeleton loader styles */
+  .stat-loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+    display: inline-block;
+    min-width: 80px;
+    height: 2.5rem;
+  }
+  
+  .stat-loading-small {
+    min-width: 40px;
+    height: 1.5rem;
+  }
+  
+  @keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  .stat-number.loading {
+    line-height: 2.5rem;
+  }
 </style>
 @endsection
 
@@ -357,7 +382,7 @@ PCOFlow | Dashboard
                 <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
               </svg>
             </div>
-            <h3 class="stat-number">{{ $total_vehicles ?? 0 }}</h3>
+            <h3 class="stat-number" data-stat="total_vehicles">{{ $total_vehicles ?? 0 }}</h3>
             <p class="stat-label">@lang('fleet.vehicles')</p>
             <a href="{{url('admin/vehicles')}}" class="stat-link">
               View All <i class="fa fa-arrow-right"></i>
@@ -372,7 +397,7 @@ PCOFlow | Dashboard
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
               </svg>
             </div>
-            <h3 class="stat-number">{{ $total_drivers ?? 0 }}</h3>
+            <h3 class="stat-number" data-stat="total_drivers">{{ $total_drivers ?? 0 }}</h3>
             <p class="stat-label">@lang('fleet.drivers')</p>
             <a href="{{url('admin/drivers')}}" class="stat-link">
               View All <i class="fa fa-arrow-right"></i>
@@ -386,7 +411,7 @@ PCOFlow | Dashboard
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
             </div>
-            <h3 class="stat-number">{{ $onboarding_pending ?? 0 }}</h3>
+            <h3 class="stat-number" data-stat="onboarding_pending">{{ $onboarding_pending ?? 0 }}</h3>
             <p class="stat-label">Driver Onboarding</p>
             <div class="stat-link">
               Manage <i class="fa fa-arrow-right"></i>
@@ -406,7 +431,7 @@ PCOFlow | Dashboard
                 <path d="M16.862 4.487a5.5 5.5 0 00-7.41 6.596L3 17.5V21h3.5l6.452-6.452a5.5 5.5 0 006.596-7.41l-3.752 3.752a2.5 2.5 0 01-3.536-3.536l3.752-3.752z"/>
               </svg>
             </div>
-            <h3 class="stat-number">{{ $pending_inspections ?? 0 }}</h3>
+            <h3 class="stat-number" data-stat="pending_inspections">{{ $pending_inspections ?? 0 }}</h3>
             <p class="stat-label">Vehicle Inspections</p>
             <div class="stat-link">
               Manage <i class="fa fa-arrow-right"></i>
@@ -432,7 +457,7 @@ PCOFlow | Dashboard
                 <path d="M19 3H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
               </svg>
             </div>
-            <h3 class="stat-number">{{ $total_fines ?? 0 }}</h3>
+            <h3 class="stat-number" data-stat="total_fines">{{ $total_fines ?? 0 }}</h3>
             <p class="stat-label">Fines & Penalties</p>
             <div class="stat-link">
               Manage <i class="fa fa-arrow-right"></i>
@@ -454,11 +479,11 @@ PCOFlow | Dashboard
             <div class="revenue-grid">
               <div class="revenue-item">
                 <div class="revenue-label">Weekly</div>
-                <div class="revenue-amount">£{{ number_format($expected_weekly_revenue ?? 0, 2) }}</div>
+                <div class="revenue-amount" data-stat="expected_weekly_revenue">£{{ number_format($expected_weekly_revenue ?? 0, 2) }}</div>
               </div>
               <div class="revenue-item">
                 <div class="revenue-label">Monthly</div>
-                <div class="revenue-amount">£{{ number_format($expected_monthly_revenue ?? 0, 2) }}</div>
+                <div class="revenue-amount" data-stat="expected_monthly_revenue">£{{ number_format($expected_monthly_revenue ?? 0, 2) }}</div>
               </div>
             </div>
           </div>
@@ -605,6 +630,35 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // AJAX loading for dashboard stats
+    (function() {
+        const statsUrl = '{{ route("admin.dashboard.stats") }}';
+        
+        fetch(statsUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                // Update each stat with data-stat attribute
+                document.querySelectorAll('[data-stat]').forEach(el => {
+                    const statName = el.getAttribute('data-stat');
+                    if (data[statName] !== undefined) {
+                        // Handle currency formatting for revenue stats
+                        if (statName.includes('revenue')) {
+                            el.textContent = '£' + parseFloat(data[statName]).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        } else {
+                            el.textContent = data[statName];
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.warn('Failed to load dashboard stats:', error);
+                // Fallback to server-rendered values
+            });
+    })();
 });
 </script>
 @endsection

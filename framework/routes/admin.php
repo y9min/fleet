@@ -35,6 +35,8 @@ Route::namespace ('Admin')->group(function () {
 
 // dd('test');
     Route::get("/", 'HomeController@index')->middleware(['lang_check', 'auth']);
+    Route::get('/dashboard/stats', 'HomeController@getDashboardStats')
+        ->middleware(['lang_check', 'auth'])->name('admin.dashboard.stats');
     Route::group(['middleware' => ['lang_check', 'auth', 'officeadmin', 'IsInstalled', 'web']], function () {
 
         // Profile Management Routes

@@ -96,6 +96,17 @@ class UnifiedLoginController extends Controller
                 $request->session()->put('password_change_message', 'Please change your default password for security reasons.');
             }
 
+            // Warm cache for admin users after login (do this asynchronously to not slow down login)
+            if (in_array($user->user_type, ['S', 'O', 'B'])) {
+                dispatch(function() use ($user) {
+                    try {
+                        app(\App\Http\Controllers\Admin\HomeController::class)->warmCache($user);
+                    } catch (\Exception $e) {
+                        // Silently fail cache warming to not interrupt login
+                    }
+                })->afterResponse();
+            }
+
             // Redirect based on user type
             return $this->redirectAfterLogin($user);
         }

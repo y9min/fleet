@@ -1585,11 +1585,47 @@ class DriversController extends Controller {
                         $driver = User::with(['vehicles', 'metas'])->findOrFail($id);
                         $driverData = $driver->toArray();
                         
-                        // Use preloaded metas instead of querying again
+                        // Use preloaded metas instead of querying again - add all metadata fields
                         foreach ($driver->metas as $meta) {
                                 if (!in_array($meta->key, ['token', 'method', 'edit', 'user_id', 'emp_id', 'detail_id'])) {
                                         $driverData[$meta->key] = $meta->value;
                                 }
+                        }
+                        
+                        // Also get scheme and insurance_selection fields from metas if they exist
+                        $schemeMeta = $driver->metas->firstWhere('key', 'scheme');
+                        if ($schemeMeta && !isset($driverData['scheme'])) {
+                            $driverData['scheme'] = $schemeMeta->value;
+                        }
+                        
+                        $schemeSelectionMeta = $driver->metas->firstWhere('key', 'scheme_selection');
+                        if ($schemeSelectionMeta && !isset($driverData['scheme_selection'])) {
+                            $driverData['scheme_selection'] = $schemeSelectionMeta->value;
+                        }
+                        
+                        $insuranceSelectionMeta = $driver->metas->firstWhere('key', 'insurance_selection');
+                        if ($insuranceSelectionMeta && !isset($driverData['insurance_selection'])) {
+                            $driverData['insurance_selection'] = $insuranceSelectionMeta->value;
+                        }
+                        
+                        $vehicleSelectionMeta = $driver->metas->firstWhere('key', 'vehicle_selection');
+                        if ($vehicleSelectionMeta && !isset($driverData['vehicle_selection'])) {
+                            $driverData['vehicle_selection'] = $vehicleSelectionMeta->value;
+                        }
+                        
+                        $licenseExpiryMeta = $driver->metas->firstWhere('key', 'license_expiry');
+                        if ($licenseExpiryMeta && !isset($driverData['license_expiry'])) {
+                            $driverData['license_expiry'] = $licenseExpiryMeta->value;
+                        }
+                        
+                        $emergencyContactMeta = $driver->metas->firstWhere('key', 'emergency_contact');
+                        if ($emergencyContactMeta && !isset($driverData['emergency_contact'])) {
+                            $driverData['emergency_contact'] = $emergencyContactMeta->value;
+                        }
+                        
+                        $emergencyPhoneMeta = $driver->metas->firstWhere('key', 'emergency_phone');
+                        if ($emergencyPhoneMeta && !isset($driverData['emergency_phone'])) {
+                            $driverData['emergency_phone'] = $emergencyPhoneMeta->value;
                         }
                         
                         // Decode custom_data JSON if it exists and merge fields into driverData

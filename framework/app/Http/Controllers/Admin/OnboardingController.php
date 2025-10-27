@@ -569,15 +569,21 @@ class OnboardingController extends Controller
                 $user->save();
             } else {
                 // Create a new user record in the drivers table
-                $userId = \App\Model\User::create([
+                // Use separate assignment for is_active to ensure proper boolean type
+                $userData = [
                     "name" => $onboardingDriver->name,
                     "email" => $onboardingDriver->email,
                     "password" => bcrypt('password'), // Default password
                     "user_type" => "D",
-                    "is_active" => true, // Set driver as active by default
                     'api_token' => \Illuminate\Support\Str::random(60),
                     'company_id' => Auth::user()->company_id ?? 2, // Set company_id from approving admin, default to 2 if null
-                ])->id;
+                ];
+                
+                // Ensure is_active is set after creation to avoid type mismatch
+                $userId = \App\Model\User::create($userData)->id;
+                $user = \App\Model\User::find($userId);
+                $user->is_active = true; // Set driver as active by default
+                $user->save();
                 
                 \Log::info('Created new user with ID: ' . $userId);
                 $user = \App\Model\User::find($userId);

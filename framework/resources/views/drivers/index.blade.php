@@ -580,11 +580,27 @@ function loadDriversSimple(filteredData = null, page = 1) {
         const s3BaseUrl = useS3 ? 'https://{{ env("AWS_BUCKET") }}.s3.{{ env("AWS_REGION") }}.amazonaws.com/' : '';
         
         if (driver.license_document) {
-            const licenseUrl = useS3 ? (s3BaseUrl + 'uploads/' + driver.license_document) : '{{ asset("uploads/") }}/' + driver.license_document;
+            // Use the same URL generation logic as driver details
+            let licenseUrl;
+            if (driver.license_document.startsWith('onboarding/documents/')) {
+                licenseUrl = s3BaseUrl + driver.license_document;
+            } else if (driver.license_document.startsWith('uploads/onboarding/')) {
+                licenseUrl = s3BaseUrl + driver.license_document;
+            } else {
+                licenseUrl = s3BaseUrl + 'uploads/onboarding/' + driver.license_document;
+            }
             docsHTML += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
         }
         if (driver.insurance_document) {
-            const insuranceUrl = useS3 ? (s3BaseUrl + 'uploads/' + driver.insurance_document) : '{{ asset("uploads/") }}/' + driver.insurance_document;
+            // Use the same URL generation logic as driver details
+            let insuranceUrl;
+            if (driver.insurance_document.startsWith('onboarding/documents/')) {
+                insuranceUrl = s3BaseUrl + driver.insurance_document;
+            } else if (driver.insurance_document.startsWith('uploads/onboarding/')) {
+                insuranceUrl = s3BaseUrl + driver.insurance_document;
+            } else {
+                insuranceUrl = s3BaseUrl + 'uploads/onboarding/' + driver.insurance_document;
+            }
             docsHTML += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
         }
         if (!docsHTML) {

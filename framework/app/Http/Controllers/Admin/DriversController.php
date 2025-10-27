@@ -1651,10 +1651,17 @@ class DriversController extends Controller {
                             }
                         }
                         
-                        // Generate URLs for custom file fields
+                        // Generate proper document URLs (matching onboarding format) - MOVED UP TO DEFINE VARIABLES
+                        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                        $s3BaseUrl = '';
+                        if ($useS3) {
+                            $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+                        }
+                        
+                        // Generate URLs for custom file fields with proper S3/local storage handling
                         foreach ($driverData as $key => $value) {
                             if (strpos($key, 'custom_') === 0 && $value) {
-                                // Try to determine if this is a file field by checking customFields
+                                // Get the field ID to check if it's a file field
                                 $fieldId = str_replace('custom_', '', $key);
                                 $isFileField = false;
                                 try {
@@ -1666,22 +1673,28 @@ class DriversController extends Controller {
                                     // Not a file field or field doesn't exist
                                 }
                                 
+                                // Generate URL for file fields
                                 if ($isFileField && !isset($driverData[$key . '_url'])) {
-                                    // Generate URL for the file
                                     $filePath = $value;
                                     if ($useS3) {
+                                        // S3 URL generation
                                         if (strpos($filePath, 'onboarding/documents/') === 0) {
                                             $driverData[$key . '_url'] = $s3BaseUrl . $filePath;
                                         } elseif (strpos($filePath, 'uploads/onboarding/') === 0) {
                                             $driverData[$key . '_url'] = $s3BaseUrl . $filePath;
+                                        } elseif (strpos($filePath, 'uploads/') === 0) {
+                                            $driverData[$key . '_url'] = $s3BaseUrl . 'uploads/onboarding/' . basename($filePath);
                                         } else {
                                             $driverData[$key . '_url'] = $s3BaseUrl . 'uploads/onboarding/' . $filePath;
                                         }
                                     } else {
+                                        // Local storage URL generation
                                         if (strpos($filePath, 'onboarding/documents/') === 0) {
                                             $driverData[$key . '_url'] = asset('storage/' . $filePath);
                                         } elseif (strpos($filePath, 'uploads/onboarding/') === 0) {
                                             $driverData[$key . '_url'] = asset($filePath);
+                                        } elseif (strpos($filePath, 'uploads/') === 0) {
+                                            $driverData[$key . '_url'] = asset('uploads/onboarding/' . basename($filePath));
                                         } else {
                                             $driverData[$key . '_url'] = asset('uploads/onboarding/' . $filePath);
                                         }
@@ -1723,28 +1736,18 @@ class DriversController extends Controller {
                                 }
                         }
                         
-                        // Generate proper document URLs (matching onboarding format)
-                        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
-                        $s3BaseUrl = '';
+                        // Generate proper document URLs for license and insurance (matching onboarding format)
                         if ($useS3) {
-                            $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
-                        }
-                        
-                        if ($useS3) {
-                            
                             // License URL
                             if (isset($driverData['license_upload_path']) && $driverData['license_upload_path']) {
                                 $licensePath = $driverData['license_upload_path'];
-                                // Check if path already includes 'uploads' or 'onboarding'
                                 if (strpos($licensePath, 'onboarding/documents/') === 0) {
                                     $driverData['license_url'] = $s3BaseUrl . $licensePath;
                                 } elseif (strpos($licensePath, 'uploads/onboarding/') === 0) {
                                     $driverData['license_url'] = $s3BaseUrl . $licensePath;
                                 } elseif (strpos($licensePath, 'uploads/') === 0) {
-                                    // Already has uploads/, add onboarding subdirectory
                                     $driverData['license_url'] = $s3BaseUrl . 'uploads/onboarding/' . basename($licensePath);
                                 } else {
-                                    // Just filename, add full path
                                     $driverData['license_url'] = $s3BaseUrl . 'uploads/onboarding/' . $licensePath;
                                 }
                             }
@@ -1757,10 +1760,8 @@ class DriversController extends Controller {
                                 } elseif (strpos($insurancePath, 'uploads/onboarding/') === 0) {
                                     $driverData['insurance_url'] = $s3BaseUrl . $insurancePath;
                                 } elseif (strpos($insurancePath, 'uploads/') === 0) {
-                                    // Already has uploads/, add onboarding subdirectory
                                     $driverData['insurance_url'] = $s3BaseUrl . 'uploads/onboarding/' . basename($insurancePath);
                                 } else {
-                                    // Just filename, add full path
                                     $driverData['insurance_url'] = $s3BaseUrl . 'uploads/onboarding/' . $insurancePath;
                                 }
                             }
@@ -1789,17 +1790,37 @@ class DriversController extends Controller {
                             }
                         }
                         
-                        // Get custom form fields for display (optional)
+                        // Get custom form fields for display with company-aware filtering
+                        $auth = \Auth::user();
                         try {
-                                $customFields = \App\CustomFormField::ordered()->get();
+                            $customFieldsQuery = \App\CustomFormField::ordered();
+                            // Filter by company_id for Super Admin and Office Admin users
+                            if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+                                $customFieldsQuery->where('company_id', $auth->company_id);
+                            }
+                            // Broker users (user_type 'B') see all custom fields
+                            $customFields = $customFieldsQuery->get();
                         } catch (\Exception $e) {
-                                $customFields = collect(); // Empty collection if custom fields don't exist
+                            $customFields = collect(); // Empty collection if custom fields don't exist
+                        }
+                        
+                        // Enrich custom fields with metadata for better frontend display
+                        $customFieldsMap = [];
+                        foreach ($customFields as $field) {
+                            $customFieldsMap['custom_' . $field->id] = [
+                                'id' => $field->id,
+                                'field_name' => $field->field_name,
+                                'field_label' => $field->field_label ?? $field->field_name,
+                                'field_type' => $field->field_type,
+                                'is_required' => $field->is_required
+                            ];
                         }
                         
                         return response()->json([
                                 'success' => true,
                                 'driver' => $driverData,
-                                'customFields' => $customFields
+                                'customFields' => $customFields,
+                                'customFieldsMap' => $customFieldsMap
                         ]);
                 } catch (\Exception $e) {
                         return response()->json([

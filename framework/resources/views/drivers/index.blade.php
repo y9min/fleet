@@ -613,7 +613,7 @@ function loadDriversSimple(filteredData = null, page = 1) {
         
         // Action buttons
         const actionButtons = '<div class="d-flex justify-content-center gap-2">' +
-            '<button class="btn btn-sm btn-info" data-driver-id="' + driver.id + '" data-driver-info=\'' + jsonData + '\' onclick="toggleDriverDetailsInstant(this)" title="View Details" style="padding: 6px 8px;"><i class="fas fa-eye"></i></button>' +
+            '<button class="btn btn-sm btn-info" data-driver-id="' + driver.id + '" data-driver-info=\'' + jsonData + '\' onclick="toggleDriverDetails(' + driver.id + ')" title="View Details" style="padding: 6px 8px;"><i class="fas fa-eye"></i></button>' +
             '<button class="btn btn-sm btn-warning" data-id="' + driver.id + '" data-toggle="modal" data-target="#changepass" title="Change Password" style="padding: 6px 8px;"><i class="fas fa-key"></i></button>' +
             '<a href="{{ url("admin/drivers") }}/' + driver.id + '/edit" class="btn btn-sm btn-primary" title="Edit Driver" style="padding: 6px 8px;"><i class="fas fa-edit"></i></a>' +
             '<button class="btn btn-sm btn-danger" data-id="' + driver.id + '" data-toggle="modal" data-target="#myModal" title="Delete Driver" style="padding: 6px 8px;"><i class="fas fa-trash"></i></button>' +

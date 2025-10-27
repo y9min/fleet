@@ -603,6 +603,14 @@ class OnboardingController extends Controller
                 'license_number' => $onboardingDriver->license_number,
                 'is_active' => true, // Set driver as active by default
                 
+                // CRITICAL: Add DIRECT COLUMN fields from onboarding_drivers table
+                'license_expiry' => $onboardingDriver->license_expiry,
+                'vehicle_selection' => $onboardingDriver->vehicle_id,
+                'vehicle_id' => $onboardingDriver->vehicle_id,
+                'scheme' => $onboardingDriver->scheme,
+                'scheme_selection' => $onboardingDriver->scheme,
+                'insurance_selection' => $onboardingDriver->insurance_selection,
+                
                 // Document paths
                 'license_image' => $onboardingDriver->license_upload_path,
                 'license_upload_path' => $onboardingDriver->license_upload_path,
@@ -610,8 +618,8 @@ class OnboardingController extends Controller
                 'documents' => $onboardingDriver->insurance_upload_path,
                 'id_proof_type' => 'License',
                 
-                // Personal details from custom_data (ensure string values)
-                'address' => is_array($onboardingDriver->custom_data['address'] ?? '') ? json_encode($onboardingDriver->custom_data['address']) : ($onboardingDriver->custom_data['address'] ?? ''),
+                // Personal details - prioritize direct columns, fallback to custom_data
+                'address' => $onboardingDriver->address ?? (is_array($onboardingDriver->custom_data['address'] ?? '') ? json_encode($onboardingDriver->custom_data['address']) : ($onboardingDriver->custom_data['address'] ?? '')),
                 'city' => is_array($onboardingDriver->custom_data['city'] ?? '') ? json_encode($onboardingDriver->custom_data['city']) : ($onboardingDriver->custom_data['city'] ?? ''),
                 'state' => is_array($onboardingDriver->custom_data['state'] ?? '') ? json_encode($onboardingDriver->custom_data['state']) : ($onboardingDriver->custom_data['state'] ?? ''),
                 'country' => is_array($onboardingDriver->custom_data['country'] ?? '') ? json_encode($onboardingDriver->custom_data['country']) : ($onboardingDriver->custom_data['country'] ?? ''),
@@ -619,14 +627,16 @@ class OnboardingController extends Controller
                 'date_of_birth' => is_array($onboardingDriver->custom_data['date_of_birth'] ?? '') ? json_encode($onboardingDriver->custom_data['date_of_birth']) : ($onboardingDriver->custom_data['date_of_birth'] ?? ''),
                 'gender' => is_array($onboardingDriver->custom_data['gender'] ?? '') ? json_encode($onboardingDriver->custom_data['gender']) : ($onboardingDriver->custom_data['gender'] ?? ''),
                 
-                // Emergency contacts (ensure string values)
+                // Emergency contacts - prioritize direct columns, fallback to custom_data
+                'emergency_contact' => $onboardingDriver->emergency_contact ?? (is_array($onboardingDriver->custom_data['emergency_contact_name'] ?? '') ? json_encode($onboardingDriver->custom_data['emergency_contact_name']) : ($onboardingDriver->custom_data['emergency_contact_name'] ?? '')),
+                'emergency_phone' => $onboardingDriver->emergency_phone ?? (is_array($onboardingDriver->custom_data['emergency_contact_phone'] ?? '') ? json_encode($onboardingDriver->custom_data['emergency_contact_phone']) : ($onboardingDriver->custom_data['emergency_contact_phone'] ?? '')),
                 'emergency_contact_name' => is_array($onboardingDriver->custom_data['emergency_contact_name'] ?? '') ? json_encode($onboardingDriver->custom_data['emergency_contact_name']) : ($onboardingDriver->custom_data['emergency_contact_name'] ?? ''),
                 'emergency_contact_phone' => is_array($onboardingDriver->custom_data['emergency_contact_phone'] ?? '') ? json_encode($onboardingDriver->custom_data['emergency_contact_phone']) : ($onboardingDriver->custom_data['emergency_contact_phone'] ?? ''),
                 'emergency_contact_number' => is_array($onboardingDriver->custom_data['emergency_contact_phone'] ?? '') ? json_encode($onboardingDriver->custom_data['emergency_contact_phone']) : ($onboardingDriver->custom_data['emergency_contact_phone'] ?? ''),
                 
                 // Expiry dates (ensure string values)
                 'driver_license_expiry' => is_array($onboardingDriver->custom_data['driver_license_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['driver_license_expiry']) : ($onboardingDriver->custom_data['driver_license_expiry'] ?? ''),
-                'license_expiry_date' => is_array($onboardingDriver->custom_data['driver_license_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['driver_license_expiry']) : ($onboardingDriver->custom_data['driver_license_expiry'] ?? ''),
+                'license_expiry_date' => $onboardingDriver->license_expiry ?? (is_array($onboardingDriver->custom_data['driver_license_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['driver_license_expiry']) : ($onboardingDriver->custom_data['driver_license_expiry'] ?? '')),
                 'insurance_expiry' => is_array($onboardingDriver->custom_data['insurance_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['insurance_expiry']) : ($onboardingDriver->custom_data['insurance_expiry'] ?? ''),
                 'insurance_expiry_date' => is_array($onboardingDriver->custom_data['insurance_expiry'] ?? '') ? json_encode($onboardingDriver->custom_data['insurance_expiry']) : ($onboardingDriver->custom_data['insurance_expiry'] ?? ''),
                 

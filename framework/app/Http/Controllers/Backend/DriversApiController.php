@@ -792,7 +792,7 @@ class DriversApiController extends Controller {
                         unset($form_data['documents']);
                         unset($form_data['license_image']);
                         $user->setMeta($form_data);
-                        $user->is_active = 0;
+                        $user->is_active = false;
                         $user->is_available = 0;
                         $user->exp_date = date('Y-m-d', strtotime($request->exp_date));
                         $user->start_date = date('Y-m-d', strtotime($request->start_date));
@@ -1094,7 +1094,7 @@ class DriversApiController extends Controller {
                         $data['data'] = "";
                 } else {
                         $driver = User::find($request->id);
-                        $driver->is_active = $request->is_active;
+                        $driver->is_active = (bool) $request->is_active;
                         $driver->save();
                         $data['success'] = "1";
                         $data['message'] = "Driver's active status changed successfully!";

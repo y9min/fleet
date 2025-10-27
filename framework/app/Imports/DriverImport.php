@@ -150,7 +150,7 @@ class DriverImport implements ToCollection, WithHeadingRow
                         'company_id' => $this->companyId,
                     ]);
 
-                    $user->is_active = 1;
+                    $user->is_active = true;
                     
                     // Store driver-specific fields in metadata
                     $user->setMeta([

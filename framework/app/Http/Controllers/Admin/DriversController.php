@@ -1409,7 +1409,7 @@ class DriversController extends Controller {
                                         return "<a href=" . route('drivers.show', $user->id) . ">$user->name</a>";
                                 })
                                 ->addColumn('is_active', function ($user) {
-                                        $isActive = $user->is_active == 1;
+                                        $isActive = (bool) $user->is_active;
                                         $driverId = $user->id;
                                         $checked = $isActive ? 'checked' : '';
                                         
@@ -2048,7 +2048,7 @@ class DriversController extends Controller {
         }
         public function enable($id) {
                 $driver = User::find($id);
-                $driver->is_active = 1;
+                $driver->is_active = true;
                 $driver->save();
                 return redirect()->route("drivers.index");
         }
@@ -2062,7 +2062,7 @@ class DriversController extends Controller {
                         return redirect()->route('drivers.index')->with('errors', $newErrors)->with('bookings', $bookings);
                 } else {
                         $driver = User::find($id);
-                        $driver->is_active = 0;
+                        $driver->is_active = false;
                         $driver->save();
                         return redirect()->route('drivers.index');
                 }

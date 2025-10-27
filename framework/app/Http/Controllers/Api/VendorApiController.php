@@ -1756,7 +1756,7 @@ class VendorApiController extends Controller {
                         $data['data'] = null;
                 } else {
                         $driver = User::find($request->driver_id);
-                        $driver->is_active = $request->is_active;
+                        $driver->is_active = (bool) $request->is_active;
                         $driver->save();
                         $data['success'] = "1";
                         $data['message'] = "Driver's active status changed successfully!";

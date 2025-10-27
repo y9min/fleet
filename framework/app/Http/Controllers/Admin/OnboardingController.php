@@ -564,7 +564,7 @@ class OnboardingController extends Controller
                 
                 // Update the existing driver's basic info
                 $user->name = $onboardingDriver->name;
-                $user->is_active = 1;
+                $user->is_active = true;
                 $user->company_id = Auth::user()->company_id ?? 2; // Ensure company_id is set, default to 2 if null
                 $user->save();
             } else {
@@ -574,7 +574,7 @@ class OnboardingController extends Controller
                     "email" => $onboardingDriver->email,
                     "password" => bcrypt('password'), // Default password
                     "user_type" => "D",
-                    "is_active" => 1, // Set driver as active by default
+                    "is_active" => true, // Set driver as active by default
                     'api_token' => \Illuminate\Support\Str::random(60),
                     'company_id' => Auth::user()->company_id ?? 2, // Set company_id from approving admin, default to 2 if null
                 ])->id;
@@ -594,7 +594,7 @@ class OnboardingController extends Controller
                 'last_name' => explode(' ', $onboardingDriver->name, 2)[1] ?? '',
                 'phone' => $onboardingDriver->phone,
                 'license_number' => $onboardingDriver->license_number,
-                'is_active' => 1, // Set driver as active by default
+                'is_active' => true, // Set driver as active by default
                 
                 // Document paths
                 'license_image' => $onboardingDriver->license_upload_path,

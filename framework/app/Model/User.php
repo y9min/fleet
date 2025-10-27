@@ -23,6 +23,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $hidden = ['password', 'remember_token', 'api_token'];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_verified' => 'boolean',
+    ];
+
     public function user_data() {
             return $this->hasMany("App\Model\UserData", 'user_id', 'id');
     }

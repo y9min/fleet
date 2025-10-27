@@ -305,7 +305,7 @@ class ProfileController extends Controller
             'password' => Hash::make('password'), // Default password
             'user_type' => $request->user_type,
             'company_id' => $request->company_id,
-            'is_active' => 1,
+            'is_active' => true,
             'api_token' => \Illuminate\Support\Str::random(60),
         ]);
 

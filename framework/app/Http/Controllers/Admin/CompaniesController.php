@@ -79,7 +79,7 @@ class CompaniesController extends Controller {
             'phone' => $request->phone,
             'address' => $request->address,
             'description' => $request->description,
-            'is_active' => 1,
+            'is_active' => true,
         ]);
 
         return redirect()->route('admin.yamz.companies')->with('success', 'Company created successfully!');

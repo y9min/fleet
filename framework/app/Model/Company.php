@@ -21,6 +21,10 @@ class Company extends BaseUuidModel
     
     protected $dates = ['deleted_at'];
     
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+    
     public function users()
     {
         return $this->hasMany(User::class);

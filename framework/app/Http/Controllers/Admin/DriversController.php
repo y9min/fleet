@@ -1693,9 +1693,16 @@ class DriversController extends Controller {
                             // License URL
                             if (isset($driverData['license_upload_path']) && $driverData['license_upload_path']) {
                                 $licensePath = $driverData['license_upload_path'];
+                                // Check if path already includes 'uploads' or 'onboarding'
                                 if (strpos($licensePath, 'onboarding/documents/') === 0) {
                                     $driverData['license_url'] = $s3BaseUrl . $licensePath;
+                                } elseif (strpos($licensePath, 'uploads/onboarding/') === 0) {
+                                    $driverData['license_url'] = $s3BaseUrl . $licensePath;
+                                } elseif (strpos($licensePath, 'uploads/') === 0) {
+                                    // Already has uploads/, add onboarding subdirectory
+                                    $driverData['license_url'] = $s3BaseUrl . 'uploads/onboarding/' . basename($licensePath);
                                 } else {
+                                    // Just filename, add full path
                                     $driverData['license_url'] = $s3BaseUrl . 'uploads/onboarding/' . $licensePath;
                                 }
                             }
@@ -1705,7 +1712,13 @@ class DriversController extends Controller {
                                 $insurancePath = $driverData['insurance_upload_path'];
                                 if (strpos($insurancePath, 'onboarding/documents/') === 0) {
                                     $driverData['insurance_url'] = $s3BaseUrl . $insurancePath;
+                                } elseif (strpos($insurancePath, 'uploads/onboarding/') === 0) {
+                                    $driverData['insurance_url'] = $s3BaseUrl . $insurancePath;
+                                } elseif (strpos($insurancePath, 'uploads/') === 0) {
+                                    // Already has uploads/, add onboarding subdirectory
+                                    $driverData['insurance_url'] = $s3BaseUrl . 'uploads/onboarding/' . basename($insurancePath);
                                 } else {
+                                    // Just filename, add full path
                                     $driverData['insurance_url'] = $s3BaseUrl . 'uploads/onboarding/' . $insurancePath;
                                 }
                             }
@@ -1715,6 +1728,8 @@ class DriversController extends Controller {
                                 $licensePath = $driverData['license_upload_path'];
                                 if (strpos($licensePath, 'onboarding/documents/') === 0) {
                                     $driverData['license_url'] = asset('storage/' . $licensePath);
+                                } elseif (strpos($licensePath, 'uploads/onboarding/') === 0) {
+                                    $driverData['license_url'] = asset($licensePath);
                                 } else {
                                     $driverData['license_url'] = asset('uploads/onboarding/' . $licensePath);
                                 }
@@ -1724,6 +1739,8 @@ class DriversController extends Controller {
                                 $insurancePath = $driverData['insurance_upload_path'];
                                 if (strpos($insurancePath, 'onboarding/documents/') === 0) {
                                     $driverData['insurance_url'] = asset('storage/' . $insurancePath);
+                                } elseif (strpos($insurancePath, 'uploads/onboarding/') === 0) {
+                                    $driverData['insurance_url'] = asset($insurancePath);
                                 } else {
                                     $driverData['insurance_url'] = asset('uploads/onboarding/' . $insurancePath);
                                 }

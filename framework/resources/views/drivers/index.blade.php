@@ -1133,22 +1133,22 @@ function toggleDriverDetailsInstant(button) {
                 
                 // Vehicle Selection (if available)
                 if (driver.vehicle_details) {
-                    var vehicleDisplay = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
-                    html += '<div class="inline-field"><strong>Vehicle:</strong><span class="text-muted">' + vehicleDisplay + '</span></div>';
+                    var vehicleDisplay = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name;
+                    html += '<div class="inline-field"><strong>Vehicle Selection:</strong><span class="text-muted">' + vehicleDisplay + '</span></div>';
                 } else if (driver.vehicle_selection) {
-                    html += '<div class="inline-field"><strong>Vehicle ID:</strong><span class="text-muted">' + driver.vehicle_selection + '</span></div>';
+                    html += '<div class="inline-field"><strong>Vehicle Selection:</strong><span class="text-muted">' + driver.vehicle_selection + '</span></div>';
                 }
                 
                 // Scheme Selection (if available)
                 if (driver.scheme || driver.scheme_selection) {
                     var scheme = driver.scheme || driver.scheme_selection;
-                    html += '<div class="inline-field"><strong>Scheme:</strong><span class="text-muted">' + scheme + '</span></div>';
+                    html += '<div class="inline-field"><strong>Scheme Selection:</strong><span class="text-muted">' + scheme + '</span></div>';
                 }
                 
                 // Insurance Selection (if available)
                 if (driver.insurance_selection) {
                     var insuranceDisplay = driver.insurance_selection === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
-                    html += '<div class="inline-field"><strong>Insurance:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
+                    html += '<div class="inline-field"><strong>Insurance Selection:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
                 }
                 
                 var statusClass = driver.is_active == 1 ? 'success' : 'secondary';
@@ -1383,22 +1383,22 @@ function toggleDriverDetails(driverId) {
                 
                 // Vehicle Selection (if available)
                 if (driver.vehicle_details) {
-                    var vehicleDisplay = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
-                    html += '<div class="inline-field"><strong>Vehicle:</strong><span class="text-muted">' + vehicleDisplay + '</span></div>';
+                    var vehicleDisplay = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name;
+                    html += '<div class="inline-field"><strong>Vehicle Selection:</strong><span class="text-muted">' + vehicleDisplay + '</span></div>';
                 } else if (driver.vehicle_selection) {
-                    html += '<div class="inline-field"><strong>Vehicle ID:</strong><span class="text-muted">' + driver.vehicle_selection + '</span></div>';
+                    html += '<div class="inline-field"><strong>Vehicle Selection:</strong><span class="text-muted">' + driver.vehicle_selection + '</span></div>';
                 }
                 
                 // Scheme Selection (if available)
                 if (driver.scheme || driver.scheme_selection) {
                     var scheme = driver.scheme || driver.scheme_selection;
-                    html += '<div class="inline-field"><strong>Scheme:</strong><span class="text-muted">' + scheme + '</span></div>';
+                    html += '<div class="inline-field"><strong>Scheme Selection:</strong><span class="text-muted">' + scheme + '</span></div>';
                 }
                 
                 // Insurance Selection (if available)
                 if (driver.insurance_selection) {
                     var insuranceDisplay = driver.insurance_selection === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
-                    html += '<div class="inline-field"><strong>Insurance:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
+                    html += '<div class="inline-field"><strong>Insurance Selection:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
                 }
                 
                 var statusClass = driver.is_active == 1 ? 'success' : 'secondary';

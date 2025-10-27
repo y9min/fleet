@@ -599,7 +599,7 @@ function loadDriversSimple(filteredData = null, page = 1) {
         
         // Action buttons
         const actionButtons = '<div class="d-flex justify-content-center gap-2">' +
-            '<button class="btn btn-sm btn-info" data-driver-id="' + driver.id + '" onclick="toggleDriverDetails(' + driver.id + ')" title="View Details" style="padding: 6px 8px;"><i class="fas fa-eye"></i></button>' +
+            '<button class="btn btn-sm btn-info" data-driver-id="' + driver.id + '" onclick="toggleDriverDetailsInstant(this)" title="View Details" style="padding: 6px 8px;"><i class="fas fa-eye"></i></button>' +
             '<button class="btn btn-sm btn-warning" data-id="' + driver.id + '" data-toggle="modal" data-target="#changepass" title="Change Password" style="padding: 6px 8px;"><i class="fas fa-key"></i></button>' +
             '<a href="{{ url("admin/drivers") }}/' + driver.id + '/edit" class="btn btn-sm btn-primary" title="Edit Driver" style="padding: 6px 8px;"><i class="fas fa-edit"></i></a>' +
             '<button class="btn btn-sm btn-danger" data-id="' + driver.id + '" data-toggle="modal" data-target="#myModal" title="Delete Driver" style="padding: 6px 8px;"><i class="fas fa-trash"></i></button>' +
@@ -1051,130 +1051,197 @@ function toggleDriverDetailsInstant(button) {
         return;
     }
     
-    // Get driver data from button's data attribute
-    var driver = $button.data('driver-info');
+    // Get driver ID from button
+    var driverId = $button.data('driver-id');
     
-    // Build HTML instantly (no AJAX delay)
-    var html = '<div class="details-content">';
+    // Fetch full driver details via AJAX
+    $.ajax({
+        url: '{{ url("admin/drivers") }}/' + driverId + '/details',
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                var driver = response.driver;
+                var customFields = response.customFields || [];
+                var html = '<div class="details-content">';
     
-    // Basic Information
-    html += '<div class="mb-3">';
-    html += '<div class="inline-field"><strong>Name:</strong><span class="text-muted">' + (driver.name || 'N/A') + '</span></div>';
-    html += '<div class="inline-field"><strong>Email:</strong><span class="text-muted">' + (driver.email || 'N/A') + '</span></div>';
-    html += '<div class="inline-field"><strong>Phone:</strong><span class="text-muted">' + (driver.phone || 'N/A') + '</span></div>';
-    html += '<div class="inline-field"><strong>License Number:</strong><span class="text-muted">' + (driver.license_number || 'N/A') + '</span></div>';
-    var statusClass = driver.is_active == 1 ? 'success' : 'secondary';
-    html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + statusClass + '">' + (driver.is_active == 1 ? 'Active' : 'Inactive') + '</span></div>';
-    html += '</div>';
-    
-    // Assigned Vehicle
-    if (driver.assigned_vehicle) {
-        html += '<div class="mb-3">';
-        html += '<div class="inline-field"><strong>Assigned Vehicle:</strong><span class="text-muted">' + 
-                driver.assigned_vehicle.license_plate + ' (' + 
-                driver.assigned_vehicle.make_name + ' ' + 
-                driver.assigned_vehicle.model_name + ')</span></div>';
-        html += '</div>';
-    }
-    
-    // Documents Section - License and Insurance Images
-    if (driver.license_image || driver.license_upload_path || driver.insurance_image || driver.insurance_upload_path || driver.documents) {
-        html += '<div class="mb-3">';
-        html += '<h6><strong>Documents:</strong></h6>';
-        
-        // License Image Button
-        if (driver.license_image || driver.license_upload_path) {
-            var licenseFile = driver.license_upload_path || driver.license_image;
-            var licenseUrl = driver.license_url || ('{{ asset("uploads") }}' + '/' + licenseFile);
-            html += '<div class="inline-field">';
-            html += '<strong>License Image:</strong>';
-            html += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary ml-2">';
-            html += '<i class="fas fa-eye"></i> View License';
-            html += '</a>';
-            html += '</div>';
-        }
-        
-        // Insurance Image Button
-        if (driver.insurance_image || driver.insurance_upload_path || driver.documents) {
-            var insuranceFile = driver.insurance_upload_path || driver.insurance_image || driver.documents;
-            var insuranceUrl = driver.insurance_url || ('{{ asset("uploads") }}' + '/' + insuranceFile);
-            html += '<div class="inline-field">';
-            html += '<strong>Insurance Image:</strong>';
-            html += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';
-            html += '<i class="fas fa-eye"></i> View Insurance';
-            html += '</a>';
-            html += '</div>';
-        }
-        
-        html += '</div>';
-    }
-    
-    // Additional Information (from meta fields) - excluding unwanted fields
-    var hasAdditionalInfo = false;
-    html += '<div class="mb-3">';
-    html += '<h6><strong>Additional Information:</strong></h6>';
-    
-    // Fields to exclude from display
-    var excludedFields = [
-        'id', 'name', 'email', 'phone', 'license_number', 'is_active', 'assigned_vehicle',
-        'id_proof_type', 'insurance_upload_path', 'license_upload_path', 'is_available',
-        'first_name', 'last_name', 'phone_code', 'method', 'edit', 'user_id', 'emp_id',
-        'contract_number', 'driver_image', 'token', 'license_image', 'insurance_image', 'documents',
-        'detail_id', 'license_url', 'insurance_url'
-    ];
-    
-    // Display additional meta fields
-    for (var key in driver) {
-        var keyLower = key.toLowerCase();
-        if (driver.hasOwnProperty(key) && !excludedFields.includes(key) && !excludedFields.includes(keyLower)) {
-            var value = driver[key];
-            if (value && value !== 'N/A' && value !== '') {
-                hasAdditionalInfo = true;
-                var displayName = key.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                // Create a map of custom field names for better display
+                var customFieldMap = {};
+                customFields.forEach(function(field) {
+                    customFieldMap[field.field_name.toLowerCase().replace(/\s+/g, '_')] = field.field_name;
+                });
                 
-                // Rename specific fields
-                if (key.toLowerCase() === 'exp_date' || key === 'Exp Date') {
-                    displayName = 'License Expiry Date';
-                }
-                if (key.toLowerCase() === 'econtact') {
-                    displayName = 'Emergency Contact';
+                // Basic Information - Inline layout
+                html += '<div class="mb-3">';
+                html += '<div class="inline-field"><strong>Name:</strong><span class="text-muted">' + (driver.name || 'N/A') + '</span></div>';
+                html += '<div class="inline-field"><strong>Email:</strong><span class="text-muted">' + (driver.email || 'N/A') + '</span></div>';
+                html += '<div class="inline-field"><strong>Phone:</strong><span class="text-muted">' + (driver.phone || 'N/A') + '</span></div>';
+                html += '<div class="inline-field"><strong>License Number:</strong><span class="text-muted">' + (driver.license_number || 'N/A') + '</span></div>';
+                
+                // License Expiry Date (if available)
+                if (driver.license_expiry || driver.license_expiry_date || driver.driver_license_expiry) {
+                    var licenseExpiry = driver.license_expiry || driver.license_expiry_date || driver.driver_license_expiry;
+                    var formattedDate = '';
+                    try {
+                        var date = new Date(licenseExpiry);
+                        if (!isNaN(date.getTime())) {
+                            var day = String(date.getDate()).padStart(2, '0');
+                            var month = String(date.getMonth() + 1).padStart(2, '0');
+                            var year = date.getFullYear();
+                            formattedDate = day + '/' + month + '/' + year;
+                        } else {
+                            formattedDate = licenseExpiry;
+                        }
+                    } catch (e) {
+                        formattedDate = licenseExpiry;
+                    }
+                    html += '<div class="inline-field"><strong>License Expiry:</strong><span class="text-muted">' + formattedDate + '</span></div>';
                 }
                 
-                // Format all date fields to dd/mm/yyyy
-                if (key.toLowerCase().includes('date') || key.toLowerCase().includes('expiry') || key.toLowerCase().includes('exp')) {
-                    if (value && typeof value === 'string') {
-                        try {
-                            var date = new Date(value);
-                            if (!isNaN(date.getTime())) {
-                                var day = String(date.getDate()).padStart(2, '0');
-                                var month = String(date.getMonth() + 1).padStart(2, '0');
-                                var year = date.getFullYear();
-                                value = day + '/' + month + '/' + year;
-                            }
-                        } catch (e) {
-                            // Keep original value if date parsing fails
+                // Address (if available)
+                if (driver.address) {
+                    html += '<div class="inline-field"><strong>Address:</strong><span class="text-muted">' + driver.address + '</span></div>';
+                }
+                
+                // Emergency Contact (if available)
+                if (driver.emergency_contact || driver.emergency_contact_name) {
+                    var emergencyName = driver.emergency_contact || driver.emergency_contact_name;
+                    html += '<div class="inline-field"><strong>Emergency Contact:</strong><span class="text-muted">' + emergencyName + '</span></div>';
+                }
+                
+                // Emergency Phone (if available)
+                if (driver.emergency_phone || driver.emergency_contact_phone || driver.emergency_contact_number) {
+                    var emergencyPhone = driver.emergency_phone || driver.emergency_contact_phone || driver.emergency_contact_number;
+                    html += '<div class="inline-field"><strong>Emergency Phone:</strong><span class="text-muted">' + emergencyPhone + '</span></div>';
+                }
+                
+                // Vehicle Selection (if available)
+                if (driver.vehicle_details) {
+                    var vehicleDisplay = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
+                    html += '<div class="inline-field"><strong>Vehicle:</strong><span class="text-muted">' + vehicleDisplay + '</span></div>';
+                } else if (driver.vehicle_selection) {
+                    html += '<div class="inline-field"><strong>Vehicle ID:</strong><span class="text-muted">' + driver.vehicle_selection + '</span></div>';
+                }
+                
+                // Scheme Selection (if available)
+                if (driver.scheme || driver.scheme_selection) {
+                    var scheme = driver.scheme || driver.scheme_selection;
+                    html += '<div class="inline-field"><strong>Scheme:</strong><span class="text-muted">' + scheme + '</span></div>';
+                }
+                
+                // Insurance Selection (if available)
+                if (driver.insurance_selection) {
+                    var insuranceDisplay = driver.insurance_selection === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
+                    html += '<div class="inline-field"><strong>Insurance:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
+                }
+                
+                var statusClass = driver.is_active == 1 ? 'success' : 'secondary';
+                html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + statusClass + '">' + (driver.is_active == 1 ? 'Active' : 'Inactive') + '</span></div>';
+                html += '</div>';
+    
+                // Assigned Vehicle Information
+                if (driver.assigned_vehicle) {
+                    html += '<div class="mb-3">';
+                    html += '<div class="inline-field"><strong>Assigned Vehicle:</strong><span class="text-muted">' + driver.assigned_vehicle.license_plate + ' (' + driver.assigned_vehicle.make_name + ' ' + driver.assigned_vehicle.model_name + ')</span></div>';
+                    html += '</div>';
+                }
+                
+                // Documents Section - License and Insurance Images
+                if (driver.license_image || driver.license_upload_path || driver.insurance_image || driver.insurance_upload_path || driver.documents) {
+                    html += '<div class="mb-3">';
+                    html += '<h6><strong>Documents:</strong></h6>';
+                    
+                    // License Image Button
+                    if (driver.license_image || driver.license_upload_path) {
+                        var licenseFile = driver.license_upload_path || driver.license_image;
+                        var licenseUrl = driver.license_url || ('{{ asset("uploads") }}' + '/' + licenseFile);
+                        html += '<div class="inline-field">';
+                        html += '<strong>License Image:</strong>';
+                        html += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary ml-2">';
+                        html += '<i class="fas fa-eye"></i> View License';
+                        html += '</a>';
+                        html += '</div>';
+                    }
+                    
+                    // Insurance Image Button
+                    if (driver.insurance_image || driver.insurance_upload_path || driver.documents) {
+                        var insuranceFile = driver.insurance_upload_path || driver.insurance_image || driver.documents;
+                        var insuranceUrl = driver.insurance_url || ('{{ asset("uploads") }}' + '/' + insuranceFile);
+                        html += '<div class="inline-field">';
+                        html += '<strong>Insurance Image:</strong>';
+                        html += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';
+                        html += '<i class="fas fa-eye"></i> View Insurance';
+                        html += '</a>';
+                        html += '</div>';
+                    }
+                    
+                    html += '</div>';
+                }
+                
+                // Additional Information (All Custom Fields and Onboarding Data)
+                var hasAdditionalInfo = false;
+                html += '<div class="mb-3">';
+                html += '<h6><strong>Additional Information:</strong></h6>';
+                
+                // List of fields to display (excluding basic info already shown)
+                var fieldsToExclude = [
+                    'id', 'name', 'email', 'phone', 'license_number', 'is_active', 'user_type', 'group_id', 
+                    'api_token', 'password', 'remember_token', 'created_at', 'updated_at', 'user_id',
+                    'assigned_vehicle', 'vehicle_details', 'custom_data',
+                    'license_upload_path', 'insurance_upload_path', 'license_image', 'insurance_image', 'documents',
+                    'id_proof_type', 'is_available', 'first_name', 'last_name', 'phone_code', 'method', 
+                    'edit', 'emp_id', 'contract_number', 'driver_image', 'license', 'terms', 'token',
+                    'detail_id', 'license_url', 'insurance_url',
+                    'license_expiry', 'license_expiry_date', 'driver_license_expiry',
+                    'address', 'emergency_contact', 'emergency_phone', 'emergency_contact_name', 
+                    'emergency_contact_phone', 'emergency_contact_number',
+                    'vehicle_selection', 'scheme', 'scheme_selection', 'insurance_selection'
+                ];
+                
+                // Display all driver metadata fields
+                for (var key in driver) {
+                    var keyLower = key.toLowerCase();
+                    if (driver.hasOwnProperty(key) && !fieldsToExclude.includes(key) && !fieldsToExclude.includes(keyLower)) {
+                        var value = driver[key];
+                        var displayName = '';
+                        var displayValue = '';
+                        var isFileField = false;
+                        
+                        // Skip object values to avoid "[object Object]" display
+                        if (typeof value === 'object' && value !== null) {
+                            continue;
+                        }
+                        
+                        displayName = key.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                        
+                        if (value !== null && value !== undefined && value !== '' && value.toString().trim() !== '' && value.toString().trim() !== 'null' && value.toString().trim() !== 'undefined') {
+                            displayValue = value.toString();
+                            
+                            hasAdditionalInfo = true;
+                            html += '<div class="inline-field"><strong>' + displayName + ':</strong><span class="text-muted">' + displayValue + '</span></div>';
                         }
                     }
                 }
                 
-                html += '<div class="inline-field"><strong>' + displayName + ':</strong><span class="text-muted">' + value + '</span></div>';
+                if (!hasAdditionalInfo) {
+                    html += '<div class="text-muted">No additional information available</div>';
+                }
+                html += '</div>';
+                
+                html += '</div>';
+                
+                // Create and insert the details row
+                var $detailsRow = $('<tr class="details-row"><td colspan="9">' + html + '</td></tr>');
+                $row.after($detailsRow);
+                
+                // Update button state
+                $button.addClass('expanded').html('<i class="fas fa-eye-slash"></i>');
             }
+        },
+        error: function(xhr) {
+            console.error('Error loading driver details:', xhr);
+            alert('Error loading driver details. Please try again.');
         }
-    }
-    
-    if (!hasAdditionalInfo) {
-        html += '<div class="text-muted">No additional information available</div>';
-    }
-    html += '</div>';
-    
-    html += '</div>';
-    
-    // Create and insert the details row instantly
-    var $detailsRow = $('<tr class="details-row"><td colspan="9">' + html + '</td></tr>');
-    $row.after($detailsRow);
-    
-    // Update button state
-    $button.addClass('expanded').html('<i class="fas fa-eye-slash"></i>');
+    });
 }
 
 // Legacy AJAX-based toggle function (kept as fallback)

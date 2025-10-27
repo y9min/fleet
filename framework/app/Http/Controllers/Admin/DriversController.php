@@ -1632,7 +1632,7 @@ class DriversController extends Controller {
                         if (isset($driverData['custom_data'])) {
                             $customData = is_string($driverData['custom_data']) ? json_decode($driverData['custom_data'], true) : $driverData['custom_data'];
                             if (is_array($customData)) {
-                                // Merge custom_data fields directly into driverData for easier access
+                                // Merge ALL custom_data fields directly into driverData for easier access
                                 foreach ($customData as $key => $value) {
                                     // Only set if the key doesn't already exist to preserve existing values
                                     if (!isset($driverData[$key])) {
@@ -1641,6 +1641,13 @@ class DriversController extends Controller {
                                 }
                                 // Keep the original custom_data for backwards compatibility
                                 $driverData['custom_data'] = $customData;
+                            }
+                        }
+                        
+                        // Also check for all custom field patterns (custom_1, custom_2, etc.) in metas
+                        foreach ($driver->metas as $meta) {
+                            if (strpos($meta->key, 'custom_') === 0 && !isset($driverData[$meta->key])) {
+                                $driverData[$meta->key] = $meta->value;
                             }
                         }
                         

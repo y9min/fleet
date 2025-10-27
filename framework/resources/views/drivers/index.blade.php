@@ -1211,13 +1211,43 @@ function toggleDriverDetailsInstant(button) {
                             continue;
                         }
                         
-                        displayName = key.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                        // Check if this is a custom field with an ID (custom_1, custom_2, etc.)
+                        if (key.startsWith('custom_')) {
+                            var fieldId = key.replace('custom_', '');
+                            // Try to get the proper field name from customFields
+                            var found = false;
+                            if (response.customFields) {
+                                response.customFields.forEach(function(field) {
+                                    if (field.id == fieldId) {
+                                        displayName = field.field_name;
+                                        isFileField = (field.field_type === 'file');
+                                        found = true;
+                                    }
+                                });
+                            }
+                            if (!found) {
+                                displayName = key.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                            }
+                        } else {
+                            displayName = key.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+                        }
                         
                         if (value !== null && value !== undefined && value !== '' && value.toString().trim() !== '' && value.toString().trim() !== 'null' && value.toString().trim() !== 'undefined') {
                             displayValue = value.toString();
                             
-                            hasAdditionalInfo = true;
-                            html += '<div class="inline-field"><strong>' + displayName + ':</strong><span class="text-muted">' + displayValue + '</span></div>';
+                            // Check if it's a file field
+                            if (isFileField && value) {
+                                hasAdditionalInfo = true;
+                                var fileUrl = '{{ asset("storage/") }}/' + value;
+                                html += '<div class="inline-field"><strong>' + displayName + ':</strong> ';
+                                html += '<a href="' + fileUrl + '" target="_blank" class="btn btn-sm btn-info ml-2">';
+                                html += '<i class="fas fa-eye"></i> View File';
+                                html += '</a>';
+                                html += '</div>';
+                            } else {
+                                hasAdditionalInfo = true;
+                                html += '<div class="inline-field"><strong>' + displayName + ':</strong><span class="text-muted">' + displayValue + '</span></div>';
+                            }
                         }
                     }
                 }

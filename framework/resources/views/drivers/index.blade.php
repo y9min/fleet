@@ -1226,6 +1226,64 @@ function toggleDriverDetails(driverId) {
                 html += '<div class="inline-field"><strong>Email:</strong><span class="text-muted">' + (driver.email || 'N/A') + '</span></div>';
                 html += '<div class="inline-field"><strong>Phone:</strong><span class="text-muted">' + (driver.phone || 'N/A') + '</span></div>';
                 html += '<div class="inline-field"><strong>License Number:</strong><span class="text-muted">' + (driver.license_number || 'N/A') + '</span></div>';
+                
+                // License Expiry Date (if available)
+                if (driver.license_expiry || driver.license_expiry_date || driver.driver_license_expiry) {
+                    var licenseExpiry = driver.license_expiry || driver.license_expiry_date || driver.driver_license_expiry;
+                    var formattedDate = '';
+                    try {
+                        var date = new Date(licenseExpiry);
+                        if (!isNaN(date.getTime())) {
+                            var day = String(date.getDate()).padStart(2, '0');
+                            var month = String(date.getMonth() + 1).padStart(2, '0');
+                            var year = date.getFullYear();
+                            formattedDate = day + '/' + month + '/' + year;
+                        } else {
+                            formattedDate = licenseExpiry;
+                        }
+                    } catch (e) {
+                        formattedDate = licenseExpiry;
+                    }
+                    html += '<div class="inline-field"><strong>License Expiry:</strong><span class="text-muted">' + formattedDate + '</span></div>';
+                }
+                
+                // Address (if available)
+                if (driver.address) {
+                    html += '<div class="inline-field"><strong>Address:</strong><span class="text-muted">' + driver.address + '</span></div>';
+                }
+                
+                // Emergency Contact (if available)
+                if (driver.emergency_contact || driver.emergency_contact_name) {
+                    var emergencyName = driver.emergency_contact || driver.emergency_contact_name;
+                    html += '<div class="inline-field"><strong>Emergency Contact:</strong><span class="text-muted">' + emergencyName + '</span></div>';
+                }
+                
+                // Emergency Phone (if available)
+                if (driver.emergency_phone || driver.emergency_contact_phone || driver.emergency_contact_number) {
+                    var emergencyPhone = driver.emergency_phone || driver.emergency_contact_phone || driver.emergency_contact_number;
+                    html += '<div class="inline-field"><strong>Emergency Phone:</strong><span class="text-muted">' + emergencyPhone + '</span></div>';
+                }
+                
+                // Vehicle Selection (if available)
+                if (driver.vehicle_details) {
+                    var vehicleDisplay = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
+                    html += '<div class="inline-field"><strong>Vehicle:</strong><span class="text-muted">' + vehicleDisplay + '</span></div>';
+                } else if (driver.vehicle_selection) {
+                    html += '<div class="inline-field"><strong>Vehicle ID:</strong><span class="text-muted">' + driver.vehicle_selection + '</span></div>';
+                }
+                
+                // Scheme Selection (if available)
+                if (driver.scheme || driver.scheme_selection) {
+                    var scheme = driver.scheme || driver.scheme_selection;
+                    html += '<div class="inline-field"><strong>Scheme:</strong><span class="text-muted">' + scheme + '</span></div>';
+                }
+                
+                // Insurance Selection (if available)
+                if (driver.insurance_selection) {
+                    var insuranceDisplay = driver.insurance_selection === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
+                    html += '<div class="inline-field"><strong>Insurance:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
+                }
+                
                 var statusClass = driver.is_active == 1 ? 'success' : 'secondary';
                 html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + statusClass + '">' + (driver.is_active == 1 ? 'Active' : 'Inactive') + '</span></div>';
                 html += '</div>';
@@ -1290,7 +1348,12 @@ function toggleDriverDetails(driverId) {
                     'license_upload_path', 'insurance_upload_path', 'license_image', 'insurance_image', 'documents',
                     'id_proof_type', 'is_available', 'first_name', 'last_name', 'phone_code', 'method', 
                     'edit', 'emp_id', 'contract_number', 'driver_image', 'license', 'terms', 'token',
-                    'detail_id', 'license_url', 'insurance_url'
+                    'detail_id', 'license_url', 'insurance_url',
+                    // Exclude fields that are now shown in basic info section
+                    'license_expiry', 'license_expiry_date', 'driver_license_expiry',
+                    'address', 'emergency_contact', 'emergency_phone', 'emergency_contact_name', 
+                    'emergency_contact_phone', 'emergency_contact_number',
+                    'vehicle_selection', 'scheme', 'scheme_selection', 'insurance_selection'
                 ];
                 
                 // Display all driver metadata fields
@@ -1379,7 +1442,9 @@ function toggleDriverDetails(driverId) {
                                 displayValue = value.join(', ');
                             }
                         } else if (typeof value === 'object' && value !== null) {
-                            displayValue = JSON.stringify(value);
+                            // Skip object values to avoid "[object Object]" display
+                            // These are likely complex data structures that should be handled elsewhere
+                            continue;
                         } else if (value !== null && value !== undefined && value !== '' && value.toString().trim() !== '' && value.toString().trim() !== 'null' && value.toString().trim() !== 'undefined') {
                             displayValue = value.toString();
                         } else {
@@ -1395,7 +1460,8 @@ function toggleDriverDetails(driverId) {
                             lowerDisplayName !== 'license' && lowerDisplayName !== 'terms' &&
                             lowerDisplayName !== 'token' && lowerDisplayName !== 'method' &&
                             lowerKey !== 'documents' && lowerKey !== 'id_proof_type' && lowerKey !== 'license' && 
-                            lowerKey !== 'terms' && lowerKey !== 'token' && lowerKey !== 'method') {
+                            lowerKey !== 'terms' && lowerKey !== 'token' && lowerKey !== 'method' &&
+                            lowerKey !== 'all_metas' && key !== 'all_metas') {
                             hasAdditionalInfo = true;
                             html += '<div class="inline-field">';
                             html += '<strong>' + displayName + ':</strong>';
@@ -1428,11 +1494,16 @@ function toggleDriverDetails(driverId) {
                 
                 // Handle custom_data if it exists (for legacy data)
                 if (driver.custom_data && typeof driver.custom_data === 'object') {
+                    // Fields already displayed in basic info section - exclude from additional info
+                    var excludedCustomFields = ['token', 'terms', 'documents', 'id_proof_type', 'license',
+                        'license_expiry', 'license_expiry_date', 'driver_license_expiry',
+                        'address', 'emergency_contact', 'emergency_phone', 'emergency_contact_name',
+                        'emergency_contact_phone', 'emergency_contact_number',
+                        'vehicle_selection', 'scheme', 'scheme_selection', 'insurance_selection'];
+                    
                     for (var customKey in driver.custom_data) {
                         if (driver.custom_data.hasOwnProperty(customKey) && 
-                            customKey !== 'token' && customKey !== 'terms' && 
-                            customKey !== 'documents' && customKey !== 'id_proof_type' && 
-                            customKey !== 'license' && !customKey.endsWith('_url')) {
+                            !excludedCustomFields.includes(customKey) && !customKey.endsWith('_url')) {
                             var customValue = driver.custom_data[customKey];
                             var customDisplayName = '';
                             var customDisplayValue = '';

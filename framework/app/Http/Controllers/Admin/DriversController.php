@@ -1592,6 +1592,22 @@ class DriversController extends Controller {
                                 }
                         }
                         
+                        // Decode custom_data JSON if it exists and merge fields into driverData
+                        if (isset($driverData['custom_data'])) {
+                            $customData = is_string($driverData['custom_data']) ? json_decode($driverData['custom_data'], true) : $driverData['custom_data'];
+                            if (is_array($customData)) {
+                                // Merge custom_data fields directly into driverData for easier access
+                                foreach ($customData as $key => $value) {
+                                    // Only set if the key doesn't already exist to preserve existing values
+                                    if (!isset($driverData[$key])) {
+                                        $driverData[$key] = $value;
+                                    }
+                                }
+                                // Keep the original custom_data for backwards compatibility
+                                $driverData['custom_data'] = $customData;
+                            }
+                        }
+                        
                         // Get assigned vehicle from preloaded relationship
                         $vehicle = $driver->vehicles->first();
                         if ($vehicle) {
@@ -1604,10 +1620,8 @@ class DriversController extends Controller {
                         }
                         
                         // Also check for vehicle selection in custom_data and add vehicle details
-                        if (isset($driverData['custom_data'])) {
-                            $customData = is_string($driverData['custom_data']) ? json_decode($driverData['custom_data'], true) : $driverData['custom_data'];
-                            if (isset($customData['vehicle_selection']) && $customData['vehicle_selection']) {
-                                $selectedVehicle = \App\Model\VehicleModel::find($customData['vehicle_selection']);
+                        if (isset($driverData['vehicle_selection']) && $driverData['vehicle_selection']) {
+                                $selectedVehicle = \App\Model\VehicleModel::find($driverData['vehicle_selection']);
                                 if ($selectedVehicle) {
                                     // Get fuel_type from preloaded metas if available
                                     $fuelType = 'Petrol'; // Default value
@@ -1625,7 +1639,6 @@ class DriversController extends Controller {
                                         'fuel_type' => $fuelType
                                     ];
                                 }
-                            }
                         }
                         
                         // Get custom form fields for display (optional)

@@ -597,23 +597,9 @@ function loadDriversSimple(filteredData = null, page = 1) {
             vehicleHTML = '<a href="{{ url("admin/vehicles") }}/' + driver.vehicle.id + '" class="badge badge-warning text-dark" style="background-color: #EABE14; color: #333; border-radius: 4px; padding: 6px 12px; text-decoration: none; font-weight: bold;" title="View Vehicle Details">' + driver.vehicle.license_plate + '</a>';
         }
         
-        // Prepare driver data for instant display
-        const driverData = {
-            id: driver.id,
-            name: driver.name,
-            email: driver.email,
-            phone: phoneDisplay,
-            license_number: driver.license_number || 'N/A',
-            is_active: driver.is_active,
-            assigned_vehicle: driver.vehicle || null,
-            all_metas: driver.all_metas || {}
-        };
-        
-        const jsonData = JSON.stringify(driverData).replace(/"/g, '&quot;');
-        
         // Action buttons
         const actionButtons = '<div class="d-flex justify-content-center gap-2">' +
-            '<button class="btn btn-sm btn-info" data-driver-id="' + driver.id + '" data-driver-info=\'' + jsonData + '\' onclick="toggleDriverDetails(' + driver.id + ')" title="View Details" style="padding: 6px 8px;"><i class="fas fa-eye"></i></button>' +
+            '<button class="btn btn-sm btn-info" data-driver-id="' + driver.id + '" onclick="toggleDriverDetails(' + driver.id + ')" title="View Details" style="padding: 6px 8px;"><i class="fas fa-eye"></i></button>' +
             '<button class="btn btn-sm btn-warning" data-id="' + driver.id + '" data-toggle="modal" data-target="#changepass" title="Change Password" style="padding: 6px 8px;"><i class="fas fa-key"></i></button>' +
             '<a href="{{ url("admin/drivers") }}/' + driver.id + '/edit" class="btn btn-sm btn-primary" title="Edit Driver" style="padding: 6px 8px;"><i class="fas fa-edit"></i></a>' +
             '<button class="btn btn-sm btn-danger" data-id="' + driver.id + '" data-toggle="modal" data-target="#myModal" title="Delete Driver" style="padding: 6px 8px;"><i class="fas fa-trash"></i></button>' +

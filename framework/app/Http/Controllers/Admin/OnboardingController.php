@@ -645,8 +645,19 @@ class OnboardingController extends Controller
             ];
             
             // Add all custom fields from the onboarding form
+            // Check custom_data first
             if (is_array($onboardingDriver->custom_data)) {
                 foreach ($onboardingDriver->custom_data as $key => $value) {
+                    if (!isset($metadata[$key])) {
+                        // Convert arrays to JSON strings to avoid "Array to string conversion" error
+                        $metadata[$key] = is_array($value) ? json_encode($value) : $value;
+                    }
+                }
+            }
+            
+            // Also check form_data for custom fields (new format)
+            if (is_array($onboardingDriver->form_data)) {
+                foreach ($onboardingDriver->form_data as $key => $value) {
                     if (!isset($metadata[$key])) {
                         // Convert arrays to JSON strings to avoid "Array to string conversion" error
                         $metadata[$key] = is_array($value) ? json_encode($value) : $value;

@@ -1651,6 +1651,45 @@ class DriversController extends Controller {
                             }
                         }
                         
+                        // Generate URLs for custom file fields
+                        foreach ($driverData as $key => $value) {
+                            if (strpos($key, 'custom_') === 0 && $value) {
+                                // Try to determine if this is a file field by checking customFields
+                                $fieldId = str_replace('custom_', '', $key);
+                                $isFileField = false;
+                                try {
+                                    $customField = \App\CustomFormField::find($fieldId);
+                                    if ($customField && $customField->field_type === 'file') {
+                                        $isFileField = true;
+                                    }
+                                } catch (\Exception $e) {
+                                    // Not a file field or field doesn't exist
+                                }
+                                
+                                if ($isFileField && !isset($driverData[$key . '_url'])) {
+                                    // Generate URL for the file
+                                    $filePath = $value;
+                                    if ($useS3) {
+                                        if (strpos($filePath, 'onboarding/documents/') === 0) {
+                                            $driverData[$key . '_url'] = $s3BaseUrl . $filePath;
+                                        } elseif (strpos($filePath, 'uploads/onboarding/') === 0) {
+                                            $driverData[$key . '_url'] = $s3BaseUrl . $filePath;
+                                        } else {
+                                            $driverData[$key . '_url'] = $s3BaseUrl . 'uploads/onboarding/' . $filePath;
+                                        }
+                                    } else {
+                                        if (strpos($filePath, 'onboarding/documents/') === 0) {
+                                            $driverData[$key . '_url'] = asset('storage/' . $filePath);
+                                        } elseif (strpos($filePath, 'uploads/onboarding/') === 0) {
+                                            $driverData[$key . '_url'] = asset($filePath);
+                                        } else {
+                                            $driverData[$key . '_url'] = asset('uploads/onboarding/' . $filePath);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
                         // Get assigned vehicle from preloaded relationship
                         $vehicle = $driver->vehicles->first();
                         if ($vehicle) {
@@ -1686,9 +1725,12 @@ class DriversController extends Controller {
                         
                         // Generate proper document URLs (matching onboarding format)
                         $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
-                        
+                        $s3BaseUrl = '';
                         if ($useS3) {
                             $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+                        }
+                        
+                        if ($useS3) {
                             
                             // License URL
                             if (isset($driverData['license_upload_path']) && $driverData['license_upload_path']) {

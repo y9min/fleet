@@ -591,7 +591,8 @@ class OnboardingController extends Controller
             
             \Log::info('Final driver details - ID: ' . $user->id . ', Name: ' . $user->name . ', Company ID: ' . ($user->company_id ?? 'NULL') . ', Active: ' . $user->is_active);
             
-            $user->user_id = Auth::user()->id;
+            // Note: user_id column doesn't exist in PostgreSQL users table
+            // $user->user_id = Auth::user()->id; // Commented out to avoid SQL error
             
             // Set metadata from onboarding data - comprehensive transfer
             $metadata = [

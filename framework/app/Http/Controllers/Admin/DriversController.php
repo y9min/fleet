@@ -1684,6 +1684,52 @@ class DriversController extends Controller {
                                 }
                         }
                         
+                        // Generate proper document URLs (matching onboarding format)
+                        $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+                        
+                        if ($useS3) {
+                            $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+                            
+                            // License URL
+                            if (isset($driverData['license_upload_path']) && $driverData['license_upload_path']) {
+                                $licensePath = $driverData['license_upload_path'];
+                                if (strpos($licensePath, 'onboarding/documents/') === 0) {
+                                    $driverData['license_url'] = $s3BaseUrl . $licensePath;
+                                } else {
+                                    $driverData['license_url'] = $s3BaseUrl . 'uploads/onboarding/' . $licensePath;
+                                }
+                            }
+                            
+                            // Insurance URL
+                            if (isset($driverData['insurance_upload_path']) && $driverData['insurance_upload_path']) {
+                                $insurancePath = $driverData['insurance_upload_path'];
+                                if (strpos($insurancePath, 'onboarding/documents/') === 0) {
+                                    $driverData['insurance_url'] = $s3BaseUrl . $insurancePath;
+                                } else {
+                                    $driverData['insurance_url'] = $s3BaseUrl . 'uploads/onboarding/' . $insurancePath;
+                                }
+                            }
+                        } else {
+                            // Local storage URLs
+                            if (isset($driverData['license_upload_path']) && $driverData['license_upload_path']) {
+                                $licensePath = $driverData['license_upload_path'];
+                                if (strpos($licensePath, 'onboarding/documents/') === 0) {
+                                    $driverData['license_url'] = asset('storage/' . $licensePath);
+                                } else {
+                                    $driverData['license_url'] = asset('uploads/onboarding/' . $licensePath);
+                                }
+                            }
+                            
+                            if (isset($driverData['insurance_upload_path']) && $driverData['insurance_upload_path']) {
+                                $insurancePath = $driverData['insurance_upload_path'];
+                                if (strpos($insurancePath, 'onboarding/documents/') === 0) {
+                                    $driverData['insurance_url'] = asset('storage/' . $insurancePath);
+                                } else {
+                                    $driverData['insurance_url'] = asset('uploads/onboarding/' . $insurancePath);
+                                }
+                            }
+                        }
+                        
                         // Get custom form fields for display (optional)
                         try {
                                 $customFields = \App\CustomFormField::ordered()->get();

@@ -53,13 +53,13 @@ class OnboardingFormFieldConfig extends Model
     // Scope to get visible fields
     public function scopeVisible($query)
     {
-        return $query->whereBoolean('is_visible', true);
+        return $query->whereRaw('is_visible IS TRUE');
     }
 
     // Scope to get required fields
     public function scopeRequired($query)
     {
-        return $query->whereBoolean('is_required', true);
+        return $query->whereRaw('is_required IS TRUE');
     }
 
     // Scope to get fields in order

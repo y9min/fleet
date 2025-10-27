@@ -684,7 +684,7 @@ class VehiclesController extends Controller {
                         
                         if ($request->has('status_filter') && $request->get('status_filter') != '') {
                                 if ($request->get('status_filter') == 'available') {
-                                        $vehicles->where('vehicles.in_service', 1)
+                                        $vehicles->whereRaw('vehicles.in_service IS TRUE')
                                                 ->whereNotExists(function($query) {
                                                         $query->select(DB::raw(1))
                                                               ->from('vehicles_meta')
@@ -693,7 +693,7 @@ class VehiclesController extends Controller {
                                                               ->whereNotNull('vehicles_meta.value');
                                                 });
                                 } elseif ($request->get('status_filter') == 'rented') {
-                                        $vehicles->where('vehicles.in_service', 1)
+                                        $vehicles->whereRaw('vehicles.in_service IS TRUE')
                                                 ->whereExists(function($query) {
                                                         $query->select(DB::raw(1))
                                                               ->from('vehicles_meta')
@@ -702,7 +702,7 @@ class VehiclesController extends Controller {
                                                               ->whereNotNull('vehicles_meta.value');
                                                 });
                                 } elseif ($request->get('status_filter') == 'disabled') {
-                                        $vehicles->where('vehicles.in_service', 0);
+                                        $vehicles->whereRaw('vehicles.in_service IS FALSE');
                                 }
                         }
                         

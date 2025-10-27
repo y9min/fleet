@@ -887,7 +887,7 @@ class OnboardingController extends Controller
         $fieldConfigs = OnboardingFormFieldConfig::visible()->ordered()->get();
         
         // Get available vehicles for selection
-        $availableVehicles = VehicleModel::where('in_service', 1)
+        $availableVehicles = VehicleModel::whereRaw('in_service IS TRUE')
             ->get()
             ->filter(function($vehicle) {
                 return $vehicle->getVehicleStatusAttribute() === 'Available';

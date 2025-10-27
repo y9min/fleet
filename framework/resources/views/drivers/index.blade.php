@@ -1211,13 +1211,16 @@ function toggleDriverDetailsInstant(button) {
                     'license_expiry', 'license_expiry_date', 'driver_license_expiry',
                     'address', 'emergency_contact', 'emergency_phone', 'emergency_contact_name', 
                     'emergency_contact_phone', 'emergency_contact_number',
-                    'vehicle_selection', 'scheme', 'scheme_selection', 'insurance_selection'
+                    'vehicle_selection', 'scheme', 'scheme_selection', 'insurance_selection',
+                    'company_id', 'is_verified', 'vehicle_id'
                 ];
                 
                 // Display all driver metadata fields
                 for (var key in driver) {
                     var keyLower = key.toLowerCase();
-                    if (driver.hasOwnProperty(key) && !fieldsToExclude.includes(key) && !fieldsToExclude.includes(keyLower)) {
+                    // Skip fields that end with '_url' (they're technical metadata, shown via buttons)
+                    var isUrlField = key.endsWith('_url');
+                    if (driver.hasOwnProperty(key) && !fieldsToExclude.includes(key) && !fieldsToExclude.includes(keyLower) && !isUrlField) {
                         var value = driver[key];
                         var displayName = '';
                         var displayValue = '';

@@ -241,7 +241,7 @@ class VendorApiController extends Controller
     {
 
 
-        $vehicle_types = VehicleTypeModel::where('is_enabled', 1);
+        $vehicle_types = VehicleTypeModel::where('is_enabled', true);
 
 
         if (isset($request->timestamp)) {

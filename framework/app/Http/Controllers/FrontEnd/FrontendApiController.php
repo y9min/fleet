@@ -202,7 +202,7 @@ class FrontendApiController extends Controller {
 		return response()->json($data);
 	}
 	public function vehicle_types() {
-        $vehicle_types = VehicleTypeModel::select('id', 'name', 'display_name', 'icon', 'seats')->where('is_enabled', true)->get();
+        $vehicle_types = VehicleTypeModel::select('id', 'name', 'display_name', 'icon', 'seats')->whereRaw('\"is_enabled\" = true')->get();
 		$vehicle_type_data = array();
 		foreach ($vehicle_types as $vehicle_type) {
 			if ($vehicle_type->icon != null) {

@@ -798,12 +798,29 @@ class OnboardingController extends Controller
         // Generate URLs for custom file fields
         if ($driver->custom_data) {
             \Log::info('Driver custom_data:', $driver->custom_data);
+            
+            // Check if S3 is configured
+            $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');
+            
             foreach ($customFields as $field) {
                 $fieldKey = 'custom_' . $field->id;
                 if ($field->field_type === 'file' && isset($driver->custom_data[$fieldKey])) {
                     $filePath = $driver->custom_data[$fieldKey];
                     if ($filePath) {
-                        $driverData['custom_data'][$fieldKey . '_url'] = asset('storage/' . $filePath);
+                        if ($useS3) {
+                            $s3BaseUrl = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_REGION') . '.amazonaws.com/';
+                            if (strpos($filePath, 'onboarding/documents/') === 0) {
+                                $driverData['custom_data'][$fieldKey . '_url'] = $s3BaseUrl . $filePath;
+                            } else {
+                                $driverData['custom_data'][$fieldKey . '_url'] = $s3BaseUrl . 'uploads/onboarding/' . $filePath;
+                            }
+                        } else {
+                            if (strpos($filePath, 'onboarding/documents/') === 0) {
+                                $driverData['custom_data'][$fieldKey . '_url'] = asset('storage/' . $filePath);
+                            } else {
+                                $driverData['custom_data'][$fieldKey . '_url'] = asset('uploads/onboarding/' . $filePath);
+                            }
+                        }
                     }
                 }
             }

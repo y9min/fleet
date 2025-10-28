@@ -2171,14 +2171,22 @@ class DriversController extends Controller {
                 unset($form_data['documents']);
                 unset($form_data['license_image']);
                 $user->setMeta($form_data);
-                $to = \Carbon\Carbon::now();
-                $from = \Carbon\Carbon::createFromFormat('Y-m-d', $request->get('exp_date'));
-                $diff_in_days = $to->diffInDays($from);
-                if ($diff_in_days > 20) {
-                        $t = DB::table('notifications')
-                                ->where('type', 'like', '%RenewDriverLicence%')
-                                ->where('data', 'like', '%"vid":' . $user->id . '%')
-                                ->delete();
+                
+                // Check expiration date only if it exists and is not empty
+                if ($request->get('exp_date') && !empty($request->get('exp_date'))) {
+                        try {
+                                $to = \Carbon\Carbon::now();
+                                $from = \Carbon\Carbon::createFromFormat('Y-m-d', $request->get('exp_date'));
+                                $diff_in_days = $to->diffInDays($from);
+                                if ($diff_in_days > 20) {
+                                        $t = DB::table('notifications')
+                                                ->where('type', 'like', '%RenewDriverLicence%')
+                                                ->where('data', 'like', '%"vid":' . $user->id . '%')
+                                                ->delete();
+                                }
+                        } catch (\Exception $e) {
+                                \Log::warning('Invalid exp_date format: ' . $request->get('exp_date'));
+                        }
                 }
                 $user->save();
                 return redirect()->route("drivers.index");

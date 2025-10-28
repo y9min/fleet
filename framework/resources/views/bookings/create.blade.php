@@ -163,6 +163,38 @@
                                 
                             
                               </select>
+                              <script>
+                              (function() {
+                                try {
+                                  const vehiclesData = @json(
+                                    collect($vehicles)->map(function($v){
+                                      return [
+                                        'id' => $v->id,
+                                        'make' => $v->make_name,
+                                        'model' => $v->model_name,
+                                        'year' => $v->year,
+                                        'plate' => $v->license_plate,
+                                        'in_service' => $v->in_service,
+                                        'group_id' => $v->group_id,
+                                        'status_meta' => $v->getMeta('vehicle_status')
+                                      ];
+                                    })
+                                  );
+                                  console.log('[Invitations] Vehicles payload count:', vehiclesData.length);
+                                  console.table(vehiclesData);
+                                  const selectEl = document.getElementById('vehicle_id');
+                                  if (selectEl) {
+                                    console.log('[Invitations] Dropdown option count:', selectEl.options.length);
+                                    const optionTexts = Array.from(selectEl.options).map(o => o.textContent.trim());
+                                    console.log('[Invitations] First 10 options:', optionTexts.slice(0,10));
+                                  } else {
+                                    console.warn('[Invitations] #vehicle_id select not found in DOM');
+                                  }
+                                } catch (e) {
+                                  console.error('[Invitations] Logging error:', e);
+                                }
+                              })();
+                              </script>
                             </div>
                           </div>
                         <div class="col-md-4">

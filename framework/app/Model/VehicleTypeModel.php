@@ -20,4 +20,5 @@ class VehicleTypeModel extends BaseUuidModel {
 	protected $dates = ['deleted_at'];
 	protected $table = 'vehicle_types';
 	protected $fillable = ['name', 'display_name', 'icon', 'is_enabled', 'seats'];
+	protected $casts = ['is_enabled' => 'boolean'];
 }

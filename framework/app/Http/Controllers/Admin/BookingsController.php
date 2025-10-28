@@ -1472,7 +1472,18 @@ public function assign_driver($id)
 	}
     public function store(BookingRequest $request) {
         $max_seats = VehicleModel::find($request->get('vehicle_id'))->types->seats;
-        $pickupTs = Carbon::parse($request->get("pickup"));
+        // Support separate pickup_date and pickup_time; fall back to legacy 'pickup'
+        $pickupInput = $request->get('pickup');
+        if (!$pickupInput) {
+            $pickupDate = $request->get('pickup_date');
+            $pickupTime = $request->get('pickup_time');
+            if ($pickupDate && $pickupTime) {
+                $pickupInput = $pickupDate.' '.$pickupTime;
+                // Inject into request payload so downstream code (create payload, models) still sees 'pickup'
+                $request->merge(['pickup' => $pickupInput]);
+            }
+        }
+        $pickupTs = Carbon::parse($pickupInput);
         $dropoffInput = $request->get("dropoff");
         $computedDropoff = $dropoffInput ? Carbon::parse($dropoffInput) : $pickupTs->copy()->addMinutes(15);
         if ($computedDropoff->lessThanOrEqualTo($pickupTs)) {

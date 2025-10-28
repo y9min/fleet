@@ -204,13 +204,19 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 {!! Form::label('pickup', __('fleet.pickup'), ['class' => 'form-label']) !!}
-                                <div class='input-group mb-3 date'>
+                                <div class='input-group mb-2'>
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"> <span class="fa fa-calendar"></span></span>
                                     </div>
-                                    {!! Form::text('pickup', date('Y-m-d H:i'), ['class' => 'form-control', 'required','autocomplete' => 'off']) !!}
+                                    {!! Form::date('pickup_date', date('Y-m-d'), ['class' => 'form-control', 'required','autocomplete' => 'off', 'id' => 'pickup_date']) !!}
                                 </div>
-                                
+                                <div class='input-group mb-2'>
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"> <span class="fa fa-clock-o"></span></span>
+                                    </div>
+                                    {!! Form::time('pickup_time', date('H:i'), ['class' => 'form-control', 'required','autocomplete' => 'off', 'id' => 'pickup_time']) !!}
+                                </div>
+                                {!! Form::hidden('pickup', date('Y-m-d H:i'), ['id' => 'pickup']) !!}
                             </div>
                         </div>
                     </div>
@@ -445,6 +451,18 @@ document.addEventListener("DOMContentLoaded", function() {
                   loadRegularDriverDetails(driverId);
               }
           });
+
+          // Compose hidden pickup field from date/time parts
+          function updatePickupCombined() {
+              var d = $('#pickup_date').val();
+              var t = $('#pickup_time').val();
+              if (d && t) {
+                  $('#pickup').val(d + ' ' + t);
+              }
+          }
+          $('#pickup_date, #pickup_time').on('change keyup', updatePickupCombined);
+          // initialize on load
+          updatePickupCombined();
         });
         
         // Function to load onboarding driver details

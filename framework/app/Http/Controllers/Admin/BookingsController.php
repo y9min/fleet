@@ -1263,9 +1263,14 @@ public function assign_driver($id)
         }
         $data['company_address'] = $companyAddress;
 		if ($user == null) {
-			$data['vehicles'] = VehicleModel::all();
+			$data['vehicles'] = VehicleModel::whereRaw('in_service IS TRUE')
+				->whereMeta('vehicle_status', 'Available')
+				->get();
 		} else {
-			$data['vehicles'] = VehicleModel::where('group_id', $user)->get();
+			$data['vehicles'] = VehicleModel::where('group_id', $user)
+				->whereRaw('in_service IS TRUE')
+				->whereMeta('vehicle_status', 'Available')
+				->get();
 		}
 
 		// Diagnostics + fallback: if no vehicles via Eloquent, try raw DB (Postgres boolean/scoping issues)

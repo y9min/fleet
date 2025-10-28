@@ -1263,19 +1263,31 @@ public function assign_driver($id)
         }
         $data['company_address'] = $companyAddress;
 		if ($user == null) {
-			$data['vehicles'] = VehicleModel::whereIn_service("1")
+			$data['vehicles'] = VehicleModel::whereRaw('in_service IS TRUE')
 				->whereDoesntHave('metas', function($query) {
 					$query->where('key', 'vehicle_status')
 						->whereIn('value', ['Rented', 'Workshop', 'Disabled']);
 				})
 				->get();
+			// Fallback: if none found, ignore vehicle_status filter
+			if ($data['vehicles']->isEmpty()) {
+				$data['vehicles'] = VehicleModel::whereRaw('in_service IS TRUE')->get();
+			}
 		} else {
-			$data['vehicles'] = VehicleModel::where([['group_id', $user], ['in_service', '1']])
+			$data['vehicles'] = VehicleModel::where('group_id', $user)
+				->whereRaw('in_service IS TRUE')
 				->whereDoesntHave('metas', function($query) {
 					$query->where('key', 'vehicle_status')
 						->whereIn('value', ['Rented', 'Workshop', 'Disabled']);
 				})
-				->get();}
+				->get();
+			// Fallback: if none found, ignore vehicle_status filter (still respect group)
+			if ($data['vehicles']->isEmpty()) {
+				$data['vehicles'] = VehicleModel::where('group_id', $user)
+					->whereRaw('in_service IS TRUE')
+					->get();
+			}
+		}
 		return view("bookings.create", $data);
 		//dd($data['vehicles']);
 	}

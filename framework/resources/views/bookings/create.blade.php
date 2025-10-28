@@ -154,7 +154,10 @@
                                     @foreach($groupedVehicles as $typeName => $vehiclesInGroup)
                                         <optgroup label="{{ $typeName }}">
                                             @foreach($vehiclesInGroup as $vehicle)
-                                                <option value="{{ $vehicle->id }}" data-driver="{{ $vehicle->getMeta('assign_driver_id') }}">
+                                                @php
+                                                    $assignDriverId = method_exists($vehicle, 'getMeta') ? $vehicle->getMeta('assign_driver_id') : null;
+                                                @endphp
+                                                <option value="{{ $vehicle->id }}" data-driver="{{ $assignDriverId }}">
                                                     {{ $vehicle->make_name }} {{ $vehicle->model_name }} {{ $vehicle->year }} ({{ $vehicle->license_plate }})
                                                 </option>
                                             @endforeach

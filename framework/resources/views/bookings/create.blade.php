@@ -703,110 +703,77 @@ document.addEventListener("DOMContentLoaded", function() {
             html += '</div>';
             html += '</div>';
             
-            // Additional Information from metadata - Show ALL available fields
+            // Additional Information - Filter to only show relevant fields
             html += '<div class="mb-3">';
             html += '<div class="inline-field"><strong>Additional Information:</strong>';
             
             var hasAdditionalInfo = false;
-            var processedFields = new Set(); // Track processed fields to avoid duplicates
+            var fieldsToExclude = ['id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'name', 'email', 'phone', 
+                'license_number', 'is_active', 'is_verified', 'assigned_vehicle', 'license_url', 'insurance_url', 
+                'password', 'remember_token', 'api_token', 'user_type', 'group_id', 'company_id', 'email_verified_at', 
+                'terms', 'token', 'custom_data', 'license_upload_path', 'insurance_upload_path', 'license_image', 
+                'documents', 'metas', 'vehicles', 'vehicle_id', 'id_proof_type'];
             
-            // First, process custom_data if it exists
+            // Process custom_data to show only scheme, insurance, vehicle_selection and custom fields
             if (driver.custom_data) {
                 try {
                     var customData = typeof driver.custom_data === 'string' ? JSON.parse(driver.custom_data) : driver.custom_data;
+                    
+                    // Scheme Selection
+                    if (customData.scheme_selection) {
+                        html += '<div class="inline-field"><strong>Scheme Selection:</strong><span class="text-muted">' + customData.scheme_selection + '</span></div>';
+                        hasAdditionalInfo = true;
+                    }
+                    
+                    // Insurance Selection
+                    if (customData.insurance_selection) {
+                        var insuranceDisplay = customData.insurance_selection === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
+                        html += '<div class="inline-field"><strong>Insurance Selection:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
+                        hasAdditionalInfo = true;
+                    }
+                    
+                    // Vehicle Selection - Format with make, model, year, fuel
+                    if (customData.vehicle_selection && driver.vehicle_details) {
+                        var vehicleText = (driver.vehicle_details.make_name || '') + ' ' + 
+                                        (driver.vehicle_details.model_name || '') + ' ' + 
+                                        (driver.vehicle_details.year || '') + ' ' + 
+                                        (driver.vehicle_details.fuel_type || '');
+                        html += '<div class="inline-field"><strong>Vehicle Selection:</strong><span class="vehicle-selection-highlight text-muted">' + vehicleText.trim() + '</span></div>';
+                        hasAdditionalInfo = true;
+                    }
+                    
+                    // Custom fields (only those starting with 'custom_' that have actual field names)
                     for (var customKey in customData) {
-                        if (customData.hasOwnProperty(customKey) && customKey !== 'terms' && customKey !== 'token') {
+                        if (customData.hasOwnProperty(customKey) && customKey.startsWith('custom_') && customKey !== 'token' && customKey !== 'terms' && !customKey.endsWith('_url')) {
                             var customValue = customData[customKey];
-                            if (customValue && customValue !== null && customValue !== 'null' && customValue !== 'undefined' && customValue !== '') {
-                                var customFieldName = customKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                                var customDisplayValue = '';
+                            // Look up field name from customFields - we need to fetch this from the endpoint
+                            var fieldName = customKey;
+                            
+                            // Try to get URL for file fields
+                            var customUrl = customData[customKey + '_url'];
+                            var isFileField = customUrl != null;
+                            
+                            if (customValue && customValue !== null && customValue !== '' && customValue !== 'null' && customValue !== 'undefined') {
+                                var displayValue = '';
                                 
-                                if (customKey === 'scheme_selection') {
-                                    customDisplayValue = customValue;
-                                } else if (customKey === 'vehicle_selection') {
-                                    // Try to get vehicle details from the driver object or make an AJAX call
-                                    if (driver.vehicle_details) {
-                                        customDisplayValue = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
-                                    } else {
-                                        customDisplayValue = 'Vehicle ID: ' + customValue;
-                                    }
-                                    // Add highlighting class for vehicle selection
-                                    html += '<div class="vehicle-selection-highlight"><strong>' + customFieldName + ':</strong><span class="text-muted">' + customDisplayValue + '</span></div>';
-                                    hasAdditionalInfo = true;
-                                    processedFields.add(customKey);
-                                    continue;
-                                } else if (customKey === 'insurance_selection') {
-                                    customDisplayValue = customValue === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
-                                } else if (customKey.startsWith('custom_')) {
-                                    // Handle custom file fields
-                                    if (typeof customValue === 'string' && customValue.length > 0 && customValue.includes('/')) {
-                                        var customFileName = customValue.split('/').pop();
-                                        var customFileUrl = '{{ asset("storage/") }}/' + customValue;
-                                        customDisplayValue = '<a href="' + customFileUrl + '" class="btn btn-sm btn-outline-primary" target="_blank" style="border: 1px solid #007bff; color: #007bff; padding: 4px 8px; font-size: 12px; margin-left: 5px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">';
-                                        customDisplayValue += '<i class="fas fa-eye"></i> View Document';
-                                        customDisplayValue += '</a>';
-                                    } else {
-                                        customDisplayValue = customValue;
-                                    }
+                                if (isFileField) {
+                                    displayValue = '<a href="' + customUrl + '" class="btn btn-sm btn-outline-primary" target="_blank" style="border: 1px solid #007bff; color: #007bff; padding: 4px 8px; font-size: 12px; margin-left: 5px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">';
+                                    displayValue += '<i class="fas fa-eye"></i> View Document';
+                                    displayValue += '</a>';
                                 } else {
-                                    customDisplayValue = customValue;
+                                    displayValue = customValue.toString();
                                 }
                                 
-                                html += '<div class="inline-field"><strong>' + customFieldName + ':</strong><span class="text-muted">' + customDisplayValue + '</span></div>';
-                                hasAdditionalInfo = true;
-                                processedFields.add(customKey);
+                                // Only show if we have a meaningful value
+                                if (displayValue !== '') {
+                                    html += '<div class="inline-field"><strong>' + fieldName + ':</strong><span class="text-muted">' + displayValue + '</span></div>';
+                                    hasAdditionalInfo = true;
+                                }
                             }
                         }
                     }
                 } catch (e) {
-                    // If JSON parsing fails, skip this field
-                }
-            }
-            
-            // Then process other fields, but skip those already processed from custom_data
-            for (var key in driver) {
-                if (driver.hasOwnProperty(key) && !processedFields.has(key)) {
-                    var value = driver[key];
-                    
-                    // Skip system fields and already displayed fields
-                    if (key !== 'id' && key !== 'user_id' && key !== 'created_at' && key !== 'updated_at' && key !== 'deleted_at' && 
-                        key !== 'name' && key !== 'email' && key !== 'phone' && key !== 'license_number' && key !== 'is_active' && 
-                        key !== 'assigned_vehicle' && key !== 'license_url' && key !== 'insurance_url' && 
-                        key !== 'password' && key !== 'remember_token' && key !== 'api_token' && key !== 'user_type' && 
-                        key !== 'group_id' && key !== 'company_id' && key !== 'email_verified_at' && key !== 'terms' && key !== 'token' &&
-                        key !== 'custom_data' && key !== 'license_upload_path' && key !== 'insurance_upload_path') {
-                        
-                        if (value !== null && value !== undefined && value !== '' && value !== 'null' && value !== 'undefined') {
-                            var displayValue = '';
-                            var fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                            
-                            // Special handling for specific fields
-                            if (key === 'license_image' || key === 'documents') {
-                                // For file fields, show as clickable buttons
-                                if (typeof value === 'string' && value.length > 0) {
-                                    var fileName = value.split('/').pop() || value;
-                                    var fileUrl = value.startsWith('http') ? value : '{{ asset("storage/") }}/' + value;
-                                    displayValue = '<a href="' + fileUrl + '" class="btn btn-sm btn-outline-primary" target="_blank" style="border: 1px solid #007bff; color: #007bff; padding: 4px 8px; font-size: 12px; margin-left: 5px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">';
-                                    displayValue += '<i class="fas fa-eye"></i> View Document';
-                                    displayValue += '</a>';
-                                } else {
-                                    continue; // Skip if no value
-                                }
-                            } else {
-                                if (Array.isArray(value)) {
-                                    displayValue = value.length === 0 ? 'No data provided' : value.join(', ');
-                                } else if (typeof value === 'object' && value !== null) {
-                                    // Skip complex objects
-                                    continue;
-                                } else {
-                                    displayValue = value.toString();
-                                }
-                            }
-                            
-                            html += '<div class="inline-field"><strong>' + fieldName + ':</strong><span class="text-muted">' + displayValue + '</span></div>';
-                            hasAdditionalInfo = true;
-                        }
-                    }
+                    console.log('Error parsing custom_data:', e);
                 }
             }
             

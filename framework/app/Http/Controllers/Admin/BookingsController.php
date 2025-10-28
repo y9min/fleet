@@ -1299,14 +1299,23 @@ public function assign_driver($id)
 				->get();
 		}
 
-		// Diagnostics only (no fallback)
+		// Diagnostics + fallback: if no vehicles via Eloquent, try raw DB (Postgres boolean/scoping issues)
 		try {
 			\Log::info('[Invitations] Vehicles via Eloquent', [
 				'count' => $data['vehicles'] ? $data['vehicles']->count() : 0,
 				'user_group' => $user,
 				'user_id' => Auth::id()
 			]);
-		} catch (\Throwable $e) { }
+			if (!$data['vehicles'] || $data['vehicles']->count() === 0) {
+				$raw = \DB::table('vehicles')
+					->select('id','make_name','model_name','year','license_plate','type_id','group_id','in_service','company_id')
+					->get();
+				\Log::warning('[Invitations] Fallback raw vehicles used', [ 'count' => $raw->count() ]);
+				$data['vehicles'] = collect($raw)->map(function($r){ return (object) $r; });
+			}
+		} catch (\Throwable $e) {
+			\Log::error('[Invitations] Vehicle load error', [ 'error' => $e->getMessage() ]);
+		}
 		return view("bookings.create", $data);
 		//dd($data['vehicles']);
 	}

@@ -19,6 +19,8 @@ Route::namespace ('Admin')->group(function () {
     // Route::get("/migrate", function () { \Artisan::call('migrate'); });
     // Route::get("/clear_cache", function () { /* Artisan cache commands */ });
 
+    // Logout routes - both GET and POST for compatibility
+    Route::get("logout", 'HomeController@logout')->name('logout.get');
     Route::post("logout", 'HomeController@logout')->name('logout');
 
     // SECURITY: Dangerous routes moved inside auth middleware for protection

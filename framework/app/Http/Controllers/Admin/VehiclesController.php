@@ -257,6 +257,7 @@ class VehiclesController extends Controller {
                     $vehicleArray['insurance_discount'] = $vehicle->getMeta('insurance_discount');
                     $vehicleArray['vehicle_price'] = $vehicle->getMeta('vehicle_price') ?: $vehicle->getMeta('price');
                     $vehicleArray['initial_cost'] = $vehicle->getMeta('initial_cost');
+                    $vehicleArray['price_period'] = $vehicle->getMeta('price_period') ?: 'monthly';
                     $vehicleArray['group_name'] = $vehicle->group ? $vehicle->group->name : null;
                     
                     return $vehicleArray;

@@ -1591,6 +1591,7 @@ function generateInstantVehicleDetails(id, vehicle) {
     const vehiclePrice = vehicle.vehicle_price || vehicle.price || '';
     const insuranceDiscount = vehicle.insurance_discount || '';
     const initialCost = vehicle.initial_cost || '';
+    const pricePeriod = vehicle.price_period || 'monthly';
     
     const imageUrl = vehicle.vehicle_image || vehicle.image || '';
 
@@ -1614,6 +1615,7 @@ function generateInstantVehicleDetails(id, vehicle) {
                 <div><strong>Registration Plate:</strong> ${reg}</div>
                 <div><strong>Vehicle Year:</strong> ${year || '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Price (with insurance included):</strong> ${vehiclePrice ? vehiclePrice : '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Price Interval:</strong> ${pricePeriod ? pricePeriod.charAt(0).toUpperCase() + pricePeriod.slice(1) : 'Monthly'}</div>
                 <div><strong>Insurance Discount:</strong> ${insuranceDiscount ? insuranceDiscount : '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Select Vehicle Group:</strong> <span id="details-group-${id}"><span class="text-muted">N/A</span></span></div>
                 <div><strong>Select Driver:</strong> <span id="details-driver-${id}">${driverName}</span></div>

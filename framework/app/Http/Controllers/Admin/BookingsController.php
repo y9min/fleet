@@ -1264,38 +1264,12 @@ public function assign_driver($id)
         $data['company_address'] = $companyAddress;
 		if ($user == null) {
 			$data['vehicles'] = VehicleModel::whereRaw('in_service IS TRUE')
-				->whereExists(function($q){
-					$q->select(\DB::raw(1))
-						->from('vehicles_meta')
-						->whereRaw('vehicles_meta.vehicle_id = vehicles.id')
-						->where('vehicles_meta.key','vehicle_status')
-						->where('vehicles_meta.value','Available');
-				})
-				->whereNotExists(function($q){
-					$q->select(\DB::raw(1))
-						->from('vehicles_meta')
-						->whereRaw('vehicles_meta.vehicle_id = vehicles.id')
-						->where('vehicles_meta.key','assign_driver_id')
-						->whereNotNull('vehicles_meta.value');
-				})
+				->whereMeta('vehicle_status', 'Available')
 				->get();
 		} else {
 			$data['vehicles'] = VehicleModel::where('group_id', $user)
 				->whereRaw('in_service IS TRUE')
-				->whereExists(function($q){
-					$q->select(\DB::raw(1))
-						->from('vehicles_meta')
-						->whereRaw('vehicles_meta.vehicle_id = vehicles.id')
-						->where('vehicles_meta.key','vehicle_status')
-						->where('vehicles_meta.value','Available');
-				})
-				->whereNotExists(function($q){
-					$q->select(\DB::raw(1))
-						->from('vehicles_meta')
-						->whereRaw('vehicles_meta.vehicle_id = vehicles.id')
-						->where('vehicles_meta.key','assign_driver_id')
-						->whereNotNull('vehicles_meta.value');
-				})
+				->whereMeta('vehicle_status', 'Available')
 				->get();
 		}
 

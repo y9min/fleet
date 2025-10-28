@@ -163,23 +163,24 @@
                                 
                             
                               </select>
+                              @php
+                                $vehiclesForLog = collect($vehicles)->map(function($v){
+                                  return [
+                                    'id' => $v->id,
+                                    'make' => $v->make_name,
+                                    'model' => $v->model_name,
+                                    'year' => $v->year,
+                                    'plate' => $v->license_plate,
+                                    'in_service' => $v->in_service,
+                                    'group_id' => $v->group_id,
+                                    'status_meta' => $v->getMeta('vehicle_status')
+                                  ];
+                                });
+                              @endphp
                               <script>
                               (function() {
                                 try {
-                                  const vehiclesData = @json(
-                                    collect($vehicles)->map(function($v){
-                                      return [
-                                        'id' => $v->id,
-                                        'make' => $v->make_name,
-                                        'model' => $v->model_name,
-                                        'year' => $v->year,
-                                        'plate' => $v->license_plate,
-                                        'in_service' => $v->in_service,
-                                        'group_id' => $v->group_id,
-                                        'status_meta' => $v->getMeta('vehicle_status')
-                                      ];
-                                    })
-                                  );
+                                  const vehiclesData = @json($vehiclesForLog);
                                   console.log('[Invitations] Vehicles payload count:', vehiclesData.length);
                                   console.table(vehiclesData);
                                   const selectEl = document.getElementById('vehicle_id');

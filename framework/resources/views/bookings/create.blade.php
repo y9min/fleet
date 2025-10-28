@@ -169,14 +169,14 @@
                               @php
                                 $vehiclesForLog = collect($vehicles)->map(function($v){
                                   return [
-                                    'id' => $v->id,
-                                    'make' => $v->make_name,
-                                    'model' => $v->model_name,
-                                    'year' => $v->year,
-                                    'plate' => $v->license_plate,
-                                    'in_service' => $v->in_service,
-                                    'group_id' => $v->group_id,
-                                    'status_meta' => $v->getMeta('vehicle_status')
+                                    'id' => $v->id ?? null,
+                                    'make' => $v->make_name ?? null,
+                                    'model' => $v->model_name ?? null,
+                                    'year' => $v->year ?? null,
+                                    'plate' => $v->license_plate ?? null,
+                                    'in_service' => $v->in_service ?? null,
+                                    'group_id' => $v->group_id ?? null,
+                                    'status_meta' => method_exists($v, 'getMeta') ? $v->getMeta('vehicle_status') : null
                                   ];
                                 });
                               @endphp

@@ -1264,11 +1264,17 @@ public function assign_driver($id)
         $data['company_address'] = $companyAddress;
 		if ($user == null) {
 			$data['vehicles'] = VehicleModel::whereIn_service("1")
-				->whereMeta('vehicle_status', 'Available')
+				->whereDoesntHave('metas', function($query) {
+					$query->where('key', 'vehicle_status')
+						->whereIn('value', ['Rented', 'Workshop', 'Disabled']);
+				})
 				->get();
 		} else {
 			$data['vehicles'] = VehicleModel::where([['group_id', $user], ['in_service', '1']])
-				->whereMeta('vehicle_status', 'Available')
+				->whereDoesntHave('metas', function($query) {
+					$query->where('key', 'vehicle_status')
+						->whereIn('value', ['Rented', 'Workshop', 'Disabled']);
+				})
 				->get();}
 		return view("bookings.create", $data);
 		//dd($data['vehicles']);

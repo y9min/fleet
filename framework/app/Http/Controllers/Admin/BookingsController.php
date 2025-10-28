@@ -1263,9 +1263,13 @@ public function assign_driver($id)
         }
         $data['company_address'] = $companyAddress;
 		if ($user == null) {
-			$data['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::whereIn_service("1")
+				->whereMeta('vehicle_status', 'Available')
+				->get();
 		} else {
-			$data['vehicles'] = VehicleModel::where([['group_id', $user], ['in_service', '1']])->get();}
+			$data['vehicles'] = VehicleModel::where([['group_id', $user], ['in_service', '1']])
+				->whereMeta('vehicle_status', 'Available')
+				->get();}
 		return view("bookings.create", $data);
 		//dd($data['vehicles']);
 	}

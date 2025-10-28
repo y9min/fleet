@@ -540,18 +540,18 @@ document.addEventListener("DOMContentLoaded", function() {
             // Vehicle (from vehicle_details if available)
             if (driver.vehicle_details) {
                 var vehicleText = (driver.vehicle_details.make_name || '') + ' ' + (driver.vehicle_details.model_name || '') + ' (' + (driver.vehicle_details.license_plate || '-') + ')';
-                html += '<div class="inline-field"><strong>Vehicle:</strong><span class="text-muted">' + vehicleText.trim() + '</span></div>';
+                html += '<div class="inline-field"><strong>Vehicle Selection:</strong><span class="text-muted">' + vehicleText.trim() + '</span></div>';
             }
             // Scheme (direct column or custom_data fallback)
             var schemeValue = driver.scheme || (driver.custom_data && (driver.custom_data['scheme_selection'] || driver.custom_data['scheme']));
             if (schemeValue) {
-                html += '<div class="inline-field"><strong>Scheme:</strong><span class="text-muted">' + schemeValue + '</span></div>';
+                html += '<div class="inline-field"><strong>Scheme Selection:</strong><span class="text-muted">' + schemeValue + '</span></div>';
             }
             // Insurance (direct column or custom_data fallback)
             var insuranceValue = driver.insurance_selection || (driver.custom_data && driver.custom_data['insurance_selection']);
             if (insuranceValue) {
                 var insuranceDisplay = (insuranceValue === 'with_insurance') ? 'With Insurance' : (insuranceValue === 'without_insurance' ? 'Without Insurance' : insuranceValue);
-                html += '<div class="inline-field"><strong>Insurance:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
+                html += '<div class="inline-field"><strong>Insurance Selection:</strong><span class="text-muted">' + insuranceDisplay + '</span></div>';
             }
             var statusClass = driver.status === 'approved' ? 'success' : (driver.status === 'rejected' ? 'danger' : 'warning');
             html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + statusClass + '">' + (driver.status || 'N/A') + '</span></div>';

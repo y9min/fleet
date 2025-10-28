@@ -155,7 +155,7 @@
                                         <optgroup label="{{ $typeName }}">
                                             @foreach($vehiclesInGroup as $vehicle)
                                                 <option value="{{ $vehicle->id }}" data-driver="{{ $vehicle->getMeta('assign_driver_id') }}">
-                                                    {{ $vehicle->make_name }} - {{ $vehicle->model_name }} - {{ $vehicle->license_plate }}
+                                                    {{ $vehicle->make_name }} {{ $vehicle->model_name }} {{ $vehicle->year }} ({{ $vehicle->license_plate }})
                                                 </option>
                                             @endforeach
                                         </optgroup>

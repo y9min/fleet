@@ -923,7 +923,7 @@ document.addEventListener('DOMContentLoaded', function() {
 {{-- Driver status toggle script --}}
 <script>
 $(document).ready(function() {
-    // Handle driver status toggle changes
+    // Handle driver status toggle changes (single handler; optimistic UI)
     $(document).on('change', '.driver-status-toggle', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -933,9 +933,15 @@ $(document).ready(function() {
         var action = isChecked ? 'enable' : 'disable';
         var toggle = $(this);
         
+        // Prevent duplicate requests for the same toggle until complete
+        if (toggle.data('busy')) {
+            return false;
+        }
+        toggle.data('busy', true);
+        
         console.log('Toggle changed:', driverId, action, isChecked);
         
-        // Disable toggle during request
+        // Optimistic UI: keep visual state as-is, disable interaction briefly
         toggle.prop('disabled', true);
         
         // Use the same logic as the original disable/enable buttons
@@ -956,9 +962,7 @@ $(document).ready(function() {
                     addclass: 'alert-success',
                     icon: 'fa fa-check-circle'
                 });
-                
-                // Reload the table to reflect changes
-                loadDriversSimple();
+                // No table reload; optimistic state already reflected by the toggle
             },
             error: function(xhr) {
                 console.log('Error:', xhr);
@@ -980,69 +984,7 @@ $(document).ready(function() {
             complete: function() {
                 // Re-enable toggle
                 toggle.prop('disabled', false);
-            }
-        });
-        
-        return false; // Prevent any default behavior
-    });
-    
-    // Also handle click events as a fallback
-    $(document).on('click', '.driver-status-toggle', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        var driverId = $(this).data('driver-id');
-        var isChecked = $(this).is(':checked');
-        var action = isChecked ? 'enable' : 'disable';
-        var toggle = $(this);
-        
-        console.log('Toggle clicked:', driverId, action, isChecked);
-        
-        // Disable toggle during request
-        toggle.prop('disabled', true);
-        
-        // Use the same logic as the original disable/enable buttons
-        var url = '{{ url("admin/drivers") }}/' + action + '/' + driverId;
-        
-        $.ajax({
-            url: url,
-            type: 'GET',
-            success: function(response) {
-                console.log('Success:', response);
-                // Show success notification
-                new PNotify({
-                    title: 'Success!',
-                    text: 'Driver status updated successfully',
-                    type: 'success',
-                    delay: 5000,
-                    styling: 'bootstrap3',
-                    addclass: 'alert-success',
-                    icon: 'fa fa-check-circle'
-                });
-                
-                // Reload the table to reflect changes
-                loadDriversSimple();
-            },
-            error: function(xhr) {
-                console.log('Error:', xhr);
-                var errorMessage = 'An error occurred while updating driver status';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                }
-                
-                // Revert the toggle state on error
-                toggle.prop('checked', !isChecked);
-                
-                // Show error notification
-                new PNotify({
-                    title: 'Error!',
-                    text: errorMessage,
-                    type: 'error'
-                });
-            },
-            complete: function() {
-                // Re-enable toggle
-                toggle.prop('disabled', false);
+                toggle.data('busy', false);
             }
         });
         

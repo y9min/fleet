@@ -39,7 +39,10 @@ class VehicleGroupController extends Controller {
 				if (Auth::user()->user_type == "S" || Auth::user()->group_id == null) {
 					$vehicle_groups = VehicleGroupModel::query();
 				} else {
-					$vehicle_groups = VehicleGroupModel::where('user_id', Auth::user()->id)->orWhere('id', Auth::user()->group_id);
+					$vehicle_groups = VehicleGroupModel::where(function($query) {
+						$query->where('user_id', Auth::user()->id)
+							  ->orWhere('id', Auth::user()->group_id);
+					})->distinct();
 				}
 				
 				// Debug: Log the query results

@@ -2237,9 +2237,10 @@ class DriversController extends Controller {
                 return redirect()->route("drivers.index");
         }
         public function enable($id) {
-                $driver = User::find($id);
-                $driver->is_active = true;
-                $driver->save();
+				DB::table('users')->where('id', $id)->update([
+					'is_active' => DB::raw('TRUE'),
+					'updated_at' => now(),
+				]);
                 return redirect()->route("drivers.index");
         }
         public function disable($id) {
@@ -2251,9 +2252,10 @@ class DriversController extends Controller {
                         ];
                         return redirect()->route('drivers.index')->with('errors', $newErrors)->with('bookings', $bookings);
                 } else {
-                        $driver = User::find($id);
-                        $driver->is_active = false;
-                        $driver->save();
+						DB::table('users')->where('id', $id)->update([
+							'is_active' => DB::raw('FALSE'),
+							'updated_at' => now(),
+						]);
                         return redirect()->route('drivers.index');
                 }
         }

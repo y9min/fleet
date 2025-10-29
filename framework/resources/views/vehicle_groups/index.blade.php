@@ -559,6 +559,9 @@ body {
 
 @section('script')
 <script type="text/javascript">
+  // Store selected IDs to persist across DataTable redraws
+  var selectedGroupIds = new Set();
+
   // Enhanced delete functionality
   $("#del_btn").on("click", function () {
     var id = $(this).data("submit");
@@ -572,7 +575,10 @@ body {
 
   // Enhanced checkbox functionality with bulk actions toolbar
   function updateBulkActions() {
-    var checkedCount = $("input[name='ids[]']:checked").length;
+    // Count checkboxes from both current page and stored selections
+    var visibleChecked = $('#ajax_data_table').find("input[name='ids[]']:checked").length;
+    var checkedCount = selectedGroupIds.size;
+    
     var bulkToolbar = $('#bulkToolbar');
     var selectedCount = $('#selectedCount');
     var bulkDeleteBtn = $('#bulk_delete');
@@ -582,23 +588,23 @@ body {
       bulkToolbar.show();
       selectedCount.text(checkedCount);
       bulkDeleteBtn.prop('disabled', false);
-      bulkDeleteFooterBtn.prop('disabled', false);
+      if (bulkDeleteFooterBtn.length) {
+        bulkDeleteFooterBtn.prop('disabled', false);
+      }
     } else {
       bulkToolbar.hide();
       selectedCount.text('0');
       bulkDeleteBtn.prop('disabled', true);
-      bulkDeleteFooterBtn.prop('disabled', true);
+      if (bulkDeleteFooterBtn.length) {
+        bulkDeleteFooterBtn.prop('disabled', true);
+      }
     }
   }
 
-  $(document).on('click', 'input[type="checkbox"]', function () {
-    updateBulkActions();
-    checkcheckbox();
-  });
-
   // Enhanced DataTable initialization
+  var table;
   $(function () {
-    var table = $('#ajax_data_table').DataTable({
+    table = $('#ajax_data_table').DataTable({
       dom: 'Bfrtip',
       buttons: [
         {
@@ -649,6 +655,21 @@ body {
         { data: 'action', name: 'action', searchable: false, orderable: false }
       ],
       order: [[1, 'desc']],
+      "drawCallback": function(settings) {
+        // Restore checkbox states after DataTable redraw
+        $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
+          var checkboxId = $(this).val();
+          if (selectedGroupIds.has(checkboxId)) {
+            $(this).prop('checked', true);
+          } else {
+            $(this).prop('checked', false);
+          }
+        });
+        
+        // Update select all checkbox state
+        checkcheckbox();
+        updateBulkActions();
+      },
       "initComplete": function () {
         table.columns().every(function () {
           var that = this;
@@ -658,13 +679,60 @@ body {
         });
       }
     });
+
+    // Handle checkbox clicks within DataTable (delegated event)
+    $('#ajax_data_table').on('change', 'input[name="ids[]"]', function(e) {
+      e.stopPropagation(); // Prevent any event bubbling that might interfere with DataTables
+      
+      var checkboxId = $(this).val();
+      
+      if ($(this).is(':checked')) {
+        selectedGroupIds.add(checkboxId);
+      } else {
+        selectedGroupIds.delete(checkboxId);
+      }
+      
+      updateBulkActions();
+      checkcheckbox();
+    });
+
+    // Handle select all checkbox
+    $('#chk_all').on('click', function () {
+      var isChecked = this.checked;
+      
+      // Update all visible checkboxes
+      $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
+        $(this).prop("checked", isChecked);
+        var checkboxId = $(this).val();
+        
+        if (isChecked) {
+          selectedGroupIds.add(checkboxId);
+        } else {
+          selectedGroupIds.delete(checkboxId);
+        }
+      });
+      
+      updateBulkActions();
+    });
   });
 
-  // Enhanced bulk delete functionality
-  $('#bulk_delete, #bulk_delete_footer').on('click', function () {
-    var checkedCount = $("input[name='ids[]']:checked").length;
+  // Checkbox checked function
+  function checkcheckbox() {
+    var totalCheckboxes = $('#ajax_data_table tbody .checkbox').length;
+    var checkedCheckboxes = $('#ajax_data_table tbody .checkbox:checked').length;
     
-    if (checkedCount == 0) {
+    if (checkedCheckboxes == totalCheckboxes && totalCheckboxes > 0) {
+      $("#chk_all").prop('checked', true);
+    } else {
+      $('#chk_all').prop('checked', false);
+    }
+  }
+
+  // Enhanced bulk delete functionality
+  $('#bulk_delete, #bulk_delete_footer').on('click', function (e) {
+    if (selectedGroupIds.size == 0) {
+      e.preventDefault();
+      e.stopPropagation();
       new PNotify({
         title: 'Failed!',
         text: "@lang('fleet.delete_error')",
@@ -673,32 +741,20 @@ body {
       return false;
     }
     
-    if (checkedCount > 0) {
-      $("#bulk_hidden").empty(); // Clear previous selections
-      $.each($("input[name='ids[]']:checked"), function () {
-        $("#bulk_hidden").append('<input type=hidden name=ids[] value=' + $(this).val() + '>');
-      });
-    }
-  });
-
-  // Enhanced select all functionality
-  $('#chk_all').on('click', function () {
-    var isChecked = this.checked;
-    $('.checkbox').prop("checked", isChecked);
-    updateBulkActions();
-  });
-
-  // Checkbox checked function
-  function checkcheckbox() {
-    var totalCheckboxes = $('.checkbox').length;
-    var checkedCheckboxes = $('.checkbox:checked').length;
+    // Populate hidden form fields with selected IDs before modal opens
+    $("#bulk_hidden").empty();
+    selectedGroupIds.forEach(function(id) {
+      $("#bulk_hidden").append('<input type=hidden name=ids[] value=' + id + '>');
+    });
     
-    if (checkedCheckboxes == totalCheckboxes && totalCheckboxes > 0) {
-      $("#chk_all").prop('checked', true);
-    } else {
-      $('#chk_all').prop('checked', false);
-    }
-  }
+    // Allow modal to open via Bootstrap's data-toggle
+  });
+
+  // Clear selections after successful form submission (on page reload, Set will be empty anyway)
+  $('#form_delete').on('submit', function() {
+    // Form will submit normally, selections will be cleared on redirect
+    return true;
+  });
 
   // Initialize bulk actions on page load
   $(document).ready(function() {

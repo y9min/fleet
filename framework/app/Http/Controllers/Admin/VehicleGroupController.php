@@ -54,7 +54,7 @@ class VehicleGroupController extends Controller {
 				
 				return DataTables::eloquent($vehicle_groups)
 					->addColumn('check', function ($vehicle) {
-						return '<input type="checkbox" name="ids[]" value="' . $vehicle->id . '" class="checkbox" id="chk' . $vehicle->id . '" onclick=\'checkcheckbox();\'>';
+						return '<input type="checkbox" name="ids[]" value="' . $vehicle->id . '" class="checkbox" id="chk' . $vehicle->id . '">';
 					})
 					->addColumn('vehicle_count', function ($vehicle) {
 						$v = DB::table('vehicles')

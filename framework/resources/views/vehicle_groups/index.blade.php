@@ -682,18 +682,25 @@ body {
 
     // Handle checkbox clicks within DataTable (delegated event)
     $('#ajax_data_table').on('change', 'input[name="ids[]"]', function(e) {
-      e.stopPropagation(); // Prevent any event bubbling that might interfere with DataTables
-      
-      var checkboxId = $(this).val();
-      
-      if ($(this).is(':checked')) {
-        selectedGroupIds.add(checkboxId);
-      } else {
-        selectedGroupIds.delete(checkboxId);
+      try {
+        // Prevent any default behavior or bubbling that could trigger DataTables redraws
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
+        var checkboxId = $(this).val();
+
+        if ($(this).is(':checked')) {
+          selectedGroupIds.add(checkboxId);
+        } else {
+          selectedGroupIds.delete(checkboxId);
+        }
+
+        updateBulkActions();
+        checkcheckbox();
+      } catch (err) {
+        console.error('Checkbox change handler error:', err);
       }
-      
-      updateBulkActions();
-      checkcheckbox();
     });
 
     // Handle select all checkbox

@@ -2243,7 +2243,7 @@ class DriversController extends Controller {
                 return redirect()->route("drivers.index");
         }
         public function disable($id) {
-                $bookings = Bookings::where('driver_id', $id)->where('status', 0)->get();
+				$bookings = Bookings::where('driver_id', $id)->whereIn('status', ['pending', 'confirmed', 'in_progress'])->get();
                 if (count($bookings) > 0) {
                         $newErrors = [
                                 'error' => 'Some active Bookings still have this driver, please either change the driver in those bookings or you can deactivate this driver after those bookings are complete!',

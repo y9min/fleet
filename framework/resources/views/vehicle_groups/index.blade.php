@@ -474,11 +474,9 @@ body {
             <p class="mb-0" style="opacity: 0.9; font-size: 16px; margin-top: 8px;">Organize your fleet with vehicle groups</p>
         </div>
         <div class="d-flex gap-3">
-            @can('VehicleGroup add')
-                <button type="button" id="btn_open_create_group" class="btn" style="background-color: #C1C1C1; color: black; border: 1px solid #C1C1C1;" title="@lang('fleet.createGroup')" data-toggle="modal" data-target="#createGroupModal">
-                    <i class="fas fa-plus"></i> @lang('fleet.createGroup')
-                </button>
-            @endcan
+            <button type="button" id="btn_open_create_group" class="btn" style="background-color: #C1C1C1; color: black; border: 1px solid #C1C1C1;" title="@lang('fleet.createGroup')" data-toggle="modal" data-target="#createGroupModal">
+                <i class="fas fa-plus"></i> @lang('fleet.createGroup')
+            </button>
         </div>
     </div>
     

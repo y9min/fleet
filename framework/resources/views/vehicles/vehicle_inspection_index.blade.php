@@ -466,7 +466,7 @@
                   <a href="{{ url('admin/vehicles/' . $vehicle->id . '/edit') }}" class="btn btn-sm btn-primary mr-2" title="Edit Vehicle">
                     <i class="fa fa-edit"></i> Edit
                   </a>
-                  <a href="{{ url('admin/vehicles/' . $vehicle->id) }}" class="btn btn-sm btn-info" title="View Vehicle">
+                  <a href="{{ url('admin/vehicles') }}" class="btn btn-sm btn-info" title="View Vehicles">
                     <i class="fa fa-eye"></i> View
                   </a>
                 </div>

@@ -644,16 +644,20 @@ body {
         data: function(d) {
           // keep default DataTables params; no extra payload needed
           try { console.debug('[VehicleGroups] DT request params', d); } catch(err) {}
-          // If a checkbox interaction just happened, force-clear any search values to avoid accidental filtering
-          if (suppressNextAjaxReload && d) {
+          // Always derive the search term from the visible DataTables filter input only,
+          // to avoid checkbox interactions injecting values like 'on' into the search parameter.
+          try {
+            var visibleSearch = $('#ajax_data_table_filter input[type="search"]').val() || '';
             if (d.search && typeof d.search.value !== 'undefined') {
-              d.search.value = '';
+              d.search.value = visibleSearch;
             }
-            if (Array.isArray(d.columns)) {
-              for (var i = 0; i < d.columns.length; i++) {
-                if (d.columns[i] && d.columns[i].search) {
-                  d.columns[i].search.value = '';
-                }
+          } catch (e) {}
+
+          // Clear per-column search values unless you add explicit column filters in the footer
+          if (Array.isArray(d.columns)) {
+            for (var i = 0; i < d.columns.length; i++) {
+              if (d.columns[i] && d.columns[i].search) {
+                d.columns[i].search.value = '';
               }
             }
           }

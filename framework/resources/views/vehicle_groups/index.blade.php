@@ -245,6 +245,26 @@ body {
     height: 20px;
 }
 
+/* Center the first-column checkbox in header and body */
+#ajax_data_table thead th:first-child,
+#ajax_data_table tbody td:first-child {
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center;
+}
+
+#ajax_data_table thead th:first-child {
+    position: relative;
+}
+
+#ajax_data_table thead th:first-child #chk_all {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
 #loader {
     display: flex;
     justify-content: center;

@@ -249,17 +249,16 @@
                             <div class="field-value">{{ $vehicle->year ?? 'Not Set' }}</div>
                         </div>
                         
+                        @if(config('features.vehicle_groups'))
                         <div class="field-item">
                             <label class="field-label">Vehicle Group</label>
                             <div class="field-value">
                                 @php
-                                    // Enhanced group name retrieval for both existing and new vehicles
                                     $displayGroupName = 'Not Selected';
                                     if ($vehicle->group_id) {
                                         if ($vehicle->group && $vehicle->group->name) {
                                             $displayGroupName = $vehicle->group->name;
                                         } else {
-                                            // Fallback to direct database query for existing vehicles
                                             $group = DB::table('vehicle_group')
                                                 ->where('id', $vehicle->group_id)
                                                 ->where('deleted_at', null)
@@ -273,6 +272,7 @@
                                 {{ $displayGroupName }}
                             </div>
                         </div>
+                        @endif
                         
                         <div class="field-item">
                             <label class="field-label">Assigned Driver</label>

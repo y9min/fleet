@@ -224,9 +224,21 @@ Route::namespace ('Admin')->group(function () {
         Route::post('store-api', 'SettingsController@store_api');
         Route::resource('service-reminder', 'ServiceReminderController');
         Route::resource('service-item', 'ServiceItemsController');
-        Route::post('/vehicle-group-fetch', 'VehicleGroupController@fetch_data');
-        Route::post('/vehicle-group-add-vehicles', 'VehicleGroupController@add_vehicles');
-        Route::resource('/vehicle_group', 'VehicleGroupController');
+        if (config('features.vehicle_groups')) {
+            Route::post('/vehicle-group-fetch', 'VehicleGroupController@fetch_data');
+            Route::post('/vehicle-group-add-vehicles', 'VehicleGroupController@add_vehicles');
+            Route::resource('/vehicle_group', 'VehicleGroupController');
+        } else {
+            Route::any('/vehicle_group{any?}', function () {
+                return redirect()->route('vehicles.index');
+            })->where('any', '.*');
+            Route::post('/vehicle-group-fetch', function () {
+                return response()->json(['data' => []]);
+            });
+            Route::post('/vehicle-group-add-vehicles', function () {
+                return response()->json(['success' => false, 'message' => 'Vehicle Groups disabled'], 403);
+            });
+        }
         Route::post('/income_records', 'Income@income_records');
         Route::post('/expense_records', 'ExpenseController@expense_records');
         Route::post('/store_insurance', 'VehiclesController@store_insurance');

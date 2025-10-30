@@ -343,6 +343,7 @@
           <div class="help-text">Discount amount when driver chooses without insurance</div>
         </div>
         
+        @if(config('features.vehicle_groups'))
         <div class="form-field">
           <label>Select Vehicle Group</label>
           <select name="group_id" class="form-control">
@@ -352,6 +353,7 @@
             @endforeach
           </select>
         </div>
+        @endif
         
         
         <div class="form-field">

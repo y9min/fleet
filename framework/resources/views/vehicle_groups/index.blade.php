@@ -644,6 +644,19 @@ body {
         data: function(d) {
           // keep default DataTables params; no extra payload needed
           try { console.debug('[VehicleGroups] DT request params', d); } catch(err) {}
+          // If a checkbox interaction just happened, force-clear any search values to avoid accidental filtering
+          if (suppressNextAjaxReload && d) {
+            if (d.search && typeof d.search.value !== 'undefined') {
+              d.search.value = '';
+            }
+            if (Array.isArray(d.columns)) {
+              for (var i = 0; i < d.columns.length; i++) {
+                if (d.columns[i] && d.columns[i].search) {
+                  d.columns[i].search.value = '';
+                }
+              }
+            }
+          }
           return d;
         },
         error: function(xhr, error, thrown) {

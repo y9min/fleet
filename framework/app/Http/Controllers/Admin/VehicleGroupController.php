@@ -122,4 +122,15 @@ class VehicleGroupController extends Controller {
 		VehicleGroupModel::whereIn('id', $request->ids)->delete();
 		return back()->with('success', 'Selected vehicle groups deleted successfully!');
 	}
+
+    public function add_vehicles(Request $request) {
+        $request->validate([
+            'group_id' => 'required',
+            'vehicleIds' => 'required|array'
+        ]);
+        $groupId = $request->get('group_id');
+        $vehicleIds = $request->get('vehicleIds');
+        VehicleModel::whereIn('id', $vehicleIds)->update(['group_id' => $groupId]);
+        return response()->json(['success' => true]);
+    }
 }

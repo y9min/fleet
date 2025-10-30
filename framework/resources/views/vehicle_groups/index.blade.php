@@ -663,6 +663,14 @@ body {
           }
           return d;
         },
+        dataSrc: function(json) {
+          try { console.debug('[VehicleGroups] DT response', json); } catch(err) {}
+          // Defensive: DataTables expects {data: [...]} shape
+          if (json && Array.isArray(json.data)) { return json.data; }
+          // Some servers return the array directly
+          if (Array.isArray(json)) { return json; }
+          return [];
+        },
         error: function(xhr, error, thrown) {
           console.error('DataTable AJAX Error:', error, thrown);
           console.error('Status:', xhr.status);

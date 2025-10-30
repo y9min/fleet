@@ -497,7 +497,6 @@ body {
                             <th>@lang('fleet.groupName')</th>
                             <th>@lang('fleet.description')</th>
                             <th>@lang('fleet.vehicles')</th>
-                            <th>@lang('fleet.users')</th>
                             <th style="width: 120px;">@lang('fleet.action')</th>
                         </tr>
                     </thead>
@@ -614,7 +613,7 @@ body {
           text: '<i class="fas fa-print"></i> {{__("fleet.print")}}',
           className: 'btn btn-outline-primary',
           exportOptions: {
-            columns: [1, 2, 3, 4],
+            columns: [1, 2, 3],
           },
           customize: function (win) {
             $(win.document.body).find('table').addClass('table-bordered');
@@ -626,7 +625,7 @@ body {
           text: '<i class="fas fa-file-excel"></i> Excel',
           className: 'btn btn-success',
           exportOptions: {
-            columns: [1, 2, 3, 4]
+            columns: [1, 2, 3]
           }
         }
       ],
@@ -683,7 +682,6 @@ body {
         { data: 'name', name: 'name' },
         { data: 'description', name: 'description' },
         { data: 'vehicle_count', name: 'vehicle_count' },       
-        { data: 'user_count', name: 'user_count' },       
         { data: 'action', name: 'action', searchable: false, orderable: false }
       ],
       order: [[1, 'desc']],

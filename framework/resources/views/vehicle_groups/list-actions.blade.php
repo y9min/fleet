@@ -1,14 +1,22 @@
-<div class="btn-group">
-    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
-      <span class="fa fa-gear"></span>
-      <span class="sr-only">Toggle Dropdown</span>
+<div class="d-flex align-items-center gap-2">
+  @can('Vehicle add')
+    <a href="{{ route('vehicles.create', ['group_id' => $row->id]) }}" class="btn btn-sm btn-success" title="Add Vehicle to Group">
+      <i class="fas fa-plus"></i> Add Vehicle
+    </a>
+  @endcan
+
+  @can('VehicleGroup edit')
+    <a href="{{ url('admin/vehicle_group/'.$row->id.'/edit') }}" class="btn btn-sm btn-primary" title="@lang('fleet.edit')">
+      <i class="fas fa-edit"></i> @lang('fleet.edit')
+    </a>
+  @endcan
+
+  @can('VehicleGroup delete')
+    <button type="button" class="btn btn-sm btn-danger" data-id="{{$row->id}}" data-toggle="modal" data-target="#myModal" title="@lang('fleet.delete')">
+      <i class="fas fa-trash-alt"></i> @lang('fleet.delete')
     </button>
-    <div class="dropdown-menu custom" role="menu">
-      @can('VehicleGroup edit')<a class="dropdown-item" href="{{ url("admin/vehicle_group/".$row->id."/edit") }}"> <span aria-hidden="true" class="fa fa-edit" style="color: #f0ad4e;"></span> @lang('fleet.edit')</a>@endcan
-      {!! Form::hidden("id",$row->id) !!}
-      @can('VehicleGroup delete')<a class="dropdown-item" data-id="{{$row->id}}" data-toggle="modal" data-target="#myModal"><span aria-hidden="true" class="fa fa-trash" style="color: #dd4b39"></span> @lang('fleet.delete')</a>@endcan
-    </div>
+  @endcan
 </div>
 {!! Form::open(['url' => 'admin/vehicle_group/'.$row->id,'method'=>'DELETE','class'=>'form-horizontal','id'=>'form_'.$row->id]) !!}
-{!! Form::hidden("id",$row->id) !!}
+{!! Form::hidden('id', $row->id) !!}
 {!! Form::close() !!}

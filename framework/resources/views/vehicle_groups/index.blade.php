@@ -561,6 +561,8 @@ body {
 <script type="text/javascript">
   // Store selected IDs to persist across DataTable redraws
   var selectedGroupIds = new Set();
+  // Guard flag to suppress unintended DataTables reloads from checkbox interactions
+  var suppressNextAjaxReload = false;
 
   // Enhanced delete functionality
   $("#del_btn").on("click", function () {
@@ -641,6 +643,7 @@ body {
         },
         data: function(d) {
           // keep default DataTables params; no extra payload needed
+          try { console.debug('[VehicleGroups] DT request params', d); } catch(err) {}
           return d;
         },
         error: function(xhr, error, thrown) {
@@ -684,6 +687,17 @@ body {
       }
     });
 
+    // Prevent checkbox interactions from triggering a server reload
+    $('#ajax_data_table').on('preXhr.dt', function(e, settings, data) {
+      if (suppressNextAjaxReload) {
+        suppressNextAjaxReload = false;
+        try { console.debug('[VehicleGroups] Suppressed unintended DataTables reload'); } catch(err) {}
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    });
+
     // Handle checkbox clicks within DataTable (delegated event)
     $('#ajax_data_table').on('change', 'input[name="ids[]"]', function(e) {
       try {
@@ -691,6 +705,9 @@ body {
         if (e && typeof e.preventDefault === 'function') e.preventDefault();
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
         if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
+        // Suppress any immediate DT ajax reload potentially triggered by plugins
+        suppressNextAjaxReload = true;
 
         var checkboxId = $(this).val();
 
@@ -712,6 +729,9 @@ body {
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
       if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
       if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
+      // Suppress any immediate DT ajax reload potentially triggered by plugins
+      suppressNextAjaxReload = true;
 
       var isChecked = this.checked;
 

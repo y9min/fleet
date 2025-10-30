@@ -636,8 +636,12 @@ body {
       ajax: {
         url: "{{ url('admin/vehicle-group-fetch') }}",
         type: 'POST',
-        data: {
-          _token: "{{ csrf_token() }}"
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        data: function(d) {
+          // keep default DataTables params; no extra payload needed
+          return d;
         },
         error: function(xhr, error, thrown) {
           console.error('DataTable AJAX Error:', error, thrown);
@@ -704,22 +708,28 @@ body {
     });
 
     // Handle select all checkbox
-    $('#chk_all').on('click', function () {
+    $('#chk_all').on('change', function (e) {
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
       var isChecked = this.checked;
-      
+
       // Update all visible checkboxes
       $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
-        $(this).prop("checked", isChecked);
+        $(this).prop('checked', isChecked);
         var checkboxId = $(this).val();
-        
+
         if (isChecked) {
           selectedGroupIds.add(checkboxId);
         } else {
           selectedGroupIds.delete(checkboxId);
         }
       });
-      
+
+      checkcheckbox();
       updateBulkActions();
+      return false;
     });
   });
 

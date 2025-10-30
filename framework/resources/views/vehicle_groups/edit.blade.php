@@ -46,6 +46,7 @@
         <div class="row">
           <div class="col-md-12">
             {!! Form::submit(__('fleet.update'), ['class' => 'btn', 'style' => 'background-color:#7FD7E1; color:#fff; border:none;']) !!}
+            <a href="{{ route('vehicle_group.index') }}" class="btn" style="background-color:#6b7280; color:#fff; border:none; margin-left:10px;">@lang('fleet.back')</a>
           </div>
         </div>
       </div>

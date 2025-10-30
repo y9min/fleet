@@ -379,16 +379,16 @@ class VehiclesController extends Controller {
                 $vehicleType = 'Not Selected';
                 if ($vehicle->type_id) {
                         // First try the relationship
-                        if ($vehicle->types && $vehicle->types->vehicletype) {
-                                $vehicleType = $vehicle->types->vehicletype;
+                        if ($vehicle->types && $vehicle->types->displayname) {
+                                $vehicleType = $vehicle->types->displayname;
                         } else {
                                 // Fallback to direct database query if relationship fails
                                 $type = DB::table('vehicle_types')
                                         ->where('id', $vehicle->type_id)
                                         ->where('deleted_at', null)
                                         ->first();
-                                if ($type && $type->vehicletype) {
-                                        $vehicleType = $type->vehicletype;
+                                if ($type && isset($type->displayname)) {
+                                        $vehicleType = $type->displayname;
                                 }
                         }
                 } else {
@@ -502,16 +502,16 @@ class VehiclesController extends Controller {
                 $vehicleType = 'Not Selected';
                 if ($vehicle->type_id) {
                         // First try the relationship
-                        if ($vehicle->types && $vehicle->types->vehicletype) {
-                                $vehicleType = $vehicle->types->vehicletype;
+                        if ($vehicle->types && $vehicle->types->displayname) {
+                                $vehicleType = $vehicle->types->displayname;
                         } else {
                                 // Fallback to direct database query if relationship fails
                                 $type = DB::table('vehicle_types')
                                         ->where('id', $vehicle->type_id)
                                         ->where('deleted_at', null)
                                         ->first();
-                                if ($type && $type->vehicletype) {
-                                        $vehicleType = $type->vehicletype;
+                                if ($type && isset($type->displayname)) {
+                                        $vehicleType = $type->displayname;
                                 }
                         }
                 } else {

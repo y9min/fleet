@@ -209,8 +209,8 @@
                         <div class="field-item">
                             <label class="field-label">Vehicle Type</label>
                             <div class="field-value">
-                                @if($vehicle->types && $vehicle->types->vehicletype)
-                                    {{ $vehicle->types->vehicletype }}
+                                @if($vehicle->types && $vehicle->types->displayname)
+                                    {{ $vehicle->types->displayname }}
                                 @elseif($vehicle->type_id)
                                     @php
                                         // Fallback to type_id if relationship not loaded

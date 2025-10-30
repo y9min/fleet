@@ -173,6 +173,18 @@ body {
     color: white;
 }
 
+/* Explicit styling for Create Group button */
+#submitCreateGroup,
+#submitCreateGroup:hover,
+#submitCreateGroup:focus,
+#submitCreateGroup:active {
+    background: #7ed6e1 !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
 .btn-outline-primary {
     border: 2px solid #7FD7E1;
     color: #7FD7E1;
@@ -580,7 +592,7 @@ body {
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title"><i class="fas fa-object-group"></i> Create Vehicle Group</h4>
+        <h4 class="modal-title">Create Vehicle Group</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
@@ -630,7 +642,7 @@ body {
             <small class="text-muted">Vehicles selected: <span id="summarySelectedVehiclesCount">0</span></small>
             <div>
               <button type="button" class="btn btn-outline-secondary" id="backToSelect">Back</button>
-              <button type="button" class="btn btn-success" id="submitCreateGroup" disabled>Create Group</button>
+              <button type="button" class="btn" id="submitCreateGroup" disabled>Create Group</button>
             </div>
           </div>
         </div>
@@ -639,6 +651,57 @@ body {
   </div>
   <div id="vehiclePickLoading" style="display:none; position: fixed; inset: 0; background: rgba(255,255,255,0.6); align-items: center; justify-content: center; z-index: 1052;">
     <div class="spinner-border text-info" role="status"><span class="sr-only">Loading...</span></div>
+  </div>
+</div>
+
+<!-- Manage Vehicles in Group Modal -->
+<div id="manageGroupVehiclesModal" class="modal fade" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Add Vehicles to Group</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3"><strong>Group:</strong> <span id="mg_group_name">-</span></div>
+        <div class="row">
+          <div class="col-md-5">
+            <h6 class="mb-2">Already in this group</h6>
+            <div class="table-responsive" style="max-height: 50vh; overflow:auto; border:1px solid #e9ecef; border-radius:8px;">
+              <table class="table table-striped table-bordered mb-0" id="mg_current_table">
+                <thead>
+                  <tr>
+                    <th>Reg</th><th>Make</th><th>Model</th><th>Year</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h6 class="mb-0">Add more vehicles</h6>
+              <input id="mg_search" class="form-control" placeholder="Search reg/make/model/year/fuel" style="max-width: 300px;">
+            </div>
+            <div class="table-responsive" style="max-height: 50vh; overflow:auto; border:1px solid #e9ecef; border-radius:8px;">
+              <table class="table table-striped table-bordered mb-0" id="mg_add_table">
+                <thead>
+                  <tr>
+                    <th style="width:40px; text-align:center;"><input type="checkbox" id="mg_select_all"></th>
+                    <th>Reg</th><th>Make</th><th>Model</th><th>Year</th><th>Fuel</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <small class="text-muted"><span id="mg_selected_count">0</span> selected</small>
+              <button type="button" id="mg_submit" class="btn" style="background:#7ed6e1; color:#fff;">Add to Group</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1043,6 +1106,128 @@ body {
       complete: function(){
         $('#submitCreateGroup').prop('disabled', false).text('Create Group');
       }
+    });
+  });
+
+  // ===== Manage Group Vehicles Logic =====
+  var mg_allVehicles = [];
+  var mg_current = [];
+  var mg_addable = [];
+  var mg_selectedToAdd = new Set();
+  var mg_groupId = null;
+
+  function mg_escape(s){ if(s==null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+  function mg_renderCurrent(){
+    var tb = $('#mg_current_table tbody'); tb.empty();
+    mg_current.forEach(function(v){
+      tb.append('<tr>'+
+        '<td>'+mg_escape(v.license_plate||'')+'</td>'+
+        '<td>'+mg_escape(v.make_name||v.make||'')+'</td>'+
+        '<td>'+mg_escape(v.model_name||v.model||'')+'</td>'+
+        '<td>'+mg_escape(v.year||v.made_year||'')+'</td>'+
+      '</tr>');
+    });
+  }
+
+  function mg_applyFilter(q){
+    var query = (q||'').toLowerCase();
+    var base = mg_allVehicles.filter(function(v){ return String(v.group_id||'') !== String(mg_groupId); });
+    if(!query){ mg_addable = base; return; }
+    mg_addable = base.filter(function(v){
+      var fields=[v.license_plate,v.make_name,v.model_name,v.year,v.engine_type,v.make,v.model,v.made_year];
+      return fields.some(function(f){ return (f!=null && String(f).toLowerCase().indexOf(query)!==-1); });
+    });
+  }
+
+  function mg_renderAddable(){
+    var tb = $('#mg_add_table tbody'); tb.empty();
+    mg_addable.forEach(function(v){
+      var id = String(v.id);
+      var checked = mg_selectedToAdd.has(id) ? 'checked' : '';
+      tb.append('<tr>'+
+        '<td style="text-align:center;"><input type="checkbox" class="mg_chk" data-id="'+id+'" '+checked+'></td>'+
+        '<td>'+mg_escape(v.license_plate||'')+'</td>'+
+        '<td>'+mg_escape(v.make_name||v.make||'')+'</td>'+
+        '<td>'+mg_escape(v.model_name||v.model||'')+'</td>'+
+        '<td>'+mg_escape(v.year||v.made_year||'')+'</td>'+
+        '<td>'+mg_escape(v.engine_type||v.fuel||'')+'</td>'+
+      '</tr>');
+    });
+    $('#mg_selected_count').text(mg_selectedToAdd.size);
+    var allIds = mg_addable.map(function(v){ return String(v.id); });
+    var allChecked = allIds.length>0 && allIds.every(function(id){ return mg_selectedToAdd.has(id); });
+    $('#mg_select_all').prop('checked', allChecked);
+  }
+
+  // Open modal
+  $(document).on('show.bs.modal', '#manageGroupVehiclesModal', function(e){
+    var btn = e.relatedTarget;
+    mg_groupId = btn && btn.dataset && btn.dataset.groupId ? btn.dataset.groupId : null;
+    var groupName = btn && btn.dataset && btn.dataset.groupName ? btn.dataset.groupName : '';
+    $('#mg_group_name').text(groupName || ('#'+mg_groupId));
+    mg_selectedToAdd.clear();
+
+    // Fetch both: all vehicles and current group vehicles
+    $.when(
+      $.ajax({ url: "{{ url('admin/vehicles-fetch') }}", type: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, data: {} }),
+      $.ajax({ url: "{{ url('admin/vehicles-fetch') }}", type: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, data: { group_filter: mg_groupId } })
+    ).done(function(allResp, currResp){
+      try {
+        var allData = allResp[0] && allResp[0].data ? allResp[0].data : (Array.isArray(allResp[0]) ? allResp[0] : []);
+        var curData = currResp[0] && currResp[0].data ? currResp[0].data : (Array.isArray(currResp[0]) ? currResp[0] : []);
+        mg_allVehicles = Array.isArray(allData) ? allData : [];
+        mg_current = Array.isArray(curData) ? curData : [];
+        mg_renderCurrent();
+        mg_applyFilter($('#mg_search').val());
+        mg_renderAddable();
+      } catch(err){ console.error(err); }
+    }).fail(function(){
+      alert('Failed to load vehicles');
+    });
+  });
+
+  // Search filter
+  var mg_timer;
+  $(document).on('input', '#mg_search', function(){
+    clearTimeout(mg_timer);
+    var val = $(this).val();
+    mg_timer = setTimeout(function(){ mg_applyFilter(val); mg_renderAddable(); }, 200);
+  });
+
+  // Select all
+  $(document).on('change', '#mg_select_all', function(){
+    var check = $(this).is(':checked');
+    mg_addable.forEach(function(v){ var id=String(v.id); if(check){ mg_selectedToAdd.add(id);} else { mg_selectedToAdd.delete(id);} });
+    mg_renderAddable();
+  });
+
+  // Row checkbox
+  $(document).on('change', '.mg_chk', function(){
+    var id = String($(this).data('id'));
+    if($(this).is(':checked')) mg_selectedToAdd.add(id); else mg_selectedToAdd.delete(id);
+    $('#mg_selected_count').text(mg_selectedToAdd.size);
+  });
+
+  // Submit add-to-group
+  $(document).on('click', '#mg_submit', function(){
+    if(!mg_groupId || mg_selectedToAdd.size===0) return;
+    var ids = Array.from(mg_selectedToAdd);
+    var $btn = $(this); $btn.prop('disabled', true).text('Adding...');
+    $.ajax({
+      url: "{{ url('admin/vehicle-group-add-vehicles') }}",
+      type: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+      data: { group_id: mg_groupId, vehicleIds: ids },
+      success: function(){
+        $('#manageGroupVehiclesModal').modal('hide');
+        if (table) { table.ajax.reload(null, false); }
+        if (window.PNotify) { new PNotify({ title:'Success', text:'Vehicles added to group', type:'success' }); }
+      },
+      error: function(){
+        if (window.PNotify) { new PNotify({ title:'Error', text:'Failed to add vehicles', type:'error' }); } else { alert('Failed to add vehicles'); }
+      },
+      complete: function(){ $btn.prop('disabled', false).text('Add to Group'); }
     });
   });
 

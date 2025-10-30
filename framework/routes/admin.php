@@ -225,6 +225,7 @@ Route::namespace ('Admin')->group(function () {
         Route::resource('service-reminder', 'ServiceReminderController');
         Route::resource('service-item', 'ServiceItemsController');
         Route::post('/vehicle-group-fetch', 'VehicleGroupController@fetch_data');
+        Route::post('/vehicle-group-add-vehicles', 'VehicleGroupController@add_vehicles');
         Route::resource('/vehicle_group', 'VehicleGroupController');
         Route::post('/income_records', 'Income@income_records');
         Route::post('/expense_records', 'ExpenseController@expense_records');

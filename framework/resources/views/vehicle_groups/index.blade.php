@@ -561,6 +561,8 @@ body {
 <script type="text/javascript">
   // Store selected IDs to persist across DataTable redraws
   var selectedGroupIds = new Set();
+  // Guard flag to suppress unintended DataTables reloads from checkbox interactions
+  var suppressNextAjaxReload = false;
 
   // Enhanced delete functionality
   $("#del_btn").on("click", function () {
@@ -636,8 +638,30 @@ body {
       ajax: {
         url: "{{ url('admin/vehicle-group-fetch') }}",
         type: 'POST',
-        data: {
-          _token: "{{ csrf_token() }}"
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        data: function(d) {
+          // keep default DataTables params; no extra payload needed
+          try { console.debug('[VehicleGroups] DT request params', d); } catch(err) {}
+          // Always derive the search term from the visible DataTables filter input only,
+          // to avoid checkbox interactions injecting values like 'on' into the search parameter.
+          try {
+            var visibleSearch = $('#ajax_data_table_filter input[type="search"]').val() || '';
+            if (d.search && typeof d.search.value !== 'undefined') {
+              d.search.value = visibleSearch;
+            }
+          } catch (e) {}
+
+          // Clear per-column search values unless you add explicit column filters in the footer
+          if (Array.isArray(d.columns)) {
+            for (var i = 0; i < d.columns.length; i++) {
+              if (d.columns[i] && d.columns[i].search) {
+                d.columns[i].search.value = '';
+              }
+            }
+          }
+          return d;
         },
         error: function(xhr, error, thrown) {
           console.error('DataTable AJAX Error:', error, thrown);
@@ -680,6 +704,17 @@ body {
       }
     });
 
+    // Prevent checkbox interactions from triggering a server reload
+    $('#ajax_data_table').on('preXhr.dt', function(e, settings, data) {
+      if (suppressNextAjaxReload) {
+        suppressNextAjaxReload = false;
+        try { console.debug('[VehicleGroups] Suppressed unintended DataTables reload'); } catch(err) {}
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    });
+
     // Handle checkbox clicks within DataTable (delegated event)
     $('#ajax_data_table').on('change', 'input[name="ids[]"]', function(e) {
       try {
@@ -687,6 +722,9 @@ body {
         if (e && typeof e.preventDefault === 'function') e.preventDefault();
         if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
         if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
+        // Suppress any immediate DT ajax reload potentially triggered by plugins
+        suppressNextAjaxReload = true;
 
         var checkboxId = $(this).val();
 
@@ -704,22 +742,31 @@ body {
     });
 
     // Handle select all checkbox
-    $('#chk_all').on('click', function () {
+    $('#chk_all').on('change', function (e) {
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
+      // Suppress any immediate DT ajax reload potentially triggered by plugins
+      suppressNextAjaxReload = true;
+
       var isChecked = this.checked;
-      
+
       // Update all visible checkboxes
       $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
-        $(this).prop("checked", isChecked);
+        $(this).prop('checked', isChecked);
         var checkboxId = $(this).val();
-        
+
         if (isChecked) {
           selectedGroupIds.add(checkboxId);
         } else {
           selectedGroupIds.delete(checkboxId);
         }
       });
-      
+
+      checkcheckbox();
       updateBulkActions();
+      return false;
     });
   });
 

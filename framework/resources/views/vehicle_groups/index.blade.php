@@ -1109,6 +1109,49 @@ body {
     });
   });
 
+  // ===== View Vehicles Dropdown (per row) =====
+  $(document).on('show.bs.dropdown', '.view-group-vehicles-btn', function(){
+    try {
+      var groupId = $(this).data('group-id');
+      var menuId = '#view_group_vehicles_menu_' + groupId;
+      var $menu = $(menuId);
+      if (!$menu.length) return;
+      $menu.html('<div class="px-3 py-2 text-muted" style="font-size:12px;">Loading...</div>');
+
+      $.ajax({
+        url: "{{ url('admin/vehicles-fetch') }}",
+        type: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        data: { group_filter: groupId },
+        success: function(resp){
+          var data = resp && resp.data ? resp.data : (Array.isArray(resp) ? resp : []);
+          if (!Array.isArray(data) || data.length === 0) {
+            $menu.html('<div class="px-3 py-2 text-muted" style="font-size:12px;">No vehicles in this group</div>');
+            return;
+          }
+          var html = '<div style="max-height:320px; overflow:auto;">' +
+                     '<table class="table table-sm mb-0"><thead><tr>'+
+                     '<th>Reg</th><th>Make</th><th>Model</th><th>Year</th><th>Fuel</th>'+
+                     '</tr></thead><tbody>';
+          data.forEach(function(v){
+            html += '<tr>'+
+              '<td>'+ (v.license_plate||'') +'</td>'+
+              '<td>'+ (v.make_name||v.make||'') +'</td>'+
+              '<td>'+ (v.model_name||v.model||'') +'</td>'+
+              '<td>'+ (v.year||v.made_year||'') +'</td>'+
+              '<td>'+ (v.engine_type||v.fuel||'') +'</td>'+
+            '</tr>';
+          });
+          html += '</tbody></table></div>';
+          $menu.html(html);
+        },
+        error: function(){
+          $menu.html('<div class="px-3 py-2 text-danger" style="font-size:12px;">Failed to load vehicles</div>');
+        }
+      });
+    } catch(err) { console.error(err); }
+  });
+
   // ===== Manage Group Vehicles Logic =====
   var mg_allVehicles = [];
   var mg_current = [];

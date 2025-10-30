@@ -351,7 +351,7 @@
           <select name="group_id" class="form-control">
             <option value="">No Group</option>
             @foreach($groups as $group)
-            <option value="{{$group->id}}" @if(old('group_id')==$group->id) selected @endif>{{$group->name}}</option>
+            <option value="{{$group->id}}" @if(old('group_id')==$group->id || request('group_id')==$group->id) selected @endif>{{$group->name}}</option>
             @endforeach
           </select>
         </div>

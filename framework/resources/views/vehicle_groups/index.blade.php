@@ -245,6 +245,26 @@ body {
     height: 20px;
 }
 
+/* Center the first-column checkbox in header and body */
+#ajax_data_table thead th:first-child,
+#ajax_data_table tbody td:first-child {
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center;
+}
+
+#ajax_data_table thead th:first-child {
+    position: relative;
+}
+
+#ajax_data_table thead th:first-child #chk_all {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
 #loader {
     display: flex;
     justify-content: center;
@@ -462,22 +482,25 @@ body {
         </div>
     </div>
     
-    <!-- Enhanced Bulk Actions Toolbar -->
+    <!-- Bulk Actions Toolbar (match vehicles page) -->
     <div class="bulk-actions-toolbar" id="bulkToolbar" style="display: none;">
-        <div class="bulk-actions-content">
-            <div class="bulk-actions-left">
-                <div class="bulk-actions-icon">
+        <div class="d-flex align-items-center justify-content-between p-4" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <div class="d-flex align-items-center">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #7FD7E1, #6BC5D2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
                     <i class="fas fa-check-circle text-white"></i>
                 </div>
                 <div>
-                    <div class="bulk-actions-text">Selected Items</div>
-                    <div class="bulk-actions-count" id="selectedCount">0</div>
+                    <h6 class="mb-0" style="font-weight: 600; color: #333;">Bulk Actions</h6>
+                    <small class="text-muted" id="selectedCount">0</small> group(s) selected
                 </div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="bulk-actions d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary" id="btn_clear_selection" style="border-radius: 6px; padding: 8px 16px;">
+                    <i class="fas fa-times"></i> Clear Selection
+                </button>
                 @can('VehicleGroup delete')
-                    <button class="btn btn-danger" id="bulk_delete" data-toggle="modal" data-target="#bulkModal" disabled title="@lang('fleet.delete')">
-                        <i class="fas fa-trash"></i> @lang('fleet.delete')
+                    <button type="button" class="btn btn-danger" id="bulk_delete" data-toggle="modal" data-target="#bulkModal" disabled style="border-radius: 6px; padding: 8px 16px; background: linear-gradient(135deg, #dc3545, #c82333); border: none;">
+                        <i class="fas fa-trash-alt"></i> Delete Selected
                     </button>
                 @endcan
             </div>
@@ -497,7 +520,6 @@ body {
                             <th>@lang('fleet.groupName')</th>
                             <th>@lang('fleet.description')</th>
                             <th>@lang('fleet.vehicles')</th>
-                            <th>@lang('fleet.users')</th>
                             <th style="width: 120px;">@lang('fleet.action')</th>
                         </tr>
                     </thead>
@@ -590,16 +612,12 @@ body {
       bulkToolbar.show();
       selectedCount.text(checkedCount);
       bulkDeleteBtn.prop('disabled', false);
-      if (bulkDeleteFooterBtn.length) {
-        bulkDeleteFooterBtn.prop('disabled', false);
-      }
+      if (bulkDeleteFooterBtn.length) { bulkDeleteFooterBtn.prop('disabled', false); }
     } else {
       bulkToolbar.hide();
       selectedCount.text('0');
       bulkDeleteBtn.prop('disabled', true);
-      if (bulkDeleteFooterBtn.length) {
-        bulkDeleteFooterBtn.prop('disabled', true);
-      }
+      if (bulkDeleteFooterBtn.length) { bulkDeleteFooterBtn.prop('disabled', true); }
     }
   }
 
@@ -614,7 +632,7 @@ body {
           text: '<i class="fas fa-print"></i> {{__("fleet.print")}}',
           className: 'btn btn-outline-primary',
           exportOptions: {
-            columns: [1, 2, 3, 4],
+            columns: [1, 2, 3],
           },
           customize: function (win) {
             $(win.document.body).find('table').addClass('table-bordered');
@@ -626,7 +644,7 @@ body {
           text: '<i class="fas fa-file-excel"></i> Excel',
           className: 'btn btn-success',
           exportOptions: {
-            columns: [1, 2, 3, 4]
+            columns: [1, 2, 3]
           }
         }
       ],
@@ -683,7 +701,6 @@ body {
         { data: 'name', name: 'name' },
         { data: 'description', name: 'description' },
         { data: 'vehicle_count', name: 'vehicle_count' },       
-        { data: 'user_count', name: 'user_count' },       
         { data: 'action', name: 'action', searchable: false, orderable: false }
       ],
       order: [[1, 'desc']],
@@ -821,6 +838,19 @@ body {
   // Initialize bulk actions on page load
   $(document).ready(function() {
     updateBulkActions();
+  });
+
+  // Clear Selection button behavior (match vehicles page)
+  $('#btn_clear_selection').on('click', function() {
+    try {
+      // Uncheck all visible checkboxes and clear Set
+      $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
+        $(this).prop('checked', false);
+      });
+      selectedGroupIds.clear();
+      $('#chk_all').prop('checked', false).prop('indeterminate', false);
+      updateBulkActions();
+    } catch (err) { console.error('Clear selection failed:', err); }
   });
 </script>
 @endsection

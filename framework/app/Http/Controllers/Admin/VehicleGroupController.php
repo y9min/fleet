@@ -87,8 +87,7 @@ class VehicleGroupController extends Controller {
         $group = new VehicleGroupModel();
         $group->name = $request->get('name');
         $group->description = $request->get('description');
-        // Note column may not exist in some installations; avoid setting it
-        $group->user_id = Auth::user()->id;
+        // Avoid assigning to columns that may not exist across installs
         $group->save();
 
         // Optional: Assign selected vehicles to this group if provided

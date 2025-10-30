@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\VehicleGroupRequest;
 use App\Model\VehicleGroupModel;
+use App\Model\VehicleModel;
 use Auth;
 use DataTables;
 use Illuminate\Http\Request;
@@ -89,6 +90,13 @@ class VehicleGroupController extends Controller {
         // Note column may not exist in some installations; avoid setting it
         $group->user_id = Auth::user()->id;
         $group->save();
+
+        // Optional: Assign selected vehicles to this group if provided
+        $vehicleIds = $request->get('vehicleIds');
+        if (is_array($vehicleIds) && count($vehicleIds) > 0) {
+            VehicleModel::whereIn('id', $vehicleIds)->update(['group_id' => $group->id]);
+        }
+
         return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group created successfully!');
     }
 	public function edit($id) {

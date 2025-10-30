@@ -475,9 +475,9 @@ body {
         </div>
         <div class="d-flex gap-3">
             @can('VehicleGroup add')
-                <a href="{{ route('vehicle_group.create') }}" class="btn" style="background-color: #C1C1C1; color: black; border: 1px solid #C1C1C1;" title="@lang('fleet.createGroup')">
+                <button type="button" id="btn_open_create_group" class="btn" style="background-color: #C1C1C1; color: black; border: 1px solid #C1C1C1;" title="@lang('fleet.createGroup')" data-toggle="modal" data-target="#createGroupModal">
                     <i class="fas fa-plus"></i> @lang('fleet.createGroup')
-                </a>
+                </button>
             @endcan
         </div>
     </div>
@@ -576,6 +576,73 @@ body {
   </div>
 </div>
 <!-- Modal -->
+
+<!-- Create Vehicle Group Modal -->
+<div id="createGroupModal" class="modal fade" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title"><i class="fas fa-object-group"></i> Create Vehicle Group</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div id="createGroupStepSelect" style="display: block;">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div style="font-weight: 600;">Select Vehicles</div>
+            <div>
+              <input type="text" id="vehicleSearchInput" class="form-control" placeholder="Search reg/make/model/year/fuel" style="min-width: 320px;">
+            </div>
+          </div>
+          <div class="table-responsive" style="max-height: 60vh; overflow: auto; border: 1px solid #e9ecef; border-radius: 8px;">
+            <table class="table table-striped table-bordered mb-0" id="vehiclePickTable">
+              <thead>
+                <tr>
+                  <th style="width: 50px; text-align: center;"><input type="checkbox" id="select_all_vehicles"></th>
+                  <th>Reg</th>
+                  <th>Make</th>
+                  <th>Model</th>
+                  <th>Year</th>
+                  <th>Fuel Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- populated by JS -->
+              </tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted"><span id="selectedVehiclesCount">0</span> selected</small>
+            <div>
+              <button type="button" class="btn btn-outline-secondary" id="clearVehicleSelection">Clear</button>
+              <button type="button" class="btn btn-primary" id="goToDetails" disabled>Next</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="createGroupStepDetails" style="display: none;">
+          <div class="form-group">
+            <label for="groupTitle">Group Title</label>
+            <input type="text" id="groupTitle" class="form-control" placeholder="Enter group title" required>
+          </div>
+          <div class="form-group">
+            <label for="groupDescription">Description (optional)</label>
+            <textarea id="groupDescription" class="form-control" rows="3" placeholder="Enter description"></textarea>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted">Vehicles selected: <span id="summarySelectedVehiclesCount">0</span></small>
+            <div>
+              <button type="button" class="btn btn-outline-secondary" id="backToSelect">Back</button>
+              <button type="button" class="btn btn-success" id="submitCreateGroup" disabled>Create Group</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="vehiclePickLoading" style="display:none; position: fixed; inset: 0; background: rgba(255,255,255,0.6); align-items: center; justify-content: center; z-index: 1052;">
+    <div class="spinner-border text-info" role="status"><span class="sr-only">Loading...</span></div>
+  </div>
+</div>
 
 @endsection
 
@@ -792,6 +859,192 @@ body {
       checkcheckbox();
       updateBulkActions();
       return false;
+    });
+  });
+
+  // ===== Create Vehicle Group Modal Logic =====
+  var allVehicles = [];
+  var filteredVehicles = [];
+  var selectedVehicleIds = new Set();
+  var vehiclePickInitialized = false;
+
+  function renderVehiclePickTable() {
+    var tbody = $('#vehiclePickTable tbody');
+    tbody.empty();
+    filteredVehicles.forEach(function(v) {
+      var id = v.id;
+      var reg = v.license_plate || '';
+      var make = v.make_name || v.make || '';
+      var model = v.model_name || v.model || '';
+      var year = v.year || v.made_year || '';
+      var fuel = v.engine_type || v.fuel || '';
+      var checked = selectedVehicleIds.has(String(id)) ? 'checked' : '';
+      var row = '<tr>' +
+        '<td style="text-align:center;"><input type="checkbox" class="veh_chk" data-id="'+ id +'" '+ checked +'></td>' +
+        '<td>'+ escapeHtml(reg) +'</td>' +
+        '<td>'+ escapeHtml(make) +'</td>' +
+        '<td>'+ escapeHtml(model) +'</td>' +
+        '<td>'+ escapeHtml(String(year)) +'</td>' +
+        '<td>'+ escapeHtml(fuel) +'</td>' +
+      '</tr>';
+      tbody.append(row);
+    });
+    updateVehicleSelectionUI();
+  }
+
+  function escapeHtml(str){
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function applyVehicleFilter(query) {
+    var q = (query || '').toLowerCase();
+    if (!q) {
+      filteredVehicles = allVehicles.slice(0);
+      return;
+    }
+    filteredVehicles = allVehicles.filter(function(v){
+      var fields = [
+        v.license_plate, v.make_name, v.model_name, v.year,
+        v.engine_type, v.make, v.model, v.made_year
+      ];
+      return fields.some(function(f){
+        return (f !== null && f !== undefined && String(f).toLowerCase().indexOf(q) !== -1);
+      });
+    });
+  }
+
+  function updateVehicleSelectionUI() {
+    $('#selectedVehiclesCount').text(selectedVehicleIds.size);
+    $('#summarySelectedVehiclesCount').text(selectedVehicleIds.size);
+    $('#goToDetails').prop('disabled', selectedVehicleIds.size === 0);
+    var allIdsInView = filteredVehicles.map(function(v){ return String(v.id); });
+    var allChecked = allIdsInView.length > 0 && allIdsInView.every(function(id){ return selectedVehicleIds.has(id); });
+    $('#select_all_vehicles').prop('checked', allChecked);
+    $('#submitCreateGroup').prop('disabled', selectedVehicleIds.size === 0 || !$('#groupTitle').val());
+  }
+
+  function fetchVehiclesForPicker() {
+    if (vehiclePickInitialized) return;
+    vehiclePickInitialized = true;
+    $('#vehiclePickLoading').css('display','flex');
+    $.ajax({
+      url: "{{ url('admin/vehicles-fetch') }}",
+      type: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+      data: {},
+      success: function(resp){
+        try {
+          var data = resp && resp.data ? resp.data : (Array.isArray(resp) ? resp : []);
+          allVehicles = Array.isArray(data) ? data : [];
+          applyVehicleFilter($('#vehicleSearchInput').val());
+          renderVehiclePickTable();
+        } catch (e) { console.error(e); }
+      },
+      error: function(xhr){
+        alert('Failed to load vehicles');
+      },
+      complete: function(){
+        $('#vehiclePickLoading').hide();
+      }
+    });
+  }
+
+  // Open modal -> load vehicles once
+  $('#createGroupModal').on('shown.bs.modal', function(){
+    fetchVehiclesForPicker();
+  });
+
+  // Search input (debounced)
+  var vehicleSearchTimer;
+  $('#vehicleSearchInput').on('input', function(){
+    clearTimeout(vehicleSearchTimer);
+    var val = $(this).val();
+    vehicleSearchTimer = setTimeout(function(){
+      applyVehicleFilter(val);
+      renderVehiclePickTable();
+    }, 200);
+  });
+
+  // Select all in current filtered view
+  $(document).on('change', '#select_all_vehicles', function(){
+    var check = $(this).is(':checked');
+    filteredVehicles.forEach(function(v){
+      var id = String(v.id);
+      if (check) { selectedVehicleIds.add(id); } else { selectedVehicleIds.delete(id); }
+    });
+    renderVehiclePickTable();
+  });
+
+  // Row checkbox toggle
+  $(document).on('change', '.veh_chk', function(){
+    var id = String($(this).data('id'));
+    if ($(this).is(':checked')) { selectedVehicleIds.add(id); } else { selectedVehicleIds.delete(id); }
+    updateVehicleSelectionUI();
+  });
+
+  // Clear selection
+  $('#clearVehicleSelection').on('click', function(){
+    selectedVehicleIds.clear();
+    renderVehiclePickTable();
+  });
+
+  // Step navigation
+  $('#goToDetails').on('click', function(){
+    $('#createGroupStepSelect').hide();
+    $('#createGroupStepDetails').show();
+    updateVehicleSelectionUI();
+  });
+  $('#backToSelect').on('click', function(){
+    $('#createGroupStepDetails').hide();
+    $('#createGroupStepSelect').show();
+  });
+
+  // Validation for title
+  $('#groupTitle').on('input', function(){
+    updateVehicleSelectionUI();
+  });
+
+  // Submit create group
+  $('#submitCreateGroup').on('click', function(){
+    var title = ($('#groupTitle').val() || '').trim();
+    if (!title) { return; }
+    var description = ($('#groupDescription').val() || '').trim();
+    var ids = Array.from(selectedVehicleIds);
+
+    $('#submitCreateGroup').prop('disabled', true).text('Creating...');
+
+    $.ajax({
+      url: "{{ route('vehicle_group.store') }}",
+      type: 'POST',
+      headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+      data: { name: title, description: description, vehicleIds: ids },
+      success: function(){
+        try {
+          $('#createGroupModal').modal('hide');
+          // Reload the main DataTable
+          if (table) { table.ajax.reload(null, false); }
+          // Toast
+          if (window.PNotify) {
+            new PNotify({ title: 'Success', text: 'Vehicle group created successfully!', type: 'success' });
+          } else {
+            alert('Vehicle group created successfully!');
+          }
+        } catch (e) {}
+      },
+      error: function(xhr){
+        var msg = 'Failed to create group';
+        try { msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : msg; } catch(e) {}
+        if (window.PNotify) { new PNotify({ title: 'Error', text: msg, type: 'error' }); } else { alert(msg); }
+      },
+      complete: function(){
+        $('#submitCreateGroup').prop('disabled', false).text('Create Group');
+      }
     });
   });
 

@@ -19,8 +19,8 @@
 @section('content')
 <div class="row">
   <div class="col-md-12">
-    <div class="card card-warning">
-      <div class="card-header">
+    <div class="card">
+      <div class="card-header" style="background-color:#7FD7E1; color:#fff;">
         <h3 class="card-title">@lang('fleet.edit_driver')</h3>
       </div>
 
@@ -186,7 +186,7 @@
           </div>
         </div>
         <div class="col-md-12">
-          {!! Form::submit(__('fleet.update'), ['class' => 'btn btn-warning']) !!}
+          {!! Form::submit(__('fleet.update'), ['class' => 'btn', 'style' => 'background-color:#7FD7E1; color:#fff; border:none;']) !!}
           <a href="{{route('drivers.index')}}" class="btn btn-danger">@lang('fleet.back')</a>
         </div>
         {!! Form::close() !!}

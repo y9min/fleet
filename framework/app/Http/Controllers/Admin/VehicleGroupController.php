@@ -82,27 +82,31 @@ class VehicleGroupController extends Controller {
 	public function create() {
 		return view('vehicle_groups.create');
 	}
-	public function store(VehicleGroupRequest $request) {
-		$group = new VehicleGroupModel();
-		$group->name = $request->get('name');
-		$group->description = $request->get('description');
-		$group->note = $request->get('note');
-		$group->user_id = Auth::user()->id;
-		$group->save();
-		return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group created successfully!');
-	}
+    public function store(VehicleGroupRequest $request) {
+        $group = new VehicleGroupModel();
+        $group->name = $request->get('name');
+        $group->description = $request->get('description');
+        // Note column may not exist in some installations; avoid setting it
+        $group->user_id = Auth::user()->id;
+        $group->save();
+        return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group created successfully!');
+    }
 	public function edit($id) {
 		$index['data'] = VehicleGroupModel::where('id', $id)->first();
 		return view('vehicle_groups.edit', $index);
 	}
-	public function update(VehicleGroupRequest $request) {
-		$group = VehicleGroupModel::find($request->get('id'));
-		$group->name = $request->get('name');
-		$group->description = $request->get('description');
-		$group->note = $request->get('note');
-		$group->save();
-		return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group updated successfully!');
-	}
+    public function update(VehicleGroupRequest $request, $id = null) {
+        $targetId = $id ?? $request->get('id');
+        $group = $targetId ? VehicleGroupModel::find($targetId) : null;
+        if (!$group) {
+            return back()->withErrors('Vehicle group not found.');
+        }
+        $group->name = $request->get('name');
+        $group->description = $request->get('description');
+        // Avoid assigning to non-existent column
+        $group->save();
+        return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group updated successfully!');
+    }
 	public function destroy(Request $request) {
 		VehicleGroupModel::find($request->get('id'))->delete();
 		return redirect()->route('vehicle_group.index')->with('success', 'Vehicle group deleted successfully!');

@@ -40,10 +40,7 @@
               {!! Form::text('description',$data->description,['class'=>'form-control']) !!}
             </div>
 
-            <div class="form-group">
-              {!! Form::label('note',__('fleet.note'), ['class' => 'form-label']) !!}
-              {!! Form::textarea('note',$data->note,['class'=>'form-control','size'=>'30x2']) !!}
-            </div>
+            
           </div>
         </div>
         <div class="row">

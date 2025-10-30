@@ -173,6 +173,18 @@ body {
     color: white;
 }
 
+/* Explicit styling for Create Group button */
+#submitCreateGroup,
+#submitCreateGroup:hover,
+#submitCreateGroup:focus,
+#submitCreateGroup:active {
+    background: #7ed6e1 !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
 .btn-outline-primary {
     border: 2px solid #7FD7E1;
     color: #7FD7E1;
@@ -630,7 +642,7 @@ body {
             <small class="text-muted">Vehicles selected: <span id="summarySelectedVehiclesCount">0</span></small>
             <div>
               <button type="button" class="btn btn-outline-secondary" id="backToSelect">Back</button>
-              <button type="button" class="btn btn-success" id="submitCreateGroup" disabled>Create Group</button>
+              <button type="button" class="btn" id="submitCreateGroup" disabled>Create Group</button>
             </div>
           </div>
         </div>

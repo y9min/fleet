@@ -1495,6 +1495,8 @@ public function assign_driver($id)
                 $payload = $request->all();
                 if (!isset($payload['travellers'])) { $payload['travellers'] = 1; }
                 if (!isset($payload['dest_addr'])) { $payload['dest_addr'] = ''; }
+                // Ensure status is set to enum value, not integer
+                $payload['status'] = BookingStatus::Pending;
                 
                 // Handle onboarding driver selection
                 $driverId = $request->get('driver_id');

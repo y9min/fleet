@@ -1617,7 +1617,7 @@ function generateInstantVehicleDetails(id, vehicle) {
                 <div><strong>Price (with insurance included):</strong> ${vehiclePrice ? vehiclePrice : '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Price Interval:</strong> ${pricePeriod ? pricePeriod.charAt(0).toUpperCase() + pricePeriod.slice(1) : 'Monthly'}</div>
                 <div><strong>Insurance Discount:</strong> ${insuranceDiscount ? insuranceDiscount : '<span class="text-muted">N/A</span>'}</div>
-                <div><strong>Select Vehicle Group:</strong> <span id="details-group-${id}"><span class="text-muted">N/A</span></span></div>
+                
                 <div><strong>Select Driver:</strong> <span id="details-driver-${id}">${driverName}</span></div>
                 <div><strong>Initial Mileage (miles):</strong> ${initialMileage || '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Is Active?:</strong> ${isActive || '<span class="text-muted">N/A</span>'}</div>
@@ -1639,13 +1639,7 @@ function generateInstantVehicleDetails(id, vehicle) {
 
 // Enhance the instant details with data from completeVehicle without showing any loading UI
 function progressivelyEnhanceVehicleDetails(id, vehicle, completeVehicle) {
-    // Group name
-    if (completeVehicle && typeof completeVehicle.group_name !== 'undefined') {
-        const el = document.getElementById(`details-group-${id}`);
-        if (el) {
-            el.textContent = completeVehicle.group_name || 'N/A';
-        }
-    }
+    // Group removed
 
     // Driver name (server may return authoritative value)
     if (completeVehicle && typeof completeVehicle.driver_name !== 'undefined') {
@@ -1732,7 +1726,7 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
                     <div><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</div>
                     <div><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</div>
                     <div><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</div>
-                    <div><strong>Vehicle Group:</strong> ${completeVehicle.group_name || 'Not Selected'}</div>
+                    
                     <div><strong>Assigned Driver:</strong> ${completeVehicle.driver_name || 'Not Assigned'}</div>
                     <div><strong>Initial Mileage:</strong> ${vehicle.int_mileage ? vehicle.int_mileage.toLocaleString() + ' miles' : 'Not Set'}</div>
                     <div><strong>Is Active:</strong> ${vehicle.in_service == 1 ? '<i class="fas fa-check text-success"></i> Yes' : '<i class="fas fa-times text-danger"></i> No'}</div>
@@ -1749,7 +1743,7 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
                     })()}</div>
                     <div><strong>Telematics Link:</strong> ${metadata.telematics_link ? '<a href="' + metadata.telematics_link + '" target="_blank">View Link</a>' : 'Not Set'}</div>
                     <div><strong>Vehicle ID:</strong> ${id}</div>
-                    <div><strong>Group ID:</strong> ${vehicle.group_id || 'Not Set'}</div>
+                    
                 </div>
             </div>
             

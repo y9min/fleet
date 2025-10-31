@@ -1,4 +1,3 @@
-@can('Bookings delete')
 <div class="d-flex justify-content-center" style="gap: 0;">
     {{-- Green tick button: Mark Vehicle Collected --}}
     <button type="button" class="btn btn-sm delete-invitation-btn" 
@@ -18,7 +17,6 @@
         <i class="fa fa-trash" aria-hidden="true"></i>
     </button>
 </div>
-@endcan
 {!! Form::open([
     'url' => 'admin/invitations/' . $row->id,
     'method' => 'DELETE',

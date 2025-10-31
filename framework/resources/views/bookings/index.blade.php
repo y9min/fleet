@@ -631,7 +631,7 @@
       $('#bulk_delete').prop('type','button');
         new PNotify({
             title: 'Failed!',
-            text: "@lang('fleet.delete_error')",
+            text: "{{ __('fleet.delete_error') }}",
             type: 'error'
           });
         $('#bulk_delete').attr('disabled',true);

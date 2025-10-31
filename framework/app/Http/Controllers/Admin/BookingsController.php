@@ -1473,15 +1473,35 @@ public function assign_driver($id)
         }
         return redirect()->route('invitations.index')->with('error', 'Booking not found');
     }
-    // Delete related income record
-    IncomeModel::where('income_id', $booking->id)->where('income_cat', 1)->delete();
+    // Delete related income records via booking_income table
+    $bookingIncomes = BookingIncome::where('booking_id', $booking->id)->get();
+    foreach ($bookingIncomes as $bookingIncome) {
+        if ($bookingIncome->income_id) {
+            $income = IncomeModel::find($bookingIncome->income_id);
+            if ($income && $income->income_cat == 1) {
+                $income->delete();
+            }
+        }
+    }
+    // Also delete the booking_income records
+    BookingIncome::where('booking_id', $booking->id)->delete();
+    
     // Check if we also need to delete parent or child booking
     if ($request->has('check') && $request->check == 1) {
         // If the booking has a parent, delete the parent
         if ($booking->parent_booking_id) {
             $parent = Bookings::find($booking->parent_booking_id);
             if ($parent) {
-                IncomeModel::where('income_id', $parent->id)->where('income_cat', 1)->delete();
+                $parentBookingIncomes = BookingIncome::where('booking_id', $parent->id)->get();
+                foreach ($parentBookingIncomes as $parentBookingIncome) {
+                    if ($parentBookingIncome->income_id) {
+                        $income = IncomeModel::find($parentBookingIncome->income_id);
+                        if ($income && $income->income_cat == 1) {
+                            $income->delete();
+                        }
+                    }
+                }
+                BookingIncome::where('booking_id', $parent->id)->delete();
                 $parent->delete();
             }
         } else {
@@ -1492,7 +1512,16 @@ public function assign_driver($id)
                 ->where('bookings_meta.value', $booking->id)
                 ->first();
             if ($child) {
-                IncomeModel::where('income_id', $child->id)->where('income_cat', 1)->delete();
+                $childBookingIncomes = BookingIncome::where('booking_id', $child->id)->get();
+                foreach ($childBookingIncomes as $childBookingIncome) {
+                    if ($childBookingIncome->income_id) {
+                        $income = IncomeModel::find($childBookingIncome->income_id);
+                        if ($income && $income->income_cat == 1) {
+                            $income->delete();
+                        }
+                    }
+                }
+                BookingIncome::where('booking_id', $child->id)->delete();
                 $child->delete();
             }
         }

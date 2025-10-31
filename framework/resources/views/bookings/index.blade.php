@@ -220,14 +220,17 @@
           <input type="hidden" name="wait_time_3" value="" id="wait_time_3">
           <input type="hidden" name="std_fare_3" value="" id="std_fare_3">
           @php($no_of_tax = 0)
-          @if(Hyvikk::get('tax_charge') != "null")
-          @php($no_of_tax = sizeof(json_decode(Hyvikk::get('tax_charge'), true)))
-          @php($taxes = json_decode(Hyvikk::get('tax_charge'), true))
+          @php($tax_charge_value = Hyvikk::get('tax_charge'))
+          @if($tax_charge_value && $tax_charge_value != "null" && !empty($tax_charge_value))
+          @php($taxes = json_decode($tax_charge_value, true))
+          @if(is_array($taxes))
+          @php($no_of_tax = sizeof($taxes))
           @php($i=0)
           @foreach($taxes as $key => $val)
           <input type="hidden" name="{{ 'tax_'.$i }}" value="{{ $val }}" class="{{ 'tax_'.$i }}">
           @php($i++)
           @endforeach
+          @endif
           @endif
           <div class="row">
             <div class="col-md-6">

@@ -1,6 +1,21 @@
 @extends('layouts.app')
 
 @php($date_format_setting=(Hyvikk::get('date_format'))?Hyvikk::get('date_format'):'d-m-Y')
+@php
+  $pnotifyTitle = '';
+  $pnotifyText = '';
+  if(Session::has('msg')) {
+    $msg = Session::get('msg');
+    // Check if this is the pickup invitation success message
+    if(strpos($msg, 'Vehicle Pickup Invitation') !== false) {
+      $pnotifyTitle = 'Vehicle Pickup Invitation Successfully Sent';
+      $pnotifyText = 'An email has been sent to the driver with all pickup details.';
+    } else {
+      $pnotifyTitle = 'Success!';
+      $pnotifyText = $msg;
+    }
+  }
+@endphp
 @section('extra_css')
 <link rel="stylesheet" href="{{asset('assets/css/bootstrap-datepicker.min.css')}}">
 <style type="text/css">
@@ -345,22 +360,6 @@
 </div>
 <!-- generate invoice modal -->
 @endsection
-
-@php
-  $pnotifyTitle = '';
-  $pnotifyText = '';
-  if(Session::has('msg')) {
-    $msg = Session::get('msg');
-    // Check if this is the pickup invitation success message
-    if(strpos($msg, 'Vehicle Pickup Invitation') !== false) {
-      $pnotifyTitle = 'Vehicle Pickup Invitation Successfully Sent';
-      $pnotifyText = 'An email has been sent to the driver with all pickup details.';
-    } else {
-      $pnotifyTitle = 'Success!';
-      $pnotifyText = $msg;
-    }
-  }
-@endphp
 
 @section("script")
 <script type="text/javascript">

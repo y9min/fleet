@@ -447,7 +447,7 @@ class BookingsApiController extends Controller {
 			$data['data'] = "";
 		} else {
 			$booking = Bookings::find($request->id);
-			if ($booking->status == 0 && $booking->ride_status != "Cancelled" && $booking->receipt != 1) {
+			if ($booking->status == BookingStatus::Pending && $booking->ride_status != "Cancelled" && $booking->receipt != 1) {
 				$booking->ride_status = "Cancelled";
 				$booking->reason = $request->reason;
 				$booking->save();
@@ -475,7 +475,7 @@ class BookingsApiController extends Controller {
 			$data['data'] = "";
 		} else {
 			$booking = Bookings::find($request->id);
-			if ($booking->payment == 0 && $booking->status == 1 && Auth::user()->user_type != "C") {
+			if ($booking->payment == 0 && $booking->status == BookingStatus::Completed && Auth::user()->user_type != "C") {
 				$booking->payment = 1;
 				$booking->payment_method = "cash";
 				$booking->save();
@@ -502,8 +502,8 @@ class BookingsApiController extends Controller {
 			$data['data'] = "";
 		} else {
 			$booking = Bookings::find($request->id);
-			if ($booking->receipt == 1 && $booking->status == 0 && Auth::user()->user_type != "C") {
-				$booking->status = 1;
+			if ($booking->receipt == 1 && $booking->status == BookingStatus::Pending && Auth::user()->user_type != "C") {
+				$booking->status = BookingStatus::Completed;
 				$booking->ride_status = "Completed";
 				$booking->save();
 				$data['success'] = "1";
@@ -537,7 +537,7 @@ class BookingsApiController extends Controller {
 			$data['data'] = "";
 		} else {
 			$booking = Bookings::find($request->id);
-			if ($booking->status == 0 && $booking->receipt != 1 && Auth::user()->user_type != "C" && $booking->ride_status != "Cancelled") {
+			if ($booking->status == BookingStatus::Pending && $booking->receipt != 1 && Auth::user()->user_type != "C" && $booking->ride_status != "Cancelled") {
 				$booking->setMeta([
 					'day' => $request->day,
 					'mileage' => $request->mileage,
@@ -657,7 +657,7 @@ class BookingsApiController extends Controller {
 					'pickup_addr' => $request->pickup_addr,
 					'dest_addr' => $request->dest_addr,
 					'travellers' => $request->travellers,
-					'status' => 0,
+					'status' => BookingStatus::Pending,
 					'driver_id' => $request->driver_id,
 					'note' => $request->note,
 				]);
@@ -713,7 +713,7 @@ class BookingsApiController extends Controller {
 					'pickup_addr' => $request->pickup_addr,
 					'dest_addr' => $request->dest_addr,
 					'travellers' => $request->travellers,
-					'status' => 0,
+					'status' => BookingStatus::Pending,
 					'driver_id' => $request->driver_id,
 					'note' => $request->note,
 				]);

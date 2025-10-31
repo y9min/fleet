@@ -227,15 +227,6 @@
                         </div>
                     </div>
 
-                    
-
-                    @if(Hyvikk::get('return_booking') == 1)
-                    @endif
-
-
-                    
-                    @if (Auth::user()->user_type == 'C')
-                    @endif
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
@@ -257,14 +248,6 @@
                         </div>
                     </div>
                     
-
-
-                  
-
-                    
-
-                  
-
                     <div class="blank"></div>
                     <div class="col-md-12">
                         {!! Form::submit(__('fleet.save_booking'), ['class' => 'btn btn-info']) !!}
@@ -350,69 +333,10 @@
 
 @section('script')
 
-<script>
-
-
-
-
-
-
-
-document.addEventListener("DOMContentLoaded", function() {
-    let oneWayBtn = document.getElementById("oneWayBtn");
-    let returnWayBtn = document.getElementById("returnWayBtn");
-    let returnDateContainer = document.getElementById("returnDateContainer");
-
-    // Toggle active button styles
-    function activateButton(activeBtn, inactiveBtn) {
-        activeBtn.classList.remove("btn-secondary");
-        activeBtn.classList.add("btn-success");
-
-        inactiveBtn.classList.remove("btn-success");
-        inactiveBtn.classList.add("btn-secondary");
-    }
-
-    // One Way Click
-    oneWayBtn.addEventListener("click", function() {
-        returnDateContainer.classList.add("d-none");
-        activateButton(oneWayBtn, returnWayBtn);
-        document.querySelector(".booking_type").value = "one_way";
-
-        get_driver($("#pickup").val(), $("#dropoff").val()); 
-        get_vehicle($("#pickup").val(), $("#dropoff").val());
-    });
-
-    // Return Way Click
-    returnWayBtn.addEventListener("click", function() {
-        returnDateContainer.classList.remove("d-none");
-        activateButton(returnWayBtn, oneWayBtn);
-        document.querySelector(".booking_type").value = "return_way";
-
-        get_driver($("#pickup").val(), $("#returnDropoff").val()); 
-        get_vehicle($("#pickup").val(), $("#returnDropoff").val());
-    });
-
-    // Set default to One Way on page load
-    returnDateContainer.classList.add("d-none");
-    activateButton(oneWayBtn, returnWayBtn);
-    document.querySelector(".booking_type").value = "one_way";
-});
-</script>
-
-    </script>
-
     <script>
       var datet = "{{date('Y-m-d H:i:s')}}";
-      var getDriverRoute='{{ url("admin/get_driver") }}';
-      var getVehicleRoute='{{ url("admin/get_vehicle") }}';
-      var prevAddress='{{ url("admin/prev-address") }}';
       var selectDriver="@lang('fleet.selectDriver')";
-      var selectCustomer="@lang('fleet.selectCustomer')";
       var selectVehicle="@lang('fleet.selectVehicle')";
-      var addCustomer="@lang('fleet.add_customer')";
-      var prevAddressLang="@lang('fleet.prev_addr')";
-     
-      var fleet_email_already_taken="@lang('fleet.email_already_taken')";
     </script>
     <script src="{{asset('assets/js/bookings/create.js?2343453')}}"></script>   
      @if (Hyvikk::api('google_api') == '1')

@@ -349,10 +349,22 @@
 @section("script")
 <script type="text/javascript">
   @if(Session::get('msg'))
+    @php
+      $msg = Session::get('msg');
+      // Check if this is the pickup invitation success message
+      if(strpos($msg, 'Vehicle Pickup Invitation') !== false) {
+        $title = 'Vehicle Pickup Invitation Successfully Sent';
+        $text = 'An email has been sent to the driver with all pickup details.';
+      } else {
+        $title = 'Success!';
+        $text = $msg;
+      }
+    @endphp
     new PNotify({
-        title: 'Success!',
-        text: '{{ Session::get('msg') }}',
-        type: 'success'
+        title: '{{ $title }}',
+        text: '{{ $text }}',
+        type: 'success',
+        delay: 5000
       });
   @endif
 

@@ -1667,7 +1667,7 @@ public function assign_driver($id)
 						'error' => $e->getMessage()
 					]);
 				}
-				return redirect()->route("invitations.index");
+				return redirect()->route("invitations.index")->with('msg', 'Vehicle Pickup Invitation Successfully Sent');
 			}
 		} else {
 			return redirect()->route("invitations.create")->withErrors(["error" => "Selected Vehicle is not Available in Given Timeframe"])->withInput();

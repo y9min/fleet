@@ -1468,6 +1468,9 @@ public function assign_driver($id)
 {
     $booking = Bookings::find($request->get('id'));
     if (!$booking) {
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => false, 'message' => 'Booking not found'], 404);
+        }
         return redirect()->route('invitations.index')->with('error', 'Booking not found');
     }
     // Delete related income record
@@ -1496,6 +1499,12 @@ public function assign_driver($id)
     }
     // Finally delete the main booking
     $booking->delete();
+    
+    // Return JSON response for AJAX requests
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json(['success' => true, 'message' => 'Booking deleted successfully.']);
+    }
+    
     return redirect()->route('invitations.index')->with('success', 'Booking deleted successfully.');
 }
     protected function check_booking($pickup, $dropoff, $vehicle) {

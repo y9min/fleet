@@ -675,5 +675,86 @@
         $('#chk_all').prop('checked', false);
     }
   }
+
+  // Handle invitation deletion via AJAX
+  $(document).on('click', '.delete-invitation-btn', function(e) {
+    e.preventDefault();
+    var button = $(this);
+    var bookingId = button.data('id');
+    var action = button.data('action');
+    
+    // Disable button during request
+    button.prop('disabled', true);
+    
+    // Get CSRF token
+    var csrfToken = $('meta[name="csrf-token"]').attr('content');
+    
+    // Perform AJAX delete
+    $.ajax({
+      url: '{{ url("admin/invitations") }}/' + bookingId,
+      type: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      data: {
+        '_method': 'DELETE',
+        '_token': csrfToken,
+        'id': bookingId,
+        'check': 0
+      },
+      success: function(response) {
+        // Determine success message based on action
+        var title, message;
+        if (action === 'mark-collected') {
+          title = 'Success!';
+          message = 'Vehicle marked as collected and invitation removed';
+        } else {
+          title = 'Success!';
+          message = 'Vehicle pickup invitation deleted successfully';
+        }
+        
+        // Show success notification
+        new PNotify({
+          title: title,
+          text: message,
+          type: 'success',
+          delay: 3000
+        });
+        
+        // Reload DataTable
+        var dataTable = $('#ajax_data_table').DataTable();
+        if (dataTable) {
+          dataTable.ajax.reload(null, false);
+        }
+      },
+      error: function(xhr) {
+        // Re-enable button on error
+        button.prop('disabled', false);
+        
+        var errorMessage = 'An error occurred while deleting the invitation';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMessage = xhr.responseJSON.message;
+        } else if (xhr.responseText) {
+          try {
+            var response = JSON.parse(xhr.responseText);
+            if (response.message) {
+              errorMessage = response.message;
+            }
+          } catch(e) {
+            // Use default message
+          }
+        }
+        
+        // Show error notification
+        new PNotify({
+          title: 'Error!',
+          text: errorMessage,
+          type: 'error',
+          delay: 3000
+        });
+      }
+    });
+  });
 </script>
 @endsection

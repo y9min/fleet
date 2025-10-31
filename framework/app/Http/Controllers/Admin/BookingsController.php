@@ -7,6 +7,7 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
  */
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
+use App\Enums\BookingStatus;
 use App\Http\Requests\BookingRequest;
 use App\Mail\BookingCancelled;
 use App\Mail\CustomerInvoice;
@@ -354,9 +355,9 @@ class BookingsController extends Controller {
 		}
 		return redirect()->route("invitations.index");
 	}
-	public function complete($id) {
-		$xx = Bookings::find($id);
-		$xx->status = 1;
+    public function complete($id) {
+        $xx = Bookings::find($id);
+        $xx->status = BookingStatus::Completed;
 		$xx->completed_at = date('Y-m-d H:i:s');
 		$xx->ride_status = "Completed";
 		$xx->save();
@@ -1456,20 +1457,16 @@ public function assign_driver($id)
     $booking->delete();
     return redirect()->route('invitations.index')->with('success', 'Booking deleted successfully.');
 }
-	protected function check_booking($pickup, $dropoff, $vehicle) {
-		$chk = DB::table("bookings")
-			->where("status", 0)
-			->where("vehicle_id", $vehicle)
-			->whereNull("deleted_at")
-			->where("pickup", ">=", $pickup)
-			->where("dropoff", "<=", $dropoff)
-			->get();
-		if (count($chk) > 0) {
-			return false;
-		} else {
-			return true;
-		}
-	}
+    protected function check_booking($pickup, $dropoff, $vehicle) {
+        // Use model scope with proper enum filtering and overlap logic
+        $conflicts = Bookings::overlappingActive(
+            (string)$vehicle,
+            Carbon::parse($pickup),
+            Carbon::parse($dropoff),
+            [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress]
+        )->count();
+        return $conflicts === 0;
+    }
     public function store(BookingRequest $request) {
         $max_seats = VehicleModel::find($request->get('vehicle_id'))->types->seats;
         // Support separate pickup_date and pickup_time; fall back to legacy 'pickup'

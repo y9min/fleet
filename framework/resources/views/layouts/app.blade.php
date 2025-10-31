@@ -1904,7 +1904,6 @@ input:checked + .slider:before {
               @endcan
 
               @if((Request::is('admin/driver-logs')) || (Request::is('admin/vehicles*')) ||
-              (Request::is('admin/vehicle_group*')) ||
               (Request::is('admin/vehicle-reviews*')) || (Request::is('admin/view-vehicle-review*')) ||
               (Request::is('admin/vehicle-review*')) || (Request::is('admin/vehicle-make*')) ||
               (Request::is('admin/vehicle-model*')) || (Request::is('admin/vehicle-color*')))
@@ -1956,17 +1955,7 @@ input:checked + .slider:before {
                     </a>
                   </li>
                   @endcan --}}
-                  @if(config('features.vehicle_groups'))
-                    @can('VehicleGroup list')
-                    <li class="nav-item">
-                      <a href="{{ route('vehicle_group.index')}}"
-                        class="nav-link @if(Request::is('admin/vehicle_group*')) active @endif">
-                        <i class="fa fa-inbox nav-icon"></i>
-                        <p>@lang('fleet.manageGroup')</p>
-                      </a>
-                    </li>
-                    @endcan
-                  @endif
+                  
                   @can('VehicleInspection list')
                   <li class="nav-item">
                     <a href="{{ url('admin/vehicle-reviews')}}"

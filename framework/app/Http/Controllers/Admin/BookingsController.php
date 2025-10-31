@@ -115,7 +115,9 @@ class BookingsController extends Controller {
 					$join->on('bookings_meta.booking_id', '=', 'bookings.id')
 						->where('bookings_meta.key', '=', 'vehicle_typeid');
 				})
-				->leftJoin('vehicle_types', 'bookings_meta.value', '=', 'vehicle_types.id')
+				->leftJoin('vehicle_types', function ($join) {
+					$join->on(DB::raw("CAST(bookings_meta.value AS uuid)"), '=', 'vehicle_types.id');
+				})
 				->with(['customer', 'driver', 'metas']);
 			return DataTables::eloquent($bookings)
 				->addColumn('check', function ($user) {

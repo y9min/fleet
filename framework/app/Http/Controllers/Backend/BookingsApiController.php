@@ -756,11 +756,17 @@ class BookingsApiController extends Controller {
 	public function push_notification($id) {
 		try {
 			$booking = Bookings::find($id);
+			// Use environment variables for VAPID keys instead of hardcoded values
+			$vapidConfig = config('webpush.vapid');
+			if (!$vapidConfig['public_key'] || !$vapidConfig['private_key']) {
+				\Log::warning('VAPID keys not configured, skipping push notification', ['booking_id' => $id]);
+				return;
+			}
 			$auth = array(
 				'VAPID' => array(
-					'subject' => 'Alert about new post',
-					'publicKey' => 'BKt+swntut+5W32Psaggm4PVQanqOxsD5PRRt93p+/0c+7AzbWl87hFF184AXo/KlZMazD5eNb1oQVNbK1ti46Y=',
-					'privateKey' => 'NaMmQJIvddPfwT1rkIMTlgydF+smNzNXIouzRMzc29c=', // in the real world, this would be in a secret file
+					'subject' => $vapidConfig['subject'] ?? env('VAPID_SUBJECT', 'mailto:admin@example.com'),
+					'publicKey' => $vapidConfig['public_key'],
+					'privateKey' => $vapidConfig['private_key'],
 				),
 			);
 			$select1 = DB::table('push_notification')->select('*')->whereIn('user_id', [$booking->user_id])->get()->toArray();

@@ -7,6 +7,7 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
  */
 namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
+use App\Enums\BookingStatus;
 use App\Mail\DriverBooked;
 use App\Mail\VehicleBooked;
 use App\Model\Address;
@@ -49,7 +50,7 @@ class BookingsApiController extends Controller {
 		} else {
 			$xx = $this->check_edit_booking($request->pickup_datetime, $request->dropoff_datetime, $request->vehicle_id, $request->id);
 			if ($xx) {
-				Bookings::where('id', $request->id)->update([
+                Bookings::where('id', $request->id)->update([
 					'vehicle_id' => $request->vehicle_id,
 					'user_id' => Auth::id(),
 					'pickup' => date('Y-m-d H:i:s', strtotime($request->pickup_datetime)),
@@ -57,7 +58,7 @@ class BookingsApiController extends Controller {
 					'pickup_addr' => $request->pickup_addr,
 					'dest_addr' => $request->dest_addr,
 					'travellers' => $request->travellers,
-					'status' => 0,
+                    'status' => BookingStatus::Pending,
 					// 'driver_id' => $request->driver_id,
 					'note' => $request->note,
 				]);
@@ -104,7 +105,7 @@ class BookingsApiController extends Controller {
 		} else {
 			$xx = $this->check_booking($request->pickup_datetime, $request->dropoff_datetime, $request->vehicle_id);
 			if ($xx) {
-				$booking = Bookings::create([
+                $booking = Bookings::create([
 					'customer_id' => $request->customer_id,
 					'vehicle_id' => $request->vehicle_id,
 					'user_id' => Auth::id(),
@@ -113,7 +114,7 @@ class BookingsApiController extends Controller {
 					'pickup_addr' => $request->pickup_addr,
 					'dest_addr' => $request->dest_addr,
 					'travellers' => $request->travellers,
-					'status' => 0,
+                    'status' => BookingStatus::Pending,
 					// 'driver_id' => $request->driver_id,
 					'note' => $request->note,
 				]);
@@ -189,20 +190,30 @@ class BookingsApiController extends Controller {
 			$booking = Bookings::find($id);
 			$pickup = $request->pickup_datetime;
 			$dropoff = $request->dropoff_datetime;
-			$exclude_vehicle_ids = Bookings::where('id', '!=', $id)->where("status", 0)
-				->where(function ($query) use ($pickup, $dropoff) {
-					$query->whereBetween('pickup', [$pickup, $dropoff])
-						->orWhereBetween('dropoff', [$pickup, $dropoff]);
-				})
-				->pluck('vehicle_id')
-				->toArray();
-			$exclude_driver_ids = Bookings::where('id', '!=', $id)->where("status", 0)
-				->where(function ($query) use ($pickup, $dropoff) {
-					$query->whereBetween('pickup', [$pickup, $dropoff])
-						->orWhereBetween('dropoff', [$pickup, $dropoff]);
-				})
-				->pluck('driver_id')
-				->toArray();
+        $exclude_vehicle_ids = Bookings::whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress])
+                ->whereNull('deleted_at')
+                ->where(function ($query) use ($pickup, $dropoff) {
+                    $query->whereBetween('pickup', [$pickup, $dropoff])
+                        ->orWhereBetween('dropoff', [$pickup, $dropoff])
+                        ->orWhere(function ($qq) use ($pickup, $dropoff) {
+                            $qq->where('pickup', '<', $pickup)
+                               ->where('dropoff', '>', $dropoff);
+                        });
+                })
+                ->pluck('vehicle_id')
+                ->toArray();
+            $exclude_driver_ids = Bookings::whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress])
+                ->whereNull('deleted_at')
+                ->where(function ($query) use ($pickup, $dropoff) {
+                    $query->whereBetween('pickup', [$pickup, $dropoff])
+                        ->orWhereBetween('dropoff', [$pickup, $dropoff])
+                        ->orWhere(function ($qq) use ($pickup, $dropoff) {
+                            $qq->where('pickup', '<', $pickup)
+                               ->where('dropoff', '>', $dropoff);
+                        });
+                })
+                ->pluck('driver_id')
+                ->toArray();
 			$vehicle_list = VehicleModel::whereNotIn('id', $exclude_vehicle_ids)->where('in_service', 1);
 			$drivers = User::whereNotIn('id', $exclude_driver_ids)->where('user_type', 'D')->get();
 			if ($booking != null && $booking->vehicle_typeid != null) {
@@ -257,20 +268,30 @@ class BookingsApiController extends Controller {
 			$booking = Bookings::find($id);
 			$pickup = $booking->pickup;
 			$dropoff = $booking->dropoff;
-			$exclude_vehicle_ids = Bookings::where('id', '!=', $id)->where("status", 0)
-				->where(function ($query) use ($pickup, $dropoff) {
-					$query->whereBetween('pickup', [$pickup, $dropoff])
-						->orWhereBetween('dropoff', [$pickup, $dropoff]);
-				})
-				->pluck('vehicle_id')
-				->toArray();
-			$exclude_driver_ids = Bookings::where('id', '!=', $id)->where("status", 0)
-				->where(function ($query) use ($pickup, $dropoff) {
-					$query->whereBetween('pickup', [$pickup, $dropoff])
-						->orWhereBetween('dropoff', [$pickup, $dropoff]);
-				})
-				->pluck('driver_id')
-				->toArray();
+            $exclude_vehicle_ids = Bookings::whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress])
+                ->whereNull('deleted_at')
+                ->where(function ($query) use ($pickup, $dropoff) {
+                    $query->whereBetween('pickup', [$pickup, $dropoff])
+                        ->orWhereBetween('dropoff', [$pickup, $dropoff])
+                        ->orWhere(function ($qq) use ($pickup, $dropoff) {
+                            $qq->where('pickup', '<', $pickup)
+                               ->where('dropoff', '>', $dropoff);
+                        });
+                })
+                ->pluck('vehicle_id')
+                ->toArray();
+            $exclude_driver_ids = Bookings::whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress])
+                ->whereNull('deleted_at')
+                ->where(function ($query) use ($pickup, $dropoff) {
+                    $query->whereBetween('pickup', [$pickup, $dropoff])
+                        ->orWhereBetween('dropoff', [$pickup, $dropoff])
+                        ->orWhere(function ($qq) use ($pickup, $dropoff) {
+                            $qq->where('pickup', '<', $pickup)
+                               ->where('dropoff', '>', $dropoff);
+                        });
+                })
+                ->pluck('driver_id')
+                ->toArray();
 			$vehicle_list = VehicleModel::whereNotIn('id', $exclude_vehicle_ids)->where('in_service', 1);
 			$drivers = User::whereNotIn('id', $exclude_driver_ids)->where('user_type', 'D')->get();
 			// dd($driver_list);
@@ -801,28 +822,26 @@ class BookingsApiController extends Controller {
 				->send();
 		}
 	}
-	protected function check_edit_booking($pickup, $dropoff, $vehicle, $id) {
-		$chk = Bookings::where('id', '!=', $id)->where("status", 0)->where('vehicle_id', $vehicle)
-			->where(function ($query) use ($pickup, $dropoff) {
-				$query->whereBetween('pickup', [$pickup, $dropoff])
-					->orWhereBetween('dropoff', [$pickup, $dropoff]);
-			})
-			->get();
-		// dd($chk);
-		if (count($chk) > 0) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-	protected function check_booking($pickup, $dropoff, $vehicle) {
-		$chk = Bookings::where("status", 0)->where('vehicle_id', $vehicle)->whereBetween('pickup', [$pickup, $dropoff])->orWhereBetween('dropoff', [$pickup, $dropoff])->get();
-		if (count($chk) > 0) {
-			return false;
-		} else {
-			return true;
-		}
-	}
+    protected function check_edit_booking($pickup, $dropoff, $vehicle, $id) {
+        $conflicts = Bookings::where('id', '!=', $id)
+            ->overlappingActive(
+                (string)$vehicle,
+                Carbon::parse($pickup),
+                Carbon::parse($dropoff),
+                [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress]
+            )
+            ->count();
+        return $conflicts === 0;
+    }
+    protected function check_booking($pickup, $dropoff, $vehicle) {
+        $conflicts = Bookings::overlappingActive(
+            (string)$vehicle,
+            Carbon::parse($pickup),
+            Carbon::parse($dropoff),
+            [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress]
+        )->count();
+        return $conflicts === 0;
+    }
 	public function bookings() {
 		if (Auth::user()->user_type == "C") {
 			$records = Bookings::where('customer_id', Auth::user()->id)->orderBy('id', 'desc')->get();

@@ -192,7 +192,7 @@ class BookingsController extends Controller {
 				})
 				->filterColumn('vehicle', function ($query, $keyword) {
 					$query->whereRaw("CONCAT(vehicles.make_name , '-' , vehicles.model_name , '-' , vehicles.license_plate) like ?", ["%$keyword%"])
-						->orWhereRaw("(vehicle_types.displayname like ? and bookings.vehicle_id IS NULL)", ["%$keyword%"]);
+						->orWhereRaw("(vehicle_types.display_name like ? and bookings.vehicle_id IS NULL)", ["%$keyword%"]);
 					return $query;
 				})
 				->filterColumn('ride_status', function ($query, $keyword) {

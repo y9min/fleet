@@ -60,17 +60,45 @@ class Bookings extends BaseUuidModel {
 		$statuses = !empty($activeStatuses)
 			? $activeStatuses
 			: [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress];
+		
+		// Ensure start and end are Carbon instances for proper comparison
+		if (!$start instanceof \Carbon\Carbon) {
+			$start = \Carbon\Carbon::parse($start);
+		}
+		if (!$end instanceof \Carbon\Carbon) {
+			$end = \Carbon\Carbon::parse($end);
+		}
+		
 		return $query
 			->whereIn('status', array_map(fn(BookingStatus $s) => $s->value, $statuses))
 			->where('vehicle_id', $vehicleId)
 			->whereNull('deleted_at')
+			->where(function ($q) {
+				// Exclude cancelled bookings - check cancellation field (0/null/false = not cancelled, 1/true = cancelled)
+				$q->where(function ($qq) {
+					$qq->where('cancellation', '=', 0)
+						->orWhere('cancellation', '=', false)
+						->orWhereNull('cancellation');
+				});
+			})
 			->where(function ($q) use ($start, $end) {
-				$q->whereBetween('pickup', [$start, $end])
-					->orWhereBetween('dropoff', [$start, $end])
-					->orWhere(function ($qq) use ($start, $end) {
-						$qq->where('pickup', '<', $start)
-							->where('dropoff', '>', $end);
-					});
+				// Check for any time overlap
+				$q->where(function ($qq) use ($start, $end) {
+					// New booking starts during existing booking (pickup between start and end)
+					$qq->whereBetween('pickup', [$start, $end])
+						// Or new booking ends during existing booking (dropoff between start and end)
+						->orWhereBetween('dropoff', [$start, $end])
+						// Or existing booking completely contains new booking (existing starts before and ends after)
+						->orWhere(function ($qqq) use ($start, $end) {
+							$qqq->where('pickup', '<=', $start)
+								->where('dropoff', '>=', $end);
+						})
+						// Or new booking completely contains existing booking (new starts before and ends after)
+						->orWhere(function ($qqq) use ($start, $end) {
+							$qqq->where('pickup', '>=', $start)
+								->where('dropoff', '<=', $end);
+						});
+				});
 			});
 	}
 

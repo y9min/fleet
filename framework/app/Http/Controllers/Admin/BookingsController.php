@@ -1458,14 +1458,36 @@ public function assign_driver($id)
     return redirect()->route('invitations.index')->with('success', 'Booking deleted successfully.');
 }
     protected function check_booking($pickup, $dropoff, $vehicle) {
-        // Use model scope with proper enum filtering and overlap logic
-        $conflicts = Bookings::overlappingActive(
-            (string)$vehicle,
-            Carbon::parse($pickup),
-            Carbon::parse($dropoff),
-            [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::InProgress]
-        )->count();
-        return $conflicts === 0;
+        // Simple check: only verify vehicle status is "Available" and in_service
+        $vehicleModel = VehicleModel::find($vehicle);
+        
+        if (!$vehicleModel) {
+            return false;
+        }
+        
+        // Check if vehicle is in service
+        if (!$vehicleModel->in_service) {
+            \Log::info('Vehicle not available - not in service', [
+                'vehicle_id' => $vehicle,
+                'in_service' => $vehicleModel->in_service
+            ]);
+            return false;
+        }
+        
+        // Check vehicle status from metadata (Available, Rented, Workshop, Disabled)
+        $vehicleStatus = $vehicleModel->getMeta('vehicle_status') ?: 'Available';
+        
+        if ($vehicleStatus !== 'Available') {
+            \Log::info('Vehicle not available - status check', [
+                'vehicle_id' => $vehicle,
+                'status' => $vehicleStatus,
+                'required_status' => 'Available'
+            ]);
+            return false;
+        }
+        
+        // Vehicle is available
+        return true;
     }
     public function store(BookingRequest $request) {
         $max_seats = VehicleModel::find($request->get('vehicle_id'))->types->seats;

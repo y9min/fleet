@@ -935,8 +935,7 @@ input:checked + .slider:before {
                         Onboarding Details
                     @elseif(Request::is('admin/vehicle-types*'))
                         Vehicle Types
-                    @elseif(Request::is('admin/vehicle_group*'))
-                        Vehicle Groups
+                    
                     @elseif(Route::currentRouteName() == "vehicle_inspection")
                         Vehicle Inspection
                     @elseif(Request::is('admin/income*'))
@@ -994,7 +993,7 @@ input:checked + .slider:before {
                         <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
                             <a href="{{route('vehicles.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Vehicles</a>
-                            <a href="{{url('admin/vehicle_group')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a>
+                            
                             <a href="{{url('admin/vehicle-inspection')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-clipboard-check"></i> Vehicle Inspection</a>
                         </div>
                     </div>

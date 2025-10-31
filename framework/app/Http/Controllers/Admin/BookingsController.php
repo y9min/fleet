@@ -98,6 +98,7 @@ class BookingsController extends Controller {
 			// Pre-process notification data for JavaScript
 			$data['pnotifyTitle'] = '';
 			$data['pnotifyText'] = '';
+			$data['showNotification'] = false;
 			if(Session::has('msg')) {
 				$msg = Session::get('msg');
 				if(strpos($msg, 'Vehicle Pickup Invitation') !== false) {
@@ -107,6 +108,7 @@ class BookingsController extends Controller {
 					$data['pnotifyTitle'] = 'Success!';
 					$data['pnotifyText'] = $msg;
 				}
+				$data['showNotification'] = true;
 			}
 			
 			\Log::info('[Invitations Index] Data prepared, rendering view', [

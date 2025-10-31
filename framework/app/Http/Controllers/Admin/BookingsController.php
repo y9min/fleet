@@ -1730,15 +1730,24 @@ public function assign_driver($id)
 		// dd($y);
 	}
 	public function push_notification($id) {
-		$booking = Bookings::find($id);
-		$auth = array(
-			'VAPID' => array(
-				'subject' => 'Alert about new post',
-				'publicKey' => 'BKt+swntut+5W32Psaggm4PVQanqOxsD5PRRt93p+/0c+7AzbWl87hFF184AXo/KlZMazD5eNb1oQVNbK1ti46Y=',
-				'privateKey' => 'NaMmQJIvddPfwT1rkIMTlgydF+smNzNXIouzRMzc29c=', // in the real world, this would be in a secret file
-			),
-		);
-		$select1 = DB::table('push_notification')->select('*')->whereIn('user_id', [$booking->user_id])->get()->toArray();
+		try {
+			$booking = Bookings::find($id);
+			$auth = array(
+				'VAPID' => array(
+					'subject' => 'Alert about new post',
+					'publicKey' => 'BKt+swntut+5W32Psaggm4PVQanqOxsD5PRRt93p+/0c+7AzbWl87hFF184AXo/KlZMazD5eNb1oQVNbK1ti46Y=',
+					'privateKey' => 'NaMmQJIvddPfwT1rkIMTlgydF+smNzNXIouzRMzc29c=', // in the real world, this would be in a secret file
+				),
+			);
+			$select1 = DB::table('push_notification')->select('*')->whereIn('user_id', [$booking->user_id])->get()->toArray();
+		} catch (\Exception $e) {
+			// Table doesn't exist or other database error - log and continue without push notification
+			\Log::warning('Push notification table not available', [
+				'booking_id' => $id,
+				'error' => $e->getMessage()
+			]);
+			return;
+		}
 		$webPush = new WebPush($auth);
 		foreach ($select1 as $fetch) {
 			$sub = Subscription::create([

@@ -1524,19 +1524,20 @@ public function assign_driver($id)
                 
                 // Handle onboarding driver selection
                 $driverId = $request->get('driver_id');
+                $onboardingDriverId = null;
+                $onboardingDriverEmail = null;
+                $onboardingDriverName = null;
+                
                 if (strpos($driverId, 'onboarding_') === 0) {
                     // Extract onboarding driver ID
                     $onboardingDriverId = str_replace('onboarding_', '', $driverId);
                     $onboardingDriver = \App\OnboardingDriver::find($onboardingDriverId);
                     
                     if ($onboardingDriver) {
-                        // Store onboarding driver info in booking metadata
-                        $payload['driver_id'] = null; // Clear the onboarding driver ID
-                        $payload['onboarding_driver_id'] = $onboardingDriverId;
-                        $payload['onboarding_driver_name'] = $onboardingDriver->name;
-                        $payload['onboarding_driver_email'] = $onboardingDriver->email;
-                        $payload['onboarding_driver_phone'] = $onboardingDriver->phone;
-                        $payload['onboarding_driver_status'] = $onboardingDriver->status;
+                        // Clear the driver_id for onboarding drivers
+                        $payload['driver_id'] = null;
+                        $onboardingDriverEmail = $onboardingDriver->email;
+                        $onboardingDriverName = $onboardingDriver->name;
                     }
                 }
                 
@@ -1548,11 +1549,16 @@ public function assign_driver($id)
 				$booking->user_id = $request->get("user_id");
 				
 				// Handle driver assignment for onboarding drivers
-				$driverId = $request->get('driver_id');
-				if (strpos($driverId, 'onboarding_') === 0) {
+				if ($onboardingDriverId && $onboardingDriver) {
 					// For onboarding drivers, we don't set driver_id in the main booking
 					// The onboarding driver info is stored in the booking metadata
 					$booking->driver_id = null;
+					// Save onboarding driver metadata using setMeta
+					$booking->setMeta('onboarding_driver_id', $onboardingDriverId);
+					$booking->setMeta('onboarding_driver_name', $onboardingDriver->name);
+					$booking->setMeta('onboarding_driver_email', $onboardingDriver->email);
+					$booking->setMeta('onboarding_driver_phone', $onboardingDriver->phone);
+					$booking->setMeta('onboarding_driver_status', $onboardingDriver->status);
 				} else {
 					$booking->driver_id = $driverId;
 				}
@@ -1572,8 +1578,8 @@ public function assign_driver($id)
                 $booking->total_kms = "0";
 				$booking->save();
 				
-				// Reload booking with relationships for email sending
-				$booking = Bookings::with(['driver', 'customer', 'vehicle'])->find($booking->id);
+				// Reload booking with relationships and metas for email sending
+				$booking = Bookings::with(['driver', 'customer', 'vehicle', 'metas'])->find($booking->id);
 				
 				if(isset($request->booking_type) && $request->booking_type  == "return_way")
 				{

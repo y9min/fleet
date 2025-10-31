@@ -85,9 +85,45 @@ class BookingsController extends Controller {
 		}
 	}
 	public function index() {
-		$data['types'] = IncCats::get();
-		$data['reasons'] = ReasonsModel::get();
-		return view("bookings.index", $data);
+		try {
+			\Log::info('[Invitations Index] Starting view render', [
+				'user_id' => Auth::id(),
+				'user_type' => Auth::user()->user_type ?? 'unknown'
+			]);
+			
+			$data['types'] = IncCats::get();
+			$data['reasons'] = ReasonsModel::get();
+			
+			// Pre-process notification data for JavaScript
+			$data['pnotifyTitle'] = '';
+			$data['pnotifyText'] = '';
+			if(Session::has('msg')) {
+				$msg = Session::get('msg');
+				if(strpos($msg, 'Vehicle Pickup Invitation') !== false) {
+					$data['pnotifyTitle'] = 'Vehicle Pickup Invitation Successfully Sent';
+					$data['pnotifyText'] = 'An email has been sent to the driver with all pickup details.';
+				} else {
+					$data['pnotifyTitle'] = 'Success!';
+					$data['pnotifyText'] = $msg;
+				}
+			}
+			
+			\Log::info('[Invitations Index] Data prepared, rendering view', [
+				'types_count' => $data['types']->count(),
+				'reasons_count' => $data['reasons']->count(),
+				'has_notification' => !empty($data['pnotifyTitle'])
+			]);
+			
+			return view("bookings.index", $data);
+		} catch (\Throwable $e) {
+			\Log::error('[Invitations Index] Error rendering view', [
+				'error' => $e->getMessage(),
+				'trace' => $e->getTraceAsString(),
+				'file' => $e->getFile(),
+				'line' => $e->getLine()
+			]);
+			throw $e;
+		}
 	}
 	public function fetch_data(Request $request) {
 		if ($request->ajax()) {

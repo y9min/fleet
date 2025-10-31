@@ -2,19 +2,7 @@
 
 @php($date_format_setting=(Hyvikk::get('date_format'))?Hyvikk::get('date_format'):'d-m-Y')
 @php
-  $pnotifyTitle = '';
-  $pnotifyText = '';
-  if(Session::has('msg')) {
-    $msg = Session::get('msg');
-    // Check if this is the pickup invitation success message
-    if(strpos($msg, 'Vehicle Pickup Invitation') !== false) {
-      $pnotifyTitle = 'Vehicle Pickup Invitation Successfully Sent';
-      $pnotifyText = 'An email has been sent to the driver with all pickup details.';
-    } else {
-      $pnotifyTitle = 'Success!';
-      $pnotifyText = $msg;
-    }
-  }
+  $showNotification = isset($pnotifyTitle) && !empty($pnotifyTitle);
 @endphp
 @section('extra_css')
 <link rel="stylesheet" href="{{asset('assets/css/bootstrap-datepicker.min.css')}}">
@@ -363,13 +351,20 @@
 
 @section("script")
 <script type="text/javascript">
-  @if(!empty($pnotifyTitle))
+  console.log('[Invitations] Script section loaded');
+  console.log('[Invitations] pnotifyTitle:', '{{ isset($pnotifyTitle) ? addslashes($pnotifyTitle) : 'NOT SET' }}');
+  console.log('[Invitations] pnotifyText:', '{{ isset($pnotifyText) ? addslashes($pnotifyText) : 'NOT SET' }}');
+  console.log('[Invitations] showNotification:', {{ $showNotification ? 'true' : 'false' }});
+  
+  @if($showNotification)
     new PNotify({
-        title: '{{ $pnotifyTitle }}',
-        text: '{{ $pnotifyText }}',
+        title: '{{ addslashes($pnotifyTitle) }}',
+        text: '{{ addslashes($pnotifyText) }}',
         type: 'success',
         delay: 5000
       });
+  @else
+    console.log('[Invitations] No notification to show');
   @endif
 
   $(document).ready(function() {

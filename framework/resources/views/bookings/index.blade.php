@@ -346,23 +346,28 @@
 <!-- generate invoice modal -->
 @endsection
 
+@php
+  $pnotifyTitle = '';
+  $pnotifyText = '';
+  if(Session::has('msg')) {
+    $msg = Session::get('msg');
+    // Check if this is the pickup invitation success message
+    if(strpos($msg, 'Vehicle Pickup Invitation') !== false) {
+      $pnotifyTitle = 'Vehicle Pickup Invitation Successfully Sent';
+      $pnotifyText = 'An email has been sent to the driver with all pickup details.';
+    } else {
+      $pnotifyTitle = 'Success!';
+      $pnotifyText = $msg;
+    }
+  }
+@endphp
+
 @section("script")
 <script type="text/javascript">
-  @if(Session::get('msg'))
-    @php
-      $msg = Session::get('msg');
-      // Check if this is the pickup invitation success message
-      if(strpos($msg, 'Vehicle Pickup Invitation') !== false) {
-        $title = 'Vehicle Pickup Invitation Successfully Sent';
-        $text = 'An email has been sent to the driver with all pickup details.';
-      } else {
-        $title = 'Success!';
-        $text = $msg;
-      }
-    @endphp
+  @if(!empty($pnotifyTitle))
     new PNotify({
-        title: '{{ $title }}',
-        text: '{{ $text }}',
+        title: '{{ $pnotifyTitle }}',
+        text: '{{ $pnotifyText }}',
         type: 'success',
         delay: 5000
       });

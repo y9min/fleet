@@ -1954,7 +1954,7 @@ class VehiclesController extends Controller {
                                         return view('vehicles.vehicle_review_index_list_actions', ['row' => $vehicle]);
                                 })
                                 ->filterColumn('vehicle', function ($query, $keyword) {
-                                        $query->whereRaw("CONCAT(vehicles.make_name , '-' , vehicles.model_name , '-' , vehicle_types.displayname) like ?", ["%$keyword%"]);
+                                        $query->whereRaw("CONCAT(vehicles.make_name , '-' , vehicles.model_name , '-' , vehicle_types.display_name) like ?", ["%$keyword%"]);
                                         return $query;
                                 })
                                 ->addIndexColumn()

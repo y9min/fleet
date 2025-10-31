@@ -24,11 +24,17 @@ class PushNotification extends Command {
 	private function push_notification() {
 		$date_format_setting = (Hyvikk::get('date_format')) ? Hyvikk::get('date_format') : 'd-m-Y';
 
+		// Use environment variables for VAPID keys instead of hardcoded values
+		$vapidConfig = config('webpush.vapid');
+		if (!$vapidConfig['public_key'] || !$vapidConfig['private_key']) {
+			$this->warn('VAPID keys not configured, skipping push notifications');
+			return;
+		}
 		$auth = array(
 			'VAPID' => array(
-				'subject' => 'Alert about new post',
-				'publicKey' => 'BKt+swntut+5W32Psaggm4PVQanqOxsD5PRRt93p+/0c+7AzbWl87hFF184AXo/KlZMazD5eNb1oQVNbK1ti46Y=',
-				'privateKey' => 'NaMmQJIvddPfwT1rkIMTlgydF+smNzNXIouzRMzc29c=', // in the real world, this would be in a secret file
+				'subject' => $vapidConfig['subject'] ?? env('VAPID_SUBJECT', 'mailto:admin@example.com'),
+				'publicKey' => $vapidConfig['public_key'],
+				'privateKey' => $vapidConfig['private_key'],
 			),
 		);
 

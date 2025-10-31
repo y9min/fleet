@@ -1,9 +1,6 @@
 @extends('layouts.app')
 
 @php($date_format_setting=(Hyvikk::get('date_format'))?Hyvikk::get('date_format'):'d-m-Y')
-@php
-  $showNotification = isset($pnotifyTitle) && !empty($pnotifyTitle);
-@endphp
 @section('extra_css')
 <link rel="stylesheet" href="{{asset('assets/css/bootstrap-datepicker.min.css')}}">
 <style type="text/css">
@@ -352,11 +349,11 @@
 @section("script")
 <script type="text/javascript">
   console.log('[Invitations] Script section loaded');
-  console.log('[Invitations] pnotifyTitle:', '{{ isset($pnotifyTitle) ? addslashes($pnotifyTitle) : 'NOT SET' }}');
-  console.log('[Invitations] pnotifyText:', '{{ isset($pnotifyText) ? addslashes($pnotifyText) : 'NOT SET' }}');
-  console.log('[Invitations] showNotification:', {{ $showNotification ? 'true' : 'false' }});
+  console.log('[Invitations] pnotifyTitle:', '{{ !empty($pnotifyTitle) ? addslashes($pnotifyTitle) : 'NOT SET' }}');
+  console.log('[Invitations] pnotifyText:', '{{ !empty($pnotifyText) ? addslashes($pnotifyText) : 'NOT SET' }}');
+  console.log('[Invitations] showNotification:', {{ isset($showNotification) && $showNotification ? 'true' : 'false' }});
   
-  @if($showNotification)
+  @if(isset($showNotification) && $showNotification)
     new PNotify({
         title: '{{ addslashes($pnotifyTitle) }}',
         text: '{{ addslashes($pnotifyText) }}',

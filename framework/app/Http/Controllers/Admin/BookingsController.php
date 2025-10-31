@@ -34,6 +34,7 @@ use DB;
 use Edujugon\PushNotification\PushNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 use Illuminate\Support\Facades\Http;

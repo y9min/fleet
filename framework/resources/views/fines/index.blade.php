@@ -474,11 +474,31 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr, status, error) {
-                console.error('AJAX error:', { xhr, status, error });
+                console.error('AJAX error:', { xhr, status, error, responseText: xhr.responseText });
+                let errorMessage = 'Failed to update status. Please try again.';
+                
+                // Try to extract error message from response
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    }
+                }
+                
+                // Log full error details for debugging
+                if (xhr.status === 403) {
+                    errorMessage = 'You do not have permission to update fine status.';
+                } else if (xhr.status === 404) {
+                    errorMessage = 'Fine not found.';
+                } else if (xhr.status === 500) {
+                    errorMessage = errorMessage || 'Server error occurred. Please try again.';
+                }
+                
                 if (typeof toastr !== 'undefined') {
-                    toastr.error('Failed to update status. Please try again.');
+                    toastr.error(errorMessage);
                 } else {
-                    alert('Failed to update status. Please try again.');
+                    alert(errorMessage);
                 }
             }
         });

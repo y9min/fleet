@@ -29,6 +29,7 @@ use Auth;
 use Carbon\Carbon;
 use DataTables;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -224,17 +225,32 @@ class VehiclesController extends Controller {
 
                 // Already handled Boss-without-company above
                 
-                // Get filter data
-                $groups = \App\Model\VehicleGroupModel::where('deleted_at', null)->get();
-                $vehicle_types = \App\Model\VehicleTypeModel::where('deleted_at', null)->get();
+                // Get filter data - Cache static reference data for 15 minutes
+                $auth = Auth::user();
+                $cacheKeyGroups = 'vehicle_groups_' . ($auth->company_id ?? 'all');
+                $groups = Cache::remember($cacheKeyGroups, 900, function() {
+                    return \App\Model\VehicleGroupModel::where('deleted_at', null)->get();
+                });
                 
-                // Get all available drivers for dropdown
-                $drivers = User::where('user_type', 'D')
-                        ->whereHas('metas', function($query) {
-                                $query->where('key', 'is_active')
-                                      ->where('value', '1');
-                        })
-                        ->get();
+                $cacheKeyTypes = 'vehicle_types_' . ($auth->company_id ?? 'all');
+                $vehicle_types = Cache::remember($cacheKeyTypes, 900, function() {
+                    return \App\Model\VehicleTypeModel::where('deleted_at', null)->get();
+                });
+                
+                // Get all available drivers for dropdown - Cache for 5 minutes (drivers change more frequently)
+                $cacheKeyDrivers = 'active_drivers_' . ($auth->company_id ?? 'all');
+                $drivers = Cache::remember($cacheKeyDrivers, 300, function() use ($auth) {
+                    $query = User::where('user_type', 'D')
+                            ->whereHas('metas', function($q) {
+                                $q->where('key', 'is_active')
+                                  ->where('value', '1');
+                            });
+                    // Company scoping for drivers
+                    if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+                        $query->where('company_id', $auth->company_id);
+                    }
+                    return $query->get();
+                });
                 
                 // Debug: Log the vehicles data structure
                 \Log::info('Vehicles loaded for index:', [
@@ -647,7 +663,7 @@ class VehiclesController extends Controller {
                                                 ->where('vehicles.company_id', $user->company_id)
                                                 ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                                                 ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
-                                                ->with('types', 'company'); // Load vehicle types and company relationship
+                                                ->with(['types', 'company', 'group']); // Load vehicle types, company, and group relationships
                                 }
                         } elseif ($user->getRawOriginal('user_type') == "S" || $user->getRawOriginal('user_type') == "O") {
                                 // Super/Office Admin - require company_id, else none
@@ -658,7 +674,7 @@ class VehiclesController extends Controller {
                                                 ->where('vehicles.company_id', $user->company_id)
                                                 ->leftJoin('driver_vehicle', 'driver_vehicle.vehicle_id', '=', 'vehicles.id')
                                                 ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
-                                                ->with('types', 'company'); // Load vehicle types and company relationship
+                                                ->with(['types', 'company', 'group']); // Load vehicle types, company, and group relationships
                                 }
                         } else {
                                 // Driver - see only assigned vehicles
@@ -711,13 +727,21 @@ class VehiclesController extends Controller {
                         $vehicles = $vehicles->groupBy('vehicles.id')->get();
                         
                         try {
+                                // Optimize: Load all metadata in a single query instead of N+1 queries
+                                $vehicleIds = $vehicles->pluck('id')->toArray();
+                                $allMetas = collect();
+                                if (!empty($vehicleIds)) {
+                                        $allMetas = DB::table('vehicles_meta')
+                                                ->whereIn('vehicle_id', $vehicleIds)
+                                                ->get()
+                                                ->groupBy('vehicle_id');
+                                }
+                                
                                 // Process each vehicle to match the frontend expectations
                                 $processedVehicles = [];
                                 foreach ($vehicles as $vehicle) {
-                                        // Get vehicle metadata
-                                        $metas = DB::table('vehicles_meta')
-                                                ->where('vehicle_id', $vehicle->id)
-                                                ->get();
+                                        // Get vehicle metadata from pre-loaded collection
+                                        $metas = $allMetas->get($vehicle->id, collect());
                                         
                                         // Convert metas to array format expected by frontend
                                         $metaArray = [];

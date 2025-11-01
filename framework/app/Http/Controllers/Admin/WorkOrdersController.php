@@ -54,7 +54,7 @@ class WorkOrdersController extends Controller {
 			}
 			$work_orders = WorkOrders::select('work_orders.*')->whereIn('vehicle_id', $vehicle_ids)->orderBy('id', 'desc')
 				->leftJoin('vehicles', 'work_orders.vehicle_id', '=', 'vehicles.id')
-				->with(['mechanic', 'vendor', 'parts']);
+				->with(['mechanic', 'vendor', 'parts', 'vehicle']);
 			$date_format_setting = (Hyvikk::get('date_format')) ? Hyvikk::get('date_format') : 'd-m-Y';
 			return DataTables::eloquent($work_orders)
 				->addColumn('check', function ($work_order) {

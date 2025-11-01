@@ -46,6 +46,21 @@ class VehicleGroupController extends Controller {
 					})->distinct();
 				}
 				
+				// Optimize: Use withCount to get counts in a single query instead of N+1 queries
+				// Count vehicles with deleted_at null
+				$vehicle_groups->withCount([
+					'group as vehicle_count' => function ($query) {
+						$query->whereNull('deleted_at');
+					}
+				]);
+				
+				// Count users with group_id matching and deleted_at null
+				$vehicle_groups->withCount([
+					'users as user_count' => function ($query) {
+						$query->whereNull('deleted_at');
+					}
+				]);
+				
 				// Debug: Log the query results
 				$groups_data = $vehicle_groups->get();
 				\Log::info('Vehicle Groups query results', [
@@ -58,14 +73,12 @@ class VehicleGroupController extends Controller {
 						return '<input type="checkbox" name="ids[]" value="' . $vehicle->id . '" class="checkbox" id="chk' . $vehicle->id . '">';
 					})
 					->addColumn('vehicle_count', function ($vehicle) {
-						$v = DB::table('vehicles')
-							->where('group_id', $vehicle->id)->where('deleted_at', null)
-							->count('group_id');
-						return $v;
+						// Use the pre-calculated count from withCount
+						return $vehicle->vehicle_count ?? 0;
 					})
 					->addColumn('user_count', function ($vehicle) {
-						$v = DB::table('users')->where('group_id', $vehicle->id)->where('deleted_at', null)->count('group_id');
-						return $v;
+						// Use the pre-calculated count from withCount
+						return $vehicle->user_count ?? 0;
 					})
 					->addColumn('action', function ($vehicle) {
 						return view('vehicle_groups.list-actions', ['row' => $vehicle]);

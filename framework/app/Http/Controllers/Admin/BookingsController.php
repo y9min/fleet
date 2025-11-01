@@ -33,6 +33,7 @@ use DataTables;
 use DB;
 use Edujugon\PushNotification\PushNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Minishlink\WebPush\Subscription;
@@ -158,7 +159,38 @@ class BookingsController extends Controller {
 					$join->on(DB::raw("CAST(bookings_meta.value AS uuid)"), '=', 'vehicle_types.id');
 				})
 				->with(['customer', 'driver', 'metas']);
+			
+			// Optimize: Pre-load parent bookings and vehicle types to avoid N+1 queries
+			// Cache vehicle types for 15 minutes (static reference data)
+			$vehicleTypesCache = Cache::remember('vehicle_types_all', 900, function() {
+				return VehicleTypeModel::all()->keyBy('id');
+			});
+			
+			// We'll collect parent IDs and batch load them
+			$parentBookingsCache = [];
+			
 			return DataTables::eloquent($bookings)
+				->filter(function($query) use (&$parentBookingsCache) {
+					// After the query executes, collect all unique parent booking IDs from the current page
+					$result = $query->get();
+					$parentIds = [];
+					foreach ($result as $row) {
+						if ($row->getMeta('return_flag') == 1) {
+							$parentId = $row->getMeta('parent_booking_id');
+							if ($parentId) {
+								$parentIds[] = $parentId;
+							}
+						}
+					}
+					
+					// Batch load all parent bookings in one query
+					if (!empty($parentIds)) {
+						$parentBookingsCache = Bookings::whereIn('id', array_unique($parentIds))
+							->pluck('id')
+							->flip()
+							->toArray();
+					}
+				})
 				->addColumn('customer', function ($row) {
 					return ($row->customer->name) ?? "";
 				})
@@ -177,18 +209,14 @@ class BookingsController extends Controller {
 				->addColumn('ride_status', function ($row) {
 					return ($row->getMeta('ride_status')) ?? "";
 				})
-				->addColumn('return_booking', function ($row) {
+				->addColumn('return_booking', function ($row) use ($parentBookingsCache) {
 					if($row->getMeta('return_flag') == 1)
 					{
-						$b=Bookings::where('id',$row->getMeta('parent_booking_id'))->first();
-						if(isset($b))
-						{
+						$parentId = $row->getMeta('parent_booking_id');
+						if($parentId && isset($parentBookingsCache[$parentId])) {
 							return url('/assets/customer_dashboard/assets/img/return_way.svg');
 						}
-						else
-						{
-							return url('/assets/customer_dashboard/assets/img/one_way.svg');
-						}
+						return url('/assets/customer_dashboard/assets/img/one_way.svg');
 					}
 					else
 					{
@@ -252,9 +280,11 @@ class BookingsController extends Controller {
 				->editColumn('tax_total', function ($row) {
 					return ($row->tax_total) ? Hyvikk::get('currency') . " " . $row->tax_total : "";
 				})
-				->addColumn('vehicle', function ($row) {
-					$vehicle_type = VehicleTypeModel::find($row->getMeta('vehicle_typeid'));
-					return !empty($row->vehicle_id) ? $row->vehicle->make_name . '-' . $row->vehicle->model_name . '-' . $row->vehicle->license_plate : ($vehicle_type->displayname) ?? "";
+				->addColumn('vehicle', function ($row) use ($vehicleTypesCache) {
+					// Use cached vehicle type instead of querying database
+					$vehicleTypeId = $row->getMeta('vehicle_typeid');
+					$vehicle_type = $vehicleTypeId ? $vehicleTypesCache->get($vehicleTypeId) : null;
+					return !empty($row->vehicle_id) ? $row->vehicle->make_name . '-' . $row->vehicle->model_name . '-' . $row->vehicle->license_plate : ($vehicle_type->displayname ?? "");
 				})
 				->filterColumn('vehicle', function ($query, $keyword) {
 					$query->whereRaw("CONCAT(vehicles.make_name , '-' , vehicles.model_name , '-' , vehicles.license_plate) like ?", ["%$keyword%"])

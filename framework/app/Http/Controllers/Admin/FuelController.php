@@ -43,13 +43,13 @@ class FuelController extends Controller {
 	public function create() {
 		if (Auth::user()->user_type == "S" || Auth::user()->user_type != "D") {
 			if (Auth::user()->group_id == null) {
-				$data['vehicles'] = VehicleModel::whereIn_service("1")->get();
+				$data['vehicles'] = VehicleModel::where('in_service', true)->get();
 			} else {
-				$data['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->whereIn_service("1")->get();
+				$data['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->where('in_service', true)->get();
 			}
 		}
 		if (Auth::user()->user_type == "D") {
-			$assign_vehicles = VehicleModel::whereIn_service("1")->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
+			$assign_vehicles = VehicleModel::where('in_service', true)->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
 			$booking_associated_vehicle_1 = Bookings::where('driver_id', Auth::user()->id)
 				->whereMeta('ride_status', 'Upcoming')
 				->pluck('vehicle_id')->toArray();

@@ -2105,7 +2105,7 @@ public function user_login(Request $request) {
 
 					FROM vehicles
 
-					WHERE in_service = 1" . $condition . "
+					WHERE in_service = true" . $condition . "
 
 					AND deleted_at IS NULL
 
@@ -2139,7 +2139,7 @@ public function user_login(Request $request) {
 
 					FROM vehicles
 
-					WHERE in_service = 1" . $condition . "
+					WHERE in_service = true" . $condition . "
 
 					AND deleted_at IS NULL
 

@@ -34,9 +34,9 @@ class ServiceReminderController extends Controller {
 	public function create() {
 		$data['services'] = ServiceItemsModel::get();
 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-			$data['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('in_service', true)->get();
 		} else {
-			$data['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->where('in_service', true)->get();
 		}
 		return view('service_reminder.create', $data);
 	}

@@ -37,7 +37,7 @@ class TrackerController extends Controller
 	public function traccarLocation(Request $request, $id = null)
 	{
 		//get only in service vehicles
-		$vehicles = VehicleModel::with(['metas'])->where('in_service', 1)->get();
+		$vehicles = VehicleModel::with(['metas'])->where('in_service', true)->get();
 		$selected_vehicle = VehicleModel::find($id);
 		$selected_vehicle_id = $selected_vehicle->id ?? '';
 		$error = '';

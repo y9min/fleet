@@ -32,7 +32,7 @@ class IncomeController extends Controller {
 		if ($user->user_type == "D") {
 			$vehicle_ids = VehicleModel::pluck('id')->toArray();
 			// $data['vehicels'] = VehicleModel::whereIn_service(1)->get();
-			$assign_vehicles = VehicleModel::whereIn_service("1")->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
+			$assign_vehicles = VehicleModel::where('in_service', true)->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
 			$booking_associated_vehicle_1 = Bookings::where('driver_id', Auth::user()->id)
 				->whereMeta('ride_status', 'Upcoming')
 				->pluck('vehicle_id')->toArray();
@@ -43,10 +43,10 @@ class IncomeController extends Controller {
 			$data['vehicels'] = VehicleModel::whereIn('id', $mergedArray)->get();
 		} else {
 			if ($user->group_id == null || $user->user_type == "S") {
-				$data['vehicels'] = VehicleModel::whereIn_service(1)->get();
+				$data['vehicels'] = VehicleModel::where('in_service', true)->get();
 				$vehicle_ids = $data['vehicels']->pluck('id')->toArray();
 			} else {
-				$data['vehicels'] = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->get();
+				$data['vehicels'] = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->get();
 				$vehicle_ids = $data['vehicels']->pluck('id')->toArray();
 			}
 		}
@@ -86,12 +86,12 @@ class IncomeController extends Controller {
 		$user = Auth::user();
 		if ($user->user_type == "D") {
 			$vehicle_ids = VehicleModel::pluck('id')->toArray();
-			$data['vehicels'] = VehicleModel::whereIn_service(1)->get();
+			$data['vehicels'] = VehicleModel::where('in_service', true)->get();
 		} else {
 			if ($user->group_id == null || $user->user_type == "S") {
-				$vehicle_ids = VehicleModel::with(['metas'])->whereIn_service(1)->pluck('id')->toArray();
+				$vehicle_ids = VehicleModel::with(['metas'])->where('in_service', true)->pluck('id')->toArray();
 			} else {
-				$vehicle_ids = VehicleModel::with(['metas'])->whereIn_service(1)->where('group_id', $user->group_id)->pluck('id')->toArray();
+				$vehicle_ids = VehicleModel::with(['metas'])->where('in_service', true)->where('group_id', $user->group_id)->pluck('id')->toArray();
 			}
 		}
 		$income = IncomeModel::where('user_id', Auth::user()->id)->whereIn('vehicle_id', $vehicle_ids)->whereBetween('date', [$date1, $date2]);
@@ -108,7 +108,7 @@ class IncomeController extends Controller {
 		if ($user->user_type == "D") {
 			$vehicle_ids = VehicleModel::pluck('id')->toArray();
 			//	$data['vehicels'] = VehicleModel::whereIn_service(1)->with('metas')->get();
-			$assign_vehicles = VehicleModel::whereIn_service("1")->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
+			$assign_vehicles = VehicleModel::where('in_service', true)->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
 			$booking_associated_vehicle_1 = Bookings::where('driver_id', Auth::user()->id)
 				->whereMeta('ride_status', 'Upcoming')
 				->pluck('vehicle_id')->toArray();
@@ -120,11 +120,11 @@ class IncomeController extends Controller {
 		} else {
 			if ($user->group_id == null || $user->user_type == "S") {
 				$data['vehicels'] = VehicleModel::with(['metas'])
-					->whereIn_service(1)->get();
+					->where('in_service', true)->get();
 				$vehicle_ids = $data['vehicels']->pluck('id')->toArray();
 			} else {
 				$data['vehicels'] = VehicleModel::with(['metas'])
-					->whereIn_service(1)->where('group_id', $user->group_id)->get();
+					->where('in_service', true)->where('group_id', $user->group_id)->get();
 				$vehicle_ids = $data['vehicels']->pluck('id')->toArray();
 			}
 		}

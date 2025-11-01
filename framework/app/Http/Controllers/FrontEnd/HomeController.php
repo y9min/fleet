@@ -178,7 +178,7 @@ class HomeController extends Controller {
                                 
                                 $q = "SELECT id
                                 FROM vehicles
-                                WHERE in_service = 1" . $condition . "
+                                WHERE in_service = true" . $condition . "
                                 AND deleted_at IS NULL
                                 AND id NOT IN (
                                         SELECT DISTINCT vehicle_id
@@ -199,7 +199,7 @@ class HomeController extends Controller {
 
                                 $q = "SELECT id
                                 FROM vehicles
-                                WHERE in_service = 1" . $condition . "
+                                WHERE in_service = true" . $condition . "
                                 AND deleted_at IS NULL
                                 AND group_id = " . Auth::user()->group_id . "
                                 AND id NOT IN (

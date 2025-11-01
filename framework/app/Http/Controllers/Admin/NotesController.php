@@ -33,9 +33,9 @@ class NotesController extends Controller {
 	}
 	public function create() {
 		if (Auth::user()->user_type != "D" && Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-			$data['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('in_service', true)->get();
 		} elseif (Auth::user()->user_type == "D") {
-			$assign_vehicles = VehicleModel::whereIn_service("1")->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
+			$assign_vehicles = VehicleModel::where('in_service', true)->whereMeta('assign_driver_id', Auth::user()->id)->pluck('id')->toArray();
 			$booking_associated_vehicle_1 = Bookings::where('driver_id', Auth::user()->id)
 				->whereMeta('ride_status', 'Upcoming')
 				->pluck('vehicle_id')->toArray();
@@ -45,7 +45,7 @@ class NotesController extends Controller {
 			$mergedArray = array_unique(array_merge($booking_associated_vehicle_1, $booking_associated_vehicle_2, $assign_vehicles));
 			$data['vehicles'] = VehicleModel::whereIn('id', $mergedArray)->get();
 		} else {
-			$data['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->where('in_service', true)->get();
 		}
 		$data['customers'] = User::where('user_type', '!=', 'C')->where('deleted_at', null)->get();
 		return view('notes.create', $data);
@@ -62,9 +62,9 @@ class NotesController extends Controller {
 	}
 	public function edit($id) {
 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-			$index['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$index['vehicles'] = VehicleModel::where('in_service', true)->get();
 		} else {
-			$index['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->whereIn_service("1")->get();
+			$index['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->where('in_service', true)->get();
 		}
 		$index['customers'] = User::where('user_type', '!=', 'C')->get();
 		$index['data'] = NotesModel::whereId($id)->first();

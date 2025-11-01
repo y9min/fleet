@@ -91,9 +91,9 @@ class IncomeApiController extends Controller {
 		$tax = 0;
 		$user = Auth::user();
 		if ($user->group_id == null || $user->user_type == "S") {
-			$vehicles = VehicleModel::whereIn_service(1)->get();
+			$vehicles = VehicleModel::where('in_service', true)->get();
 		} else {
-			$vehicles = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->get();
+			$vehicles = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->get();
 		}
 		$types = IncCats::get();
 		foreach ($vehicles as $row) {
@@ -138,9 +138,9 @@ class IncomeApiController extends Controller {
 			$date2 = date('Y-m-d', strtotime($request->to_date));
 			$user = Auth::user();
 			if ($user->group_id == null || $user->user_type == "S") {
-				$vehicles = VehicleModel::whereIn_service(1)->get();
+				$vehicles = VehicleModel::where('in_service', true)->get();
 			} else {
-				$vehicles = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->get();
+				$vehicles = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->get();
 			}
 			$vehicle_ids = $vehicles->pluck('id')->toArray();
 			$income = IncomeModel::whereIn('vehicle_id', $vehicle_ids)->whereBetween('date', [$date1, $date2])->get();
@@ -172,9 +172,9 @@ class IncomeApiController extends Controller {
 	public function income() {
 		$user = Auth::user();
 		if ($user->group_id == null || $user->user_type == "S") {
-			$vehicles = VehicleModel::whereIn_service(1)->get();
+			$vehicles = VehicleModel::where('in_service', true)->get();
 		} else {
-			$vehicles = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->get();
+			$vehicles = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->get();
 		}
 		$vehicle_ids = $vehicles->pluck('id')->toArray();
 		$income = IncomeModel::whereIn('vehicle_id', $vehicle_ids)->whereDate('date', date('Y-m-d'));

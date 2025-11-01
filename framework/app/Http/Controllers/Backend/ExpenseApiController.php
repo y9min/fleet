@@ -120,9 +120,9 @@ class ExpenseApiController extends Controller {
 		$vendors = array();
 		$user = Auth::user();
 		if ($user->group_id == null || $user->user_type == "S") {
-			$vehicles = VehicleModel::whereIn_service(1)->get();
+			$vehicles = VehicleModel::where('in_service', true)->get();
 		} else {
-			$vehicles = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->get();
+			$vehicles = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->get();
 		}
 		$types = ExpCats::get();
 		$items = ServiceItemsModel::get();
@@ -176,9 +176,9 @@ class ExpenseApiController extends Controller {
 			$date2 = date('Y-m-d', strtotime($request->to_date));
 			$user = Auth::user();
 			if ($user->group_id == null || $user->user_type == "S") {
-				$vehicles = VehicleModel::whereIn_service(1)->get();
+				$vehicles = VehicleModel::where('in_service', true)->get();
 			} else {
-				$vehicles = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->get();
+				$vehicles = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->get();
 			}
 			$vehicle_ids = $vehicles->pluck('id')->toArray();
 			$expense = Expense::whereIn('vehicle_id', $vehicle_ids)->whereBetween('date', [$date1, $date2])->get();
@@ -216,9 +216,9 @@ class ExpenseApiController extends Controller {
 	public function expense() {
 		$user = Auth::user();
 		if ($user->group_id == null || $user->user_type == "S") {
-			$vehicles = VehicleModel::whereIn_service(1)->get();
+			$vehicles = VehicleModel::where('in_service', true)->get();
 		} else {
-			$vehicles = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->get();
+			$vehicles = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->get();
 		}
 		$vehicle_ids = $vehicles->pluck('id')->toArray();
 		$total = Expense::whereIn('vehicle_id', $vehicle_ids)->whereDate('date', date('Y-m-d'))->sum('amount');

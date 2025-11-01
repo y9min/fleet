@@ -250,9 +250,9 @@ class WorkOrdersApiController extends Controller {
 		$parts = PartsModel::where('stock', '>', 0)->where('availability', 1)->get(['id as part_id', 'unit_cost', 'title', 'stock as max_qty']);
 		$vendors = Vendor::get(['id as vendor_id', 'name'])->toArray();
 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-			$vehicles = VehicleModel::whereIn_service("1")->get();
+			$vehicles = VehicleModel::where('in_service', true)->get();
 		} else {
-			$vehicles = VehicleModel::where('group_id', Auth::user()->group_id)->whereIn_service("1")->get();
+			$vehicles = VehicleModel::where('group_id', Auth::user()->group_id)->where('in_service', true)->get();
 		}
 		// dd($vendors);
 		$vehicle_list = array();

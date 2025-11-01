@@ -679,6 +679,24 @@ class OnboardingController extends Controller
             ]);
             \Log::info('Assigned permissions to user');
             
+            // GDPR: Delete identity documents after approval
+            try {
+                $deletionService = new \App\Services\DriverIdentityDocumentDeletionService();
+                $deletionResult = $deletionService->deleteDriverIdentityDocuments($user);
+                \Log::info('GDPR document deletion completed', [
+                    'driver_id' => $user->id,
+                    'deleted_files_count' => $deletionResult['deleted_files_count'],
+                    'errors_count' => count($deletionResult['errors'] ?? [])
+                ]);
+            } catch (\Exception $deletionException) {
+                // Log error but don't fail the approval process
+                \Log::error('Failed to delete driver identity documents', [
+                    'driver_id' => $user->id,
+                    'error' => $deletionException->getMessage(),
+                    'trace' => $deletionException->getTraceAsString()
+                ]);
+            }
+            
             // Send approval email notification
             try {
                 $emailService = new \App\Utils\ResendEmailService();

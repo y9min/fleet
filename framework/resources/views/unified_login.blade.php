@@ -441,7 +441,8 @@
                     </div>
 
                     <button type="submit" class="login-button" id="loginButton">
-                        Login
+                        <span class="login-spinner d-none" style="display: inline-flex; align-items: center; margin-right: 8px;"><i class="fas fa-spinner fa-spin"></i></span>
+                        <span class="login-button-text">Login</span>
                     </button>
                 </form>
 
@@ -482,6 +483,17 @@
                     showError('Please enter a valid email address.');
                     e.preventDefault();
                     return false;
+                }
+                
+                // Show loading state
+                const loginButton = document.getElementById('loginButton');
+                const spinner = loginButton.querySelector('.login-spinner');
+                const buttonText = loginButton.querySelector('.login-button-text');
+                
+                if (loginButton && !loginButton.disabled) {
+                    loginButton.disabled = true;
+                    if (spinner) spinner.classList.remove('d-none');
+                    if (buttonText) buttonText.textContent = 'Signing in...';
                 }
                 
                 // Form is valid, allow submission

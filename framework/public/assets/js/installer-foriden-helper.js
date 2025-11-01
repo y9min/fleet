@@ -154,6 +154,10 @@
                                 positionClass: "toast-top-right"
                             });
                             
+                            // Show loading overlay during redirect
+                            var $loadingOverlay = $('<div class="redirect-loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 99999; display: flex; align-items: center; justify-content: center;"><div style="background: white; padding: 30px; border-radius: 8px; text-align: center;"><i class="fas fa-spinner fa-spin me-2" style="font-size: 24px; color: #007bff;"></i><div style="margin-top: 15px; font-size: 16px; color: #333;">Redirecting...</div></div></div>');
+                            $('body').append($loadingOverlay);
+                            
                             // Redirect immediately instead of waiting for toast
                             // Small delay to show message, but much faster than before
                             setTimeout(function() {
@@ -261,8 +265,8 @@
                 return; // Button not found
             }
 
-            var text = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
-            var spinnerOnly = '<i class="fa fa-spinner fa-spin"></i>';
+            var text = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            var spinnerOnly = '<i class="fas fa-spinner fa-spin"></i>';
 
             if (button.width() < 60) {
                 text = spinnerOnly; // For small buttons, show spinner only

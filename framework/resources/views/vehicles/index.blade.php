@@ -2869,6 +2869,15 @@ $(document).ready(function() {
         const container = $(this).closest('.status-container');
         const display = container.find('.status-display');
         const dropdown = container.find('.custom-dropdown-menu');
+        const displayButton = display.find('button');
+        
+        // Store original button HTML for restoration
+        const originalHtml = displayButton.html();
+        const originalDisabled = displayButton.prop('disabled');
+        
+        // Show loading state on display button
+        displayButton.prop('disabled', true);
+        displayButton.html('<i class="fas fa-spinner fa-spin me-2"></i>Updating...');
         
         console.log('Updating vehicle status:', { vehicleId, newStatus });
         
@@ -2900,6 +2909,8 @@ $(document).ready(function() {
                     }
                 } else {
                     console.error('Status update failed:', response.message);
+                    // Restore original button state on error
+                    displayButton.html(originalHtml).prop('disabled', originalDisabled);
                     if (typeof toastr !== 'undefined') {
                         toastr.error('Failed to update status: ' + (response.message || 'Unknown error'));
                     } else {
@@ -2909,6 +2920,8 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('AJAX error:', { xhr, status, error });
+                // Restore original button state on error
+                displayButton.html(originalHtml).prop('disabled', originalDisabled);
                 if (typeof toastr !== 'undefined') {
                     toastr.error('Failed to update status. Please try again.');
                 } else {
@@ -2926,6 +2939,15 @@ $(document).ready(function() {
         const container = $(this).closest('.driver-container');
         const display = container.find('.driver-display');
         const dropdown = container.find('.custom-dropdown-menu');
+        const displayButton = display.find('button');
+        
+        // Store original button HTML for restoration
+        const originalHtml = displayButton.html();
+        const originalDisabled = displayButton.prop('disabled');
+        
+        // Show loading state on display button
+        displayButton.prop('disabled', true);
+        displayButton.html('<i class="fas fa-spinner fa-spin me-2"></i>Updating...');
         
         console.log('Updating vehicle driver:', { vehicleId, driverId });
         
@@ -2959,6 +2981,8 @@ $(document).ready(function() {
                         alert('Driver assignment updated successfully!');
                     }
                 } else {
+                    // Restore original button state on error
+                    displayButton.html(originalHtml).prop('disabled', originalDisabled);
                     if (typeof toastr !== 'undefined') {
                         toastr.error(response.message || 'Failed to update driver assignment');
                     } else {
@@ -2968,6 +2992,8 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('AJAX error:', { xhr, status, error });
+                // Restore original button state on error
+                displayButton.html(originalHtml).prop('disabled', originalDisabled);
                 if (typeof toastr !== 'undefined') {
                     toastr.error('Failed to update driver assignment. Please try again.');
                 } else {

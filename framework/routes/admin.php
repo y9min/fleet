@@ -289,8 +289,9 @@ Route::namespace ('Admin')->group(function () {
         Route::get("/reports/delinquent", "ReportsController@delinquent")->name("reports.delinquent");
         Route::get("/reports/users", "ReportsController@users")->name("reports.users");
         Route::post("/reports/users", "ReportsController@users_post")->name("reports.users");
-        Route::get('/calendar', 'BookingsController@calendar');
-        Route::get('/calendar/event/{id}', 'BookingsController@calendar_event');
+        // Vehicle Pickup Calendar routes - Disabled for future use
+        // Route::get('/calendar', 'BookingsController@calendar');
+        // Route::get('/calendar/event/{id}', 'BookingsController@calendar_event');
         Route::get("/drivers/enable/{id}", 'DriversController@enable');
         Route::get("/drivers/disable/{id}", 'DriversController@disable');
         Route::get("/drivers/{id}/details", 'DriversController@getDriverDetails');
@@ -304,10 +305,11 @@ Route::namespace ('Admin')->group(function () {
         Route::post("/reports/payments", "ReportsController@drivers_payments_post")->name("reports.payments");
 
         Route::post('/customer/ajax_save', 'CustomersController@ajax_store')->name('customers.ajax_store');
-        Route::get("/calendar", 'BookingsController@calendar_view')->name("bookings.calendar");
-        Route::get('/calendar/event/calendar/{id}', 'BookingsController@calendar_event');
-        Route::get('/calendar/event/service/{id}', 'BookingsController@service_view');
-        Route::get('/calendar-data', 'BookingsController@calendar');
+        // Vehicle Pickup Calendar routes - Disabled for future use
+        // Route::get("/calendar", 'BookingsController@calendar_view')->name("bookings.calendar");
+        // Route::get('/calendar/event/calendar/{id}', 'BookingsController@calendar_event');
+        // Route::get('/calendar/event/service/{id}', 'BookingsController@service_view');
+        // Route::get('/calendar-data', 'BookingsController@calendar');
         Route::post('/get_driver', 'BookingsController@get_driver');
         Route::post('/get_vehicle', 'BookingsController@get_vehicle');
         Route::post('/invitations/complete', 'BookingsController@complete_post')->name("bookings.complete");

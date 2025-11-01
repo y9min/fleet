@@ -342,13 +342,20 @@ input[type="date"]::-webkit-inner-spin-button {
 $(document).ready(function() {
     console.log('Starting fines table initialization...');
     
-    // Initialize DataTable
+    // Initialize DataTable with performance optimizations
     var table = $('#fines-table').DataTable({
         processing: true,
         serverSide: true,
+        responsive: true,
+        autoWidth: false,
+        deferRender: true, // Defer rendering for better performance with large datasets
+        pagingType: 'simple_numbers',
+        pageLength: 10, // Reduced from 25 for faster initial load
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
         ajax: {
             url: "{{ route('fines.fetch') }}",
             type: 'GET',
+            timeout: 30000, // 30 second timeout
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
@@ -359,10 +366,21 @@ $(document).ready(function() {
                 d.date_from = $('#date-from-filter').val();
                 d.date_to = $('#date-to-filter').val();
             },
+            beforeSend: function(xhr, settings) {
+                // Track AJAX request start
+                if (window.trackAction) {
+                    window.trackAction('datatable-ajax', settings.url);
+                }
+            },
             error: function(xhr, error, thrown) {
                 console.error('AJAX Error:', error, thrown);
                 console.error('Status:', xhr.status);
                 console.error('Response:', xhr.responseText);
+                
+                // Show user-friendly error message
+                if ($('#dataTableError').length === 0) {
+                    $('#fines-table').after('<div id="dataTableError" class="alert alert-danger">Failed to load fines data. Please refresh the page.</div>');
+                }
             }
         },
         columns: [
@@ -377,11 +395,10 @@ $(document).ready(function() {
             { data: 'actions', name: 'actions', orderable: false, searchable: false }
         ],
         order: [[0, 'desc']],
-        pageLength: 25,
         responsive: true,
         dom: 'rtip', // Remove length menu and search box
         language: {
-            processing: "Loading fines...",
+            processing: '<i class="fa fa-spinner fa-spin"></i> Loading fines...',
             emptyTable: "No fines found",
             zeroRecords: "No matching fines found"
         }

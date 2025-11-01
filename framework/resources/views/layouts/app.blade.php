@@ -281,7 +281,36 @@ input:checked + .slider:before {
 
 }
 
+/* Performance optimization: Loading button states */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.7;
+}
 
+.btn-loading i.fa-spinner {
+  margin-right: 5px;
+}
+
+.deleting-row {
+  opacity: 0.6 !important;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+button.deleting {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* DataTable loading indicator enhancement */
+.dataTables_processing {
+  z-index: 9999;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
   </style>
 

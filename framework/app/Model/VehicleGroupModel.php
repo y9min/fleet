@@ -24,4 +24,8 @@ class VehicleGroupModel extends BaseUuidModel {
 	public function group() {
 		return $this->hasMany("App\Model\VehicleModel", "group_id", "id")->withTrashed();
 	}
+	
+	public function users() {
+		return $this->hasMany("App\Model\User", "group_id", "id");
+	}
 }

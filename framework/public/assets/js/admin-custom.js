@@ -76,26 +76,112 @@ $(document).ready(function() {
     // Add tooltips to navigation items
     $('[data-toggle="tooltip"]').tooltip();
 
-    // Form validation enhancement
+    // Form validation enhancement with proper loading states
+    // Only add loading indicator if form doesn't use easyAjax (which handles it automatically)
     $('form').on('submit', function(e) {
         var $form = $(this);
-        var $submitBtn = $form.find('button[type="submit"]');
+        var $submitBtn = $form.find('button[type="submit"], input[type="submit"]');
         
-        $submitBtn.prop('disabled', true)
-                  .html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+        // Check if form uses easyAjax (which already handles loading states)
+        if ($form.data('easy-ajax') || $form.hasClass('easy-ajax')) {
+            return; // Let easyAjax handle loading states
+        }
         
-        // Re-enable after 3 seconds (adjust as needed)
+        // Only add loading indicator for non-AJAX forms or as fallback
+        if ($submitBtn.length > 0) {
+            if (!$submitBtn.data('original-text')) {
+                if ($submitBtn.is('input')) {
+                    $submitBtn.data('original-text', $submitBtn.val());
+                } else {
+                    $submitBtn.data('original-text', $submitBtn.html());
+                }
+            }
+            
+            var loadingText = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+            
+            if ($submitBtn.is('input')) {
+                $submitBtn.prop('disabled', true).val('Processing...');
+            } else {
+                $submitBtn.prop('disabled', true).html(loadingText).addClass('btn-loading');
+            }
+            
+            // Re-enable after 30 seconds as safety fallback (for non-AJAX forms)
+            setTimeout(function() {
+                if ($submitBtn.prop('disabled')) {
+                    if ($submitBtn.is('input')) {
+                        $submitBtn.val($submitBtn.data('original-text') || 'Submit');
+                    } else {
+                        $submitBtn.html($submitBtn.data('original-text') || 'Submit');
+                    }
+                    $submitBtn.prop('disabled', false).removeClass('btn-loading');
+                }
+            }, 30000);
+        }
+    });
+
+    // Enhanced delete operations with loading indicators
+    // This handler runs early to add loading states, but allows existing handlers to proceed
+    $(document).on('click', 'button[class*="delete"], button[data-action*="delete"], a[class*="delete"]', function(e) {
+        var $button = $(this);
+        
+        // Skip if already processing or if it's a confirmation modal button
+        if ($button.hasClass('deleting') || $button.closest('.modal').length > 0) {
+            return;
+        }
+        
+        // Only add loading state for actual delete buttons (not cancel buttons)
+        if ($button.text().toLowerCase().indexOf('delete') === -1 && 
+            $button.attr('href') && $button.attr('href').indexOf('delete') === -1) {
+            return;
+        }
+        
+        // Store original button state
+        if (!$button.data('original-html')) {
+            $button.data('original-html', $button.html());
+        }
+        
+        // Show loading state immediately
+        $button.addClass('deleting')
+               .prop('disabled', true);
+        
+        var loadingHtml = '<i class="fa fa-spinner fa-spin"></i> ';
+        if (!$button.is('a')) {
+            loadingHtml += 'Deleting...';
+            $button.html(loadingHtml);
+        }
+        
+        // Optimistic UI: Fade out row if it exists
+        var $row = $button.closest('tr');
+        if ($row.length > 0 && !$row.hasClass('deleting-row')) {
+            $row.addClass('deleting-row');
+            $row.css({
+                'opacity': '0.6',
+                'transition': 'opacity 0.2s'
+            });
+        }
+        
+        // Track delete action if tracking is available
+        if (window.trackAction) {
+            var itemId = $button.data('id') || $row.find('input[type="checkbox"]').val() || 'item';
+            window.trackAction('delete', itemId);
+        }
+        
+        // Restore button state after 10 seconds if delete hasn't completed
+        // (existing delete handlers should handle the actual deletion)
         setTimeout(function() {
-            $submitBtn.prop('disabled', false)
-                      .html($submitBtn.data('original-text') || 'Submit');
-        }, 3000);
+            if ($button.hasClass('deleting') && $button.prop('disabled')) {
+                var originalHtml = $button.data('original-html');
+                if (originalHtml) {
+                    $button.html(originalHtml);
+                }
+                $button.prop('disabled', false).removeClass('deleting');
+                if ($row.length > 0) {
+                    $row.css('opacity', '1').removeClass('deleting-row');
+                }
+            }
+        }, 10000);
     });
-
-    // Store original button text
-    $('button[type="submit"]').each(function() {
-        $(this).data('original-text', $(this).html());
-    });
-
+    
     // Enhanced dropdown behavior
     $('.dropdown-toggle').on('shown.bs.dropdown', function () {
         $(this).closest('.dropdown').addClass('open');

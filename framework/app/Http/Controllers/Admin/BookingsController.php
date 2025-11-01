@@ -80,7 +80,7 @@ class BookingsController extends Controller {
 					return $created_at;
 				})
 				->filterColumn('created_at', function ($query, $keyword) {
-					$query->whereRaw("DATE_FORMAT(created_at,'%d-%m-%Y %h:%i %p') LIKE ?", ["%$keyword%"]);
+					$query->whereRaw("TO_CHAR(created_at, 'DD-MM-YYYY HH12:MI AM') LIKE ?", ["%$keyword%"]);
 				})
 				->make(true);
 		}
@@ -282,13 +282,13 @@ class BookingsController extends Controller {
 					return view('bookings.list-actions', ['row' => $user]);
 				})
 				->filterColumn('payment', function ($query, $keyword) {
-					$query->whereRaw("IF(payment = 1 , '" . __('fleet.paid1') . "', '" . __('fleet.pending') . "') like ? ", ["%{$keyword}%"]);
+					$query->whereRaw("CASE WHEN payment = 1 THEN '" . __('fleet.paid1') . "' ELSE '" . __('fleet.pending') . "' END LIKE ?", ["%{$keyword}%"]);
 				})
-                ->filterColumn('pickup_date', function ($query, $keyword) {
-                    $query->whereRaw("DATE_FORMAT(pickup,'%d-%m-%Y') LIKE ?", ["%$keyword%"]);
+				->filterColumn('pickup_date', function ($query, $keyword) {
+                    $query->whereRaw("TO_CHAR(pickup, 'DD-MM-YYYY') LIKE ?", ["%$keyword%"]);
                 })
                 ->filterColumn('pickup_time', function ($query, $keyword) {
-                    $query->whereRaw("DATE_FORMAT(pickup,'%h:%i %p') LIKE ?", ["%$keyword%"]);
+                    $query->whereRaw("TO_CHAR(pickup, 'HH12:MI AM') LIKE ?", ["%$keyword%"]);
                 })
                 ->orderColumn('pickup_date', function($query, $order) {
                     $query->orderBy('pickup', $order);
@@ -297,7 +297,7 @@ class BookingsController extends Controller {
                     $query->orderBy('pickup', $order);
                 })
 				->filterColumn('dropoff', function ($query, $keyword) {
-					$query->whereRaw("DATE_FORMAT(dropoff,'%d-%m-%Y %h:%i %p') LIKE ?", ["%$keyword%"]);
+					$query->whereRaw("TO_CHAR(dropoff, 'DD-MM-YYYY HH12:MI AM') LIKE ?", ["%$keyword%"]);
 				})
 				->filterColumn('travellers', function ($query, $keyword) {
 					$query->where("travellers", 'LIKE', '%' . $keyword . '%');

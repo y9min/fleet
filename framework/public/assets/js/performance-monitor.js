@@ -233,6 +233,106 @@
     // Expose logPerformanceMetrics globally for manual invocation
     window.logPerformanceMetrics = logPerformanceMetrics;
     
+    // Action-specific performance tracking
+    window.trackAction = function(actionType, actionName) {
+        var actionId = actionType + '_' + Date.now();
+        var startTime = performance.now();
+        
+        // Store action tracking data
+        if (!window.__actionMetrics) {
+            window.__actionMetrics = [];
+        }
+        
+        window.__actionMetrics.push({
+            id: actionId,
+            type: actionType,
+            name: actionName,
+            startTime: startTime,
+            duration: null,
+            status: 'pending'
+        });
+        
+        // Return function to mark action as complete
+        return function(status) {
+            var endTime = performance.now();
+            var duration = Math.round(endTime - startTime);
+            
+            var action = window.__actionMetrics.find(function(a) {
+                return a.id === actionId;
+            });
+            
+            if (action) {
+                action.duration = duration;
+                action.status = status || 'completed';
+                action.endTime = endTime;
+            }
+            
+            console.log('[PERF] Action:', actionType, actionName, '-', duration, 'ms', '(' + (status || 'completed') + ')');
+            
+            // Warn if action takes too long
+            if (duration > 1000) {
+                console.warn('[PERF] Slow Action Detected:', actionType, actionName, '-', duration, 'ms');
+            }
+            
+            return duration;
+        };
+    };
+    
+    // Track form submissions
+    $(document).on('submit', 'form', function() {
+        var form = this;
+        var action = form.action || window.location.pathname;
+        var actionName = action.split('/').pop() || 'form-submit';
+        var completeAction = window.trackAction('submit', actionName);
+        
+        // Mark as complete when form submit completes (via AJAX or redirect)
+        $(form).one('ajaxComplete', function() {
+            completeAction('ajax-complete');
+        });
+        
+        // If no AJAX, mark as complete after a delay (redirect)
+        setTimeout(function() {
+            if (window.__actionMetrics) {
+                var pending = window.__actionMetrics.find(function(a) {
+                    return a.name === actionName && a.status === 'pending';
+                });
+                if (pending) {
+                    completeAction('redirect');
+                }
+            }
+        }, 100);
+    });
+    
+    // Track button clicks for add/edit/delete actions
+    $(document).on('click', 'a[href*="/create"], a[href*="/add"], button[data-action="add"], a.btn-success', function() {
+        var href = $(this).attr('href') || '';
+        var actionName = href.split('/').pop() || 'add';
+        window.trackAction('add', actionName);
+    });
+    
+    $(document).on('click', 'a[href*="/edit"], button[data-action="edit"], a.btn-primary[href*="edit"]', function() {
+        var href = $(this).attr('href') || '';
+        var actionName = href.split('/').pop() || 'edit';
+        window.trackAction('edit', actionName);
+    });
+    
+    $(document).on('click', 'button[data-action="delete"], button.btn-danger, a[data-method="delete"]', function() {
+        var actionName = $(this).data('id') || $(this).closest('tr').find('td:first').text() || 'delete';
+        window.trackAction('delete', actionName);
+    });
+    
+    // Track redirects via link clicks
+    $(document).on('click', 'a', function() {
+        var href = $(this).attr('href');
+        if (href && href !== '#' && !href.startsWith('javascript:')) {
+            var completeAction = window.trackAction('redirect', href);
+            // Mark complete after navigation (won't execute if navigation happens)
+            setTimeout(function() {
+                completeAction('navigation-complete');
+            }, 100);
+        }
+    });
+    
     // Log immediately if window already loaded
     if (document.readyState === 'complete') {
         logPerformanceMetrics();

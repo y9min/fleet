@@ -117,32 +117,48 @@
             opt.data = data;
         }
 
+        // Track request start time for performance monitoring
+        var requestStartTime = performance.now();
+        
         $.ajax({
             type: opt.type,
             url: opt.url,
             dataType: opt.dataType,
             data: opt.data,
+            timeout: 30000, // 30 second timeout to prevent hanging requests
             beforeSend: opt.beforeSend,
             contentType: (opt.file)?false:"application/x-www-form-urlencoded; charset=UTF-8",
             processData : !opt.file,
             error: opt.error,
             complete: opt.complete,
             success: function (response) {
+                // Log performance metrics
+                var requestDuration = Math.round(performance.now() - requestStartTime);
+                if (requestDuration > 1000) {
+                    console.warn('[PERF] Slow AJAX Request:', opt.url, '-', requestDuration, 'ms');
+                }
                 // Show success message
                 if (response.status == "success") {
                     if (response.action == "redirect") {
                         if (opt.redirect) {
+                            // Show brief message (2 seconds instead of 100 seconds)
                             var message = "";
                             if (typeof response.message != "undefined") {
                                 message += response.message;
                             }
                             message += " Redirecting...";
 
+                            // Show message briefly, then redirect immediately
                             showResponseMessage(message, "success", {
-                                timeOut: 100000,
+                                timeOut: 2000,
                                 positionClass: "toast-top-right"
                             });
-                            window.location.href = response.url;
+                            
+                            // Redirect immediately instead of waiting for toast
+                            // Small delay to show message, but much faster than before
+                            setTimeout(function() {
+                                window.location.href = response.url;
+                            }, 500);
                         }
                     }
                     else {
@@ -240,35 +256,58 @@
 
         function loadingButton(selector) {
             var button = $(opt.container).find(selector);
+            
+            if (button.length === 0) {
+                return; // Button not found
+            }
 
-            var text = "Submitting...";
+            var text = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
+            var spinnerOnly = '<i class="fa fa-spinner fa-spin"></i>';
 
-            if (button.width() < 20) {
-                text = "...";
+            if (button.width() < 60) {
+                text = spinnerOnly; // For small buttons, show spinner only
             }
 
             if (!button.is("input")) {
-                button.attr("data-prev-text", button.html());
-                button.text(text);
+                if (!button.attr("data-prev-text")) {
+                    button.attr("data-prev-text", button.html());
+                }
+                button.html(text);
                 button.prop("disabled", true);
+                button.addClass("btn-loading");
             }
             else {
-                button.attr("data-prev-text", button.val());
-                button.val(text);
+                if (!button.attr("data-prev-text")) {
+                    button.attr("data-prev-text", button.val());
+                }
+                button.val("Submitting...");
                 button.prop("disabled", true);
+                button.addClass("btn-loading");
             }
         }
 
         function unloadingButton(selector) {
             var button = $(opt.container).find(selector);
+            
+            if (button.length === 0) {
+                return; // Button not found
+            }
 
             if (!button.is("input")) {
-                button.html(button.attr("data-prev-text"));
+                var prevText = button.attr("data-prev-text");
+                if (prevText) {
+                    button.html(prevText);
+                }
                 button.prop("disabled", false);
+                button.removeClass("btn-loading");
             }
             else {
-                button.val(button.attr("data-prev-text"));
+                var prevText = button.attr("data-prev-text");
+                if (prevText) {
+                    button.val(prevText);
+                }
                 button.prop("disabled", false);
+                button.removeClass("btn-loading");
             }
         }
     };

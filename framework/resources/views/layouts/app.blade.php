@@ -1004,7 +1004,8 @@ input:checked + .slider:before {
                             <a href="{{route('onboarding.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-plus"></i> Onboarding</a>
                             <a href="{{route('invitations.create')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-plus"></i> New Pickup Invitation</a>
                             <a href="{{route('invitations.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Pickup Invitations</a>
-                            <a href="{{url('admin/calendar')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-calendar"></i> Vehicle Pickup Calendar </a>
+                            {{-- Vehicle Pickup Calendar - Disabled for future use --}}
+                            {{-- <a href="{{url('admin/calendar')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-calendar"></i> Vehicle Pickup Calendar </a> --}}
                         </div>
                     </div>
 
@@ -2059,7 +2060,8 @@ input:checked + .slider:before {
                   </li>
                   @endcan
                   
-                  @can('Bookings list')
+                  {{-- Vehicle Pickup Calendar - Disabled for future use --}}
+                  {{-- @can('Bookings list')
                   <li class="nav-item">
                     <a href="{{ route('bookings.calendar')}}"
                       class="nav-link @if(Request::is('admin/calendar')) active @endif">
@@ -2068,7 +2070,7 @@ input:checked + .slider:before {
                         @lang('menu.calendar')</p>
                     </a>
                   </li>
-                  @endcan
+                  @endcan --}}
                 </ul>
               </li>
               @endcanany

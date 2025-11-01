@@ -403,7 +403,7 @@ class FinesController extends Controller
             return response()->json(['driver' => null]);
         }
 
-        // Get assigned driver ID from vehicle meta
+        // First, try to get assigned driver ID from vehicle meta
         $assignedDriverId = $vehicle->getMeta('assign_driver_id');
         
         if ($assignedDriverId) {
@@ -417,6 +417,18 @@ class FinesController extends Controller
                     ]
                 ]);
             }
+        }
+        
+        // Fallback: Check drivers relationship if metadata doesn't have driver
+        $driver = $vehicle->drivers()->first();
+        if ($driver) {
+            return response()->json([
+                'driver' => [
+                    'id' => $driver->id,
+                    'name' => $driver->name,
+                    'email' => $driver->email
+                ]
+            ]);
         }
         
         return response()->json(['driver' => null]);

@@ -4,12 +4,6 @@
 @section('extra_css')
 <link rel="stylesheet" href="{{asset('assets/css/bootstrap-datepicker.min.css')}}">
 <style type="text/css">
-  .checkbox,
-  #chk_all {
-    width: 20px;
-    height: 20px;
-  }
-
 /* The outer label */
 .switch {
   position: relative;
@@ -92,9 +86,6 @@
           <table class="table table-responsive display" id="ajax_data_table" style="padding-bottom: 35px; width: 100%">
             <thead class="thead-inverse">
               <tr>
-                <th>
-                  <input type="checkbox" id="chk_all">
-                </th>
                 <th style="width: 15% !important">@lang('fleet.driver')</th>
                 <th style="width: 20% !important">@lang('fleet.vehicle')</th>
                 <th style="width: 25% !important">@lang('fleet.pickup_addr')</th>
@@ -545,22 +536,6 @@
 
   });
   
-  $(document).on('click','input[type="checkbox"]',function(){
-    if(this.checked){
-      $('#bulk_delete').prop('disabled',false);
-
-    }else { 
-      if($("input[name='ids[]']:checked").length == 0){
-        $('#bulk_delete').prop('disabled',true);
-      } 
-    } 
-    
-  });
-
-  // Store selected IDs to persist across DataTable redraws
-  var selectedBookingIds = new Set();
-  // Guard flag to suppress unintended DataTables reloads from checkbox interactions
-  var suppressNextAjaxReload = false;
 
   $(function(){
     
@@ -572,7 +547,7 @@
         text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
 
         exportOptions: {
-           columns: ([1,2,3,4]),
+           columns: ([0,1,2,3]),
         },
         customize: function ( win ) {
                 
@@ -587,7 +562,7 @@
             extend: 'excel',
             text: '<i class="fa fa-file-excel-o"></i> Excel',
             exportOptions: {
-                columns: [1, 2, 3, 4]
+                columns: [0, 1, 2, 3]
             }
         }
     ],
@@ -605,7 +580,6 @@
             data:{}
           },
           columns: [
-            {data: 'check',   name: 'check', searchable:false, orderable:false},
             {data: 'driver',   name: 'driver.name'},
             {data: 'vehicle', name: 'vehicle'},
             {data: 'pickup_addr',    name: 'pickup_addr'},
@@ -613,21 +587,7 @@
             {name: 'pickup_time', data: {_: 'pickup_time.display', sort: 'pickup_time.timestamp'}},
             {data: 'action',  name: 'action', searchable:false, orderable:false}
         ],
-        order: [[4, 'desc']],
-        "drawCallback": function(settings) {
-          // Restore checkbox states after DataTable redraw
-          $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
-            var checkboxId = $(this).val();
-            if (selectedBookingIds.has(checkboxId)) {
-              $(this).prop('checked', true);
-            } else {
-              $(this).prop('checked', false);
-            }
-          });
-          
-          // Update select all checkbox state
-          checkcheckbox();
-        },
+        order: [[3, 'desc']],
         "initComplete": function() {
               table.columns().every(function () {
                 var that = this;
@@ -638,120 +598,7 @@
               });
             }
     });
-
-    // Prevent checkbox interactions from triggering a server reload
-    $('#ajax_data_table').on('preXhr.dt', function(e, settings, data) {
-      if (suppressNextAjaxReload) {
-        suppressNextAjaxReload = false;
-        e.preventDefault();
-        return false;
-      }
-      return true;
-    });
-
-    // Handle checkbox clicks within DataTable (delegated event)
-    $('#ajax_data_table').on('change', 'input[name="ids[]"]', function(e) {
-      try {
-        // Prevent any default behavior or bubbling that could trigger DataTables redraws
-        if (e && typeof e.preventDefault === 'function') e.preventDefault();
-        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-        if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-
-        // Suppress any immediate DT ajax reload potentially triggered by plugins
-        suppressNextAjaxReload = true;
-
-        var checkboxId = $(this).val();
-
-        if ($(this).is(':checked')) {
-          selectedBookingIds.add(checkboxId);
-        } else {
-          selectedBookingIds.delete(checkboxId);
-        }
-
-        checkcheckbox();
-        return false;
-      } catch (err) {
-        console.error('Checkbox change handler error:', err);
-      }
-    });
   });
-
-  $('#bulk_delete').on('click',function(){
-    // Use stored selection set instead of querying DOM
-    if(selectedBookingIds.size == 0){
-      $('#bulk_delete').prop('type','button');
-        new PNotify({
-            title: 'Failed!',
-            text: "{{ __('fleet.delete_error') }}",
-            type: 'error'
-          });
-        $('#bulk_delete').attr('disabled',true);
-      return false;
-    }
-    if(selectedBookingIds.size > 0){
-      // Clear existing hidden inputs
-      $("#bulk_hidden").empty();
-      // Add all selected IDs
-      selectedBookingIds.forEach(function(id){
-        $("#bulk_hidden").append('<input type=hidden name=ids[] value='+id+'>');
-      });
-    }
-  });
-
-
-  // Handle select all checkbox
-  $('#chk_all').on('change', function (e) {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-    if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-
-    // Suppress any immediate DT ajax reload potentially triggered by plugins
-    suppressNextAjaxReload = true;
-
-    var isChecked = this.checked;
-
-    // Update all visible checkboxes
-    $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
-      $(this).prop('checked', isChecked);
-      var checkboxId = $(this).val();
-
-      if (isChecked) {
-        selectedBookingIds.add(checkboxId);
-      } else {
-        selectedBookingIds.delete(checkboxId);
-      }
-    });
-
-    checkcheckbox();
-    return false;
-  });
-
-  // Checkbox checked
-  function checkcheckbox(){
-    // Total checkboxes
-    var length = $('#ajax_data_table tbody input[name="ids[]"]').length;
-    // Total checked checkboxes
-    var totalchecked = $('#ajax_data_table tbody input[name="ids[]"]:checked').length;
-    
-    // Update select all checkbox state
-    if (totalchecked === 0) {
-      $("#chk_all").prop('checked', false);
-      $("#chk_all").prop('indeterminate', false);
-    } else if (totalchecked === length && length > 0) {
-      $("#chk_all").prop('checked', true);
-      $("#chk_all").prop('indeterminate', false);
-    } else {
-      $("#chk_all").prop('checked', false);
-      $("#chk_all").prop('indeterminate', true);
-    }
-
-    // Update bulk delete button state
-    if (selectedBookingIds.size > 0) {
-      $('#bulk_delete').prop('disabled', false);
-    } else {
-      $('#bulk_delete').prop('disabled', true);
-    }
-  }
 
   // Handle invitation deletion via AJAX
   $(document).on('click', '.delete-invitation-btn', function(e) {

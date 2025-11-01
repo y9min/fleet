@@ -18,6 +18,7 @@ use App\Model\User;
 use App\Model\VehicleModel;
 use Carbon\Carbon;
 use DataTables;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Redirect;
@@ -365,14 +366,27 @@ class FinesController extends Controller
                 ], 400);
             }
 
-            $fine->status = $request->status;
-            $saved = $fine->save();
+            // Refresh the fine model before updating to ensure we have the latest data
+            $fine->refresh();
+            
+            // Use update method instead of direct assignment
+            $updated = $fine->update(['status' => $request->status]);
 
-            if (!$saved) {
+            if (!$updated) {
+                // Update returns false if model wasn't dirty or if save failed
+                // Check if the status actually changed
+                if ($fine->status === $request->status) {
+                    // Status is already set to this value
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Status is already set to ' . $request->status
+                    ]);
+                }
+                
                 return response()->json([
                     'success' => false,
                     'error' => 'Update failed',
-                    'message' => 'Failed to save the status update.'
+                    'message' => 'Failed to save the status update. The fine may not exist or have been deleted.'
                 ], 500);
             }
 
@@ -386,18 +400,41 @@ class FinesController extends Controller
                 'error' => 'Fine not found',
                 'message' => 'The fine you are trying to update does not exist.'
             ], 404);
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Fine status update database error', [
+                'fine_id' => $id,
+                'status' => $request->status,
+                'error' => $e->getMessage(),
+                'sql' => $e->getSql(),
+                'bindings' => $e->getBindings(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            $errorMessage = 'Database error occurred while updating the status.';
+            if (str_contains($e->getMessage(), 'CHECK constraint')) {
+                $errorMessage = 'Invalid status value. Please ensure the status is one of: pending, notified, paid, disputed, escalated.';
+            }
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Database error',
+                'message' => $errorMessage
+            ], 500);
         } catch (\Exception $e) {
             \Log::error('Fine status update error', [
                 'fine_id' => $id,
                 'status' => $request->status,
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
                 'success' => false,
                 'error' => 'Server error',
-                'message' => 'An error occurred while updating the status. Please try again.'
+                'message' => 'An error occurred while updating the status. Please try again.',
+                'debug' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }

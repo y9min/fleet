@@ -22,6 +22,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Redirect;
 use Validator;
 
@@ -353,6 +354,15 @@ class FinesController extends Controller
     public function updateStatus(Request $request, $id)
     {
         try {
+            // Validate that ID is a valid UUID format
+            if (!Str::isUuid($id)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Invalid fine ID',
+                    'message' => 'The fine ID must be a valid UUID format.'
+                ], 400);
+            }
+            
             $fine = Fine::findOrFail($id);
             
             $validator = Validator::make($request->all(), [

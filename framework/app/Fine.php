@@ -16,14 +16,29 @@ use App\Model\User;
 use App\Model\VehicleModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 class Fine extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuids;
 
     protected $table = 'fines';
+    
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
     protected $dates = ['deleted_at', 'date_logged', 'date_issued', 'due_date', 'escalation_date'];
     
     protected $fillable = [

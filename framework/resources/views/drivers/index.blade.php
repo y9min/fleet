@@ -339,7 +339,7 @@ PCOFlow | Drivers
                 <th>@lang('fleet.name')</th>
                 <th>@lang('fleet.email')</th>
                 <th>Phone</th>
-              <th>Documents</th>
+              <th>License Number</th>
               <th>@lang('fleet.is_active')</th>
               <th>Assigned Vehicle</th>
               <th>@lang('fleet.action')</th>
@@ -574,38 +574,8 @@ function loadDriversSimple(filteredData = null, page = 1) {
         // Phone display
         const phoneDisplay = driver.phone_display || 'N/A';
         
-        // Documents
-        let docsHTML = '';
-        const useS3 = '{{ env("AWS_BUCKET") && env("AWS_KEY") && env("AWS_SECRET") }}' === '1';
-        const s3BaseUrl = useS3 ? 'https://{{ env("AWS_BUCKET") }}.s3.{{ env("AWS_REGION") }}.amazonaws.com/' : '';
-        
-        if (driver.license_document) {
-            // Use the same URL generation logic as driver details
-            let licenseUrl;
-            if (driver.license_document.startsWith('onboarding/documents/')) {
-                licenseUrl = s3BaseUrl + driver.license_document;
-            } else if (driver.license_document.startsWith('uploads/onboarding/')) {
-                licenseUrl = s3BaseUrl + driver.license_document;
-            } else {
-                licenseUrl = s3BaseUrl + 'uploads/onboarding/' + driver.license_document;
-            }
-            docsHTML += '<a href="' + licenseUrl + '" target="_blank" class="btn btn-sm btn-primary" title="View License"><i class="fa fa-id-card"></i></a> ';
-        }
-        if (driver.insurance_document) {
-            // Use the same URL generation logic as driver details
-            let insuranceUrl;
-            if (driver.insurance_document.startsWith('onboarding/documents/')) {
-                insuranceUrl = s3BaseUrl + driver.insurance_document;
-            } else if (driver.insurance_document.startsWith('uploads/onboarding/')) {
-                insuranceUrl = s3BaseUrl + driver.insurance_document;
-            } else {
-                insuranceUrl = s3BaseUrl + 'uploads/onboarding/' + driver.insurance_document;
-            }
-            docsHTML += '<a href="' + insuranceUrl + '" target="_blank" class="btn btn-sm btn-info" title="View Insurance"><i class="fa fa-shield-alt"></i></a>';
-        }
-        if (!docsHTML) {
-            docsHTML = '<span class="text-muted">No documents</span>';
-        }
+        // License Number
+        const licenseNumber = driver.license_number || 'N/A';
         
         // Assigned vehicle
         let vehicleHTML = 'N/A';
@@ -626,7 +596,7 @@ function loadDriversSimple(filteredData = null, page = 1) {
             '<td><a href="{{ url("admin/drivers") }}/' + driver.id + '">' + driver.name + '</a></td>' +
             '<td>' + driver.email + '</td>' +
             '<td>' + phoneDisplay + '</td>' +
-            '<td>' + docsHTML + '</td>' +
+            '<td>' + licenseNumber + '</td>' +
             '<td><div class="d-flex justify-content-center"><label class="switch"><input type="checkbox" class="driver-status-toggle" data-driver-id="' + driver.id + '" ' + checked + '><span class="slider round"></span></label></div></td>' +
             '<td>' + vehicleHTML + '</td>' +
             '<td>' + actionButtons + '</td>' +

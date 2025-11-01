@@ -1608,6 +1608,16 @@ function refreshCSRFToken() {
 // Approve driver
 function approveDriver(driverId) {
     if (confirm('Are you sure you want to approve this driver?')) {
+        // Find the approve button for this driver
+        const approveButton = $('button[onclick*="approveDriver(\'' + driverId + '\')"], button[onclick*=\'approveDriver("' + driverId + '")\']').first();
+        const originalHtml = approveButton.length ? approveButton.html() : '';
+        
+        // Show loading state on button
+        if (approveButton.length) {
+            approveButton.prop('disabled', true);
+            approveButton.html('<i class="fas fa-spinner fa-spin"></i>');
+        }
+        
         // Get fresh CSRF token
         const csrfToken = $('meta[name="csrf-token"]').attr('content');
         
@@ -1622,6 +1632,10 @@ function approveDriver(driverId) {
                     alert(response.message || 'Driver approved successfully and added to drivers list');
                     $('#onboardTable').DataTable().ajax.reload();
                 } else {
+                    // Restore button on error
+                    if (approveButton.length && originalHtml) {
+                        approveButton.html(originalHtml).prop('disabled', false);
+                    }
                     alert('Error: ' + (response.message || 'Failed to approve driver'));
                 }
             },
@@ -1631,10 +1645,21 @@ function approveDriver(driverId) {
                 console.log('Error:', error);
                 console.log('Response Text:', xhr.responseText);
                 
+                // Restore button on error
+                if (approveButton.length && originalHtml) {
+                    approveButton.html(originalHtml).prop('disabled', false);
+                }
+                
                 let errorMessage = 'Error approving driver: ' + error;
                 if (xhr.status === 419) {
                     // Try to refresh CSRF token and retry once
                     refreshCSRFToken().then(function(newToken) {
+                        // Show loading again for retry
+                        if (approveButton.length) {
+                            approveButton.prop('disabled', true);
+                            approveButton.html('<i class="fas fa-spinner fa-spin"></i>');
+                        }
+                        
                         $.ajax({
                             url: '{{ url("admin/onboarding/approve") }}/' + driverId,
                             type: 'POST',
@@ -1646,14 +1671,26 @@ function approveDriver(driverId) {
                                     alert(response.message || 'Driver approved successfully and added to drivers list');
                                     $('#onboardTable').DataTable().ajax.reload();
                                 } else {
+                                    // Restore button on error
+                                    if (approveButton.length && originalHtml) {
+                                        approveButton.html(originalHtml).prop('disabled', false);
+                                    }
                                     alert('Error: ' + (response.message || 'Failed to approve driver'));
                                 }
                             },
                             error: function(xhr2, status2, error2) {
+                                // Restore button on error
+                                if (approveButton.length && originalHtml) {
+                                    approveButton.html(originalHtml).prop('disabled', false);
+                                }
                                 alert('CSRF token mismatch. Please refresh the page and try again.');
                             }
                         });
                     }).catch(function() {
+                        // Restore button on error
+                        if (approveButton.length && originalHtml) {
+                            approveButton.html(originalHtml).prop('disabled', false);
+                        }
                         alert('CSRF token mismatch. Please refresh the page and try again.');
                     });
                     return;
@@ -1669,6 +1706,16 @@ function approveDriver(driverId) {
 // Reject driver
 function rejectDriver(driverId) {
     if (confirm('Are you sure you want to reject this driver?')) {
+        // Find the reject button for this driver
+        const rejectButton = $('button[onclick*="deleteDriver(\'' + driverId + '\')"], button[onclick*=\'deleteDriver("' + driverId + '")\']').first();
+        const originalHtml = rejectButton.length ? rejectButton.html() : '';
+        
+        // Show loading state on button
+        if (rejectButton.length) {
+            rejectButton.prop('disabled', true);
+            rejectButton.html('<i class="fas fa-spinner fa-spin"></i>');
+        }
+        
         $.ajax({
             url: '{{ url("admin/onboarding/reject") }}/' + driverId,
             type: 'POST',
@@ -1679,9 +1726,19 @@ function rejectDriver(driverId) {
                 if (response.success) {
                     alert('Driver rejected successfully');
                     $('#onboardTable').DataTable().ajax.reload();
+                } else {
+                    // Restore button on error
+                    if (rejectButton.length && originalHtml) {
+                        rejectButton.html(originalHtml).prop('disabled', false);
+                    }
+                    alert('Error: ' + (response.message || 'Failed to reject driver'));
                 }
             },
             error: function(xhr) {
+                // Restore button on error
+                if (rejectButton.length && originalHtml) {
+                    rejectButton.html(originalHtml).prop('disabled', false);
+                }
                 alert('Error rejecting driver');
             }
         });
@@ -2127,6 +2184,16 @@ function deleteDriver(driverId) {
     }
     
     if (confirm('Are you sure you want to delete this driver application? This will permanently remove it from the onboarding table.')) {
+        // Find the delete button for this driver
+        const deleteButton = $('button[onclick*="deleteDriver(\'' + driverId + '\')"], button[onclick*=\'deleteDriver("' + driverId + '")\']').first();
+        const originalHtml = deleteButton.length ? deleteButton.html() : '';
+        
+        // Show loading state on button
+        if (deleteButton.length) {
+            deleteButton.prop('disabled', true);
+            deleteButton.html('<i class="fas fa-spinner fa-spin"></i>');
+        }
+        
         var deleteUrl = '{{ url("admin/onboarding") }}/' + driverId;
         console.log('[DELETE] Sending DELETE request to:', deleteUrl);
         console.log('[DELETE] CSRF Token:', $('meta[name="csrf-token"]').attr('content'));
@@ -2142,6 +2209,12 @@ function deleteDriver(driverId) {
                 if (response.success) {
                     alert('Driver application deleted successfully');
                     $('#onboardTable').DataTable().ajax.reload();
+                } else {
+                    // Restore button on error
+                    if (deleteButton.length && originalHtml) {
+                        deleteButton.html(originalHtml).prop('disabled', false);
+                    }
+                    alert('Error: ' + (response.message || 'Failed to delete driver application'));
                 }
             },
             error: function(xhr, status, error) {
@@ -2151,6 +2224,11 @@ function deleteDriver(driverId) {
                     responseText: xhr.responseText,
                     error: error
                 });
+                
+                // Restore button on error
+                if (deleteButton.length && originalHtml) {
+                    deleteButton.html(originalHtml).prop('disabled', false);
+                }
                 
                 var errorMsg = 'Error deleting driver application';
                 if (xhr.responseText) {

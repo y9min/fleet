@@ -106,7 +106,9 @@
           </div>
           <div class="row">
             <div class="col-12">
-              <button type="submit" class="btn btn-primary btn-block">@lang('passwords.sign_in')
+              <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn">
+                <span class="login-spinner d-none"><i class="fas fa-spinner fa-spin me-2"></i></span>
+                <span class="login-text">@lang('passwords.sign_in')</span>
                 {{-- Sign In --}}
               </button>
             </div>
@@ -136,6 +138,21 @@
 
   <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
   <script>
+  
+  // Add loading indicator to login form
+  $(document).ready(function() {
+      $('form[role="form"]').on('submit', function(e) {
+          var $submitBtn = $('#loginSubmitBtn');
+          var $spinner = $submitBtn.find('.login-spinner');
+          var $text = $submitBtn.find('.login-text');
+          
+          if ($submitBtn.length && !$submitBtn.prop('disabled')) {
+              $submitBtn.prop('disabled', true);
+              $spinner.removeClass('d-none');
+              $text.text('Signing in...');
+          }
+      });
+  });
 
 @if(Session::get('error'))
   $(document).ready(function () {

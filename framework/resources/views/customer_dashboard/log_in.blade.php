@@ -58,9 +58,8 @@
 
                                     <div class="text-center">
                                         <button type="submit" class="btn w-100 mt-3 mb-0 login_btn pt-2 pb-2">
-                                            <div class="spinner-border text-light hide-1 d-none"
-                                            role="status">
-                                            <span class="sr-only"></span>
+                                            <div class="hide-1 d-none" style="display: inline-flex !important; align-items: center;">
+                                                <i class="fas fa-spinner fa-spin me-2"></i>
                                             </div>
                                             <div class="hide-2">
                                                 @lang('frontend.login')

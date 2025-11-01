@@ -9,7 +9,7 @@ $(document).ready(function() {
         
         $btn.addClass('btn-loading');
         var originalText = $btn.html();
-        $btn.html('<i class="fa fa-spinner fa-spin"></i> Loading...');
+        $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Loading...');
         
         setTimeout(function() {
             $btn.removeClass('btn-loading').html(originalText);
@@ -97,7 +97,7 @@ $(document).ready(function() {
                 }
             }
             
-            var loadingText = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+            var loadingText = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
             
             if ($submitBtn.is('input')) {
                 $submitBtn.prop('disabled', true).val('Processing...');
@@ -144,7 +144,7 @@ $(document).ready(function() {
         $button.addClass('deleting')
                .prop('disabled', true);
         
-        var loadingHtml = '<i class="fa fa-spinner fa-spin"></i> ';
+        var loadingHtml = '<i class="fas fa-spinner fa-spin me-2"></i>';
         if (!$button.is('a')) {
             loadingHtml += 'Deleting...';
             $button.html(loadingHtml);
@@ -250,6 +250,106 @@ $(document).ready(function() {
 
     // Expose showMessage function globally
     window.showMessage = showMessage;
+
+    // Universal AJAX loading handler - automatically adds loading states to buttons for AJAX calls
+    // that don't have explicit loading indicators
+    var ajaxLoadingStates = {};
+    
+    // Store original AJAX function
+    var originalAjax = $.ajax;
+    
+    // Override $.ajax to add loading states automatically
+    $.ajax = function(options) {
+        var $triggerButton = null;
+        var originalHtml = '';
+        var originalDisabled = false;
+        
+        // Try to find associated button if options don't have explicit loading handling
+        if (!options.beforeSend || options.beforeSend.toString().indexOf('loading') === -1) {
+            // Find button that might have triggered this (look for recently clicked buttons)
+            var $recentlyClicked = $(document).data('last-clicked-button');
+            if ($recentlyClicked && $recentlyClicked.length) {
+                $triggerButton = $recentlyClicked;
+                originalHtml = $triggerButton.html();
+                originalDisabled = $triggerButton.prop('disabled');
+            } else {
+                // Try to find button in form if options.url matches form action
+                var $forms = $('form');
+                $forms.each(function() {
+                    var formAction = $(this).attr('action');
+                    if (formAction && options.url && options.url.indexOf(formAction) !== -1) {
+                        $triggerButton = $(this).find('button[type="submit"], input[type="submit"]').first();
+                        if ($triggerButton.length) {
+                            originalHtml = $triggerButton.html();
+                            originalDisabled = $triggerButton.prop('disabled');
+                            return false; // break loop
+                        }
+                    }
+                });
+            }
+            
+            // Add loading state if button found and not already loading
+            if ($triggerButton && $triggerButton.length && !$triggerButton.hasClass('btn-loading') && !$triggerButton.prop('disabled')) {
+                var requestId = 'ajax-' + Date.now() + '-' + Math.random();
+                ajaxLoadingStates[requestId] = {
+                    button: $triggerButton,
+                    originalHtml: originalHtml,
+                    originalDisabled: originalDisabled
+                };
+                
+                // Store original beforeSend
+                var originalBeforeSend = options.beforeSend || function() {};
+                
+                // Override beforeSend
+                options.beforeSend = function(jqXHR, settings) {
+                    var state = ajaxLoadingStates[requestId];
+                    if (state && state.button.length) {
+                        state.button.prop('disabled', true);
+                        state.button.addClass('btn-loading');
+                        // Only add spinner if button doesn't already have one
+                        if (state.button.html().indexOf('fa-spinner') === -1 && state.button.html().indexOf('spinner') === -1) {
+                            state.button.html('<i class="fas fa-spinner fa-spin me-2"></i>' + (state.button.text().trim() || 'Processing...'));
+                        }
+                    }
+                    // Call original beforeSend
+                    originalBeforeSend.call(this, jqXHR, settings);
+                };
+                
+                // Store original complete
+                var originalComplete = options.complete || function() {};
+                
+                // Override complete
+                options.complete = function(jqXHR, textStatus) {
+                    var state = ajaxLoadingStates[requestId];
+                    if (state && state.button.length) {
+                        state.button.prop('disabled', state.originalDisabled);
+                        state.button.removeClass('btn-loading');
+                        state.button.html(state.originalHtml);
+                    }
+                    delete ajaxLoadingStates[requestId];
+                    // Call original complete
+                    originalComplete.call(this, jqXHR, textStatus);
+                };
+            }
+        }
+        
+        // Clear the last clicked button data
+        $(document).removeData('last-clicked-button');
+        
+        // Call original AJAX
+        return originalAjax.call(this, options);
+    };
+    
+    // Track button clicks to associate with AJAX calls
+    $(document).on('click', 'button, a.btn, input[type="submit"]', function() {
+        var $btn = $(this);
+        // Store reference to clicked button for AJAX handler
+        $(document).data('last-clicked-button', $btn);
+        // Clear after short delay (AJAX should fire within this time)
+        setTimeout(function() {
+            $(document).removeData('last-clicked-button');
+        }, 1000);
+    });
 });
 
 // Add custom CSS for ripple effect

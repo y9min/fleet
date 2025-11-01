@@ -129,9 +129,9 @@ class WorkOrdersController extends Controller {
 	}
 	public function create() {
 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-			$data['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('in_service', true)->get();
 		} else {
-			$data['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->where('in_service', true)->get();
 		}
 		$data['vendors'] = Vendor::get();
 		$data['mechanic'] = Mechanic::get();
@@ -185,9 +185,9 @@ class WorkOrdersController extends Controller {
 		$index['parts'] = PartsModel::where('stock', '>', 0)->where('availability', 1)->get();
 		$index['data'] = WorkOrders::whereId($id)->first();
 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-			$index['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$index['vehicles'] = VehicleModel::where('in_service', true)->get();
 		} else {
-			$index['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->whereIn_service("1")->get();
+			$index['vehicles'] = VehicleModel::where('group_id', Auth::user()->group_id)->where('in_service', true)->get();
 		}
 		$index['vendors'] = Vendor::get();
 		$index['mechanic'] = Mechanic::get();

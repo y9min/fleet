@@ -1417,9 +1417,9 @@ public function get_vehicle(Request $request) {
 		}
 		$data['addresses'] = Address::where('customer_id', Auth::user()->id)->get();
 		if ($user == null) {
-			$data['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('in_service', true)->get();
 		} else {
-			$data['vehicles'] = VehicleModel::where([['group_id', $user], ['in_service', '1']])->get();}
+			$data['vehicles'] = VehicleModel::where([['group_id', $user], ['in_service', true]])->get();}
 		return view("bookings.create", $data);
 		//dd($data['vehicles']);
 	}

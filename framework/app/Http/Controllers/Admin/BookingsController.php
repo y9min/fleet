@@ -583,7 +583,7 @@ public function get_vehicle(Request $request) {
         if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
             $q = "SELECT id
             FROM vehicles
-            WHERE in_service = 1
+            WHERE in_service = true
             AND deleted_at IS NULL
             AND id NOT IN (
                 SELECT DISTINCT vehicle_id
@@ -599,7 +599,7 @@ public function get_vehicle(Request $request) {
         } else {
             $q = "SELECT id
             FROM vehicles
-            WHERE in_service = 1
+            WHERE in_service = true
             AND deleted_at IS NULL
             AND group_id = " . Auth::user()->group_id . "
             AND id NOT IN (
@@ -681,7 +681,7 @@ public function get_vehicle(Request $request) {
                 $to=$request->get("to_date");
                 $q = "SELECT id
                 FROM vehicles
-                WHERE in_service = 1
+                WHERE in_service = true
 				AND deleted_at IS NULL
                 AND id NOT IN (
                     SELECT DISTINCT vehicle_id
@@ -701,7 +701,7 @@ public function get_vehicle(Request $request) {
             {
                 $q = "SELECT id
                 FROM vehicles
-                WHERE in_service = 1
+                WHERE in_service = true
 				AND deleted_at IS NULL
                 AND id NOT IN (
                     SELECT DISTINCT vehicle_id
@@ -726,7 +726,7 @@ public function get_vehicle(Request $request) {
                 $to1=$request->get("to_date");
                 $q = "SELECT id
                 FROM vehicles
-                WHERE in_service = 1
+                WHERE in_service = true
                 AND group_id = " . Auth::user()->group_id . "
                 AND id NOT IN (
                     SELECT DISTINCT vehicle_id
@@ -748,7 +748,7 @@ public function get_vehicle(Request $request) {
             {
                 $q = "SELECT id
                 FROM vehicles
-                WHERE in_service = 1
+                WHERE in_service = true
                 AND group_id = " . Auth::user()->group_id . "
                 AND id NOT IN (
                     SELECT DISTINCT vehicle_id
@@ -1080,7 +1080,7 @@ public function assign_driver($id)
 	// 	if ($req_type == "new") {
 	// 		$xy = array();
 	// 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-	// 			// $q = "select id from vehicles where in_service=1 and deleted_at is null  and  id not in(select vehicle_id from bookings where  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
+	// 			// $q = "select id from vehicles where in_service = true and deleted_at is null  and  id not in(select vehicle_id from bookings where  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
 	// 			$q = "SELECT id
 	// 			FROM vehicles
 	// 			WHERE in_service = 1
@@ -1097,7 +1097,7 @@ public function assign_driver($id)
 	// 				)
 	// 			)";
 	// 		} else {
-	// 			// $q = "select id from vehicles where in_service=1 and deleted_at is null and group_id=" . Auth::user()->group_id . " and  id not in(select vehicle_id from bookings where  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
+	// 			// $q = "select id from vehicles where in_service = true and deleted_at is null and group_id=" . Auth::user()->group_id . " and  id not in(select vehicle_id from bookings where  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
 	// 			$q = "SELECT id
 	// 			FROM vehicles
 	// 			WHERE in_service = 1
@@ -1134,7 +1134,7 @@ public function assign_driver($id)
 	// 			$condition = "";
 	// 		}
 	// 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-	// 			// $q = "select id from vehicles where in_service=1 " . $condition . " and id not in (select vehicle_id from bookings where id!=$id and  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
+	// 			// $q = "select id from vehicles where in_service = true " . $condition . " and id not in (select vehicle_id from bookings where id!=$id and  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
 	// 			$q = "SELECT id
 	// 			FROM vehicles
 	// 			WHERE in_service = 1" . $condition . "
@@ -1151,7 +1151,7 @@ public function assign_driver($id)
 	// 				)
 	// 			)";
 	// 		} else {
-	// 			// $q = "select id from vehicles where in_service=1 " . $condition . " and group_id=" . Auth::user()->group_id . " and id not in (select vehicle_id from bookings where id!=$id and  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
+	// 			// $q = "select id from vehicles where in_service = true " . $condition . " and group_id=" . Auth::user()->group_id . " and id not in (select vehicle_id from bookings where id!=$id and  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
 	// 			$q = "SELECT id
 	// 			FROM vehicles
 	// 			WHERE in_service = 1" . $condition . "
@@ -1377,11 +1377,11 @@ public function assign_driver($id)
 			{
 				$pickup=$booking->pickup;
 				$dropoff=isset($b->dropoff) ? $b->dropoff : $pickup;
-				$q1 = "select * from vehicles where in_service=1" . $condition . " and deleted_at is null and id not in (select vehicle_id from bookings where status=0 and  id!=" . $id . " and "."id!=" . $b->id." and deleted_at is null and  (DATE_SUB(pickup, INTERVAL 15 MINUTE) between '" . $pickup . "' and '" . $dropoff . "' or DATE_ADD(dropoff, INTERVAL 15 MINUTE) between '" . $pickup . "' and '" . $dropoff . "'  or dropoff between '" . $pickup . "' and '" . $dropoff . "'))";
+				$q1 = "select * from vehicles where in_service = true" . $condition . " and deleted_at is null and id not in (select vehicle_id from bookings where status=0 and  id!=" . $id . " and "."id!=" . $b->id." and deleted_at is null and  (DATE_SUB(pickup, INTERVAL 15 MINUTE) between '" . $pickup . "' and '" . $dropoff . "' or DATE_ADD(dropoff, INTERVAL 15 MINUTE) between '" . $pickup . "' and '" . $dropoff . "'  or dropoff between '" . $pickup . "' and '" . $dropoff . "'))";
 			}
 			else
 			{
-				$q1 = "select * from vehicles where in_service=1" . $condition . " and deleted_at is null and id not in (select vehicle_id from bookings where status=0 and  id!=" . $id . " and deleted_at is null and  (DATE_SUB(pickup, INTERVAL 15 MINUTE) between '" . $booking->pickup . "' and '" . $booking->dropoff . "' or DATE_ADD(dropoff, INTERVAL 15 MINUTE) between '" . $booking->pickup . "' and '" . $booking->dropoff . "'  or dropoff between '" . $booking->pickup . "' and '" . $booking->dropoff . "'))";
+				$q1 = "select * from vehicles where in_service = true" . $condition . " and deleted_at is null and id not in (select vehicle_id from bookings where status=0 and  id!=" . $id . " and deleted_at is null and  (DATE_SUB(pickup, INTERVAL 15 MINUTE) between '" . $booking->pickup . "' and '" . $booking->dropoff . "' or DATE_ADD(dropoff, INTERVAL 15 MINUTE) between '" . $booking->pickup . "' and '" . $booking->dropoff . "'  or dropoff between '" . $booking->pickup . "' and '" . $booking->dropoff . "'))";
 			}
 		} else {
 			$b = Bookings::select("bookings.*")->join('bookings_meta', 'bookings_meta.booking_id', '=', 'bookings.id')
@@ -1391,11 +1391,11 @@ public function assign_driver($id)
 			{
 				$pickup=$booking->pickup;
 				$dropoff=isset($b->dropoff) ? $b->dropoff : $pickup;
-				$q1 = "select * from vehicles where in_service=1" . $condition . " and deleted_at is null and group_id=" . Auth::user()->group_id . " and id not in (select vehicle_id from bookings where status=0 and  id!=" . $id . " and  "."id!=" . $b->id." and deleted_at is null and  (DATE_SUB(pickup, INTERVAL 15 MINUTE) between '" . $pickup . "' and '" . $dropoff . "' or DATE_ADD(dropoff, INTERVAL 15 MINUTE) between '" . $pickup . "' and '" . $dropoff . "'  or dropoff between '" . $pickup . "' and '" . $dropoff . "'))";
+				$q1 = "select * from vehicles where in_service = true" . $condition . " and deleted_at is null and group_id=" . Auth::user()->group_id . " and id not in (select vehicle_id from bookings where status=0 and  id!=" . $id . " and  "."id!=" . $b->id." and deleted_at is null and  (DATE_SUB(pickup, INTERVAL 15 MINUTE) between '" . $pickup . "' and '" . $dropoff . "' or DATE_ADD(dropoff, INTERVAL 15 MINUTE) between '" . $pickup . "' and '" . $dropoff . "'  or dropoff between '" . $pickup . "' and '" . $dropoff . "'))";
 			}
 			else
 			{
-				$q1 = "select * from vehicles where in_service=1" . $condition . " and deleted_at is null and group_id=" . Auth::user()->group_id . " and id not in (select vehicle_id from bookings where status=0 and  id!=" . $id . " and deleted_at is null and  (DATE_SUB(pickup, INTERVAL 15 MINUTE) between '" . $booking->pickup . "' and '" . $booking->dropoff . "' or DATE_ADD(dropoff, INTERVAL 15 MINUTE) between '" . $booking->pickup . "' and '" . $booking->dropoff . "'  or dropoff between '" . $booking->pickup . "' and '" . $booking->dropoff . "'))";
+				$q1 = "select * from vehicles where in_service = true" . $condition . " and deleted_at is null and group_id=" . Auth::user()->group_id . " and id not in (select vehicle_id from bookings where status=0 and  id!=" . $id . " and deleted_at is null and  (DATE_SUB(pickup, INTERVAL 15 MINUTE) between '" . $booking->pickup . "' and '" . $booking->dropoff . "' or DATE_ADD(dropoff, INTERVAL 15 MINUTE) between '" . $booking->pickup . "' and '" . $booking->dropoff . "'  or dropoff between '" . $booking->pickup . "' and '" . $booking->dropoff . "'))";
 			}
 		}
 		$v_ids = array();

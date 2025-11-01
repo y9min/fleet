@@ -214,7 +214,7 @@ class BookingsApiController extends Controller {
                 })
                 ->pluck('driver_id')
                 ->toArray();
-			$vehicle_list = VehicleModel::whereNotIn('id', $exclude_vehicle_ids)->where('in_service', 1);
+			$vehicle_list = VehicleModel::whereNotIn('id', $exclude_vehicle_ids)->where('in_service', true);
 			$drivers = User::whereNotIn('id', $exclude_driver_ids)->where('user_type', 'D')->get();
 			if ($booking != null && $booking->vehicle_typeid != null) {
 				$vehicle_list = $vehicle_list->where('type_id', $booking->vehicle_typeid);
@@ -260,9 +260,9 @@ class BookingsApiController extends Controller {
 		if ($id == 0) {
 			$drivers = User::whereUser_type("D")->get();
 			if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-				$vehicles = VehicleModel::whereIn_service("1")->get();
+				$vehicles = VehicleModel::where('in_service', true)->get();
 			} else {
-				$vehicles = VehicleModel::where([['group_id', Auth::user()->group_id], ['in_service', '1']])->get();
+				$vehicles = VehicleModel::where([['group_id', Auth::user()->group_id], ['in_service', true]])->get();
 			}
 		} else {
 			$booking = Bookings::find($id);
@@ -292,7 +292,7 @@ class BookingsApiController extends Controller {
                 })
                 ->pluck('driver_id')
                 ->toArray();
-			$vehicle_list = VehicleModel::whereNotIn('id', $exclude_vehicle_ids)->where('in_service', 1);
+			$vehicle_list = VehicleModel::whereNotIn('id', $exclude_vehicle_ids)->where('in_service', true);
 			$drivers = User::whereNotIn('id', $exclude_driver_ids)->where('user_type', 'D')->get();
 			// dd($driver_list);
 			if ($booking->vehicle_typeid != null) {

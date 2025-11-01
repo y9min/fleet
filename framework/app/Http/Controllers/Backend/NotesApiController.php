@@ -81,9 +81,9 @@ class NotesApiController extends Controller {
 		$vehicle_details = array();
 		$person_details = array();
 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
-			$vehicles = VehicleModel::whereIn_service("1")->get();
+			$vehicles = VehicleModel::where('in_service', true)->get();
 		} else {
-			$vehicles = VehicleModel::where('group_id', Auth::user()->group_id)->whereIn_service("1")->get();
+			$vehicles = VehicleModel::where('group_id', Auth::user()->group_id)->where('in_service', true)->get();
 		}
 		$persons = User::where('user_type', '!=', 'C')->where('deleted_at', null)->get();
 		foreach ($vehicles as $row) {

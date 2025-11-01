@@ -162,9 +162,9 @@ class BookingQuotationController extends Controller {
 		}
 		$data['addresses'] = Address::where('customer_id', Auth::user()->id)->get();
 		if ($group_id == null || Auth::user()->user_type == "S") {
-			$data['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('in_service', true)->get();
 		} else {
-			$data['vehicles'] = VehicleModel::where([['group_id', $group_id], ['in_service', '1']])->get();
+			$data['vehicles'] = VehicleModel::where([['group_id', $group_id], ['in_service', true]])->get();
 		}
 		return view('booking_quotation.create', $data);
 	}
@@ -192,9 +192,9 @@ class BookingQuotationController extends Controller {
 		}
 		$data['addresses'] = Address::where('customer_id', Auth::user()->id)->get();
 		if ($group_id == null || Auth::user()->user_type == "S") {
-			$data['vehicles'] = VehicleModel::whereIn_service("1")->get();
+			$data['vehicles'] = VehicleModel::where('in_service', true)->get();
 		} else {
-			$data['vehicles'] = VehicleModel::where([['group_id', $group_id], ['in_service', '1']])->get();
+			$data['vehicles'] = VehicleModel::where([['group_id', $group_id], ['in_service', true]])->get();
 		}
 		$data['data'] = BookingQuotationModel::find($id);
 		return view('booking_quotation.edit', $data);

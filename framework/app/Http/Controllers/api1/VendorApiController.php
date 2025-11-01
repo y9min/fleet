@@ -4669,7 +4669,7 @@ class VendorApiController extends Controller
         } else {
 
 
-            $vehicles = VehicleModel::where('user_id', $request->user_id)->whereIn_service(1)->withTrashed()->get();//withTrahsed added on 15-02-23
+            $vehicles = VehicleModel::where('user_id', $request->user_id)->where('in_service', true)->withTrashed()->get();//withTrahsed added on 15-02-23
 
 
             //dd($vehicles);
@@ -6397,7 +6397,7 @@ class VendorApiController extends Controller
                 $vehicle_ids = auth()->user()->vehicles()->pluck('vehicle_id')->toArray();
 
 
-               $vehicles = auth()->user()->vehicles()->whereIn_service(1)->get();
+               $vehicles = auth()->user()->vehicles()->where('in_service', true)->get();
 
 
             } else {
@@ -6406,7 +6406,7 @@ class VendorApiController extends Controller
                 if ($user->group_id == null || $user->user_type == "S") {
 
 
-                   $vehicles = VehicleModel::whereIn_service(1)->get();
+                   $vehicles = VehicleModel::where('in_service', true)->get();
 
 
                     $vehicle_ids =$vehicles->pluck('id')->toArray();
@@ -6415,7 +6415,7 @@ class VendorApiController extends Controller
                 } else {
 
 
-                   $vehicles = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->get();
+                   $vehicles = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->get();
 
 
                    $vehicle_ids =$vehicles->pluck('id')->toArray();   
@@ -6724,13 +6724,13 @@ class VendorApiController extends Controller
                 if ($user->group_id == null || $user->user_type == "S") {
 
 
-                    $vehicle_ids = VehicleModel::whereIn_service(1)->pluck('id')->toArray();
+                    $vehicle_ids = VehicleModel::where('in_service', true)->pluck('id')->toArray();
 
 
                 } else {
 
 
-                    $vehicle_ids = VehicleModel::whereIn_service(1)->where('group_id', $user->group_id)->pluck('id')->toArray();
+                    $vehicle_ids = VehicleModel::where('in_service', true)->where('group_id', $user->group_id)->pluck('id')->toArray();
 
 
                 }

@@ -20,6 +20,7 @@ use Carbon\Carbon;
 use DataTables;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Redirect;
 use Validator;
@@ -369,25 +370,49 @@ class FinesController extends Controller
             // Refresh the fine model before updating to ensure we have the latest data
             $fine->refresh();
             
-            // Use update method instead of direct assignment
-            $updated = $fine->update(['status' => $request->status]);
-
-            if (!$updated) {
-                // Update returns false if model wasn't dirty or if save failed
-                // Check if the status actually changed
-                if ($fine->status === $request->status) {
-                    // Status is already set to this value
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Status is already set to ' . $request->status
-                    ]);
-                }
-                
+            // Validate that the status value matches expected values
+            $validStatuses = ['pending', 'notified', 'paid', 'disputed', 'escalated'];
+            if (!in_array($request->status, $validStatuses)) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Update failed',
-                    'message' => 'Failed to save the status update. The fine may not exist or have been deleted.'
-                ], 500);
+                    'error' => 'Invalid status',
+                    'message' => 'The status provided is not valid. Must be one of: ' . implode(', ', $validStatuses)
+                ], 400);
+            }
+            
+            // Check if status is already set (optimization)
+            if ($fine->status === $request->status) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Status is already set to ' . $request->status
+                ]);
+            }
+            
+            // Try direct database update first to avoid model accessor issues
+            // This bypasses any potential issues with accessors being triggered during save
+            $updated = DB::table('fines')
+                ->where('id', $fine->id)
+                ->whereNull('deleted_at') // Ensure not soft-deleted
+                ->update([
+                    'status' => $request->status,
+                    'updated_at' => now()
+                ]);
+            
+            if ($updated === 0) {
+                // Try model update as fallback
+                $fine->status = $request->status;
+                $saved = $fine->save();
+                
+                if (!$saved) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Update failed',
+                        'message' => 'Failed to save the status update. The fine may not exist or have been deleted.'
+                    ], 500);
+                }
+            } else {
+                // Refresh model to get updated values
+                $fine->refresh();
             }
 
             return response()->json([
@@ -401,24 +426,40 @@ class FinesController extends Controller
                 'message' => 'The fine you are trying to update does not exist.'
             ], 404);
         } catch (\Illuminate\Database\QueryException $e) {
-            \Log::error('Fine status update database error', [
+            $errorDetails = [
                 'fine_id' => $id,
                 'status' => $request->status,
                 'error' => $e->getMessage(),
                 'sql' => $e->getSql(),
                 'bindings' => $e->getBindings(),
+                'code' => $e->getCode(),
                 'trace' => $e->getTraceAsString()
-            ]);
+            ];
             
+            \Log::error('Fine status update database error', $errorDetails);
+            
+            // Determine specific error message
             $errorMessage = 'Database error occurred while updating the status.';
-            if (str_contains($e->getMessage(), 'CHECK constraint')) {
+            $errorMsg = $e->getMessage();
+            
+            if (str_contains($errorMsg, 'CHECK constraint')) {
                 $errorMessage = 'Invalid status value. Please ensure the status is one of: pending, notified, paid, disputed, escalated.';
+            } elseif (str_contains($errorMsg, 'enum') || str_contains($errorMsg, 'ENUM')) {
+                $errorMessage = 'Invalid status value. The status must be one of: pending, notified, paid, disputed, escalated.';
+            } elseif (str_contains($errorMsg, 'foreign key') || str_contains($errorMsg, 'FOREIGN KEY')) {
+                $errorMessage = 'Database constraint violation. The fine may reference data that no longer exists.';
+            } elseif (str_contains($errorMsg, 'column') && str_contains($errorMsg, 'cannot be null')) {
+                $errorMessage = 'Required field is missing. Please check the fine data.';
+            } else {
+                // Include the actual error message for debugging (can be removed in production)
+                $errorMessage .= ' Error: ' . substr($errorMsg, 0, 200);
             }
             
             return response()->json([
                 'success' => false,
                 'error' => 'Database error',
-                'message' => $errorMessage
+                'message' => $errorMessage,
+                'debug_error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         } catch (\Exception $e) {
             \Log::error('Fine status update error', [

@@ -350,19 +350,56 @@ class FinesController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        $fine = Fine::findOrFail($id);
-        
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,notified,paid,disputed,escalated',
-        ]);
+        try {
+            $fine = Fine::findOrFail($id);
+            
+            $validator = Validator::make($request->all(), [
+                'status' => 'required|in:pending,notified,paid,disputed,escalated',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['error' => 'Invalid status'], 400);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Invalid status',
+                    'message' => 'The status provided is not valid.'
+                ], 400);
+            }
+
+            $fine->status = $request->status;
+            $saved = $fine->save();
+
+            if (!$saved) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Update failed',
+                    'message' => 'Failed to save the status update.'
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status updated successfully'
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Fine not found',
+                'message' => 'The fine you are trying to update does not exist.'
+            ], 404);
+        } catch (\Exception $e) {
+            \Log::error('Fine status update error', [
+                'fine_id' => $id,
+                'status' => $request->status,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Server error',
+                'message' => 'An error occurred while updating the status. Please try again.'
+            ], 500);
         }
-
-        $fine->update(['status' => $request->status]);
-
-        return response()->json(['success' => 'Status updated successfully']);
     }
 
     /**

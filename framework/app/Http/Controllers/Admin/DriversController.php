@@ -108,7 +108,25 @@ class DriversController extends Controller {
 
                 $driver->save();
 
-
+                // GDPR: Delete identity documents when driver is verified (approved)
+                if ($request->status == 1 || $request->status == '1' || $request->status === true) {
+                    try {
+                        $deletionService = new \App\Services\DriverIdentityDocumentDeletionService();
+                        $deletionResult = $deletionService->deleteDriverIdentityDocuments($driver);
+                        \Log::info('GDPR document deletion completed for verified driver', [
+                            'driver_id' => $driver->id,
+                            'deleted_files_count' => $deletionResult['deleted_files_count'],
+                            'errors_count' => count($deletionResult['errors'] ?? [])
+                        ]);
+                    } catch (\Exception $deletionException) {
+                        // Log error but don't fail the verification process
+                        \Log::error('Failed to delete driver identity documents during verification', [
+                            'driver_id' => $driver->id,
+                            'error' => $deletionException->getMessage(),
+                            'trace' => $deletionException->getTraceAsString()
+                        ]);
+                    }
+                }
 
                 return redirect('/admin/drivers');
 

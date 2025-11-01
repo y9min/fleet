@@ -160,7 +160,7 @@ class BookingsController extends Controller {
 				->with(['customer', 'driver', 'metas']);
 			return DataTables::eloquent($bookings)
 				->addColumn('check', function ($user) {
-					return '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '" onclick=\'checkcheckbox();\'>';
+					return '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '">';
 				})
 				->addColumn('customer', function ($row) {
 					return ($row->customer->name) ?? "";

@@ -48,13 +48,13 @@ class FinesController extends Controller
     {
         $auth = \Auth::user();
         if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
-            $vehicles = VehicleModel::where('in_service', 1)->where('company_id', $auth->company_id)->get();
+            $vehicles = VehicleModel::where('in_service', true)->where('company_id', $auth->company_id)->get();
             $drivers = User::where('user_type', 'D')->where('company_id', $auth->company_id)->get();
         } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
             $vehicles = collect();
             $drivers = collect();
         } else {
-            $vehicles = VehicleModel::where('in_service', 1)->get();
+            $vehicles = VehicleModel::where('in_service', true)->get();
             $drivers = User::where('user_type', 'D')->get();
         }
         $fine_types = Fine::getFineTypes();
@@ -199,13 +199,13 @@ class FinesController extends Controller
         $fine = Fine::findOrFail($id);
         $auth = \Auth::user();
         if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
-            $vehicles = VehicleModel::where('in_service', 1)->where('company_id', $auth->company_id)->get();
+            $vehicles = VehicleModel::where('in_service', true)->where('company_id', $auth->company_id)->get();
             $drivers = User::where('user_type', 'D')->where('company_id', $auth->company_id)->get();
         } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
             $vehicles = collect();
             $drivers = collect();
         } else {
-            $vehicles = VehicleModel::where('in_service', 1)->get();
+            $vehicles = VehicleModel::where('in_service', true)->get();
             $drivers = User::where('user_type', 'D')->get();
         }
         $fine_types = Fine::getFineTypes();

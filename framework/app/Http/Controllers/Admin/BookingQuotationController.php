@@ -243,7 +243,7 @@ class BookingQuotationController extends Controller {
 		$data['data'] = BookingQuotationModel::find($id);
 		if (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
 			$q = "SELECT * FROM vehicles 
-				  WHERE in_service = 1 AND deleted_at IS NULL 
+				  WHERE in_service = true AND deleted_at IS NULL 
 				  AND id NOT IN (
 					  SELECT vehicle_id FROM bookings 
 					  WHERE status = 0 AND id != " . $id . " AND deleted_at IS NULL 
@@ -255,7 +255,7 @@ class BookingQuotationController extends Controller {
 				  )";
 		} else {
 			$q = "SELECT * FROM vehicles 
-				  WHERE in_service = 1 AND deleted_at IS NULL AND group_id = " . Auth::user()->group_id . " 
+				  WHERE in_service = true AND deleted_at IS NULL AND group_id = " . Auth::user()->group_id . " 
 				  AND id NOT IN (
 					  SELECT vehicle_id FROM bookings 
 					  WHERE status = 0 AND id != " . $id . " AND deleted_at IS NULL 

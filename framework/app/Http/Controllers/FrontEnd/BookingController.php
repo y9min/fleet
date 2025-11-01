@@ -160,7 +160,7 @@ class BookingController extends Controller {
                 // $q = "select id from vehicles where in_service=1 and deleted_at is null  and  id not in(select vehicle_id from bookings where  deleted_at is null  and ((dropoff between '" . $from_date . "' and '" . $to_date . "' or pickup between '" . $from_date . "' and '" . $to_date . "') or (DATE_ADD(dropoff, INTERVAL 10 MINUTE)>='" . $from_date . "' and DATE_SUB(pickup, INTERVAL 10 MINUTE)<='" . $to_date . "')))";
                 $q = "SELECT id
                 FROM vehicles
-                WHERE in_service = 1 " . $condition . "
+                WHERE in_service = true " . $condition . "
                 AND deleted_at IS NULL
                 AND id NOT IN (
                     SELECT DISTINCT vehicle_id
@@ -178,7 +178,7 @@ class BookingController extends Controller {
     
                 $q = "SELECT id
                 FROM vehicles
-                WHERE in_service = 1 " . $condition . "
+                WHERE in_service = true " . $condition . "
                 AND deleted_at IS NULL
                 AND group_id = " . Auth::user()->group_id . "
                 AND id NOT IN (

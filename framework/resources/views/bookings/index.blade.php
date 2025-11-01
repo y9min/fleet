@@ -557,6 +557,11 @@
     
   });
 
+  // Store selected IDs to persist across DataTable redraws
+  var selectedBookingIds = new Set();
+  // Guard flag to suppress unintended DataTables reloads from checkbox interactions
+  var suppressNextAjaxReload = false;
+
   $(function(){
     
     var table = $('#ajax_data_table').DataTable({
@@ -609,6 +614,20 @@
             {data: 'action',  name: 'action', searchable:false, orderable:false}
         ],
         order: [[4, 'desc']],
+        "drawCallback": function(settings) {
+          // Restore checkbox states after DataTable redraw
+          $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
+            var checkboxId = $(this).val();
+            if (selectedBookingIds.has(checkboxId)) {
+              $(this).prop('checked', true);
+            } else {
+              $(this).prop('checked', false);
+            }
+          });
+          
+          // Update select all checkbox state
+          checkcheckbox();
+        },
         "initComplete": function() {
               table.columns().every(function () {
                 var that = this;
@@ -619,11 +638,47 @@
               });
             }
     });
+
+    // Prevent checkbox interactions from triggering a server reload
+    $('#ajax_data_table').on('preXhr.dt', function(e, settings, data) {
+      if (suppressNextAjaxReload) {
+        suppressNextAjaxReload = false;
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    });
+
+    // Handle checkbox clicks within DataTable (delegated event)
+    $('#ajax_data_table').on('change', 'input[name="ids[]"]', function(e) {
+      try {
+        // Prevent any default behavior or bubbling that could trigger DataTables redraws
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
+        // Suppress any immediate DT ajax reload potentially triggered by plugins
+        suppressNextAjaxReload = true;
+
+        var checkboxId = $(this).val();
+
+        if ($(this).is(':checked')) {
+          selectedBookingIds.add(checkboxId);
+        } else {
+          selectedBookingIds.delete(checkboxId);
+        }
+
+        checkcheckbox();
+        return false;
+      } catch (err) {
+        console.error('Checkbox change handler error:', err);
+      }
+    });
   });
 
   $('#bulk_delete').on('click',function(){
-    // console.log($( "input[name='ids[]']:checked" ).length);
-    if($( "input[name='ids[]']:checked" ).length == 0){
+    // Use stored selection set instead of querying DOM
+    if(selectedBookingIds.size == 0){
       $('#bulk_delete').prop('type','button');
         new PNotify({
             title: 'Failed!',
@@ -631,48 +686,70 @@
             type: 'error'
           });
         $('#bulk_delete').attr('disabled',true);
+      return false;
     }
-    if($("input[name='ids[]']:checked").length > 0){
-      // var favorite = [];
-      $.each($("input[name='ids[]']:checked"), function(){
-          // favorite.push($(this).val());
-          $("#bulk_hidden").append('<input type=hidden name=ids[] value='+$(this).val()+'>');
+    if(selectedBookingIds.size > 0){
+      // Clear existing hidden inputs
+      $("#bulk_hidden").empty();
+      // Add all selected IDs
+      selectedBookingIds.forEach(function(id){
+        $("#bulk_hidden").append('<input type=hidden name=ids[] value='+id+'>');
       });
-      // console.log(favorite);
     }
   });
 
 
-  $('#chk_all').on('click',function(){
-    if(this.checked){
-      $('.checkbox').each(function(){
-        $('.checkbox').prop("checked",true);
-      });
-    }else{
-      $('.checkbox').each(function(){
-        $('.checkbox').prop("checked",false);
-      });
-      $('#bulk_delete').prop('disabled',true);
-    }
+  // Handle select all checkbox
+  $('#chk_all').on('change', function (e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+
+    // Suppress any immediate DT ajax reload potentially triggered by plugins
+    suppressNextAjaxReload = true;
+
+    var isChecked = this.checked;
+
+    // Update all visible checkboxes
+    $('#ajax_data_table tbody input[name="ids[]"]').each(function() {
+      $(this).prop('checked', isChecked);
+      var checkboxId = $(this).val();
+
+      if (isChecked) {
+        selectedBookingIds.add(checkboxId);
+      } else {
+        selectedBookingIds.delete(checkboxId);
+      }
+    });
+
+    checkcheckbox();
+    return false;
   });
 
   // Checkbox checked
   function checkcheckbox(){
     // Total checkboxes
-    var length = $('.checkbox').length;
+    var length = $('#ajax_data_table tbody input[name="ids[]"]').length;
     // Total checked checkboxes
-    var totalchecked = 0;
-    $('.checkbox').each(function(){
-        if($(this).is(':checked')){
-            totalchecked+=1;
-        }
-    });
-    // console.log(length+" "+totalchecked);
-    // Checked unchecked checkbox
-    if(totalchecked == length){
-        $("#chk_all").prop('checked', true);
-    }else{
-        $('#chk_all').prop('checked', false);
+    var totalchecked = $('#ajax_data_table tbody input[name="ids[]"]:checked').length;
+    
+    // Update select all checkbox state
+    if (totalchecked === 0) {
+      $("#chk_all").prop('checked', false);
+      $("#chk_all").prop('indeterminate', false);
+    } else if (totalchecked === length && length > 0) {
+      $("#chk_all").prop('checked', true);
+      $("#chk_all").prop('indeterminate', false);
+    } else {
+      $("#chk_all").prop('checked', false);
+      $("#chk_all").prop('indeterminate', true);
+    }
+
+    // Update bulk delete button state
+    if (selectedBookingIds.size > 0) {
+      $('#bulk_delete').prop('disabled', false);
+    } else {
+      $('#bulk_delete').prop('disabled', true);
     }
   }
 

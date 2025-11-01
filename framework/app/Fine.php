@@ -81,8 +81,8 @@ class Fine extends Model
         }
         
         // Check if within discount window
-        if ($this->discount_window_days && $this->discount_amount && 
-            Carbon::now()->lte($this->date_logged->addDays($this->discount_window_days))) {
+        if ($this->discount_window_days && $this->discount_amount && $this->date_logged &&
+            Carbon::now()->lte($this->date_logged->copy()->addDays($this->discount_window_days))) {
             return $this->discount_amount;
         }
         
@@ -96,8 +96,8 @@ class Fine extends Model
 
     public function getIsInDiscountWindowAttribute()
     {
-        return $this->discount_window_days && $this->discount_amount && 
-               Carbon::now()->lte($this->date_logged->addDays($this->discount_window_days));
+        return $this->discount_window_days && $this->discount_amount && $this->date_logged &&
+               Carbon::now()->lte($this->date_logged->copy()->addDays($this->discount_window_days));
     }
 
     public function getStatusBadgeAttribute()

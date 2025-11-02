@@ -38,34 +38,22 @@ class UsersController extends Controller {
 	public function fetch_data(Request $request) {
 		try {
 			if ($request->ajax()) {
-				$users = User::with(['metas'])
+				$users = User::with(['company'])
 					->where(function ($query) {
 						$query->where('user_type', 'O')
 							->orWhere('user_type', 'S');
 					});
-				$date_format_setting = (Hyvikk::get('date_format')) ? Hyvikk::get('date_format') : 'd-m-Y';
 				return DataTables::eloquent($users)
-					->addColumn('check', function ($user) {
-						$tag = '';
-						if ($user->user_type == "S") {
-							$tag = '<i class="fa fa-ban" style="color:#767676;"></i>';
-						} else {
-							$tag = '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '" onclick=\'checkcheckbox();\'>';
-						}
-						return $tag;
+					->addColumn('company', function ($user) {
+						return $user->company ? $user->company->name : 'No Company';
 					})
-					->addColumn('profile_image', function ($user) {
-						$profile_image = $user->getMeta('profile_image');
-						$src = ($profile_image != null) ? asset('uploads/' . $profile_image) : asset('assets/images/no-user.jpg');
-						return '<img src="' . $src . '" height="70px" width="70px">';
-					})
-					->editColumn('created_at', function ($user) use ($date_format_setting) {
-						return date($date_format_setting . ' g:i A', strtotime($user->created_at));
+					->editColumn('created_at', function ($user) {
+						return $user->created_at->format('M d, Y');
 					})
 					->addColumn('action', function ($user) {
 						return view('users.list-actions', ['row' => $user]);
 					})
-					->rawColumns(['profile_image', 'action', 'check'])
+					->rawColumns(['action'])
 					->make(true);
 			}
 		} catch (\Exception $e) {

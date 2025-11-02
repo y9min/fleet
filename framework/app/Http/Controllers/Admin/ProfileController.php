@@ -302,16 +302,27 @@ class ProfileController extends Controller
             'company_id' => 'nullable|exists:companies,id',
         ]);
 
-        // Create the user with default password
-        $newUser = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make('password'), // Default password
-            'user_type' => $request->user_type,
-            'company_id' => $request->company_id,
-            'is_active' => true,
-            'api_token' => \Illuminate\Support\Str::random(60),
+        // Create the user with default password using raw SQL for PostgreSQL boolean compatibility
+        $userId = \Illuminate\Support\Str::uuid()->toString();
+        $now = now();
+        $apiToken = \Illuminate\Support\Str::random(60);
+        
+        DB::statement('
+            INSERT INTO users (id, name, email, password, user_type, company_id, is_active, api_token, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, true, ?, ?, ?)
+        ', [
+            $userId,
+            $request->name,
+            $request->email,
+            Hash::make('password'), // Default password
+            $request->user_type,
+            $request->company_id ?? null,
+            $apiToken,
+            $now,
+            $now,
         ]);
+        
+        $newUser = User::findOrFail($userId);
 
         // Assign role based on user type
         if ($request->user_type === 'B') {

@@ -27,6 +27,58 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_active' => 'boolean',
         'is_verified' => 'boolean',
     ];
+    
+    /**
+     * Set the is_active attribute to ensure it's always a boolean for PostgreSQL
+     */
+    public function setIsActiveAttribute($value)
+    {
+        // Explicitly convert to boolean to ensure PostgreSQL receives proper boolean type
+        $this->attributes['is_active'] = (bool) $value;
+    }
+    
+    /**
+     * Set the is_verified attribute to ensure it's always a boolean for PostgreSQL
+     */
+    public function setIsVerifiedAttribute($value)
+    {
+        // Explicitly convert to boolean to ensure PostgreSQL receives proper boolean type
+        $this->attributes['is_verified'] = (bool) $value;
+    }
+    
+    /**
+     * Perform a model insert operation.
+     * Override to ensure boolean values are properly handled for PostgreSQL
+     */
+    protected function performInsert(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        // Ensure boolean fields are explicitly cast before insert
+        if (isset($this->attributes['is_active'])) {
+            $this->attributes['is_active'] = (bool) $this->attributes['is_active'];
+        }
+        if (isset($this->attributes['is_verified'])) {
+            $this->attributes['is_verified'] = (bool) $this->attributes['is_verified'];
+        }
+        
+        return parent::performInsert($query);
+    }
+    
+    /**
+     * Perform a model update operation.
+     * Override to ensure boolean values are properly handled for PostgreSQL
+     */
+    protected function performUpdate(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        // Ensure boolean fields are explicitly cast before update
+        if (isset($this->attributes['is_active'])) {
+            $this->attributes['is_active'] = (bool) $this->attributes['is_active'];
+        }
+        if (isset($this->attributes['is_verified'])) {
+            $this->attributes['is_verified'] = (bool) $this->attributes['is_verified'];
+        }
+        
+        return parent::performUpdate($query);
+    }
 
     public function user_data() {
             return $this->hasMany("App\Model\UserData", 'user_id', 'id');

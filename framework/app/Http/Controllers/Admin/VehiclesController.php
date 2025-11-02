@@ -20,11 +20,13 @@ use App\Model\FuelModel;
 use App\Model\Hyvikk;
 use App\Model\IncomeModel;
 use App\Model\ServiceReminderModel;
+use App\Model\Company;
 use App\Model\User;
 use App\Model\VehicleGroupModel;
 use App\Model\VehicleModel;
 use App\Model\VehicleReviewModel;
 use App\Model\VehicleTypeModel;
+use App\Services\StripeSubscriptionService;
 use Auth;
 use Carbon\Carbon;
 use DataTables;
@@ -902,6 +904,31 @@ class VehiclesController extends Controller {
                         
                         \Log::info('Vehicle found for deletion: ' . $vehicle->license_plate . ' (ID: ' . $vehicleId . ')');
                         
+                        // Handle Stripe subscription update before deletion
+                        if ($vehicle->company_id) {
+                            try {
+                                $company = Company::find($vehicle->company_id);
+                                if ($company && $company->stripe_subscription_id) {
+                                    // Count remaining vehicles (after this deletion)
+                                    $remainingCount = VehicleModel::where('company_id', $vehicle->company_id)
+                                        ->where('id', '!=', $vehicleId)
+                                        ->count();
+                                    
+                                    $stripeService = new StripeSubscriptionService();
+                                    $stripeService->updateSubscriptionQuantity($company->stripe_subscription_id, $remainingCount, $company);
+                                    
+                                    // If no vehicles left, subscription will have quantity 0 (we keep it active in case they add vehicles later)
+                                }
+                            } catch (\Exception $e) {
+                                // Don't fail vehicle deletion if Stripe fails
+                                \Log::warning('Failed to update Stripe subscription when deleting vehicle', [
+                                    'vehicle_id' => $vehicleId,
+                                    'company_id' => $vehicle->company_id,
+                                    'error' => $e->getMessage(),
+                                ]);
+                            }
+                        }
+                        
                         // Handle driver relationships if they exist
                         if ($vehicle->driver_id) {
                                 if ($vehicle->drivers && $vehicle->drivers->count()) {
@@ -1503,6 +1530,11 @@ class VehiclesController extends Controller {
         public function store(VehicleRequest $request) {
                 // dd($request->all());
                 $user_id = $request->get('user_id');
+                $authUser = Auth::user();
+                
+                // Set company_id from authenticated user if not provided
+                $company_id = $request->get('company_id') ?: ($authUser->company_id ?? null);
+                
                 $vehicle = VehicleModel::create([
                         'make_name' => $request->get("make_name"),
                         'model_name' => $request->get("model_name"),
@@ -1516,6 +1548,7 @@ class VehiclesController extends Controller {
                         'int_mileage' => $request->get("int_mileage") ? (int) $request->get("int_mileage") : null,
                         'group_id' => $request->get('group_id') ?: null, // Set to null if empty
                         'user_id' => $request->get('user_id'),
+                        'company_id' => $company_id,
                         'lic_exp_date' => $request->get('lic_exp_date'),
                         'reg_exp_date' => $request->get('reg_exp_date'),
                         'in_service' => $request->get("in_service"),
@@ -1603,6 +1636,44 @@ class VehiclesController extends Controller {
                 $status = $request->vehicle_status ?? 'Available';
                 $meta->in_service = ($status === 'Available' || $status === 'Rented') ? 1 : 0;
                 $meta->save();
+                
+                // Handle Stripe subscription
+                if ($company_id) {
+                    try {
+                        $company = Company::find($company_id);
+                        if ($company) {
+                            $stripeService = new StripeSubscriptionService();
+                            
+                            // Ensure customer exists
+                            if (!$company->stripe_customer_id) {
+                                $stripeService->createCustomer($company);
+                                $company->refresh();
+                            }
+                            
+                            // Count vehicles for this company
+                            $vehicleCount = VehicleModel::where('company_id', $company_id)->count();
+                            
+                            if ($vehicleCount == 1) {
+                                // First vehicle - create subscription
+                                if (!$company->stripe_subscription_id) {
+                                    $stripeService->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+                                }
+                            } else {
+                                // Update subscription quantity
+                                if ($company->stripe_subscription_id) {
+                                    $stripeService->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                                }
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Don't fail vehicle creation if Stripe fails
+                        \Log::warning('Failed to update Stripe subscription when creating vehicle', [
+                            'vehicle_id' => $vehicle,
+                            'company_id' => $company_id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
                 
                 return redirect()->route('vehicles.index')->with('success', 'Vehicle created successfully!');
         }

@@ -16,7 +16,11 @@ class Company extends BaseUuidModel
         'email',
         'phone',
         'address',
-        'is_active'
+        'is_active',
+        'stripe_customer_id',
+        'stripe_subscription_id',
+        'stripe_subscription_item_id',
+        'subscription_status'
     ];
     
     protected $dates = ['deleted_at'];

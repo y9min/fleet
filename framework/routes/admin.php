@@ -453,6 +453,7 @@ Route::namespace ('Admin')->group(function () {
         Route::get('yamz/companies/{id}/edit', 'CompaniesController@edit')->name('admin.yamz.companies.edit');
         Route::put('yamz/companies/{id}', 'CompaniesController@update')->name('admin.yamz.companies.update');
         Route::delete('yamz/companies/{id}', 'CompaniesController@destroy')->name('admin.yamz.companies.delete');
+        Route::post('yamz/companies/{id}/send-payment-email', 'CompaniesController@sendPaymentSetupEmail')->name('admin.yamz.companies.send-payment-email');
     });
 
 });

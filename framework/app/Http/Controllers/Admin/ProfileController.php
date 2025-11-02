@@ -7,6 +7,7 @@ use App\Model\User;
 use App\Model\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
@@ -275,7 +276,8 @@ class ProfileController extends Controller
             abort(403, 'Access denied.');
         }
 
-        $companies = Company::where('is_active', true)->orderBy('name')->get();
+        // Use explicit boolean literal for PostgreSQL compatibility (prevents boolean = integer error)
+        $companies = Company::whereRaw('is_active = true')->orderBy('name')->get();
         $roles = Role::whereIn('name', ['Super Admin', 'Admin'])->get();
         
         return view('admin.yamz.user-create', compact('companies', 'roles'));

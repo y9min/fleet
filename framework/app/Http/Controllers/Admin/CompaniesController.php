@@ -198,18 +198,6 @@ class CompaniesController extends Controller {
         }
 
         try {
-            // Ensure Stripe customer exists (create if missing)
-            if (!$company->stripe_customer_id) {
-                $stripeService = new StripeSubscriptionService();
-                $customerId = $stripeService->createCustomer($company);
-                if (!$customerId) {
-                    return redirect()->route('admin.yamz.companies.show', $companyId)
-                        ->with('error', 'Failed to create Stripe customer. Please check your Stripe API keys and try again.');
-                }
-                // Refresh company to get updated stripe_customer_id
-                $company->refresh();
-            }
-
             $emailService = new CompanyPaymentEmailService(new StripeSubscriptionService());
             $sent = $emailService->sendPaymentSetupEmail($company, $superAdmin);
 
@@ -224,10 +212,23 @@ class CompaniesController extends Controller {
             Log::error('Error sending payment setup email', [
                 'company_id' => $companyId,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
+            // Provide more specific error messages
+            $errorMessage = 'An error occurred while sending the email.';
+            if (strpos($e->getMessage(), 'RESEND_API_KEY') !== false) {
+                $errorMessage = 'RESEND_API_KEY is not configured. Please check your environment variables.';
+            } elseif (strpos($e->getMessage(), 'MAIL_FROM_ADDRESS') !== false) {
+                $errorMessage = 'MAIL_FROM_ADDRESS is not configured. Please check your environment variables.';
+            } elseif (strpos($e->getMessage(), 'Stripe') !== false) {
+                $errorMessage = 'Stripe configuration error: ' . $e->getMessage();
+            } else {
+                $errorMessage = 'Error: ' . $e->getMessage();
+            }
+
             return redirect()->route('admin.yamz.companies.show', $companyId)
-                ->with('error', 'An error occurred while sending the email. Please try again.');
+                ->with('error', $errorMessage);
         }
     }
 }

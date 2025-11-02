@@ -38,6 +38,34 @@ class Company extends BaseUuidModel
         $this->attributes['is_active'] = (bool) $value;
     }
     
+    /**
+     * Perform a model insert operation.
+     * Override to ensure boolean values are properly handled for PostgreSQL
+     */
+    protected function performInsert(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        // Ensure is_active is explicitly cast to boolean before insert
+        if (isset($this->attributes['is_active'])) {
+            $this->attributes['is_active'] = (bool) $this->attributes['is_active'];
+        }
+        
+        return parent::performInsert($query);
+    }
+    
+    /**
+     * Perform a model update operation.
+     * Override to ensure boolean values are properly handled for PostgreSQL
+     */
+    protected function performUpdate(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        // Ensure is_active is explicitly cast to boolean before update
+        if (isset($this->attributes['is_active'])) {
+            $this->attributes['is_active'] = (bool) $this->attributes['is_active'];
+        }
+        
+        return parent::performUpdate($query);
+    }
+    
     public function users()
     {
         return $this->hasMany(User::class);

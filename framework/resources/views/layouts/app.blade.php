@@ -1015,6 +1015,9 @@ button.deleting {
                         <div class="submenu-content">
                             <a href="{{route('drivers.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-id-card"></i> Drivers</a>
                             <a href="{{url('admin/users')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Users(Managers)</a>
+                            @if(Auth::user()->user_type == 'B' || Auth::user()->user_type == 'S')
+                            <a href="{{url('admin/profile/office-admins')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Office Admins</a>
+                            @endif
                         </div>
                     </div>
 
@@ -1064,7 +1067,6 @@ button.deleting {
                             <a href="{{url('admin/profile')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user"></i> My Profile</a>
                             @if(Auth::user()->user_type == 'B' || Auth::user()->user_type == 'S')
                             <a href="{{url('admin/profile/company')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-building"></i> Company Settings</a>
-                            <a href="{{url('admin/profile/office-admins')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Office Admins</a>
                             @endif
                         </div>
                     </div>

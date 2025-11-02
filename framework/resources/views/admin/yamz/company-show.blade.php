@@ -45,7 +45,7 @@
                         </div>
 
                         @if($supers->count() > 0)
-                            <div class="alert alert-info mb-3">
+                            <div class="alert alert-info mb-3 payment-setup-alert" style="position: relative;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <strong><i class="fas fa-credit-card"></i> Payment Setup</strong>
@@ -58,9 +58,9 @@
                                             <small class="text-muted">Stripe customer will be created when you send the email.</small>
                                         @endif
                                     </div>
-                                    <form action="{{ route('admin.yamz.companies.send-payment-email', $company->id) }}" method="POST" style="display: inline;">
+                                    <form action="{{ route('admin.yamz.companies.send-payment-email', $company->id) }}" method="POST" style="display: inline;" id="payment-email-form">
                                         @csrf
-                                        <button type="submit" class="btn btn-primary">
+                                        <button type="submit" class="btn btn-primary" id="send-payment-email-btn">
                                             <i class="fas fa-envelope"></i> Send Payment Setup Email
                                         </button>
                                     </form>
@@ -134,4 +134,131 @@
         </div>
     </div>
 </div>
+
+@section('script')
+<script>
+$(document).ready(function() {
+    // Prevent payment setup alert from auto-hiding
+    // Clear any existing fadeOut animations and ensure it stays visible
+    var preventAutoHide = function() {
+        $('.payment-setup-alert')
+            .stop(true, true)
+            .show()
+            .css('opacity', '1')
+            .css('display', 'block');
+    };
+    
+    preventAutoHide();
+    
+    // Re-apply after a short delay to override admin-custom.js
+    setTimeout(preventAutoHide, 100);
+    setTimeout(preventAutoHide, 500);
+    setTimeout(preventAutoHide, 1000);
+    setTimeout(preventAutoHide, 6000); // After auto-hide would have fired
+    
+    // Monitor and prevent any fadeOut on payment setup alert
+    var originalFadeOut = $.fn.fadeOut;
+    $.fn.fadeOut = function(speed, callback) {
+        if (this.hasClass('payment-setup-alert')) {
+            return this; // Don't fade out payment setup alerts
+        }
+        return originalFadeOut.apply(this, arguments);
+    };
+
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const iconMap = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-exclamation-circle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        };
+
+        const bgColorMap = {
+            'success': '#28a745',
+            'error': '#dc3545',
+            'warning': '#ffc107',
+            'info': '#17a2b8'
+        };
+
+        const icon = iconMap[type] || iconMap['success'];
+        const bgColor = bgColorMap[type] || bgColorMap['success'];
+
+        // Remove existing toasts
+        $('.payment-toast-notification').remove();
+
+        const toast = $(`
+            <div class="payment-toast-notification" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${bgColor};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                min-width: 320px;
+                max-width: 400px;
+                animation: slideInRight 0.3s ease-out;
+            ">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i class="${icon}" style="font-size: 20px;"></i>
+                    <div style="flex: 1;">
+                        <strong style="display: block; margin-bottom: 4px;">${type === 'success' ? 'Success!' : type === 'error' ? 'Error!' : 'Notice!'}</strong>
+                        <div style="font-size: 14px;">${message}</div>
+                    </div>
+                    <button type="button" onclick="$(this).closest('.payment-toast-notification').fadeOut(300, function(){ $(this).remove(); });" style="
+                        background: transparent;
+                        border: none;
+                        color: white;
+                        font-size: 20px;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 24px;
+                        height: 24px;
+                        line-height: 20px;
+                    ">&times;</button>
+                </div>
+            </div>
+        `);
+
+        $('body').append(toast);
+
+        // Auto remove after 5 seconds
+        setTimeout(function() {
+            toast.fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
+
+    // Check for session messages and show toast
+    @if(session('success'))
+        showToast('{{ session('success') }}', 'success');
+    @endif
+
+    @if(session('error'))
+        showToast('{{ session('error') }}', 'error');
+    @endif
+
+    // Add animation CSS
+    if (!$('#payment-toast-styles').length) {
+        $('<style id="payment-toast-styles">')
+            .html(`
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `)
+            .appendTo('head');
+    }
+});
+</script>
 @endsection

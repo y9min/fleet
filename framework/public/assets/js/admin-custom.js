@@ -40,8 +40,8 @@ $(document).ready(function() {
         }
     );
 
-    // Auto-hide alerts after 5 seconds
-    $('.alert').delay(5000).fadeOut('slow');
+    // Auto-hide alerts after 5 seconds (except payment setup alerts)
+    $('.alert').not('.payment-setup-alert').delay(5000).fadeOut('slow');
 
     // Add ripple effect to buttons
     $('.btn').on('click', function(e) {

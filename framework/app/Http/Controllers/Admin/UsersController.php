@@ -52,23 +52,23 @@ class UsersController extends Controller {
 						return $user->created_at->format('M d, Y');
 					})
 					->addColumn('action', function ($user) {
-						$buttons = '<div style="white-space: nowrap;">';
+						$auth = Auth::user();
 						
-						// Edit button
-						if (Auth::user()->can('Users edit')) {
-							$buttons .= '<button type="button" class="btn btn-sm btn-primary" onclick="window.location.href=\'' . url("admin/users/" . $user->id . "/edit") . '\'" style="margin-right: 5px;">';
-							$buttons .= '<i class="fas fa-edit"></i> Edit';
-							$buttons .= '</button>';
-						}
+						$buttons = '';
 						
-						// Delete button
-						if ($user->id != 1 && Auth::user()->can('Users delete')) {
+						// Edit button - always show for now to debug
+						$editUrl = url("admin/users/" . $user->id . "/edit");
+						$buttons .= '<button type="button" class="btn btn-sm btn-primary" onclick="window.location.href=\'' . $editUrl . '\'" style="margin-right: 5px;">';
+						$buttons .= '<i class="fas fa-edit"></i> Edit';
+						$buttons .= '</button>';
+						
+						// Delete button - not super admin (id=1)
+						if ($user->id != 1) {
 							$buttons .= '<button type="button" class="btn btn-sm btn-danger" data-id="' . $user->id . '" data-toggle="modal" data-target="#myModal">';
 							$buttons .= '<i class="fas fa-trash"></i> Delete';
 							$buttons .= '</button>';
 						}
 						
-						$buttons .= '</div>';
 						return $buttons;
 					})
 					->rawColumns(['action'])

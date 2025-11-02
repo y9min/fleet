@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Redirect;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Gate;
 
 use App\Traits\FirebasePassword;
 
@@ -51,7 +52,24 @@ class UsersController extends Controller {
 						return $user->created_at->format('M d, Y');
 					})
 					->addColumn('action', function ($user) {
-						return view('users.list-actions', ['row' => $user]);
+						$buttons = '<div style="white-space: nowrap;">';
+						
+						// Edit button
+						if (Auth::user()->can('Users edit')) {
+							$buttons .= '<button type="button" class="btn btn-sm btn-primary" onclick="window.location.href=\'' . url("admin/users/" . $user->id . "/edit") . '\'" style="margin-right: 5px;">';
+							$buttons .= '<i class="fas fa-edit"></i> Edit';
+							$buttons .= '</button>';
+						}
+						
+						// Delete button
+						if ($user->id != 1 && Auth::user()->can('Users delete')) {
+							$buttons .= '<button type="button" class="btn btn-sm btn-danger" data-id="' . $user->id . '" data-toggle="modal" data-target="#myModal">';
+							$buttons .= '<i class="fas fa-trash"></i> Delete';
+							$buttons .= '</button>';
+						}
+						
+						$buttons .= '</div>';
+						return $buttons;
 					})
 					->rawColumns(['action'])
 					->make(true);

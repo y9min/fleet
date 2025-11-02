@@ -130,7 +130,7 @@
               <select id="role_id" name="role_id" class="form-control" required>
                 <option value="">@lang('fleet.role')</option>
                 @foreach($roles as $role)
-                <option value="{{$role->id}}" @if($user->roles->first()->id == $role->id) selected
+                <option value="{{$role->id}}" @if($user->roles->first() && $user->roles->first()->id == $role->id) selected
                   @endif>{{$role->name}}</option>
                 @endforeach
               </select>

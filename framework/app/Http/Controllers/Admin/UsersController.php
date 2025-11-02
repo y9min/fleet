@@ -39,11 +39,26 @@ class UsersController extends Controller {
 	public function fetch_data(Request $request) {
 		try {
 			if ($request->ajax()) {
+				$auth = Auth::user();
+				
 				$users = User::with(['company'])
 					->where(function ($query) {
 						$query->where('user_type', 'O')
 							->orWhere('user_type', 'S');
 					});
+				
+				// Company scoping - yamz sees everything, others only see their company
+				if ($auth->email !== 'yamzahmed@hotmail.com') {
+					// Filter by company_id - only show users from the same company
+					if (!is_null($auth->company_id)) {
+						$users = $users->where('company_id', $auth->company_id);
+					} else {
+						// User without company sees no users
+						$users = $users->whereRaw('1=0');
+					}
+				}
+				// If yamz (yamzahmed@hotmail.com), show all users without company filter
+				
 				return DataTables::eloquent($users)
 					->addColumn('company', function ($user) {
 						return $user->company ? $user->company->name : 'No Company';
@@ -56,7 +71,7 @@ class UsersController extends Controller {
 						
 						$buttons = '';
 						
-						// Edit button - always show for now to debug
+						// Edit button
 						$editUrl = url("admin/users/" . $user->id . "/edit");
 						$buttons .= '<button type="button" class="btn btn-sm btn-primary" onclick="window.location.href=\'' . $editUrl . '\'" style="margin-right: 5px;">';
 						$buttons .= '<i class="fas fa-edit"></i> Edit';
@@ -67,6 +82,14 @@ class UsersController extends Controller {
 							$buttons .= '<button type="button" class="btn btn-sm btn-danger" data-id="' . $user->id . '" data-toggle="modal" data-target="#myModal">';
 							$buttons .= '<i class="fas fa-trash"></i> Delete';
 							$buttons .= '</button>';
+							
+							// Hidden form for delete functionality
+							$deleteUrl = url("admin/users/" . $user->id);
+							$buttons .= '<form method="POST" action="' . $deleteUrl . '" style="display:none;" id="form_' . $user->id . '">';
+							$buttons .= '<input type="hidden" name="_token" value="' . csrf_token() . '">';
+							$buttons .= '<input type="hidden" name="_method" value="DELETE">';
+							$buttons .= '<input type="hidden" name="id" value="' . $user->id . '">';
+							$buttons .= '</form>';
 						}
 						
 						return $buttons;
@@ -106,8 +129,9 @@ class UsersController extends Controller {
 		$user->update([
 			'email' => time() . "_deleted" . $user->email,
 		]);
-		if (file_exists('./uploads/' . $user->profile_image) && !is_dir('./uploads/' . $user->profile_image)) {
-			unlink('./uploads/' . $user->profile_image);
+		$profileImage = $user->getMeta('profile_image');
+		if ($profileImage && file_exists('./uploads/' . $profileImage) && !is_dir('./uploads/' . $profileImage)) {
+			unlink('./uploads/' . $profileImage);
 		}
 		$user->delete();
 		return redirect()->route('users.index');
@@ -169,9 +193,12 @@ class UsersController extends Controller {
 			'first_name' => $request->get("first_name"),
 			'last_name' => $request->get("last_name")
 		]);
-		$old = Role::find($user->roles->first()->id);
-		if ($old != null) {
-			$user->removeRole($old);
+		$oldRole = $user->roles->first();
+		if ($oldRole != null) {
+			$old = Role::find($oldRole->id);
+			if ($old != null) {
+				$user->removeRole($old);
+			}
 		}
 		// $user->profile_image = $request->get('profile_image');
 		$role = Role::find($request->role_id);
@@ -184,8 +211,9 @@ class UsersController extends Controller {
 		$role = Role::find($request->role_id);
 		$user->assignRole($role);
 		if ($request->file('profile_image') && $request->file('profile_image')->isValid()) {
-			if (file_exists('./uploads/' . $user->profile_image) && !is_dir('./uploads/' . $user->profile_image)) {
-				unlink('./uploads/' . $user->profile_image);
+			$oldProfileImage = $user->getMeta('profile_image');
+			if ($oldProfileImage && file_exists('./uploads/' . $oldProfileImage) && !is_dir('./uploads/' . $oldProfileImage)) {
+				unlink('./uploads/' . $oldProfileImage);
 			}
 			$this->upload_file($request->file('profile_image'), "profile_image", $user->id);
 		}
@@ -201,8 +229,9 @@ class UsersController extends Controller {
 			$user->update([
 				'email' => time() . "_deleted" . $user->email,
 			]);
-			if (file_exists('./uploads/' . $user->profile_image) && !is_dir('./uploads/' . $user->profile_image)) {
-				unlink('./uploads/' . $user->profile_image);
+			$profileImage = $user->getMeta('profile_image');
+			if ($profileImage && file_exists('./uploads/' . $profileImage) && !is_dir('./uploads/' . $profileImage)) {
+				unlink('./uploads/' . $profileImage);
 			}
 			$user->delete();
 		}

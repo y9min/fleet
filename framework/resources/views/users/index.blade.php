@@ -26,7 +26,11 @@
       <div class="card-header">
         <h3 class="card-title">@lang('fleet.manageUsers')@lang('fleet.managers') &nbsp;
           @can('Users add')<a href="{{route('users.create')}}" class="btn btn-success" title="@lang('fleet.addUser')"><i
-              class="fa fa-plus"></i></a></h3>@endcan
+              class="fa fa-plus"></i></a>@endcan
+          @can('Users delete')<button class="btn btn-danger ml-2" id="bulk_delete" data-toggle="modal"
+            title="@lang('fleet.delete')" data-target="#bulkModal" disabled>
+            <i class="fa fa-trash"></i> @lang('fleet.delete')</button>@endcan
+        </h3>
       </div>
 
       <div class="card-body table-responsive">
@@ -49,23 +53,6 @@
           <tbody>
 
           </tbody>
-          <tfoot>
-            <tr>
-              <th>
-
-                @can('Users delete')<button class="btn btn-danger" id="bulk_delete" data-toggle="modal"
-                  title="@lang('fleet.delete')" data-target="#bulkModal" disabled>
-                  <i class="fa fa-trash"></i></button>@endcan
-
-              </th>
-              <th>#</th>
-              <th>@lang('fleet.profile_photo')</th>
-              <th>@lang('fleet.name')</th>
-              <th>@lang('fleet.email')</th>
-              <th>@lang('fleet.created')</th>
-              <th>@lang('fleet.action')</th>
-            </tr>
-          </tfoot>
         </table>
       </div>
     </div>
@@ -257,16 +244,7 @@
             {data: 'created_at', name: 'created_at'},
             {data: 'action',name:'action',  searchable:false, orderable:false}
         ],
-        order: [[1, 'desc']],
-        "initComplete": function() {
-              table.columns().every(function () {
-                var that = this;
-                $('input', this.footer()).on('keyup change', function () {
-                  // console.log($(this).parent().index());
-                    that.search(this.value).draw();
-                });
-              });
-            }
+        order: [[1, 'desc']]
     });
   });
   $(document).on('click','input[type="checkbox"]',function(){

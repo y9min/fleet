@@ -257,11 +257,15 @@ class HomeController extends Controller {
                 $data['onboarding_total'] = OnboardingDriver::count();
                 // Fines still scoped by company vehicles
                 $companyVehicleIds = \App\Model\VehicleModel::where('company_id', $user->company_id)->pluck('id')->toArray();
-                if (empty($companyVehicleIds)) { $companyVehicleIds = [0]; }
-                $data['total_fines'] = Fine::where('status', '!=', 'paid')
-                    ->whereIn('vehicle_id', $companyVehicleIds)->count();
-                $data['pending_fines'] = Fine::where('status', 'pending')
-                    ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                if (empty($companyVehicleIds)) {
+                    $data['total_fines'] = 0;
+                    $data['pending_fines'] = 0;
+                } else {
+                    $data['total_fines'] = Fine::where('status', '!=', 'paid')
+                        ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                    $data['pending_fines'] = Fine::where('status', 'pending')
+                        ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                }
             } elseif ($user->getRawOriginal('user_type') === 'B' && is_null($user->company_id)) {
                 // Boss Admin with no company: show global onboarding counts
                 $data['onboarding_pending'] = OnboardingDriver::submitted()->count();
@@ -275,11 +279,15 @@ class HomeController extends Controller {
                 $data['onboarding_total'] = OnboardingDriver::count();
                 if (!is_null($user->company_id)) {
                     $companyVehicleIds = \App\Model\VehicleModel::where('company_id', $user->company_id)->pluck('id')->toArray();
-                    if (empty($companyVehicleIds)) { $companyVehicleIds = [0]; }
-                    $data['total_fines'] = Fine::where('status', '!=', 'paid')
-                        ->whereIn('vehicle_id', $companyVehicleIds)->count();
-                    $data['pending_fines'] = Fine::where('status', 'pending')
-                        ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                    if (empty($companyVehicleIds)) {
+                        $data['total_fines'] = 0;
+                        $data['pending_fines'] = 0;
+                    } else {
+                        $data['total_fines'] = Fine::where('status', '!=', 'paid')
+                            ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                        $data['pending_fines'] = Fine::where('status', 'pending')
+                            ->whereIn('vehicle_id', $companyVehicleIds)->count();
+                    }
                 } else {
                     $data['total_fines'] = 0;
                     $data['pending_fines'] = 0;
@@ -291,8 +299,11 @@ class HomeController extends Controller {
                 // Company-scoped inspections for Super Admin
                 if (!is_null($user->company_id)) {
                     $vehicle_ids_company = \App\Model\VehicleModel::where('company_id', $user->company_id)->pluck('id')->toArray();
-                    if (empty($vehicle_ids_company)) { $vehicle_ids_company = [0]; }
-                    $data['total_inspections'] = \App\Model\VehicleReviewModel::whereIn('vehicle_id', $vehicle_ids_company)->count();
+                    if (empty($vehicle_ids_company)) {
+                        $data['total_inspections'] = 0;
+                    } else {
+                        $data['total_inspections'] = \App\Model\VehicleReviewModel::whereIn('vehicle_id', $vehicle_ids_company)->count();
+                    }
                     $data['pending_inspections'] = \App\Model\VehicleModel::where('company_id', $user->company_id)->whereMeta('vehicle_status', 'Workshop')->count();
                 } else {
                     // No company: show zeros
@@ -335,9 +346,10 @@ class HomeController extends Controller {
                 // Group user - show only inspections for vehicles in their group
                 $vehicle_ids = \App\Model\VehicleModel::where('group_id', $user->group_id)->pluck('id')->toArray();
                 if (empty($vehicle_ids)) {
-                    $vehicle_ids = [0]; // Prevent empty array issues
+                    $data['total_inspections'] = 0;
+                } else {
+                    $data['total_inspections'] = \App\Model\VehicleReviewModel::whereIn('vehicle_id', $vehicle_ids)->count();
                 }
-                $data['total_inspections'] = \App\Model\VehicleReviewModel::whereIn('vehicle_id', $vehicle_ids)->count();
                 $data['pending_inspections'] = \App\Model\VehicleModel::where('group_id', $user->group_id)
                     ->whereMeta('vehicle_status', 'Workshop')->count();
                 

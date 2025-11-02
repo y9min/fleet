@@ -71,8 +71,8 @@ class UsersController extends Controller {
 						
 						$buttons = '';
 						
-						// Edit button - opens modal
-						$buttons .= '<button type="button" class="btn btn-sm btn-primary edit-user-btn" data-user-id="' . $user->id . '" data-toggle="modal" data-target="#editUserModal" style="margin-right: 5px;">';
+						// Edit button - opens modal (removed data-toggle and data-target, handled by JS)
+						$buttons .= '<button type="button" class="btn btn-sm btn-primary edit-user-btn" data-user-id="' . $user->id . '" style="margin-right: 5px;">';
 						$buttons .= '<i class="fas fa-edit"></i> Edit';
 						$buttons .= '</button>';
 						

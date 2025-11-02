@@ -179,12 +179,20 @@
     $('#changepass').modal("hide");
     e.preventDefault();
   });
-  // Handle edit user modal
-  $(document).on('click', '.edit-user-btn', function() {
+  // Handle edit user modal - load data when modal is about to show
+  $(document).on('click', '.edit-user-btn', function(e) {
+    e.preventDefault();
     var userId = $(this).data('user-id');
+    
+    if (!userId) {
+      console.error('No user ID found');
+      return false;
+    }
+    
+    // Set user ID in form
     $('#edit_user_id').val(userId);
     
-    // Load user data
+    // Load user data first, then show modal
     $.ajax({
       url: "{{ url('admin/users') }}/" + userId + "/edit-data",
       type: 'GET',
@@ -192,10 +200,13 @@
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
       },
       success: function(data) {
-        $('#edit_name').val(data.name);
-        $('#edit_email').val(data.email);
+        $('#edit_name').val(data.name || '');
+        $('#edit_email').val(data.email || '');
         $('#edit_password').val('');
         $('#edit_password_confirmation').val('');
+        
+        // Now show the modal
+        $('#editUserModal').modal('show');
       },
       error: function(xhr) {
         console.error('Error loading user data:', xhr);

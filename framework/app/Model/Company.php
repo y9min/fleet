@@ -29,6 +29,15 @@ class Company extends BaseUuidModel
         'is_active' => 'boolean',
     ];
     
+    /**
+     * Set the is_active attribute to ensure it's always a boolean for PostgreSQL
+     */
+    public function setIsActiveAttribute($value)
+    {
+        // Explicitly convert to boolean to ensure PostgreSQL receives proper boolean type
+        $this->attributes['is_active'] = (bool) $value;
+    }
+    
     public function users()
     {
         return $this->hasMany(User::class);

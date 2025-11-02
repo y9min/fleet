@@ -275,7 +275,7 @@ class ProfileController extends Controller
             abort(403, 'Access denied.');
         }
 
-        $companies = Company::where('is_active', 1)->orderBy('name')->get();
+        $companies = Company::where('is_active', true)->orderBy('name')->get();
         $roles = Role::whereIn('name', ['Super Admin', 'Admin'])->get();
         
         return view('admin.yamz.user-create', compact('companies', 'roles'));

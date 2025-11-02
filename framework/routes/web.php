@@ -19,6 +19,9 @@ Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_e
 
 
     Route::get("/login", "UnifiedLoginController@showLoginForm")->name("login");
+    Route::get("/unified-login", function () {
+        return redirect('/login');
+    });
     Route::post("unified-login", "UnifiedLoginController@login")->name("unified.login");
     Route::post("unified-logout", "UnifiedLoginController@logout")->name("unified.logout");
     

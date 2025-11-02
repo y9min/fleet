@@ -36,36 +36,54 @@ class UsersController extends Controller {
 		return view("users.index");
 	}
 	public function fetch_data(Request $request) {
-		if ($request->ajax()) {
-			$users = User::with(['metas'])
-				->where(function ($query) {
-					$query->where('user_type', 'O')
-						->orWhere('user_type', 'S');
-				});
-			$date_format_setting = (Hyvikk::get('date_format')) ? Hyvikk::get('date_format') : 'd-m-Y';
-			return DataTables::eloquent($users)
-				->addColumn('check', function ($user) {
-					$tag = '';
-					if ($user->user_type == "S") {
-						$tag = '<i class="fa fa-ban" style="color:#767676;"></i>';
-					} else {
-						$tag = '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '" onclick=\'checkcheckbox();\'>';
-					}
-					return $tag;
-				})
-				->addColumn('profile_image', function ($user) {
-					$src = ($user->profile_image != null) ? asset('uploads/' . $user->profile_image) : asset('assets/images/no-user.jpg');
-					return '<img src="' . $src . '" height="70px" width="70px">';
-				})
-				->editColumn('created_at', function ($user) use ($date_format_setting) {
-					return date($date_format_setting . ' g:i A', strtotime($user->created_at));
-				})
-				->addColumn('action', function ($user) {
-					return view('users.list-actions', ['row' => $user]);
-				})
-				->rawColumns(['profile_image', 'action', 'check'])
-				->make(true);
+		try {
+			if ($request->ajax()) {
+				$users = User::with(['metas'])
+					->where(function ($query) {
+						$query->where('user_type', 'O')
+							->orWhere('user_type', 'S');
+					});
+				$date_format_setting = (Hyvikk::get('date_format')) ? Hyvikk::get('date_format') : 'd-m-Y';
+				return DataTables::eloquent($users)
+					->addColumn('check', function ($user) {
+						$tag = '';
+						if ($user->user_type == "S") {
+							$tag = '<i class="fa fa-ban" style="color:#767676;"></i>';
+						} else {
+							$tag = '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '" onclick=\'checkcheckbox();\'>';
+						}
+						return $tag;
+					})
+					->addColumn('profile_image', function ($user) {
+						$profile_image = $user->getMeta('profile_image');
+						$src = ($profile_image != null) ? asset('uploads/' . $profile_image) : asset('assets/images/no-user.jpg');
+						return '<img src="' . $src . '" height="70px" width="70px">';
+					})
+					->editColumn('created_at', function ($user) use ($date_format_setting) {
+						return date($date_format_setting . ' g:i A', strtotime($user->created_at));
+					})
+					->addColumn('action', function ($user) {
+						return view('users.list-actions', ['row' => $user]);
+					})
+					->rawColumns(['profile_image', 'action', 'check'])
+					->make(true);
+			}
+		} catch (\Exception $e) {
+			\Log::error('UsersController::fetch_data error: ' . $e->getMessage());
+			\Log::error('Stack trace: ' . $e->getTraceAsString());
+			
+			if ($request->ajax()) {
+				return response()->json([
+					'draw' => intval($request->input('draw')),
+					'recordsTotal' => 0,
+					'recordsFiltered' => 0,
+					'data' => [],
+					'error' => 'An error occurred while loading users data.'
+				], 500);
+			}
 		}
+		
+		return response()->json(['error' => 'Invalid request'], 400);
 	}
 	public function create() {
 		$index['groups'] = VehicleGroupModel::all();

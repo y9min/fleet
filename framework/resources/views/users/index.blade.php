@@ -230,7 +230,23 @@
          ajax: {
           url: "{{ url('admin/users-fetch') }}",
           type: 'POST',
-          data:{}
+          headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+          },
+          data: function(d) {
+            // Return default DataTables params
+            return d;
+          },
+          error: function(xhr, error, thrown) {
+            console.error('DataTables AJAX Error:', error, thrown);
+            console.error('Status:', xhr.status);
+            console.error('Response:', xhr.responseText);
+            
+            // Show user-friendly error message
+            if ($('#usersDataTableError').length === 0) {
+              $('#ajax_data_table').after('<div id="usersDataTableError" class="alert alert-danger alert-dismissible fade show" role="alert"><strong>Error loading users data!</strong> Please refresh the page or contact support if the problem persists.<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+            }
+          }
          },
          columns: [
             {data: 'check',name:'check', searchable:false, orderable:false},

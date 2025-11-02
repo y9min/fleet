@@ -2,10 +2,12 @@
 
 namespace App\Imports;
 
+use App\Model\Company;
 use App\Model\VehicleModel;
 use App\Model\VehicleTypeModel;
 use App\Model\VehicleGroupModel;
 use App\Model\User;
+use App\Services\StripeSubscriptionService;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -394,6 +396,9 @@ class VehicleImport implements ToCollection, WithHeadingRow
             // Commit transaction if we get here
             \DB::commit();
             
+            // Handle Stripe subscriptions after successful import
+            $this->handleSubscriptions();
+            
             // Log final import statistics
             Log::info('Vehicle import completed successfully', $this->importStats);
             \Log::info('VEHICLE IMPORT SUMMARY', $this->importStats);
@@ -416,6 +421,72 @@ class VehicleImport implements ToCollection, WithHeadingRow
             $this->importStats['error_details'][] = "Import failed: " . $e->getMessage();
             
             throw $e; // Re-throw to be caught by controller
+        }
+    }
+
+    /**
+     * Handle Stripe subscriptions after bulk import
+     * Updates subscriptions for all companies that had vehicles imported
+     */
+    private function handleSubscriptions()
+    {
+        try {
+            $stripeService = new StripeSubscriptionService();
+            
+            // Get all companies that have vehicles
+            $companies = Company::whereHas('vehicles')->get();
+            
+            foreach ($companies as $company) {
+                try {
+                    // Count vehicles for this company
+                    $vehicleCount = $company->vehicles()->count();
+                    
+                    if ($vehicleCount == 0) {
+                        continue; // Skip companies with no vehicles
+                    }
+                    
+                    // Ensure Stripe customer exists
+                    if (!$company->stripe_customer_id) {
+                        $stripeService->createCustomer($company);
+                        $company->refresh();
+                    }
+                    
+                    if (!$company->stripe_customer_id) {
+                        Log::warning('Failed to create Stripe customer for company during import', [
+                            'company_id' => $company->id,
+                        ]);
+                        continue;
+                    }
+                    
+                    // Create or update subscription
+                    if (!$company->stripe_subscription_id) {
+                        // Create new subscription
+                        $stripeService->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+                        Log::info('Stripe subscription created during vehicle import', [
+                            'company_id' => $company->id,
+                            'vehicle_count' => $vehicleCount,
+                        ]);
+                    } else {
+                        // Update existing subscription quantity
+                        $stripeService->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                        Log::info('Stripe subscription updated during vehicle import', [
+                            'company_id' => $company->id,
+                            'vehicle_count' => $vehicleCount,
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    // Don't fail import if subscription update fails for one company
+                    Log::warning('Failed to update Stripe subscription for company during import', [
+                        'company_id' => $company->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            // Don't fail import if subscription handling fails
+            Log::error('Error handling subscriptions after vehicle import', [
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

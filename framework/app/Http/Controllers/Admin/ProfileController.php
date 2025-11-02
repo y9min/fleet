@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Model\User;
 use App\Model\Company;
+use App\Services\StripeSubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
@@ -329,6 +331,24 @@ class ProfileController extends Controller
             }
         }
 
+        // Create Stripe customer if super admin assigned to company
+        if ($request->user_type === 'S' && $request->company_id) {
+            try {
+                $company = Company::find($request->company_id);
+                if ($company && !$company->stripe_customer_id) {
+                    $stripeService = new StripeSubscriptionService();
+                    $stripeService->createCustomer($company);
+                }
+            } catch (\Exception $e) {
+                // Don't fail user creation if Stripe fails
+                Log::warning('Failed to create Stripe customer when assigning super admin', [
+                    'user_id' => $newUser->id,
+                    'company_id' => $request->company_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         return redirect()->route('admin.yamz.all-users')->with('success', 'User created successfully! Default password is "password".');
     }
 
@@ -392,6 +412,24 @@ class ProfileController extends Controller
             $role = Role::where('name', 'Admin')->first();
             if ($role) {
                 $editUser->assignRole($role);
+            }
+        }
+
+        // Create Stripe customer if super admin assigned to company
+        if ($request->user_type === 'S' && $request->company_id) {
+            try {
+                $company = Company::find($request->company_id);
+                if ($company && !$company->stripe_customer_id) {
+                    $stripeService = new StripeSubscriptionService();
+                    $stripeService->createCustomer($company);
+                }
+            } catch (\Exception $e) {
+                // Don't fail user update if Stripe fails
+                Log::warning('Failed to create Stripe customer when updating super admin', [
+                    'user_id' => $editUser->id,
+                    'company_id' => $request->company_id,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 

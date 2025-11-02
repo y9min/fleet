@@ -24,5 +24,6 @@ class VerifyCsrfToken extends BaseVerifier {
                 'razorpay-success',
                 'backend*',
                 'admin/bookings-fetch',
+                'webhooks/stripe',
         ];
 }

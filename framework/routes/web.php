@@ -168,6 +168,11 @@ Route::get('stripe/{booking_id}', 'PaymentController@stripe');
 Route::get('stripe-success', 'PaymentController@stripe_success');
 Route::get('stripe-cancel', 'PaymentController@stripe_cancel');
 
+// Stripe webhook (no CSRF protection needed)
+Route::post('webhooks/stripe', 'Webhooks\StripeWebhookController@handle')
+    ->middleware('web')
+    ->name('webhooks.stripe');
+
 // paystack payment integration
 // Route::get('paystack','PaymentController@paystack');
 Route::get('paystack/{booking_id}', 'PaymentController@paystack');

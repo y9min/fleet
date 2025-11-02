@@ -44,6 +44,26 @@
                             </div>
                         </div>
 
+                        @if($supers->count() > 0 && $company->stripe_customer_id)
+                            <div class="alert alert-info mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong><i class="fas fa-credit-card"></i> Payment Setup</strong>
+                                        <p class="mb-0">Send payment setup email to the company super admin.</p>
+                                        @if($company->subscription_status)
+                                            <small>Subscription Status: <strong>{{ ucfirst($company->subscription_status) }}</strong></small>
+                                        @endif
+                                    </div>
+                                    <form action="{{ route('admin.yamz.companies.send-payment-email', $company->id) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-envelope"></i> Send Payment Setup Email
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endif
+
                         <h5 class="mt-4">Super Admins</h5>
                         <ul class="list-group mb-3">
                             @forelse($supers as $u)

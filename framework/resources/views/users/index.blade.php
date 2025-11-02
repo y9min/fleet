@@ -5,17 +5,9 @@
 @endsection
 @section('extra_css')
 <style type="text/css">
-  .checkbox,
-  #chk_all {
-    width: 20px;
-    height: 20px;
-  }
   .show-password-button{
     outline: none;
     border: 1px solid #ced4da;
-  }
-  td>img {
-    border-radius: 50%;
   }
 </style>
 @endsection
@@ -26,75 +18,29 @@
       <div class="card-header">
         <h3 class="card-title">@lang('fleet.manageUsers')@lang('fleet.managers') &nbsp;
           @can('Users add')<a href="{{route('users.create')}}" class="btn btn-success" title="@lang('fleet.addUser')"><i
-              class="fa fa-plus"></i></a></h3>@endcan
+              class="fa fa-plus"></i></a>@endcan
+        </h3>
       </div>
 
       <div class="card-body table-responsive">
-        <table class="table" id="ajax_data_table">
-          <thead class="thead-inverse">
+        <table class="table table-bordered table-striped" id="ajax_data_table">
+          <thead>
             <tr>
-              <th>
-
-                <input type="checkbox" id="chk_all">
-
-              </th>
-              <th>@lang('fleet.id')</th>
-              <th>@lang('fleet.profile_photo')</th>
-              <th>@lang('fleet.name')</th>
-              <th>@lang('fleet.email')</th>
-              <th>@lang('fleet.created')</th>
-              <th>@lang('fleet.action')</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Company</th>
+              <th>Created</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
 
           </tbody>
-          <tfoot>
-            <tr>
-              <th>
-
-                @can('Users delete')<button class="btn btn-danger" id="bulk_delete" data-toggle="modal"
-                  title="@lang('fleet.delete')" data-target="#bulkModal" disabled>
-                  <i class="fa fa-trash"></i></button>@endcan
-
-              </th>
-              <th>#</th>
-              <th>@lang('fleet.profile_photo')</th>
-              <th>@lang('fleet.name')</th>
-              <th>@lang('fleet.email')</th>
-              <th>@lang('fleet.created')</th>
-              <th>@lang('fleet.action')</th>
-            </tr>
-          </tfoot>
         </table>
       </div>
     </div>
   </div>
 </div>
-
-<!-- Modal -->
-<div id="bulkModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">@lang('fleet.delete')</h4>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        {!! Form::open(['url'=>'admin/delete-users','method'=>'POST','id'=>'form_delete']) !!}
-        <div id="bulk_hidden"></div>
-        <p>@lang('fleet.confirm_bulk_delete')</p>
-      </div>
-      <div class="modal-footer">
-        <button id="bulk_action" class="btn btn-danger" type="submit" data-submit="">@lang('fleet.delete')</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">@lang('fleet.close')</button>
-      </div>
-      {!! Form::close() !!}
-    </div>
-  </div>
-</div>
-<!-- Modal -->
 
 <!-- Modal -->
 <div id="myModal" class="modal fade" role="dialog">
@@ -203,7 +149,7 @@
         text: '<i class="fa fa-print"></i> {{__("fleet.print")}}',
 
         exportOptions: {
-           columns: ([1,2,3,4,5]),
+           columns: [0, 1, 2, 3],
         },
         customize: function ( win ) {
                
@@ -218,7 +164,7 @@
             extend: 'excel',
             text: '<i class="fa fa-file-excel-o"></i> Excel',
             exportOptions: {
-                columns: [1, 2, 3, 4, 5]
+                columns: [0, 1, 2, 3]
             }
         }
     ],
@@ -249,92 +195,15 @@
           }
          },
          columns: [
-            {data: 'check',name:'check', searchable:false, orderable:false},
-            {data: 'id', name: 'id'},
-            {data: 'profile_image',name:'profile_image', searchable:false, orderable:false},
             {data: 'name', name: 'name'},
-            {data: 'email', name: 'email'},            
+            {data: 'email', name: 'email'},
+            {data: 'company', name: 'company', searchable: false, orderable: false},
             {data: 'created_at', name: 'created_at'},
-            {data: 'action',name:'action',  searchable:false, orderable:false}
+            {data: 'action', name: 'action', searchable: false, orderable: false}
         ],
-        order: [[1, 'desc']],
-        "initComplete": function() {
-              table.columns().every(function () {
-                var that = this;
-                $('input', this.footer()).on('keyup change', function () {
-                  // console.log($(this).parent().index());
-                    that.search(this.value).draw();
-                });
-              });
-            }
+        order: [[3, 'desc']]
     });
   });
-  $(document).on('click','input[type="checkbox"]',function(){
-    if(this.checked){
-      $('#bulk_delete').prop('disabled',false);
-
-    }else { 
-      if($("input[name='ids[]']:checked").length == 0){
-        $('#bulk_delete').prop('disabled',true);
-      } 
-    } 
-    
-  });
-
-  $('#bulk_delete').on('click',function(){
-    // console.log($( "input[name='ids[]']:checked" ).length);
-    if($( "input[name='ids[]']:checked" ).length == 0){
-      $('#bulk_delete').prop('type','button');
-        new PNotify({
-            title: 'Failed!',
-            text: "@lang('fleet.delete_error')",
-            type: 'error'
-          });
-        $('#bulk_delete').attr('disabled',true);
-    }
-    if($("input[name='ids[]']:checked").length > 0){
-      // var favorite = [];
-      $.each($("input[name='ids[]']:checked"), function(){
-          // favorite.push($(this).val());
-          $("#bulk_hidden").append('<input type=hidden name=ids[] value='+$(this).val()+'>');
-      });
-      // console.log(favorite);
-    }
-  });
-
-
-  $('#chk_all').on('click',function(){
-    if(this.checked){
-      $('.checkbox').each(function(){
-        $('.checkbox').prop("checked",true);
-      });
-    }else{
-      $('.checkbox').each(function(){
-        $('.checkbox').prop("checked",false);
-      });
-      $('#bulk_delete').prop('disabled',true);
-    }
-  });
-
-    // Checkbox checked
-  function checkcheckbox(){
-    // Total checkboxes
-    var length = $('.checkbox').length;
-    // Total checked checkboxes
-    var totalchecked = 0;
-    $('.checkbox').each(function(){
-        if($(this).is(':checked')){
-            totalchecked+=1;
-        }
-    });
-    // console.log(length+" "+totalchecked);
-    // Checked unchecked checkbox
-    if(totalchecked == length){
-        $("#chk_all").prop('checked', true);
-    }else{
-        $('#chk_all').prop('checked', false);
-    }
-  }
 </script>
 {{-- show password script --}}
 <script>

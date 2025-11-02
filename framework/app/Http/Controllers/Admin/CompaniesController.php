@@ -76,14 +76,26 @@ class CompaniesController extends Controller {
             'description' => 'nullable|string|max:1000'
         ]);
 
-        $company = Company::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'description' => $request->description,
-            'is_active' => true,
+        // Create company with explicit boolean casting for PostgreSQL
+        // Using raw SQL to ensure boolean is properly handled (PDO converts bools to ints)
+        $companyId = \Illuminate\Support\Str::uuid()->toString();
+        $now = now();
+        
+        DB::statement('
+            INSERT INTO companies (id, name, email, phone, address, description, is_active, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, true, ?, ?)
+        ', [
+            $companyId,
+            $request->name,
+            $request->email ?? null,
+            $request->phone ?? null,
+            $request->address ?? null,
+            $request->description ?? null,
+            $now,
+            $now,
         ]);
+        
+        $company = Company::findOrFail($companyId);
 
         // Create Stripe customer if company has super admin
         try {

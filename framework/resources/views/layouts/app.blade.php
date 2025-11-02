@@ -1014,7 +1014,6 @@ button.deleting {
                         <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
                             <a href="{{route('drivers.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-id-card"></i> Drivers</a>
-                            <a href="{{url('admin/users')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Users(Managers)</a>
                             @if(Auth::user()->user_type == 'B' || Auth::user()->user_type == 'S')
                             <a href="{{url('admin/profile/office-admins')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Office Admins</a>
                             @endif
@@ -1859,7 +1858,7 @@ button.deleting {
 
 
 
-              @if((Request::is('admin/drivers*')) || (Request::is('admin/users*')) || (Request::is('admin/customers*'))
+              @if((Request::is('admin/drivers*')) || (Request::is('admin/customers*'))
 
               || (Request::is('admin/chat')) )
 
@@ -1892,14 +1891,6 @@ button.deleting {
                       class="nav-link @if(Request::is('admin/drivers*')) active @endif">
                       <i class="fa fa-id-card nav-icon"></i>
                       <p>@lang('menu.drivers')</p>
-                    </a>
-                  </li>
-                  @endcan
-                  @can('Users list')
-                  <li class="nav-item">
-                    <a href="{{ route('users.index')}}" class="nav-link @if(Request::is('admin/users*')) active @endif">
-                      <i class="fa fa-user nav-icon"></i>
-                      <p>@lang('fleet.users')@lang('fleet.managers')</p>
                     </a>
                   </li>
                   @endcan

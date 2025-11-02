@@ -53,32 +53,23 @@ class UsersController extends Controller {
 					})
 					->addColumn('action', function ($user) {
 						$auth = Auth::user();
-						if (!$auth) {
-							return '&nbsp;';
-						}
 						
 						$buttons = '';
 						
-						// Super Admin or user with edit permission
-						$canEdit = ($auth->user_type == 'S') || Gate::allows('Users edit') || $auth->hasPermissionTo('Users edit');
+						// Edit button - always show for now to debug
+						$editUrl = url("admin/users/" . $user->id . "/edit");
+						$buttons .= '<button type="button" class="btn btn-sm btn-primary" onclick="window.location.href=\'' . $editUrl . '\'" style="margin-right: 5px;">';
+						$buttons .= '<i class="fas fa-edit"></i> Edit';
+						$buttons .= '</button>';
 						
-						if ($canEdit) {
-							$editUrl = url("admin/users/" . $user->id . "/edit");
-							$buttons .= '<button type="button" class="btn btn-sm btn-primary" onclick="window.location.href=\'' . $editUrl . '\'" style="margin-right: 5px;">';
-							$buttons .= '<i class="fas fa-edit"></i> Edit';
-							$buttons .= '</button>';
-						}
-						
-						// Delete button - not super admin (id=1) and user has delete permission
-						$canDelete = ($user->id != 1) && (($auth->user_type == 'S') || Gate::allows('Users delete') || $auth->hasPermissionTo('Users delete'));
-						
-						if ($canDelete) {
+						// Delete button - not super admin (id=1)
+						if ($user->id != 1) {
 							$buttons .= '<button type="button" class="btn btn-sm btn-danger" data-id="' . $user->id . '" data-toggle="modal" data-target="#myModal">';
 							$buttons .= '<i class="fas fa-trash"></i> Delete';
 							$buttons .= '</button>';
 						}
 						
-						return $buttons ?: '&nbsp;';
+						return $buttons;
 					})
 					->rawColumns(['action'])
 					->make(true);

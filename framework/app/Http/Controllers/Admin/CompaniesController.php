@@ -198,6 +198,18 @@ class CompaniesController extends Controller {
         }
 
         try {
+            // Ensure Stripe customer exists (create if missing)
+            if (!$company->stripe_customer_id) {
+                $stripeService = new StripeSubscriptionService();
+                $customerId = $stripeService->createCustomer($company);
+                if (!$customerId) {
+                    return redirect()->route('admin.yamz.companies.show', $companyId)
+                        ->with('error', 'Failed to create Stripe customer. Please check your Stripe API keys and try again.');
+                }
+                // Refresh company to get updated stripe_customer_id
+                $company->refresh();
+            }
+
             $emailService = new CompanyPaymentEmailService(new StripeSubscriptionService());
             $sent = $emailService->sendPaymentSetupEmail($company, $superAdmin);
 

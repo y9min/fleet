@@ -44,7 +44,7 @@
                             </div>
                         </div>
 
-                        @if($supers->count() > 0 && $company->stripe_customer_id)
+                        @if($supers->count() > 0)
                             <div class="alert alert-info mb-3">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
@@ -52,6 +52,10 @@
                                         <p class="mb-0">Send payment setup email to the company super admin.</p>
                                         @if($company->subscription_status)
                                             <small>Subscription Status: <strong>{{ ucfirst($company->subscription_status) }}</strong></small>
+                                        @elseif($company->stripe_customer_id)
+                                            <small class="text-muted">Stripe customer created. Subscription will be created when first vehicle is added.</small>
+                                        @else
+                                            <small class="text-muted">Stripe customer will be created when you send the email.</small>
                                         @endif
                                     </div>
                                     <form action="{{ route('admin.yamz.companies.send-payment-email', $company->id) }}" method="POST" style="display: inline;">

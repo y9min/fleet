@@ -109,6 +109,7 @@ Route::namespace ('Admin')->group(function () {
         Route::resource('roles', 'UserAccessController');
 
         Route::post('/users-fetch', 'UsersController@fetch_data');
+        Route::get('/users/{id}/edit-data', 'UsersController@getEditData')->name('users.get-edit-data');
         Route::resource('/users', 'UsersController');
 
         Route::get('twilio-settings', 'TwilioController@index');

@@ -71,9 +71,8 @@ class UsersController extends Controller {
 						
 						$buttons = '';
 						
-						// Edit button
-						$editUrl = url("admin/users/" . $user->id . "/edit");
-						$buttons .= '<button type="button" class="btn btn-sm btn-primary" onclick="window.location.href=\'' . $editUrl . '\'" style="margin-right: 5px;">';
+						// Edit button - opens modal
+						$buttons .= '<button type="button" class="btn btn-sm btn-primary edit-user-btn" data-user-id="' . $user->id . '" data-toggle="modal" data-target="#editUserModal" style="margin-right: 5px;">';
 						$buttons .= '<i class="fas fa-edit"></i> Edit';
 						$buttons .= '</button>';
 						
@@ -183,33 +182,93 @@ class UsersController extends Controller {
 		$roles = Role::get();
 		return view("users.edit", compact("user", 'groups', "roles"));
 	}
-	public function update(EditUserRequest $request) {
-		$user = User::whereId($request->get("id"))->first();
-		$user->name = $request->get("first_name") . " " . $request->get("last_name");
-		$user->email = $request->get("email");
-		$user->group_id = $request->get("group_id");
-		$user->module = serialize($request->get('module'));
-		$user->setMeta([
-			'first_name' => $request->get("first_name"),
-			'last_name' => $request->get("last_name")
+	
+	public function getEditData($id) {
+		$user = User::with(['company', 'roles'])->findOrFail($id);
+		
+		return response()->json([
+			'id' => $user->id,
+			'name' => $user->name,
+			'email' => $user->email,
+			'role_id' => $user->roles->first() ? $user->roles->first()->id : null,
 		]);
-		$oldRole = $user->roles->first();
-		if ($oldRole != null) {
-			$old = Role::find($oldRole->id);
-			if ($old != null) {
-				$user->removeRole($old);
+	}
+	public function update(Request $request) {
+		// Handle validation for both modal and form formats
+		if ($request->has('name') && !$request->has('first_name')) {
+			// Modal format - validate separately
+			$request->validate([
+				'name' => 'required|string|max:255',
+				'email' => 'required|email|unique:users,email,' . $request->get('id'),
+				'password' => 'nullable|string|min:8|confirmed',
+			]);
+		} else {
+			// Form format - use EditUserRequest validation via type hint will be lost, so validate manually
+			$rules = [
+				'first_name' => 'required',
+				'last_name' => 'required',
+				'email' => 'required|email|unique:users,email,' . $request->get('id'),
+				'profile_image' => 'nullable|mimes:jpg,png,jpeg|max:2084',
+			];
+			$request->validate($rules);
+		}
+		
+		$user = User::whereId($request->get("id"))->first();
+		
+		// Handle both modal format (name) and form format (first_name, last_name)
+		if ($request->has('name') && !$request->has('first_name')) {
+			// Modal format - parse name into first_name and last_name
+			$nameParts = explode(' ', $request->get('name'), 2);
+			$first_name = $nameParts[0] ?? '';
+			$last_name = $nameParts[1] ?? '';
+			$user->name = $request->get("name");
+		} else {
+			// Form format
+			$first_name = $request->get("first_name");
+			$last_name = $request->get("last_name");
+			$user->name = $first_name . " " . $last_name;
+		}
+		
+		$user->email = $request->get("email");
+		
+		// Only set these if provided (from full edit form, not modal)
+		if ($request->has('group_id')) {
+			$user->group_id = $request->get("group_id");
+		}
+		if ($request->has('module')) {
+			$user->module = serialize($request->get('module'));
+		}
+		
+		$user->setMeta([
+			'first_name' => $first_name,
+			'last_name' => $last_name
+		]);
+		
+		// Handle password update (from modal)
+		if ($request->filled('password')) {
+			$user->password = bcrypt($request->get('password'));
+		}
+		// Handle role update (only if role_id is provided)
+		if ($request->has('role_id')) {
+			$oldRole = $user->roles->first();
+			if ($oldRole != null) {
+				$old = Role::find($oldRole->id);
+				if ($old != null) {
+					$user->removeRole($old);
+				}
+			}
+			$role = Role::find($request->role_id);
+			if ($role) {
+				if ($role->name == "Super Admin") {
+					$user->user_type = 'S';
+				} else {
+					$user->user_type = 'O';
+				}
+				$user->assignRole($role);
 			}
 		}
-		// $user->profile_image = $request->get('profile_image');
-		$role = Role::find($request->role_id);
-		if ($role['name'] == "Super Admin") {
-			$user->user_type = 'S';
-		} else {
-			$user->user_type = 'O';
-		}
+		
 		$user->save();
-		$role = Role::find($request->role_id);
-		$user->assignRole($role);
 		if ($request->file('profile_image') && $request->file('profile_image')->isValid()) {
 			$oldProfileImage = $user->getMeta('profile_image');
 			if ($oldProfileImage && file_exists('./uploads/' . $oldProfileImage) && !is_dir('./uploads/' . $oldProfileImage)) {
@@ -217,6 +276,14 @@ class UsersController extends Controller {
 			}
 			$this->upload_file($request->file('profile_image'), "profile_image", $user->id);
 		}
+		// Return JSON for AJAX requests (modal), redirect for regular form submissions
+		if ($request->ajax() || $request->wantsJson()) {
+			return response()->json([
+				'success' => true,
+				'message' => 'User updated successfully.'
+			]);
+		}
+		
 		$modules = unserialize($user->getMeta('module'));
 		return Redirect::route("users.index");
 	}

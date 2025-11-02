@@ -100,6 +100,46 @@
     </div>
   </div>
 </div>
+<!-- Edit User Modal -->
+<div id="editUserModal" class="modal fade" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit User</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form id="editUserForm" method="POST">
+        @csrf
+        <input type="hidden" name="_method" value="PATCH">
+        <input type="hidden" name="id" id="edit_user_id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="edit_name">Full Name</label>
+            <input type="text" class="form-control" id="edit_name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="edit_email">Email Address</label>
+            <input type="email" class="form-control" id="edit_email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="edit_password">New Password (Optional)</label>
+            <input type="password" class="form-control" id="edit_password" name="password">
+          </div>
+          <div class="form-group">
+            <label for="edit_password_confirmation">Confirm New Password</label>
+            <input type="password" class="form-control" id="edit_password_confirmation" name="password_confirmation">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 <!-- Modal -->
 @endsection
 
@@ -139,6 +179,73 @@
     $('#changepass').modal("hide");
     e.preventDefault();
   });
+  // Handle edit user modal
+  $(document).on('click', '.edit-user-btn', function() {
+    var userId = $(this).data('user-id');
+    $('#edit_user_id').val(userId);
+    
+    // Load user data
+    $.ajax({
+      url: "{{ url('admin/users') }}/" + userId + "/edit-data",
+      type: 'GET',
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function(data) {
+        $('#edit_name').val(data.name);
+        $('#edit_email').val(data.email);
+        $('#edit_password').val('');
+        $('#edit_password_confirmation').val('');
+      },
+      error: function(xhr) {
+        console.error('Error loading user data:', xhr);
+        alert('Error loading user data. Please try again.');
+      }
+    });
+  });
+  
+  // Handle edit user form submission
+  $('#editUserForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    var userId = $('#edit_user_id').val();
+    var formData = $(this).serialize();
+    
+    $.ajax({
+      url: "{{ url('admin/users') }}/" + userId,
+      type: 'POST',
+      data: formData,
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function(response) {
+        $('#editUserModal').modal('hide');
+        
+        // Reload DataTable
+        $('#ajax_data_table').DataTable().ajax.reload();
+        
+        // Show success message
+        if (typeof PNotify !== 'undefined') {
+          new PNotify({
+            title: 'Success!',
+            text: 'User updated successfully.',
+            type: 'success'
+          });
+        } else {
+          alert('User updated successfully.');
+        }
+      },
+      error: function(xhr) {
+        console.error('Error updating user:', xhr);
+        var errorMsg = 'Error updating user. Please try again.';
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+          errorMsg = xhr.responseJSON.message;
+        }
+        alert(errorMsg);
+      }
+    });
+  });
+
   $(function(){
     
     var table = $('#ajax_data_table').DataTable({

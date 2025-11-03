@@ -629,6 +629,9 @@ button.deleting {
         padding: 0.25rem 1rem !important;
         margin-left: 0 !important;
         width: 100% !important;
+        position: sticky;
+        top: 0;
+        z-index: 1040; /* above content, below modals */
     }
 
     .main-header .navbar-nav {
@@ -2847,7 +2850,8 @@ button.deleting {
   <script src="{{ asset('assets/js/cdn-dataTables.buttons.min.js')}}" defer></script>
   <script src="{{ asset('assets/js/cdn-buttons.print.min.js')}}" defer></script>
   <script src="{{asset('assets/js/adminlte.js')}}" defer></script>
-  <script src="{{asset('web-sw.js?v3') }}"></script>
+  {{-- Remove direct inclusion of service worker file to avoid executing it as a script (causes 403/JS errors). Registration below will load it correctly. --}}
+  {{-- <script src="{{asset('web-sw.js?v3') }}"></script> --}}
   <script type="text/javascript" src="{{ asset('assets/js/cdn-jszip.min.js')}}" defer></script>
   <script type="text/javascript" src="{{ asset('assets/js/cdn-pdfmake.min.js')}}" defer></script>
   <script type="text/javascript" src="{{ asset('assets/js/cdn-vfs_fonts.js')}}" defer></script>

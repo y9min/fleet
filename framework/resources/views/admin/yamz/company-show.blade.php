@@ -2,9 +2,9 @@
 
 @section('extra_css')
 <style>
-    /* Move card-body down by 30px */
+    /* Move card-body down by 60px */
     .company-show-page .card-body {
-        margin-top: 30px;
+        margin-top: 60px;
     }
 </style>
 @endsection

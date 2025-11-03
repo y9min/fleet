@@ -629,6 +629,9 @@ button.deleting {
         padding: 0.25rem 1rem !important;
         margin-left: 0 !important;
         width: 100% !important;
+        position: sticky;
+        top: 0;
+        z-index: 1040; /* above content, below modals */
     }
 
     .main-header .navbar-nav {

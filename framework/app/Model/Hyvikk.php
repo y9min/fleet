@@ -12,12 +12,14 @@ Design and developed by Hyvikk Solutions <https://hyvikk.com/>
 namespace App\Model;
 
 use App\Model\ApiSettings;
+use App\Model\ChatSettingsModel;
 use App\Model\EmailContent;
 use App\Model\FareSettings;
 use App\Model\FrontendModel;
 use App\Model\Settings;
 use App\Model\TwilioSettings;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class Hyvikk {
 
@@ -118,9 +120,19 @@ class Hyvikk {
 
         public static function chat($key) {
                 $cacheKey = 'hyvikk_chat';
-                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
-                    return array_pluck(ChatSettingsModel::all()->toArray(), 'value', 'name');
-                });
+                try {
+                    $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                        return array_pluck(ChatSettingsModel::all()->toArray(), 'value', 'name');
+                    });
+                } catch (\Exception $e) {
+                    // Log the error but don't block login - chat settings are non-critical
+                    Log::warning('Failed to load chat settings: ' . $e->getMessage(), [
+                        'exception' => $e,
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // Return empty array to prevent login failures
+                    $settings = [];
+                }
                 
                 if (is_array($key)) {
                     return array_only($settings, $key);

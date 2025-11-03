@@ -34,8 +34,8 @@ class CompanyPaymentEmailService
                 throw new \Exception('RESEND_API_KEY environment variable is not set');
             }
 
-            // Check from/reply-to addresses
-            $fromAddress = 'notifications@pcoflow.com';
+            // Sender (payment emails only) - configurable via env
+            $fromAddress = env('MAIL_FROM_PAYMENT', 'billing@pcoflow.com');
             $fromName = 'PCO Flow Team';
             $replyToAddress = 'support@pcoflow.com';
             if (!$fromAddress) {

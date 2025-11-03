@@ -629,7 +629,7 @@ button.deleting {
         padding: 0.25rem 1rem !important;
         margin-left: 0 !important;
         width: 100% !important;
-        position: sticky;
+        position: fixed;
         top: 0;
         z-index: 1040; /* above content, below modals */
     }
@@ -666,6 +666,7 @@ button.deleting {
     .content-wrapper {
         background: transparent;
         padding: 1rem;
+        padding-top: calc(1rem + 80px); /* Account for fixed navbar height */
     }
 
     .content {

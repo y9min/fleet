@@ -2855,8 +2855,12 @@ button.deleting {
   <script src="{{ asset('assets/js/cdn-Chart.bundle.min.js')}}" defer></script>
   <script src="{{ asset('assets/js/cdn-ckeditor.js')}}" defer></script>
   <script>
-    if (typeof $ !== 'undefined') {
+    if (typeof $ !== 'undefined' && $.fn && typeof $.fn.tooltip === 'function') {
         $('[title]').tooltip();
+        $('[data-toggle="tooltip"]').tooltip();
+    } else {
+        // Tooltip plugin not available; skip initialization to avoid runtime errors
+        // console.warn('Bootstrap tooltip plugin not found; skipping tooltip initialization');
     }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('{{ asset("web-sw.js?v3") }}', {

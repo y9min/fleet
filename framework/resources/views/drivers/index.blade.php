@@ -139,6 +139,43 @@ PCOFlow | Drivers
   .modal-xl {
     max-width: 800px;
   }
+  
+  /* Fix modal z-index and pointer-events to prevent backdrop blocking interactions */
+  .modal {
+    z-index: 1055 !important;
+  }
+  
+  .modal-dialog {
+    position: relative;
+    z-index: 1056 !important;
+    pointer-events: none;
+  }
+  
+  .modal-content {
+    pointer-events: auto !important;
+    z-index: 1057 !important;
+    position: relative;
+  }
+  
+  .modal-backdrop {
+    z-index: 1050 !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  /* Ensure all interactive elements in modal are clickable */
+  .modal-content * {
+    pointer-events: auto;
+  }
+  
+  /* Allow scrolling in modal body */
+  .modal-body {
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+  }
 
   .progress {
     height: 20px;

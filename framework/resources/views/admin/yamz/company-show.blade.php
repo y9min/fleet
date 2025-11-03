@@ -1,7 +1,16 @@
 @extends('layouts.app')
 
+@section('extra_css')
+<style>
+    /* Move card-body down by 30px */
+    .company-show-page .card-body {
+        margin-top: 30px;
+    }
+</style>
+@endsection
+
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid company-show-page">
     <div class="row">
         <div class="col-12">
             <div class="card">

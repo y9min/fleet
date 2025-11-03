@@ -34,8 +34,10 @@ class CompanyPaymentEmailService
                 throw new \Exception('RESEND_API_KEY environment variable is not set');
             }
 
-            // Check from address
-            $fromAddress = env('MAIL_FROM_ADDRESS', 'noreply@pcoflow.com');
+            // Check from/reply-to addresses
+            $fromAddress = 'notifications@pcoflow.com';
+            $fromName = 'PCO Flow Team';
+            $replyToAddress = 'support@pcoflow.com';
             if (!$fromAddress) {
                 Log::error('Cannot send payment email: MAIL_FROM_ADDRESS is not set', [
                     'company_id' => $company->id,
@@ -82,13 +84,22 @@ class CompanyPaymentEmailService
             $vehicleCount = $company->vehicles()->count();
             $monthlyAmount = $vehicleCount * 7; // £7 per vehicle
 
-            // Render email template
+            // Render email template (HTML)
             Log::info('Rendering email template', [
                 'company_id' => $company->id,
                 'super_admin_email' => $superAdmin->email,
             ]);
             
             $emailContent = View::make('emails.company-payment-setup', [
+                'company' => $company,
+                'superAdmin' => $superAdmin,
+                'portalUrl' => $portalUrl,
+                'vehicleCount' => $vehicleCount,
+                'monthlyAmount' => $monthlyAmount,
+            ])->render();
+
+            // Render plaintext alternative for deliverability
+            $textContent = View::make('emails.company-payment-setup-text', [
                 'company' => $company,
                 'superAdmin' => $superAdmin,
                 'portalUrl' => $portalUrl,
@@ -106,10 +117,12 @@ class CompanyPaymentEmailService
             $resend = Resend::client($resendApiKey);
 
             $result = $resend->emails->send([
-                'from' => $fromAddress,
+                'from' => $fromName . ' <' . $fromAddress . '>',
                 'to' => $superAdmin->email,
-                'subject' => 'PCO Flow - Payment Setup Required for ' . $company->name,
+                'reply_to' => $replyToAddress,
+                'subject' => 'Complete your setup on PCO Flow',
                 'html' => $emailContent,
+                'text' => $textContent,
             ]);
 
             Log::info('Payment setup email sent successfully', [

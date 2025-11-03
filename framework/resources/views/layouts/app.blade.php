@@ -582,6 +582,35 @@ button.deleting {
     /* Hide the traditional sidebar completely */
     .main-sidebar {
         display: none !important;
+        z-index: 0 !important;
+    }
+    
+    /* Ensure wrapper doesn't cause overlap */
+    .wrapper {
+        position: relative;
+    }
+    
+    /* Prevent any background from overlapping header */
+    body > .wrapper > .main-sidebar,
+    body > .wrapper > aside {
+        z-index: 1 !important;
+    }
+    
+    /* Ensure header is above all backgrounds and sidebars */
+    .main-header {
+        background-color: #032127 !important;
+    }
+    
+    /* Prevent any background colors from showing through */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Ensure content starts below header */
+    .content-wrapper,
+    .content-wrapper .container-fluid {
+        position: relative;
+        z-index: 1;
     }
 
     /* Adjust content wrapper to full width */
@@ -629,9 +658,11 @@ button.deleting {
         padding: 0.25rem 1rem !important;
         margin-left: 0 !important;
         width: 100% !important;
-        position: fixed;
-        top: 0;
-        z-index: 1040; /* above content, below modals */
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1050 !important; /* above content and sidebar, below modals */
     }
 
     .main-header .navbar-nav {
@@ -666,7 +697,8 @@ button.deleting {
     .content-wrapper {
         background: transparent;
         padding: 1rem;
-        padding-top: calc(1rem + 80px); /* Account for fixed navbar height */
+        padding-top: calc(1rem + 90px) !important; /* Account for fixed navbar height (80px logo + padding) */
+        margin-top: 0 !important;
     }
 
     .content {

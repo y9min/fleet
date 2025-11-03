@@ -204,7 +204,7 @@ Route::namespace ('Admin')->group(function () {
         Route::get('markers/', 'DriversController@markers');
         Route::get('track-driver/{id}', 'DriversController@track_driver');
 
-        // Route::post('print-users-report', 'ReportsController@print_users'); // Disabled - Users functionality removed
+        Route::post('print-users-report', 'ReportsController@print_users');
         Route::post('print-customer-report', 'ReportsController@print_customer');
         Route::get('print-vendor-report', 'ReportsController@print_vendor');
         Route::post('print-driver-report', 'ReportsController@print_driver');
@@ -297,8 +297,8 @@ Route::namespace ('Admin')->group(function () {
         Route::post("reports/customers", "ReportsController@customers_post")->name("reports.customers");
         Route::get("/reports/booking", "ReportsController@booking")->name("reports.booking");
         Route::get("/reports/delinquent", "ReportsController@delinquent")->name("reports.delinquent");
-        // Route::get("/reports/users", "ReportsController@users")->name("reports.users"); // Disabled - Users functionality removed
-        // Route::post("/reports/users", "ReportsController@users_post")->name("reports.users"); // Disabled - Users functionality removed
+        Route::get("/reports/users", "ReportsController@users")->name("reports.users");
+        Route::post("/reports/users", "ReportsController@users_post")->name("reports.users");
         // Vehicle Pickup Calendar routes - Disabled for future use
         // Route::get('/calendar', 'BookingsController@calendar');
         // Route::get('/calendar/event/{id}', 'BookingsController@calendar_event');

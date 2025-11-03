@@ -1,20 +1,21 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-building"></i> {{ $company->name }} — Details
-                </h3>
-                <div class="card-tools">
-                    <a href="{{ route('admin.yamz.companies') }}" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </a>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-building"></i> {{ $company->name }} — Details
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{{ route('admin.yamz.companies') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
                 </div>
-            </div>
-            <div class="card-body">
+                <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <div class="border p-3 rounded">

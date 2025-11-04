@@ -676,9 +676,8 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 // Create model first, then set in_service directly to ensure boolean mutator is called
                 $vehicle = new VehicleModel($vehicleData);
                 // Force boolean type by setting directly on model instance (triggers mutator)
+                // The setInServiceAttribute mutator handles boolean casting automatically
                 $vehicle->in_service = $isAvailable; // This will trigger setInServiceAttribute mutator
-                // Explicitly ensure boolean in attributes array before save
-                $vehicle->attributes['in_service'] = (bool) $vehicle->attributes['in_service'];
                 
                 // Use DB::raw to force PostgreSQL boolean type - bypass PDO integer conversion
                 $vehicle->attributes['in_service'] = \DB::raw($isAvailable ? 'TRUE' : 'FALSE');

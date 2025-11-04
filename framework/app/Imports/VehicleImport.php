@@ -93,32 +93,105 @@ class VehicleImport implements ToCollection, WithHeadingRow
     {
         $this->importStats['total_rows'] = $rows->count();
         
+        // Safely get sample row for logging
+        $sampleRow = null;
+        try {
+            $firstRow = $rows->first();
+            if ($firstRow !== null) {
+                if (is_array($firstRow)) {
+                    $sampleRow = $firstRow;
+                } elseif (is_object($firstRow) && method_exists($firstRow, 'toArray')) {
+                    $sampleRow = $firstRow->toArray();
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to get sample row for logging', ['error' => $e->getMessage()]);
+        }
+        
         Log::info('Vehicle import started', [
             'total_rows' => $this->importStats['total_rows'],
-            'sample_row' => $rows->first() ? $rows->first()->toArray() : null
+            'sample_row' => $sampleRow
         ]);
         
         // Process each row in its own transaction so one failure doesn't abort all
             $rowNumber = 0;
             foreach ($rows as $row) {
             $rowNumber++;
+            
+            // Early validation: skip null rows before starting transaction
+            if ($row === null) {
+                $this->importStats['validation_failed']++;
+                Log::warning("Skipping row $rowNumber - row is null");
+                continue;
+            }
+            
             \DB::beginTransaction();
             try {
-                // Convert to array first and normalize column names
-                $rowData = is_array($row) ? $row : $row->toArray();
+                // Log raw row structure for debugging
+                Log::debug("Processing row $rowNumber", [
+                    'row_type' => gettype($row),
+                    'is_array' => is_array($row),
+                    'has_toArray' => method_exists($row, 'toArray')
+                ]);
+                
+                // Convert to array first with defensive error handling
+                $rowData = null;
+                try {
+                    if (is_array($row)) {
+                        $rowData = $row;
+                    } elseif (is_object($row) && method_exists($row, 'toArray')) {
+                        $rowData = $row->toArray();
+                    } else {
+                        throw new \Exception("Row is not an array or object with toArray method");
+                    }
+                } catch (\Exception $e) {
+                    $this->importStats['validation_failed']++;
+                    Log::warning("Failed to convert row $rowNumber to array", [
+                        'error' => $e->getMessage(),
+                        'row_type' => gettype($row)
+                    ]);
+                    \DB::rollBack();
+                    continue;
+                }
+                
+                // Validate that rowData is an array and not empty
+                if (!is_array($rowData)) {
+                    $this->importStats['validation_failed']++;
+                    Log::warning("Row $rowNumber: rowData is not an array after conversion", [
+                        'rowData_type' => gettype($rowData),
+                        'rowData_value' => $rowData
+                    ]);
+                    \DB::rollBack();
+                    continue;
+                }
                 
                 // Normalize column names - Laravel Excel may preserve spaces or use different formats
                 // Convert all keys to lowercase with underscores for consistency
                 $normalizedRowData = [];
-                foreach ($rowData as $key => $value) {
-                    $normalizedKey = strtolower(str_replace([' ', '-'], '_', trim($key)));
-                    $normalizedRowData[$normalizedKey] = $value;
+                if (!empty($rowData)) {
+                    foreach ($rowData as $key => $value) {
+                        // Skip null keys
+                        if ($key === null) {
+                            continue;
+                        }
+                        $normalizedKey = strtolower(str_replace([' ', '-'], '_', trim((string)$key)));
+                        $normalizedRowData[$normalizedKey] = $value;
+                    }
                 }
                 $rowData = $normalizedRowData;
                 
-                // Skip empty rows
-                if (empty($rowData['registration_plate'])) {
-                    Log::info("Skipping empty row $rowNumber");
+                // Log normalized column names for debugging
+                Log::debug("Row $rowNumber normalized columns", [
+                    'original_keys' => array_keys($rowData ?? []),
+                    'has_registration_plate' => isset($rowData['registration_plate'])
+                ]);
+                
+                // Skip empty rows - use safe array access
+                if (empty($rowData['registration_plate'] ?? null)) {
+                    Log::info("Skipping empty row $rowNumber", [
+                        'rowData_keys' => array_keys($rowData),
+                        'has_registration_plate' => isset($rowData['registration_plate'])
+                    ]);
                     \DB::rollBack();
                     continue;
                 }
@@ -130,8 +203,9 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'year' => $rowData['year'] ?? 'MISSING'
                 ]);
                 
-                // Normalize registration plate for duplicate checking
-                $normalizedPlate = $this->normalizeRegistrationPlate($rowData['registration_plate']);
+                // Normalize registration plate for duplicate checking - use safe access
+                $registrationPlate = $rowData['registration_plate'] ?? '';
+                $normalizedPlate = $this->normalizeRegistrationPlate($registrationPlate);
                 
                 // Check for existing vehicle with same normalized registration plate
                 $existingVehicle = VehicleModel::whereRaw('UPPER(REPLACE(REPLACE(license_plate, \' \', \'\'), \'-\', \'\')) = ?', [$normalizedPlate])->first();

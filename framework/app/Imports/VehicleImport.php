@@ -260,7 +260,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     ]);
                 }
 
-                // Normalize Available -> boolean
+                // Normalize Available -> boolean (explicitly ensure boolean type for PostgreSQL)
                 $isAvailableNormalized = FieldNormalizers::toBoolean($rowData['available'] ?? null);
                 if ((isset($rowData['available']) && $isAvailableNormalized === null)) {
                     $this->importStats['validation_failed']++;
@@ -270,7 +270,8 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     \DB::rollBack();
                     continue;
                 }
-                $isAvailable = $isAvailableNormalized === null ? true : $isAvailableNormalized;
+                // Explicitly cast to boolean to ensure PostgreSQL receives true/false, not 1/0
+                $isAvailable = ($isAvailableNormalized === null ? true : $isAvailableNormalized) ? true : false;
 
                 // Create vehicle - REMOVED exp_date as it doesn't exist in vehicles table
                 $vehicleData = [
@@ -283,7 +284,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'engine_type' => $rowData['fuel_type'] ?? 'Petrol',
                     'mileage' => (int) ($rowData['mileage'] ?? 0),
                     'int_mileage' => (int) ($rowData['mileage'] ?? 0),
-                    'in_service' => $isAvailable,
+                    'in_service' => (bool)$isAvailable, // Explicit boolean cast for PostgreSQL
                     'group_id' => $group ? $group->id : null,
                     'type_id' => $type->id,
                     'user_id' => auth()->id(),

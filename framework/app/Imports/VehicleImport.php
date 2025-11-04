@@ -104,14 +104,24 @@ class VehicleImport implements ToCollection, WithHeadingRow
             $rowNumber++;
             \DB::beginTransaction();
             try {
+                // Convert to array first and normalize column names
+                $rowData = is_array($row) ? $row : $row->toArray();
+                
+                // Normalize column names - Laravel Excel may preserve spaces or use different formats
+                // Convert all keys to lowercase with underscores for consistency
+                $normalizedRowData = [];
+                foreach ($rowData as $key => $value) {
+                    $normalizedKey = strtolower(str_replace([' ', '-'], '_', trim($key)));
+                    $normalizedRowData[$normalizedKey] = $value;
+                }
+                $rowData = $normalizedRowData;
+                
                 // Skip empty rows
-                if (empty($row['registration_plate'])) {
+                if (empty($rowData['registration_plate'])) {
                     Log::info("Skipping empty row $rowNumber");
+                    \DB::rollBack();
                     continue;
                 }
-
-                // Validate required fields
-                $rowData = is_array($row) ? $row : $row->toArray();
                 
                 Log::info("Processing row $rowNumber", [
                     'registration_plate' => $rowData['registration_plate'] ?? 'MISSING',

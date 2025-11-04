@@ -344,18 +344,27 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 Log::info("VEHICLE_IMPORT_DEBUG: After normalization", [
                     'row_number' => $rowNumber,
                     'normalized_keys' => array_keys($normalizedRowData),
+                    'normalized_keys_count' => count($normalizedRowData),
                     'has_registration_plate' => isset($normalizedRowData['registration_plate']),
                     'registration_plate_value' => $normalizedRowData['registration_plate'] ?? 'NOT_SET',
+                    'has_price' => isset($normalizedRowData['price']),
+                    'price_value' => $normalizedRowData['price'] ?? 'NOT_SET',
+                    'has_price_period' => isset($normalizedRowData['price_period']),
+                    'price_period_value' => $normalizedRowData['price_period'] ?? 'NOT_SET',
+                    'has_vehicle_status' => isset($normalizedRowData['vehicle_status']),
+                    'vehicle_status_value' => $normalizedRowData['vehicle_status'] ?? 'NOT_SET',
+                    'has_insurance_discount' => isset($normalizedRowData['insurance_discount']),
+                    'insurance_discount_value' => $normalizedRowData['insurance_discount'] ?? 'NOT_SET',
+                    'has_initial_cost' => isset($normalizedRowData['initial_cost']),
+                    'initial_cost_value' => $normalizedRowData['initial_cost'] ?? 'NOT_SET',
+                    'has_vehicle_scheme' => isset($normalizedRowData['vehicle_scheme']),
+                    'vehicle_scheme_value' => $normalizedRowData['vehicle_scheme'] ?? 'NOT_SET',
+                    'has_telematics_link' => isset($normalizedRowData['telematics_link']),
+                    'telematics_link_value' => $normalizedRowData['telematics_link'] ?? 'NOT_SET',
                     'rowData_type' => gettype($rowData),
                     'rowData_is_array' => is_array($rowData),
                     'rowData_keys' => is_array($rowData) ? array_keys($rowData) : 'NOT_ARRAY',
-                    'rowData_sample' => is_array($rowData) ? array_slice($rowData, 0, 5, true) : 'NOT_ARRAY',
-                    'normalized_keys_match' => [
-                        'has_registration_plate' => isset($rowData['registration_plate']),
-                        'registration_plate_value' => $rowData['registration_plate'] ?? 'NOT_SET',
-                        'first_key' => is_array($rowData) && !empty($rowData) ? array_key_first($rowData) : 'NO_KEYS',
-                        'first_value' => is_array($rowData) && !empty($rowData) ? reset($rowData) : 'NO_VALUES',
-                    ]
+                    'rowData_sample' => is_array($rowData) ? array_slice($rowData, 0, 10, true) : 'NOT_ARRAY',
                 ]);
                 
                 // CRITICAL: Ensure $rowData is always an array before any access
@@ -405,30 +414,73 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 }
                 
                 // Extract all values with null safety BEFORE any processing
+                // Handle alternative column name formats from Laravel Excel slug formatter
+                // Laravel Excel may produce: "price-period" or "price_period" -> both normalize to "price_period"
+                $getValue = function($key, $alternatives = []) use ($rowData) {
+                    if (isset($rowData[$key]) && $rowData[$key] !== null && $rowData[$key] !== '') {
+                        return $rowData[$key];
+                    }
+                    foreach ($alternatives as $alt) {
+                        if (isset($rowData[$alt]) && $rowData[$alt] !== null && $rowData[$alt] !== '') {
+                            return $rowData[$alt];
+                        }
+                    }
+                    return null;
+                };
+                
+                // Extract values once to avoid duplicate calls
+                $rawPrice = $getValue('price', ['price']);
+                $rawPricePeriod = $getValue('price_period', ['price_period', 'price-period']);
+                $rawInitialCost = $getValue('initial_cost', ['initial_cost', 'initial-cost']);
+                $rawVehicleScheme = $getValue('vehicle_scheme', ['vehicle_scheme', 'vehicle-scheme']);
+                $rawInsuranceDiscount = $getValue('insurance_discount', ['insurance_discount', 'insurance-discount']);
+                $rawVehicleStatus = $getValue('vehicle_status', ['vehicle_status', 'vehicle-status']);
+                $rawTelematicsLink = $getValue('telematics_link', ['telematics_link', 'telematics-link']);
+                
                 $safeRowData = [
-                    'registration_plate' => isset($rowData['registration_plate']) ? (string)$rowData['registration_plate'] : '',
-                    'make' => isset($rowData['make']) ? (string)$rowData['make'] : '',
-                    'model' => isset($rowData['model']) ? (string)$rowData['model'] : '',
-                    'year' => isset($rowData['year']) ? $rowData['year'] : null,
-                    'color' => isset($rowData['color']) ? (string)$rowData['color'] : 'Unknown',
-                    'vehicle_type' => isset($rowData['vehicle_type']) ? (string)$rowData['vehicle_type'] : 'Unknown',
-                    'fuel_type' => isset($rowData['fuel_type']) ? (string)$rowData['fuel_type'] : 'Petrol',
-                    'mileage' => isset($rowData['mileage']) ? $rowData['mileage'] : 0,
-                    'price' => isset($rowData['price']) ? (string)$rowData['price'] : '',
-                    'price_period' => isset($rowData['price_period']) ? (string)$rowData['price_period'] : 'Weekly',
-                    'initial_cost' => isset($rowData['initial_cost']) ? (string)$rowData['initial_cost'] : '',
-                    'vehicle_scheme' => isset($rowData['vehicle_scheme']) ? (string)$rowData['vehicle_scheme'] : '',
-                    'insurance_discount' => isset($rowData['insurance_discount']) ? (string)$rowData['insurance_discount'] : '0',
-                    'available' => isset($rowData['available']) ? $rowData['available'] : null,
-                    'vehicle_status' => isset($rowData['vehicle_status']) ? (string)$rowData['vehicle_status'] : 'Available',
-                    'vehicle_group' => isset($rowData['vehicle_group']) ? (string)$rowData['vehicle_group'] : null,
-                    'mot_expiry_day' => isset($rowData['mot_expiry_day']) ? $rowData['mot_expiry_day'] : null,
-                    'mot_expiry_month' => isset($rowData['mot_expiry_month']) ? $rowData['mot_expiry_month'] : null,
-                    'mot_expiry_year' => isset($rowData['mot_expiry_year']) ? $rowData['mot_expiry_year'] : null,
-                    'telematics_link' => isset($rowData['telematics_link']) ? (string)$rowData['telematics_link'] : '',
-                    'assigned_driver_first_name' => isset($rowData['assigned_driver_first_name']) ? (string)$rowData['assigned_driver_first_name'] : null,
-                    'assigned_driver_last_name' => isset($rowData['assigned_driver_last_name']) ? (string)$rowData['assigned_driver_last_name'] : null,
+                    'registration_plate' => ($val = $getValue('registration_plate', ['registration_plate'])) ? (string)$val : '',
+                    'make' => ($val = $getValue('make', ['make'])) ? (string)$val : '',
+                    'model' => ($val = $getValue('model', ['model'])) ? (string)$val : '',
+                    'year' => $getValue('year', ['year']) ?: null,
+                    'color' => ($val = $getValue('color', ['color'])) ? (string)$val : 'Unknown',
+                    'vehicle_type' => ($val = $getValue('vehicle_type', ['vehicle_type', 'vehicle-type'])) ? (string)$val : 'Unknown',
+                    'fuel_type' => ($val = $getValue('fuel_type', ['fuel_type', 'fuel-type'])) ? (string)$val : 'Petrol',
+                    'mileage' => $getValue('mileage', ['mileage']) ?: 0,
+                    'price' => $rawPrice ? (string)$rawPrice : null,
+                    // Remove default - only use CSV value, normalize to lowercase
+                    'price_period' => $rawPricePeriod ? strtolower(trim((string)$rawPricePeriod)) : null,
+                    'initial_cost' => $rawInitialCost ? (string)$rawInitialCost : null,
+                    'vehicle_scheme' => $rawVehicleScheme ? (string)$rawVehicleScheme : null,
+                    'insurance_discount' => $rawInsuranceDiscount ? (string)$rawInsuranceDiscount : null,
+                    'available' => $getValue('available', ['available']) ?: null,
+                    // Remove default - only use CSV value, normalize to proper case (Available, Rented)
+                    'vehicle_status' => $rawVehicleStatus ? ucfirst(strtolower(trim((string)$rawVehicleStatus))) : null,
+                    'vehicle_group' => ($val = $getValue('vehicle_group', ['vehicle_group', 'vehicle-group'])) ? (string)$val : null,
+                    'mot_expiry_day' => $getValue('mot_expiry_day', ['mot_expiry_day', 'mot-expiry-day', 'mot_expiry_da']) ?: null,
+                    'mot_expiry_month' => $getValue('mot_expiry_month', ['mot_expiry_month', 'mot-expiry-month']) ?: null,
+                    'mot_expiry_year' => $getValue('mot_expiry_year', ['mot_expiry_year', 'mot-expiry-year']) ?: null,
+                    'telematics_link' => $rawTelematicsLink ? (string)$rawTelematicsLink : null,
+                    'assigned_driver_first_name' => ($val = $getValue('assigned_driver_first_name', ['assigned_driver_first_name', 'assigned-driver-first-name'])) ? (string)$val : null,
+                    'assigned_driver_last_name' => ($val = $getValue('assigned_driver_last_name', ['assigned_driver_last_name', 'assigned-driver-last-name'])) ? (string)$val : null,
                 ];
+                
+                // Log extracted values for debugging
+                Log::info("VEHICLE_IMPORT_DEBUG: Extracted CSV values", [
+                    'row_number' => $rowNumber,
+                    'csv_keys' => array_keys($rowData),
+                    'extracted_values' => [
+                        'price' => $safeRowData['price'],
+                        'price_period' => $safeRowData['price_period'],
+                        'initial_cost' => $safeRowData['initial_cost'],
+                        'vehicle_scheme' => $safeRowData['vehicle_scheme'],
+                        'insurance_discount' => $safeRowData['insurance_discount'],
+                        'vehicle_status' => $safeRowData['vehicle_status'],
+                        'telematics_link' => $safeRowData['telematics_link'],
+                        'mot_expiry_day' => $safeRowData['mot_expiry_day'],
+                        'mot_expiry_month' => $safeRowData['mot_expiry_month'],
+                        'mot_expiry_year' => $safeRowData['mot_expiry_year'],
+                    ]
+                ]);
                 
                 Log::info("VEHICLE_IMPORT_DEBUG: Starting main processing for row $rowNumber with safe data extraction", [
                     'row_number' => $rowNumber,
@@ -677,34 +729,79 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 $vehicle = VehicleModel::create($vehicleData);
 
                 // Set metadata - ensure all fields are saved INCLUDING MOT expiry date
+                // Only save non-empty values (null or empty string are skipped)
                 try {
-                    $vehicle->setMeta('vehicle_status', $safeRowData['vehicle_status']);
-                    $vehicle->setMeta('vehicle_scheme', $safeRowData['vehicle_scheme']);
-                    $vehicle->setMeta('price', $safeRowData['price']);
-                    $vehicle->setMeta('price_period', $safeRowData['price_period']);
-                    $vehicle->setMeta('initial_cost', $safeRowData['initial_cost']);
-                    $vehicle->setMeta('insurance_discount', $safeRowData['insurance_discount']);
-                    $vehicle->setMeta('telematics_link', $safeRowData['telematics_link']);
+                    $metadataSaved = [];
+                    
+                    if (!empty($safeRowData['vehicle_status']) && $safeRowData['vehicle_status'] !== null) {
+                        $vehicle->setMeta('vehicle_status', $safeRowData['vehicle_status']);
+                        $metadataSaved['vehicle_status'] = $safeRowData['vehicle_status'];
+                    }
+                    
+                    if (!empty($safeRowData['vehicle_scheme']) && $safeRowData['vehicle_scheme'] !== null) {
+                        $vehicle->setMeta('vehicle_scheme', $safeRowData['vehicle_scheme']);
+                        $metadataSaved['vehicle_scheme'] = $safeRowData['vehicle_scheme'];
+                    }
+                    
+                    if (!empty($safeRowData['price']) && $safeRowData['price'] !== null && trim($safeRowData['price']) !== '') {
+                        $vehicle->setMeta('price', trim($safeRowData['price']));
+                        $metadataSaved['price'] = trim($safeRowData['price']);
+                    }
+                    
+                    if (!empty($safeRowData['price_period']) && $safeRowData['price_period'] !== null && trim($safeRowData['price_period']) !== '') {
+                        $vehicle->setMeta('price_period', trim($safeRowData['price_period']));
+                        $metadataSaved['price_period'] = trim($safeRowData['price_period']);
+                    }
+                    
+                    if (!empty($safeRowData['initial_cost']) && $safeRowData['initial_cost'] !== null && trim($safeRowData['initial_cost']) !== '') {
+                        $vehicle->setMeta('initial_cost', trim($safeRowData['initial_cost']));
+                        $metadataSaved['initial_cost'] = trim($safeRowData['initial_cost']);
+                    }
+                    
+                    if (!empty($safeRowData['insurance_discount']) && $safeRowData['insurance_discount'] !== null && trim($safeRowData['insurance_discount']) !== '') {
+                        $vehicle->setMeta('insurance_discount', trim($safeRowData['insurance_discount']));
+                        $metadataSaved['insurance_discount'] = trim($safeRowData['insurance_discount']);
+                    }
+                    
+                    if (!empty($safeRowData['telematics_link']) && $safeRowData['telematics_link'] !== null && trim($safeRowData['telematics_link']) !== '') {
+                        $vehicle->setMeta('telematics_link', trim($safeRowData['telematics_link']));
+                        $metadataSaved['telematics_link'] = trim($safeRowData['telematics_link']);
+                    }
+                    
+                    // Save metadata changes
+                    $vehicle->save();
+                    
+                    Log::info('VEHICLE_IMPORT_DEBUG: Vehicle metadata saved', [
+                        'vehicle_id' => $vehicle->id,
+                        'registration_plate' => $vehicle->license_plate,
+                        'metadata_saved' => $metadataSaved,
+                        'metadata_source' => [
+                            'vehicle_status' => $safeRowData['vehicle_status'],
+                            'vehicle_scheme' => $safeRowData['vehicle_scheme'],
+                            'price' => $safeRowData['price'],
+                            'price_period' => $safeRowData['price_period'],
+                            'initial_cost' => $safeRowData['initial_cost'],
+                            'insurance_discount' => $safeRowData['insurance_discount'],
+                            'telematics_link' => $safeRowData['telematics_link']
+                        ]
+                    ]);
                 } catch (\Exception $e) {
-                    Log::warning("Failed to set metadata for vehicle {$vehicle->id} in row $rowNumber", [
-                        'error' => $e->getMessage()
+                    Log::warning("VEHICLE_IMPORT_ERROR: Failed to set metadata for vehicle {$vehicle->id} in row $rowNumber", [
+                        'error' => $e->getMessage(),
+                        'error_file' => $e->getFile(),
+                        'error_line' => $e->getLine(),
+                        'metadata_values' => [
+                            'vehicle_status' => $safeRowData['vehicle_status'] ?? 'NOT_SET',
+                            'vehicle_scheme' => $safeRowData['vehicle_scheme'] ?? 'NOT_SET',
+                            'price' => $safeRowData['price'] ?? 'NOT_SET',
+                            'price_period' => $safeRowData['price_period'] ?? 'NOT_SET',
+                            'initial_cost' => $safeRowData['initial_cost'] ?? 'NOT_SET',
+                            'insurance_discount' => $safeRowData['insurance_discount'] ?? 'NOT_SET',
+                            'telematics_link' => $safeRowData['telematics_link'] ?? 'NOT_SET',
+                        ]
                     ]);
                     // Continue - metadata is not critical for basic vehicle creation
                 }
-                
-                Log::info('Vehicle metadata set', [
-                    'vehicle_id' => $vehicle->id,
-                    'registration_plate' => $vehicle->license_plate,
-                    'metadata' => [
-                        'vehicle_status' => $safeRowData['vehicle_status'],
-                        'vehicle_scheme' => $safeRowData['vehicle_scheme'],
-                        'price' => $safeRowData['price'],
-                        'price_period' => $safeRowData['price_period'],
-                        'initial_cost' => $safeRowData['initial_cost'],
-                        'insurance_discount' => $safeRowData['insurance_discount'],
-                        'telematics_link' => $safeRowData['telematics_link']
-                    ]
-                ]);
                 
                 // FIXED: Store MOT expiry date in metadata instead of non-existent exp_date column
                 if ($motExpiryDate) {

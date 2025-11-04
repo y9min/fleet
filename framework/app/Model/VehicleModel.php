@@ -17,7 +17,6 @@ use App\Model\User;
 use App\Model\BaseUuidModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Kodeine\Metable\Metable;
-use Illuminate\Support\Facades\DB;
 
 class VehicleModel extends BaseUuidModel {
 	use Metable;
@@ -26,7 +25,6 @@ class VehicleModel extends BaseUuidModel {
 	protected $table = "vehicles";
 	protected $metaTable = 'vehicles_meta'; //optional.
 	protected $fillable = ['model_name', 'make_name', 'color_name', 'type', 'year', 'engine_type', 'horse_power', 'vin', 'license_plate', 'mileage', 'int_mileage', 'in_service', 'user_id', 'insurance_number', 'documents', 'vehicle_image', 'exp_date', 'reg_exp_date', 'lic_exp_date', 'group_id', 'company_id', 'type_id', 'height', 'length', 'breadth', 'weight'];
-	
 	protected $casts = [
 		'in_service' => 'boolean',
 	];
@@ -102,42 +100,6 @@ class VehicleModel extends BaseUuidModel {
 	 */
 	public function getInsuranceDiscount() {
 		return (float) ($this->getMeta('insurance_discount') ?: 0);
-	}
-
-	/**
-	 * Scope to eager load metadata for multiple vehicles efficiently
-	 * This reduces N+1 queries when loading vehicle lists
-	 */
-	public function scopeWithMeta($query) {
-		return $query;
-	}
-
-	/**
-	 * Batch load metadata for a collection of vehicles
-	 * This reduces database queries when dealing with multiple vehicles
-	 */
-	public static function loadMetadataForVehicles($vehicles) {
-		if ($vehicles->isEmpty()) {
-			return $vehicles;
-		}
-
-		$vehicleIds = $vehicles->pluck('id')->toArray();
-		
-		// Load all metadata for these vehicles in one query
-		$metadata = DB::table('vehicles_meta')
-			->whereIn('vehicle_id', $vehicleIds)
-			->get()
-			->groupBy('vehicle_id');
-
-		// Attach metadata to each vehicle
-		foreach ($vehicles as $vehicle) {
-			$meta = $metadata->get($vehicle->id, collect());
-			foreach ($meta as $m) {
-				$vehicle->attributes[$m->key] = $m->value;
-			}
-		}
-
-		return $vehicles;
 	}
 
 }

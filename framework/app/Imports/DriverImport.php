@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\Importable;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
+use App\Support\Import\FieldNormalizers;
 
 class DriverImport implements ToModel, WithHeadingRow, WithValidation
 {
@@ -42,9 +43,17 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
         }
 
         try {
+            $email = FieldNormalizers::email($driver['email'] ?? null);
+            $first = FieldNormalizers::trimOrNull($driver['first_name'] ?? null);
+            $last  = FieldNormalizers::trimOrNull($driver['last_name'] ?? null);
+            $middle = FieldNormalizers::trimOrNull($driver['middle_name'] ?? null);
+            $licenseNumber = FieldNormalizers::toUpper($driver['licence_number'] ?? null);
+            $genderValue = $driver['gender'] ?? 'male';
+            $genderNormalized = strtolower(trim((string)$genderValue));
+            $isFemale = ($genderNormalized === 'female' || $genderNormalized === 'f');
             $user = User::create([
-                "name" => $driver['first_name'] . " " . $driver['last_name'],
-                "email" => $driver['email'],
+                "name" => ($first ?: '') . " " . ($last ?: ''),
+                "email" => $email,
                 "password" => bcrypt($driver['password'] ?? 'password123'),
                 "user_type" => "D",
                 'api_token' => str_random(60),
@@ -52,33 +61,33 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
 
             $user->is_active = 1;
             $user->is_available = 0;
-            $user->first_name = $driver['first_name'];
-            $user->middle_name = $driver['middle_name'] ?? '';
-            $user->last_name = $driver['last_name'];
+            $user->first_name = $first;
+            $user->middle_name = $middle ?? '';
+            $user->last_name = $last;
             $user->address = $driver['address'] ?? '';
             $user->phone = $driver['phone'] ?? '';
             $user->phone_code = "+" . ($driver['country_code'] ?? '44');
             $user->emp_id = $driver['employee_id'] ?? '';
             $user->contract_number = $driver['contract_number'] ?? '';
-            $user->license_number = $driver['licence_number'] ?? '';
+            $user->license_number = $licenseNumber ?? '';
             
             if (!empty($driver['issue_date'])) {
-                $user->issue_date = date('Y-m-d', strtotime($driver['issue_date']));
+                $user->issue_date = FieldNormalizers::toDate($driver['issue_date']);
             }
 
             if (!empty($driver['expiration_date'])) {
-                $user->exp_date = date('Y-m-d', strtotime($driver['expiration_date']));
+                $user->exp_date = FieldNormalizers::toDate($driver['expiration_date']);
             }
 
             if (!empty($driver['join_date'])) {
-                $user->start_date = date('Y-m-d', strtotime($driver['join_date']));
+                $user->start_date = FieldNormalizers::toDate($driver['join_date']);
             }
 
             if (!empty($driver['leave_date'])) {
-                $user->end_date = date('Y-m-d', strtotime($driver['leave_date']));
+                $user->end_date = FieldNormalizers::toDate($driver['leave_date']);
             }
 
-            $user->gender = (($driver['gender'] ?? 'male') == 'female') ? 0 : 1;
+            $user->gender = $isFemale ? 0 : 1;
             $user->econtact = $driver['emergency_contact_details'] ?? '';
 
             $user->givePermissionTo([

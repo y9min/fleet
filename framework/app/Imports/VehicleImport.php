@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Support\Import\FieldNormalizers;
 
 class VehicleImport implements ToCollection, WithHeadingRow
 {
@@ -97,13 +98,11 @@ class VehicleImport implements ToCollection, WithHeadingRow
             'sample_row' => $rows->first() ? $rows->first()->toArray() : null
         ]);
         
-        // Start database transaction for rollback capability
-        \DB::beginTransaction();
-        
-        try {
+        // Process each row in its own transaction so one failure doesn't abort all
             $rowNumber = 0;
             foreach ($rows as $row) {
             $rowNumber++;
+            \DB::beginTransaction();
             try {
                 // Skip empty rows
                 if (empty($row['registration_plate'])) {
@@ -261,16 +260,17 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     ]);
                 }
 
-                // Handle Available field for both boolean and string values
-                $isAvailable = 1; // Default to true
-                if (isset($rowData['available'])) {
-                    $available = $rowData['available'];
-                    if (is_bool($available)) {
-                        $isAvailable = $available ? 1 : 0;
-                    } else {
-                        $isAvailable = (strtolower(trim($available)) === 'true') ? 1 : 0;
-                    }
+                // Normalize Available -> boolean
+                $isAvailableNormalized = FieldNormalizers::toBoolean($rowData['available'] ?? null);
+                if ((isset($rowData['available']) && $isAvailableNormalized === null)) {
+                    $this->importStats['validation_failed']++;
+                    Log::warning("Skipping row $rowNumber - invalid Available value", [
+                        'available' => $rowData['available']
+                    ]);
+                    \DB::rollBack();
+                    continue;
                 }
+                $isAvailable = $isAvailableNormalized === null ? true : $isAvailableNormalized;
 
                 // Create vehicle - REMOVED exp_date as it doesn't exist in vehicles table
                 $vehicleData = [
@@ -364,7 +364,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     Log::error("Failed to save vehicle {$vehicle->id} in row $rowNumber", [
                         'error' => $e->getMessage()
                     ]);
-                    throw $e; // This is critical - re-throw to trigger rollback
+                    throw $e;
                 }
 
                 $this->importStats['successfully_imported']++;
@@ -374,6 +374,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'mot_expiry_date' => $motExpiryDate ? $motExpiryDate->format('Y-m-d') : 'null'
                 ]);
 
+                \DB::commit();
             } catch (\Exception $e) {
                 $this->importStats['errors']++;
                 Log::error('Vehicle import failed', [
@@ -388,34 +389,11 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     $this->importStats['error_details'] = [];
                 }
                 $this->importStats['error_details'][] = "Row $rowNumber: " . $e->getMessage();
+                \DB::rollBack();
             }
             }
-            
-            // Commit transaction if we get here
-            \DB::commit();
-            
-            // Log final import statistics
-            Log::info('Vehicle import completed successfully', $this->importStats);
-            \Log::info('VEHICLE IMPORT SUMMARY', $this->importStats);
-            
-        } catch (\Exception $e) {
-            // Rollback transaction on any error
-            \DB::rollback();
-            
-            $this->importStats['errors']++;
-            Log::error('Vehicle import failed - transaction rolled back', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'stats' => $this->importStats
-            ]);
-            
-            // Add error details for user feedback
-            if (!isset($this->importStats['error_details'])) {
-                $this->importStats['error_details'] = [];
-            }
-            $this->importStats['error_details'][] = "Import failed: " . $e->getMessage();
-            
-            throw $e; // Re-throw to be caught by controller
-        }
+        // Log final import statistics
+        Log::info('Vehicle import completed', $this->importStats);
+        \Log::info('VEHICLE IMPORT SUMMARY', $this->importStats);
     }
 }

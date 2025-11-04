@@ -25,6 +25,9 @@ class VehicleModel extends BaseUuidModel {
 	protected $table = "vehicles";
 	protected $metaTable = 'vehicles_meta'; //optional.
 	protected $fillable = ['model_name', 'make_name', 'color_name', 'type', 'year', 'engine_type', 'horse_power', 'vin', 'license_plate', 'mileage', 'int_mileage', 'in_service', 'user_id', 'insurance_number', 'documents', 'vehicle_image', 'exp_date', 'reg_exp_date', 'lic_exp_date', 'group_id', 'company_id', 'type_id', 'height', 'length', 'breadth', 'weight'];
+	protected $casts = [
+		'in_service' => 'boolean',
+	];
 	
 	protected $appends = ['vehicle_status'];
 

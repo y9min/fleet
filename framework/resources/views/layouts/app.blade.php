@@ -390,6 +390,21 @@ button.deleting {
           var backdrops = document.querySelectorAll('.modal-backdrop');
           backdrops.forEach(function(el) { el.style.pointerEvents = 'none'; });
         });
+        document.addEventListener('show.bs.modal', function(e) {
+          if (e.target && e.target.id === 'import') {
+            // Explicitly disable Bootstrap backdrop for Import modal
+            try {
+              var $import = window.jQuery ? window.jQuery('#import') : null;
+              if ($import && $import.length && $import.data('bs.modal')) {
+                $import.data('bs.modal')._config.backdrop = false;
+              }
+            } catch (_) {}
+            // Remove any existing backdrops just in case
+            document.querySelectorAll('.modal-backdrop').forEach(function(el){
+              el.parentNode && el.parentNode.removeChild(el);
+            });
+          }
+        });
       }
     })();
   </script>

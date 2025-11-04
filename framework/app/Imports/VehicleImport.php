@@ -274,6 +274,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 $isAvailable = ($isAvailableNormalized === null ? true : $isAvailableNormalized) ? true : false;
 
                 // Create vehicle - REMOVED exp_date as it doesn't exist in vehicles table
+                // Exclude in_service from mass assignment to set it directly via mutator
                 $vehicleData = [
                     'license_plate' => $rowData['registration_plate'],
                     'make_name' => $rowData['make'],
@@ -284,7 +285,6 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'engine_type' => $rowData['fuel_type'] ?? 'Petrol',
                     'mileage' => (int) ($rowData['mileage'] ?? 0),
                     'int_mileage' => (int) ($rowData['mileage'] ?? 0),
-                    'in_service' => (bool)$isAvailable, // Explicit boolean cast for PostgreSQL
                     'group_id' => $group ? $group->id : null,
                     'type_id' => $type->id,
                     'user_id' => auth()->id(),
@@ -292,10 +292,20 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 ];
                 
                 Log::info("Creating vehicle for row $rowNumber", [
-                    'vehicle_data' => $vehicleData
+                    'vehicle_data' => $vehicleData,
+                    'in_service' => $isAvailable
                 ]);
                 
-                $vehicle = VehicleModel::create($vehicleData);
+                // Create model first, then set in_service directly to ensure boolean mutator is called
+                $vehicle = new VehicleModel($vehicleData);
+                // Force boolean type by setting directly on model instance (triggers mutator)
+                $vehicle->in_service = $isAvailable; // This will trigger setInServiceAttribute mutator
+                // Explicitly ensure boolean in attributes array before save
+                $vehicle->attributes['in_service'] = (bool) $vehicle->attributes['in_service'];
+                
+                // Use DB::raw to force PostgreSQL boolean type - bypass PDO integer conversion
+                $vehicle->attributes['in_service'] = \DB::raw($isAvailable ? 'TRUE' : 'FALSE');
+                $vehicle->save();
 
                 // Set metadata - ensure all fields are saved INCLUDING MOT expiry date
                 try {

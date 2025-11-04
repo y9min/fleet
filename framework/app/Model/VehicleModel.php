@@ -43,7 +43,14 @@ class VehicleModel extends BaseUuidModel {
 	 */
 	protected function performInsert(\Illuminate\Database\Eloquent\Builder $query) {
 		if (array_key_exists('in_service', $this->attributes)) {
-			$this->attributes['in_service'] = (bool) $this->attributes['in_service'];
+			// Explicitly cast to boolean and ensure it's stored as true/false, not 1/0
+			$this->attributes['in_service'] = $this->attributes['in_service'] ? true : false;
+			// Force Laravel to use the boolean value in SQL by ensuring type consistency
+			if (is_bool($this->attributes['in_service'])) {
+				// The value is already boolean, but we need to ensure it's not converted to integer
+				// by explicitly setting it again
+				$this->attributes['in_service'] = (bool) $this->attributes['in_service'];
+			}
 		}
 		return parent::performInsert($query);
 	}

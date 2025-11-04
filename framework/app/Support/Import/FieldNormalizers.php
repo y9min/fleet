@@ -35,6 +35,22 @@ class FieldNormalizers {
     public static function toDate($value) {
         if (!$value) { return null; }
         try {
+            $value = trim((string)$value);
+            
+            // Handle DD/MM/YYYY format explicitly
+            if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $value)) {
+                $parts = explode('/', $value);
+                $day = (int)$parts[0];
+                $month = (int)$parts[1];
+                $year = (int)$parts[2];
+                
+                // Validate date components
+                if ($day >= 1 && $day <= 31 && $month >= 1 && $month <= 12 && $year >= 1900 && $year <= 2100) {
+                    return Carbon::create($year, $month, $day)->format('Y-m-d');
+                }
+            }
+            
+            // Try Carbon's automatic parsing for other formats (YYYY-MM-DD, etc.)
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;

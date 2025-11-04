@@ -133,10 +133,27 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
             'phone' => ['nullable'],
             'contract_number' => ['nullable'],
             'licence_number' => ['nullable'],
-            'join_date' => ['nullable', 'date'],
-            'leave_date' => ['nullable', 'date'],
-            'issue_date' => ['nullable', 'date'],
-            'expiration_date' => ['nullable', 'date'],
+            // Use custom validation closure to accept DD/MM/YYYY format
+            'join_date' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value && !FieldNormalizers::toDate($value)) {
+                    $fail('The ' . $attribute . ' is not a valid date.');
+                }
+            }],
+            'leave_date' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value && !FieldNormalizers::toDate($value)) {
+                    $fail('The ' . $attribute . ' is not a valid date.');
+                }
+            }],
+            'issue_date' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value && !FieldNormalizers::toDate($value)) {
+                    $fail('The ' . $attribute . ' is not a valid date.');
+                }
+            }],
+            'expiration_date' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value && !FieldNormalizers::toDate($value)) {
+                    $fail('The ' . $attribute . ' is not a valid date.');
+                }
+            }],
         ];
     }
 }

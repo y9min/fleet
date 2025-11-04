@@ -31,6 +31,33 @@ class VehicleModel extends BaseUuidModel {
 	
 	protected $appends = ['vehicle_status'];
 
+	/**
+	 * Ensure in_service is always stored as a true boolean for PostgreSQL
+	 */
+	public function setInServiceAttribute($value) {
+		$this->attributes['in_service'] = (bool) $value;
+	}
+
+	/**
+	 * Force boolean casting on insert for PostgreSQL compatibility
+	 */
+	protected function performInsert(\Illuminate\Database\Eloquent\Builder $query) {
+		if (array_key_exists('in_service', $this->attributes)) {
+			$this->attributes['in_service'] = (bool) $this->attributes['in_service'];
+		}
+		return parent::performInsert($query);
+	}
+
+	/**
+	 * Force boolean casting on update for PostgreSQL compatibility
+	 */
+	protected function performUpdate(\Illuminate\Database\Eloquent\Builder $query) {
+		if (array_key_exists('in_service', $this->attributes)) {
+			$this->attributes['in_service'] = (bool) $this->attributes['in_service'];
+		}
+		return parent::performUpdate($query);
+	}
+
 	protected function getMetaKeyName() {
 		return 'vehicle_id'; // The parent foreign key
 	}

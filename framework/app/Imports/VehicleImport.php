@@ -358,6 +358,16 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     ]
                 ]);
                 
+                // CRITICAL: Ensure $rowData is always an array before any access
+                if (!is_array($rowData)) {
+                    Log::error("VEHICLE_IMPORT_ERROR: rowData is not an array after normalization", [
+                        'row_number' => $rowNumber,
+                        'rowData_type' => gettype($rowData),
+                        'rowData_value' => $rowData
+                    ]);
+                    throw new \Exception("VEHICLE_IMPORT_ERROR: rowData is not an array after normalization. Type: " . gettype($rowData));
+                }
+                
                 // Skip empty rows - use safe array access
                 // CRITICAL: Ensure $rowData is an array before accessing keys
                 if (!is_array($rowData) || empty($rowData)) {
@@ -405,7 +415,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 if ($existingVehicle) {
                     $this->importStats['duplicates_skipped']++;
                     Log::info('Duplicate vehicle skipped during import', [
-                        'original_plate' => $rowData['registration_plate'],
+                        'original_plate' => $rowData['registration_plate'] ?? 'NOT_SET',
                         'normalized_plate' => $normalizedPlate,
                         'existing_vehicle_id' => $existingVehicle->id,
                         'existing_plate' => $existingVehicle->license_plate
@@ -415,15 +425,20 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 
                 $this->importStats['processed']++;
                 
-                // Convert year to integer if it's a string
-                if (isset($rowData['year']) && is_string($rowData['year'])) {
-                    $rowData['year'] = (int) $rowData['year'];
+                // Convert year to integer if it's a string - with null safety
+                $yearValue = $rowData['year'] ?? null;
+                if ($yearValue !== null && is_string($yearValue)) {
+                    $rowData['year'] = (int) $yearValue;
                 }
                 
-                // Clean and validate required fields
-                $rowData['registration_plate'] = trim($rowData['registration_plate'] ?? '');
-                $rowData['make'] = trim($rowData['make'] ?? '');
-                $rowData['model'] = trim($rowData['model'] ?? '');
+                // Clean and validate required fields - ensure we never pass null to trim()
+                $registrationPlateValue = $rowData['registration_plate'] ?? '';
+                $makeValue = $rowData['make'] ?? '';
+                $modelValue = $rowData['model'] ?? '';
+                
+                $rowData['registration_plate'] = trim((string)$registrationPlateValue);
+                $rowData['make'] = trim((string)$makeValue);
+                $rowData['model'] = trim((string)$modelValue);
                 
                 // Skip if essential fields are empty
                 if (empty($rowData['registration_plate']) || empty($rowData['make']) || empty($rowData['model'])) {
@@ -460,15 +475,18 @@ class VehicleImport implements ToCollection, WithHeadingRow
 
                 // Find or create vehicle group
                 $group = null;
-                if (!empty($rowData['vehicle_group'])) {
+                $vehicleGroup = $rowData['vehicle_group'] ?? null;
+                if (!empty($vehicleGroup) && $vehicleGroup !== null) {
                     try {
+                        $groupName = trim((string)($vehicleGroup ?? ''));
                         $group = VehicleGroupModel::firstOrCreate(
-                            ['name' => trim($rowData['vehicle_group'])],
-                            ['name' => trim($rowData['vehicle_group'])]
+                            ['name' => $groupName],
+                            ['name' => $groupName]
                         );
                     } catch (\Exception $e) {
-                        Log::warning("Failed to create vehicle group for row $rowNumber", [
-                            'group_name' => $rowData['vehicle_group'],
+                        Log::warning("VEHICLE_IMPORT_DEBUG: Failed to create vehicle group for row $rowNumber", [
+                            'row_number' => $rowNumber,
+                            'group_name' => $vehicleGroup ?? 'NULL',
                             'error' => $e->getMessage()
                         ]);
                         // Continue without group assignment
@@ -477,71 +495,83 @@ class VehicleImport implements ToCollection, WithHeadingRow
 
                 // Find driver if assigned
                 $driver = null;
-                if (!empty($rowData['assigned_driver_first_name']) && !empty($rowData['assigned_driver_last_name'])) {
-                    $driverName = $rowData['assigned_driver_first_name'] . ' ' . $rowData['assigned_driver_last_name'];
+                $driverFirstName = $rowData['assigned_driver_first_name'] ?? null;
+                $driverLastName = $rowData['assigned_driver_last_name'] ?? null;
+                if (!empty($driverFirstName) && !empty($driverLastName)) {
+                    $driverName = trim((string)($driverFirstName ?? '')) . ' ' . trim((string)($driverLastName ?? ''));
                     $driver = User::where('name', $driverName)->first();
                 }
 
                 // Create MOT expiry date - FIXED to handle zero-padded values
                 $motExpiryDate = null;
-                if (!empty($rowData['mot_expiry_day']) && !empty($rowData['mot_expiry_month']) && !empty($rowData['mot_expiry_year'])) {
+                $motDay = $rowData['mot_expiry_day'] ?? null;
+                $motMonth = $rowData['mot_expiry_month'] ?? null;
+                $motYear = $rowData['mot_expiry_year'] ?? null;
+                
+                if (!empty($motDay) && !empty($motMonth) && !empty($motYear)) {
                     try {
                         // Handle 2-digit years (e.g., 25 becomes 2025)
-                        $year = intval($rowData['mot_expiry_year']);
-                        if ($year < 100) {
+                        $year = intval($motYear ?? 0);
+                        if ($year < 100 && $year > 0) {
                             $year += 2000; // Convert 25 to 2025
                         }
                         
                         // Convert day and month to integers to handle zero-padded values (e.g., "09" -> 9)
-                        $day = intval($rowData['mot_expiry_day']);
-                        $month = intval($rowData['mot_expiry_month']);
+                        $day = intval($motDay ?? 0);
+                        $month = intval($motMonth ?? 0);
                         
                         // Validate the date components
                         if ($day >= 1 && $day <= 31 && $month >= 1 && $month <= 12 && $year >= 1900) {
                             $motExpiryDate = Carbon::create($year, $month, $day);
                             
-                            Log::info('MOT expiry date created successfully', [
-                                'original_day' => $rowData['mot_expiry_day'],
-                                'original_month' => $rowData['mot_expiry_month'],
-                                'original_year' => $rowData['mot_expiry_year'],
+                            Log::info('VEHICLE_IMPORT_DEBUG: MOT expiry date created successfully', [
+                                'row_number' => $rowNumber,
+                                'original_day' => $motDay,
+                                'original_month' => $motMonth,
+                                'original_year' => $motYear,
                                 'parsed_date' => $motExpiryDate->format('Y-m-d'),
-                                'vehicle' => $rowData['registration_plate']
+                                'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
                             ]);
                         } else {
-                            Log::warning('Invalid MOT expiry date components', [
+                            Log::warning('VEHICLE_IMPORT_DEBUG: Invalid MOT expiry date components', [
+                                'row_number' => $rowNumber,
                                 'day' => $day,
                                 'month' => $month,
                                 'year' => $year,
-                                'original_day' => $rowData['mot_expiry_day'],
-                                'original_month' => $rowData['mot_expiry_month'],
-                                'original_year' => $rowData['mot_expiry_year'],
-                                'vehicle' => $rowData['registration_plate']
+                                'original_day' => $motDay,
+                                'original_month' => $motMonth,
+                                'original_year' => $motYear,
+                                'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
                             ]);
                         }
                     } catch (\Exception $e) {
-                        Log::warning('Invalid MOT expiry date - Carbon creation failed', [
-                            'day' => $rowData['mot_expiry_day'],
-                            'month' => $rowData['mot_expiry_month'],
-                            'year' => $rowData['mot_expiry_year'],
+                        Log::warning('VEHICLE_IMPORT_DEBUG: Invalid MOT expiry date - Carbon creation failed', [
+                            'row_number' => $rowNumber,
+                            'day' => $motDay ?? 'NULL',
+                            'month' => $motMonth ?? 'NULL',
+                            'year' => $motYear ?? 'NULL',
                             'error' => $e->getMessage(),
-                            'vehicle' => $rowData['registration_plate']
+                            'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
                         ]);
                     }
                 } else {
-                    Log::info('MOT expiry date fields are empty', [
-                        'day' => $rowData['mot_expiry_day'] ?? 'empty',
-                        'month' => $rowData['mot_expiry_month'] ?? 'empty',
-                        'year' => $rowData['mot_expiry_year'] ?? 'empty',
-                        'vehicle' => $rowData['registration_plate']
+                    Log::info('VEHICLE_IMPORT_DEBUG: MOT expiry date fields are empty', [
+                        'row_number' => $rowNumber,
+                        'day' => $motDay ?? 'empty',
+                        'month' => $motMonth ?? 'empty',
+                        'year' => $motYear ?? 'empty',
+                        'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
                     ]);
                 }
 
                 // Normalize Available -> boolean (explicitly ensure boolean type for PostgreSQL)
-                $isAvailableNormalized = FieldNormalizers::toBoolean($rowData['available'] ?? null);
-                if ((isset($rowData['available']) && $isAvailableNormalized === null)) {
+                $availableValue = $rowData['available'] ?? null;
+                $isAvailableNormalized = FieldNormalizers::toBoolean($availableValue);
+                if (isset($rowData['available']) && $isAvailableNormalized === null) {
                     $this->importStats['validation_failed']++;
-                    Log::warning("Skipping row $rowNumber - invalid Available value", [
-                        'available' => $rowData['available']
+                    Log::warning("VEHICLE_IMPORT_DEBUG: Skipping row $rowNumber - invalid Available value", [
+                        'row_number' => $rowNumber,
+                        'available' => $availableValue ?? 'NULL'
                     ]);
                     \DB::rollBack();
                     continue;
@@ -552,10 +582,10 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 // Create vehicle - REMOVED exp_date as it doesn't exist in vehicles table
                 // Exclude in_service from mass assignment to set it directly via mutator
                 $vehicleData = [
-                    'license_plate' => $rowData['registration_plate'],
-                    'make_name' => $rowData['make'],
-                    'model_name' => $rowData['model'],
-                    'year' => $rowData['year'],
+                    'license_plate' => $rowData['registration_plate'] ?? '',
+                    'make_name' => $rowData['make'] ?? '',
+                    'model_name' => $rowData['model'] ?? '',
+                    'year' => $rowData['year'] ?? null,
                     'color_name' => $rowData['color'] ?? 'Unknown',
                     'type' => $rowData['vehicle_type'] ?? 'Unknown',
                     'engine_type' => $rowData['fuel_type'] ?? 'Petrol',
@@ -567,7 +597,8 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'company_id' => auth()->user()->company_id ?? null,
                 ];
                 
-                Log::info("Creating vehicle for row $rowNumber", [
+                Log::info("VEHICLE_IMPORT_DEBUG: Creating vehicle for row $rowNumber", [
+                    'row_number' => $rowNumber,
                     'vehicle_data' => $vehicleData,
                     'in_service' => $isAvailable
                 ]);

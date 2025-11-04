@@ -443,27 +443,60 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 // Skip if essential fields are empty
                 if (empty($rowData['registration_plate']) || empty($rowData['make']) || empty($rowData['model'])) {
                     $this->importStats['validation_failed']++;
-                    Log::warning("Skipping row $rowNumber - missing required fields", [
-                        'registration_plate' => $rowData['registration_plate'],
-                        'make' => $rowData['make'],
-                        'model' => $rowData['model']
+                    Log::warning("VEHICLE_IMPORT_DEBUG: Skipping row $rowNumber - missing required fields", [
+                        'row_number' => $rowNumber,
+                        'registration_plate' => $rowData['registration_plate'] ?? 'NULL',
+                        'make' => $rowData['make'] ?? 'NULL',
+                        'model' => $rowData['model'] ?? 'NULL'
                     ]);
+                    \DB::rollBack();
                     continue;
                 }
                 
-                $validator = Validator::make($rowData, [
-                    'registration_plate' => 'required|string|max:255',
-                    'make' => 'required|string|max:255',
-                    'model' => 'required|string|max:255',
-                    'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+                // Validate input data - ensure $rowData is still an array before validation
+                if (!is_array($rowData)) {
+                    Log::error("VEHICLE_IMPORT_ERROR: rowData is not an array before validator", [
+                        'row_number' => $rowNumber,
+                        'rowData_type' => gettype($rowData)
+                    ]);
+                    throw new \Exception("VEHICLE_IMPORT_ERROR: rowData is not an array before validator. Type: " . gettype($rowData));
+                }
+                
+                Log::info("VEHICLE_IMPORT_DEBUG: Before Validator::make", [
+                    'row_number' => $rowNumber,
+                    'rowData_type' => gettype($rowData),
+                    'rowData_is_array' => is_array($rowData),
+                    'registration_plate' => $rowData['registration_plate'] ?? 'NULL',
+                    'make' => $rowData['make'] ?? 'NULL',
+                    'model' => $rowData['model'] ?? 'NULL',
+                    'year' => $rowData['year'] ?? 'NULL'
                 ]);
+                
+                try {
+                    $validator = Validator::make($rowData, [
+                        'registration_plate' => 'required|string|max:255',
+                        'make' => 'required|string|max:255',
+                        'model' => 'required|string|max:255',
+                        'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("VEHICLE_IMPORT_ERROR: Validator::make failed", [
+                        'row_number' => $rowNumber,
+                        'error' => $e->getMessage(),
+                        'rowData_type' => gettype($rowData),
+                        'rowData_sample' => is_array($rowData) ? array_slice($rowData, 0, 5, true) : 'NOT_ARRAY'
+                    ]);
+                    throw $e;
+                }
 
                 if ($validator->fails()) {
                     $this->importStats['validation_failed']++;
-                    Log::warning('Vehicle import validation failed', [
+                    Log::warning('VEHICLE_IMPORT_DEBUG: Vehicle import validation failed', [
+                        'row_number' => $rowNumber,
                         'row' => $rowData,
                         'errors' => $validator->errors()
                     ]);
+                    \DB::rollBack();
                     continue;
                 }
 
@@ -707,17 +740,22 @@ class VehicleImport implements ToCollection, WithHeadingRow
                         'rowData_is_array' => isset($rowData) && is_array($rowData),
                     ];
                     
-                    // Try to get more info about the row
-                    if (isset($rowData) && is_array($rowData)) {
-                        $errorDetails['rowData_keys'] = array_keys($rowData);
-                        $errorDetails['rowData_count'] = count($rowData);
-                    } elseif ($row instanceof \Illuminate\Support\Collection) {
-                        try {
-                            $errorDetails['collection_count'] = $row->count();
-                            $errorDetails['collection_keys'] = $row->keys()->toArray();
-                        } catch (\Exception $collectionError) {
-                            $errorDetails['collection_error'] = $collectionError->getMessage();
+                    // Try to get more info about the row - with null safety
+                    try {
+                        if (isset($rowData) && is_array($rowData)) {
+                            $errorDetails['rowData_keys'] = array_keys($rowData);
+                            $errorDetails['rowData_count'] = count($rowData);
+                            $errorDetails['rowData_sample'] = array_slice($rowData, 0, 5, true);
+                        } elseif (isset($row) && $row instanceof \Illuminate\Support\Collection) {
+                            try {
+                                $errorDetails['collection_count'] = $row->count();
+                                $errorDetails['collection_keys'] = $row->keys()->toArray();
+                            } catch (\Exception $collectionError) {
+                                $errorDetails['collection_error'] = $collectionError->getMessage();
+                            }
                         }
+                    } catch (\Exception $infoError) {
+                        $errorDetails['info_error'] = $infoError->getMessage();
                     }
                     
                     Log::error("VEHICLE_IMPORT_ERROR: Array access failed", [

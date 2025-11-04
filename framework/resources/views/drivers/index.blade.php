@@ -142,6 +142,7 @@ PCOFlow | Drivers
   
   /* Fix modal z-index and pointer-events to prevent backdrop blocking interactions */
   .modal {
+    z-index: 1050 !important;
     overflow-y: auto !important;
     z-index: 1050 !important;
   }
@@ -410,7 +411,7 @@ PCOFlow | Drivers
   </div>
 
 <!-- Enhanced Import Modal -->
-<div id="import" class="modal fade" role="dialog">
+<div id="import" class="modal fade" role="dialog" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">

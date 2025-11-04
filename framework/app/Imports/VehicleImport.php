@@ -650,7 +650,6 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 $isAvailable = ($isAvailableNormalized === null ? true : $isAvailableNormalized) ? true : false;
 
                 // Create vehicle - REMOVED exp_date as it doesn't exist in vehicles table
-                // Exclude in_service from mass assignment to set it directly via mutator
                 $vehicleData = [
                     'license_plate' => $registrationPlate,
                     'make_name' => $make,
@@ -661,6 +660,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'engine_type' => $safeRowData['fuel_type'],
                     'mileage' => (int) $safeRowData['mileage'],
                     'int_mileage' => (int) $safeRowData['mileage'],
+                    'in_service' => $isAvailable,
                     'group_id' => ($group && isset($group->id)) ? $group->id : null,
                     'type_id' => ($type && isset($type->id)) ? $type->id : null,
                     'user_id' => auth()->id(),
@@ -673,15 +673,8 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'in_service' => $isAvailable
                 ]);
                 
-                // Create model first, then set in_service directly to ensure boolean mutator is called
-                $vehicle = new VehicleModel($vehicleData);
-                // Force boolean type by setting directly on model instance (triggers mutator)
-                // The setInServiceAttribute mutator handles boolean casting automatically
-                $vehicle->in_service = $isAvailable; // This will trigger setInServiceAttribute mutator
-                
-                // Use DB::raw to force PostgreSQL boolean type - bypass PDO integer conversion
-                $vehicle->attributes['in_service'] = \DB::raw($isAvailable ? 'TRUE' : 'FALSE');
-                $vehicle->save();
+                // Use VehicleModel::create() which properly handles the mutator and performInsert
+                $vehicle = VehicleModel::create($vehicleData);
 
                 // Set metadata - ensure all fields are saved INCLUDING MOT expiry date
                 try {
@@ -744,15 +737,6 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     }
                 }
                 
-                // Save the vehicle to ensure metadata is persisted
-                try {
-                    $vehicle->save();
-                } catch (\Exception $e) {
-                    Log::error("Failed to save vehicle {$vehicle->id} in row $rowNumber", [
-                        'error' => $e->getMessage()
-                    ]);
-                    throw $e;
-                }
 
                 $this->importStats['successfully_imported']++;
                 Log::info('Vehicle imported successfully', [

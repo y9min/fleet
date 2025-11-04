@@ -397,16 +397,52 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     continue;
                 }
                 
-                Log::info("VEHICLE_IMPORT_DEBUG: Processing row $rowNumber", [
+                // CRITICAL: Final validation that $rowData is still an array before processing
+                if (!is_array($rowData)) {
+                    $errorMsg = "VEHICLE_IMPORT_ERROR at row $rowNumber: rowData is not an array before main processing. Type: " . gettype($rowData) . ". This indicates a critical data conversion issue.";
+                    Log::error("VEHICLE_IMPORT_ERROR: " . $errorMsg);
+                    throw new \Exception($errorMsg);
+                }
+                
+                // Extract all values with null safety BEFORE any processing
+                $safeRowData = [
+                    'registration_plate' => isset($rowData['registration_plate']) ? (string)$rowData['registration_plate'] : '',
+                    'make' => isset($rowData['make']) ? (string)$rowData['make'] : '',
+                    'model' => isset($rowData['model']) ? (string)$rowData['model'] : '',
+                    'year' => isset($rowData['year']) ? $rowData['year'] : null,
+                    'color' => isset($rowData['color']) ? (string)$rowData['color'] : 'Unknown',
+                    'vehicle_type' => isset($rowData['vehicle_type']) ? (string)$rowData['vehicle_type'] : 'Unknown',
+                    'fuel_type' => isset($rowData['fuel_type']) ? (string)$rowData['fuel_type'] : 'Petrol',
+                    'mileage' => isset($rowData['mileage']) ? $rowData['mileage'] : 0,
+                    'price' => isset($rowData['price']) ? (string)$rowData['price'] : '',
+                    'price_period' => isset($rowData['price_period']) ? (string)$rowData['price_period'] : 'Weekly',
+                    'initial_cost' => isset($rowData['initial_cost']) ? (string)$rowData['initial_cost'] : '',
+                    'vehicle_scheme' => isset($rowData['vehicle_scheme']) ? (string)$rowData['vehicle_scheme'] : '',
+                    'insurance_discount' => isset($rowData['insurance_discount']) ? (string)$rowData['insurance_discount'] : '0',
+                    'available' => isset($rowData['available']) ? $rowData['available'] : null,
+                    'vehicle_status' => isset($rowData['vehicle_status']) ? (string)$rowData['vehicle_status'] : 'Available',
+                    'vehicle_group' => isset($rowData['vehicle_group']) ? (string)$rowData['vehicle_group'] : null,
+                    'mot_expiry_day' => isset($rowData['mot_expiry_day']) ? $rowData['mot_expiry_day'] : null,
+                    'mot_expiry_month' => isset($rowData['mot_expiry_month']) ? $rowData['mot_expiry_month'] : null,
+                    'mot_expiry_year' => isset($rowData['mot_expiry_year']) ? $rowData['mot_expiry_year'] : null,
+                    'telematics_link' => isset($rowData['telematics_link']) ? (string)$rowData['telematics_link'] : '',
+                    'assigned_driver_first_name' => isset($rowData['assigned_driver_first_name']) ? (string)$rowData['assigned_driver_first_name'] : null,
+                    'assigned_driver_last_name' => isset($rowData['assigned_driver_last_name']) ? (string)$rowData['assigned_driver_last_name'] : null,
+                ];
+                
+                Log::info("VEHICLE_IMPORT_DEBUG: Starting main processing for row $rowNumber with safe data extraction", [
                     'row_number' => $rowNumber,
-                    'registration_plate' => $rowData['registration_plate'] ?? 'MISSING',
-                    'make' => $rowData['make'] ?? 'MISSING',
-                    'model' => $rowData['model'] ?? 'MISSING',
-                    'year' => $rowData['year'] ?? 'MISSING'
+                    'rowData_type' => gettype($rowData),
+                    'rowData_is_array' => is_array($rowData),
+                    'rowData_keys' => is_array($rowData) ? array_keys($rowData) : 'NOT_ARRAY',
+                    'registration_plate' => $safeRowData['registration_plate'],
+                    'make' => $safeRowData['make'],
+                    'model' => $safeRowData['model'],
+                    'year' => $safeRowData['year']
                 ]);
                 
                 // Normalize registration plate for duplicate checking - use safe access
-                $registrationPlate = $rowData['registration_plate'] ?? '';
+                $registrationPlate = trim($safeRowData['registration_plate']);
                 $normalizedPlate = $this->normalizeRegistrationPlate($registrationPlate);
                 
                 // Check for existing vehicle with same normalized registration plate
@@ -415,87 +451,76 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 if ($existingVehicle) {
                     $this->importStats['duplicates_skipped']++;
                     Log::info('Duplicate vehicle skipped during import', [
-                        'original_plate' => $rowData['registration_plate'] ?? 'NOT_SET',
+                        'original_plate' => $safeRowData['registration_plate'],
                         'normalized_plate' => $normalizedPlate,
                         'existing_vehicle_id' => $existingVehicle->id,
                         'existing_plate' => $existingVehicle->license_plate
                     ]);
+                    \DB::rollBack();
                     continue; // Skip this row as it's a duplicate
                 }
                 
                 $this->importStats['processed']++;
                 
                 // Convert year to integer if it's a string - with null safety
-                $yearValue = $rowData['year'] ?? null;
+                $yearValue = $safeRowData['year'];
                 if ($yearValue !== null && is_string($yearValue)) {
-                    $rowData['year'] = (int) $yearValue;
+                    $yearValue = (int) $yearValue;
                 }
                 
                 // Clean and validate required fields - ensure we never pass null to trim()
-                $registrationPlateValue = $rowData['registration_plate'] ?? '';
-                $makeValue = $rowData['make'] ?? '';
-                $modelValue = $rowData['model'] ?? '';
-                
-                $rowData['registration_plate'] = trim((string)$registrationPlateValue);
-                $rowData['make'] = trim((string)$makeValue);
-                $rowData['model'] = trim((string)$modelValue);
+                $registrationPlate = trim($safeRowData['registration_plate']);
+                $make = trim($safeRowData['make']);
+                $model = trim($safeRowData['model']);
                 
                 // Skip if essential fields are empty
-                if (empty($rowData['registration_plate']) || empty($rowData['make']) || empty($rowData['model'])) {
+                if (empty($registrationPlate) || empty($make) || empty($model)) {
                     $this->importStats['validation_failed']++;
-                    Log::warning("VEHICLE_IMPORT_DEBUG: Skipping row $rowNumber - missing required fields", [
-                        'row_number' => $rowNumber,
-                        'registration_plate' => $rowData['registration_plate'] ?? 'NULL',
-                        'make' => $rowData['make'] ?? 'NULL',
-                        'model' => $rowData['model'] ?? 'NULL'
-                    ]);
+                    $errorMsg = "VEHICLE_IMPORT_ERROR at row $rowNumber: Missing required fields. Registration Plate: '" . ($registrationPlate ?: 'EMPTY') . "', Make: '" . ($make ?: 'EMPTY') . "', Model: '" . ($model ?: 'EMPTY') . "'";
+                    Log::warning("VEHICLE_IMPORT_DEBUG: " . $errorMsg);
                     \DB::rollBack();
                     continue;
                 }
                 
-                // Validate input data - ensure $rowData is still an array before validation
-                if (!is_array($rowData)) {
-                    Log::error("VEHICLE_IMPORT_ERROR: rowData is not an array before validator", [
-                        'row_number' => $rowNumber,
-                        'rowData_type' => gettype($rowData)
-                    ]);
-                    throw new \Exception("VEHICLE_IMPORT_ERROR: rowData is not an array before validator. Type: " . gettype($rowData));
+                // Validate input data - ensure $safeRowData is still an array before validation
+                if (!is_array($safeRowData)) {
+                    $errorMsg = "VEHICLE_IMPORT_ERROR at row $rowNumber: safeRowData is not an array before validator. Type: " . gettype($safeRowData);
+                    Log::error("VEHICLE_IMPORT_ERROR: " . $errorMsg);
+                    throw new \Exception($errorMsg);
                 }
                 
                 Log::info("VEHICLE_IMPORT_DEBUG: Before Validator::make", [
                     'row_number' => $rowNumber,
-                    'rowData_type' => gettype($rowData),
-                    'rowData_is_array' => is_array($rowData),
-                    'registration_plate' => $rowData['registration_plate'] ?? 'NULL',
-                    'make' => $rowData['make'] ?? 'NULL',
-                    'model' => $rowData['model'] ?? 'NULL',
-                    'year' => $rowData['year'] ?? 'NULL'
+                    'safeRowData_type' => gettype($safeRowData),
+                    'safeRowData_is_array' => is_array($safeRowData),
+                    'registration_plate' => $registrationPlate,
+                    'make' => $make,
+                    'model' => $model,
+                    'year' => $yearValue
                 ]);
                 
                 try {
-                    $validator = Validator::make($rowData, [
+                    $validator = Validator::make([
+                        'registration_plate' => $registrationPlate,
+                        'make' => $make,
+                        'model' => $model,
+                        'year' => $yearValue,
+                    ], [
                         'registration_plate' => 'required|string|max:255',
                         'make' => 'required|string|max:255',
                         'model' => 'required|string|max:255',
                         'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
                     ]);
                 } catch (\Exception $e) {
-                    Log::error("VEHICLE_IMPORT_ERROR: Validator::make failed", [
-                        'row_number' => $rowNumber,
-                        'error' => $e->getMessage(),
-                        'rowData_type' => gettype($rowData),
-                        'rowData_sample' => is_array($rowData) ? array_slice($rowData, 0, 5, true) : 'NOT_ARRAY'
-                    ]);
-                    throw $e;
+                    $errorMsg = "VEHICLE_IMPORT_ERROR at row $rowNumber: Validator::make failed. Error: " . $e->getMessage() . " | safeRowData type: " . gettype($safeRowData);
+                    Log::error("VEHICLE_IMPORT_ERROR: " . $errorMsg);
+                    throw new \Exception($errorMsg);
                 }
 
                 if ($validator->fails()) {
                     $this->importStats['validation_failed']++;
-                    Log::warning('VEHICLE_IMPORT_DEBUG: Vehicle import validation failed', [
-                        'row_number' => $rowNumber,
-                        'row' => $rowData,
-                        'errors' => $validator->errors()
-                    ]);
+                    $errorMsg = "VEHICLE_IMPORT_ERROR at row $rowNumber: Validation failed. Errors: " . json_encode($validator->errors()->all());
+                    Log::warning('VEHICLE_IMPORT_DEBUG: ' . $errorMsg);
                     \DB::rollBack();
                     continue;
                 }
@@ -503,7 +528,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                         // Find or create vehicle type
                         $type = null;
                         try {
-                            $vehicleTypeName = $rowData['vehicle_type'] ?? 'Unknown';
+                            $vehicleTypeName = $safeRowData['vehicle_type'];
                             if (empty($vehicleTypeName)) {
                                 $vehicleTypeName = 'Unknown';
                             }
@@ -515,20 +540,17 @@ class VehicleImport implements ToCollection, WithHeadingRow
                                 throw new \Exception("Failed to create or find vehicle type: " . $vehicleTypeName);
                             }
                         } catch (\Exception $e) {
-                            Log::error("VEHICLE_IMPORT_ERROR: Failed to create vehicle type", [
-                                'row_number' => $rowNumber,
-                                'vehicle_type' => $rowData['vehicle_type'] ?? 'NULL',
-                                'error' => $e->getMessage()
-                            ]);
-                            throw $e;
+                            $errorMsg = "VEHICLE_IMPORT_ERROR at row $rowNumber: Failed to create vehicle type. Error: " . $e->getMessage() . " | Vehicle Type: " . $safeRowData['vehicle_type'];
+                            Log::error("VEHICLE_IMPORT_ERROR: " . $errorMsg);
+                            throw new \Exception($errorMsg);
                         }
 
                 // Find or create vehicle group
                 $group = null;
-                $vehicleGroup = $rowData['vehicle_group'] ?? null;
+                $vehicleGroup = $safeRowData['vehicle_group'];
                 if (!empty($vehicleGroup) && $vehicleGroup !== null) {
                     try {
-                        $groupName = trim((string)($vehicleGroup ?? ''));
+                        $groupName = trim((string)$vehicleGroup);
                         $group = VehicleGroupModel::firstOrCreate(
                             ['name' => $groupName],
                             ['name' => $groupName]
@@ -536,7 +558,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     } catch (\Exception $e) {
                         Log::warning("VEHICLE_IMPORT_DEBUG: Failed to create vehicle group for row $rowNumber", [
                             'row_number' => $rowNumber,
-                            'group_name' => $vehicleGroup ?? 'NULL',
+                            'group_name' => $vehicleGroup,
                             'error' => $e->getMessage()
                         ]);
                         // Continue without group assignment
@@ -545,18 +567,18 @@ class VehicleImport implements ToCollection, WithHeadingRow
 
                 // Find driver if assigned
                 $driver = null;
-                $driverFirstName = $rowData['assigned_driver_first_name'] ?? null;
-                $driverLastName = $rowData['assigned_driver_last_name'] ?? null;
+                $driverFirstName = $safeRowData['assigned_driver_first_name'];
+                $driverLastName = $safeRowData['assigned_driver_last_name'];
                 if (!empty($driverFirstName) && !empty($driverLastName)) {
-                    $driverName = trim((string)($driverFirstName ?? '')) . ' ' . trim((string)($driverLastName ?? ''));
+                    $driverName = trim((string)$driverFirstName) . ' ' . trim((string)$driverLastName);
                     $driver = User::where('name', $driverName)->first();
                 }
 
                 // Create MOT expiry date - FIXED to handle zero-padded values
                 $motExpiryDate = null;
-                $motDay = $rowData['mot_expiry_day'] ?? null;
-                $motMonth = $rowData['mot_expiry_month'] ?? null;
-                $motYear = $rowData['mot_expiry_year'] ?? null;
+                $motDay = $safeRowData['mot_expiry_day'];
+                $motMonth = $safeRowData['mot_expiry_month'];
+                $motYear = $safeRowData['mot_expiry_year'];
                 
                 if (!empty($motDay) && !empty($motMonth) && !empty($motYear)) {
                     try {
@@ -580,7 +602,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                                 'original_month' => $motMonth,
                                 'original_year' => $motYear,
                                 'parsed_date' => $motExpiryDate->format('Y-m-d'),
-                                'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
+                                'vehicle' => $safeRowData['registration_plate']
                             ]);
                         } else {
                             Log::warning('VEHICLE_IMPORT_DEBUG: Invalid MOT expiry date components', [
@@ -591,7 +613,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                                 'original_day' => $motDay,
                                 'original_month' => $motMonth,
                                 'original_year' => $motYear,
-                                'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
+                                'vehicle' => $safeRowData['registration_plate']
                             ]);
                         }
                     } catch (\Exception $e) {
@@ -601,7 +623,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                             'month' => $motMonth ?? 'NULL',
                             'year' => $motYear ?? 'NULL',
                             'error' => $e->getMessage(),
-                            'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
+                            'vehicle' => $safeRowData['registration_plate']
                         ]);
                     }
                 } else {
@@ -610,19 +632,17 @@ class VehicleImport implements ToCollection, WithHeadingRow
                         'day' => $motDay ?? 'empty',
                         'month' => $motMonth ?? 'empty',
                         'year' => $motYear ?? 'empty',
-                        'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
+                        'vehicle' => $safeRowData['registration_plate']
                     ]);
                 }
 
                 // Normalize Available -> boolean (explicitly ensure boolean type for PostgreSQL)
-                $availableValue = $rowData['available'] ?? null;
+                $availableValue = $safeRowData['available'];
                 $isAvailableNormalized = FieldNormalizers::toBoolean($availableValue);
-                if (isset($rowData['available']) && $isAvailableNormalized === null) {
+                if (!empty($safeRowData['available']) && $isAvailableNormalized === null) {
                     $this->importStats['validation_failed']++;
-                    Log::warning("VEHICLE_IMPORT_DEBUG: Skipping row $rowNumber - invalid Available value", [
-                        'row_number' => $rowNumber,
-                        'available' => $availableValue ?? 'NULL'
-                    ]);
+                    $errorMsg = "VEHICLE_IMPORT_ERROR at row $rowNumber: Invalid Available value. Value: " . var_export($availableValue, true);
+                    Log::warning("VEHICLE_IMPORT_DEBUG: " . $errorMsg);
                     \DB::rollBack();
                     continue;
                 }
@@ -632,19 +652,19 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 // Create vehicle - REMOVED exp_date as it doesn't exist in vehicles table
                 // Exclude in_service from mass assignment to set it directly via mutator
                 $vehicleData = [
-                    'license_plate' => $rowData['registration_plate'] ?? '',
-                    'make_name' => $rowData['make'] ?? '',
-                    'model_name' => $rowData['model'] ?? '',
-                    'year' => $rowData['year'] ?? null,
-                    'color_name' => $rowData['color'] ?? 'Unknown',
-                    'type' => $rowData['vehicle_type'] ?? 'Unknown',
-                    'engine_type' => $rowData['fuel_type'] ?? 'Petrol',
-                    'mileage' => (int) ($rowData['mileage'] ?? 0),
-                    'int_mileage' => (int) ($rowData['mileage'] ?? 0),
-                    'group_id' => $group ? $group->id : null,
-                    'type_id' => ($type && $type->id) ? $type->id : null,
+                    'license_plate' => $registrationPlate,
+                    'make_name' => $make,
+                    'model_name' => $model,
+                    'year' => $yearValue,
+                    'color_name' => $safeRowData['color'],
+                    'type' => $safeRowData['vehicle_type'],
+                    'engine_type' => $safeRowData['fuel_type'],
+                    'mileage' => (int) $safeRowData['mileage'],
+                    'int_mileage' => (int) $safeRowData['mileage'],
+                    'group_id' => ($group && isset($group->id)) ? $group->id : null,
+                    'type_id' => ($type && isset($type->id)) ? $type->id : null,
                     'user_id' => auth()->id(),
-                    'company_id' => auth()->user()->company_id ?? null,
+                    'company_id' => (auth()->user() && isset(auth()->user()->company_id)) ? auth()->user()->company_id : null,
                 ];
                 
                 Log::info("VEHICLE_IMPORT_DEBUG: Creating vehicle for row $rowNumber", [
@@ -666,13 +686,13 @@ class VehicleImport implements ToCollection, WithHeadingRow
 
                 // Set metadata - ensure all fields are saved INCLUDING MOT expiry date
                 try {
-                    $vehicle->setMeta('vehicle_status', $rowData['vehicle_status'] ?? 'Available');
-                    $vehicle->setMeta('vehicle_scheme', $rowData['vehicle_scheme'] ?? '');
-                    $vehicle->setMeta('price', $rowData['price'] ?? '');
-                    $vehicle->setMeta('price_period', $rowData['price_period'] ?? 'Weekly');
-                    $vehicle->setMeta('initial_cost', $rowData['initial_cost'] ?? '');
-                    $vehicle->setMeta('insurance_discount', $rowData['insurance_discount'] ?? '0');
-                    $vehicle->setMeta('telematics_link', $rowData['telematics_link'] ?? '');
+                    $vehicle->setMeta('vehicle_status', $safeRowData['vehicle_status']);
+                    $vehicle->setMeta('vehicle_scheme', $safeRowData['vehicle_scheme']);
+                    $vehicle->setMeta('price', $safeRowData['price']);
+                    $vehicle->setMeta('price_period', $safeRowData['price_period']);
+                    $vehicle->setMeta('initial_cost', $safeRowData['initial_cost']);
+                    $vehicle->setMeta('insurance_discount', $safeRowData['insurance_discount']);
+                    $vehicle->setMeta('telematics_link', $safeRowData['telematics_link']);
                 } catch (\Exception $e) {
                     Log::warning("Failed to set metadata for vehicle {$vehicle->id} in row $rowNumber", [
                         'error' => $e->getMessage()
@@ -684,13 +704,13 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'vehicle_id' => $vehicle->id,
                     'registration_plate' => $vehicle->license_plate,
                     'metadata' => [
-                        'vehicle_status' => $rowData['vehicle_status'] ?? 'Available',
-                        'vehicle_scheme' => $rowData['vehicle_scheme'] ?? '',
-                        'price' => $rowData['price'] ?? '',
-                        'price_period' => $rowData['price_period'] ?? 'Weekly',
-                        'initial_cost' => $rowData['initial_cost'] ?? '',
-                        'insurance_discount' => $rowData['insurance_discount'] ?? '',
-                        'telematics_link' => $rowData['telematics_link'] ?? ''
+                        'vehicle_status' => $safeRowData['vehicle_status'],
+                        'vehicle_scheme' => $safeRowData['vehicle_scheme'],
+                        'price' => $safeRowData['price'],
+                        'price_period' => $safeRowData['price_period'],
+                        'initial_cost' => $safeRowData['initial_cost'],
+                        'insurance_discount' => $safeRowData['insurance_discount'],
+                        'telematics_link' => $safeRowData['telematics_link']
                     ]
                 ]);
                 
@@ -703,7 +723,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                         Log::info('MOT expiry date saved to metadata', [
                             'vehicle_id' => $vehicle->id,
                             'mot_date' => $motExpiryDate->format('Y-m-d'),
-                            'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
+                            'vehicle' => $safeRowData['registration_plate']
                         ]);
                     } catch (\Exception $e) {
                         Log::warning("Failed to save MOT expiry date for vehicle {$vehicle->id} in row $rowNumber", [
@@ -797,6 +817,10 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     }
                     if (isset($errorDetails['rowData_keys'])) {
                         $errorMsg .= " | RowData keys: " . implode(', ', $errorDetails['rowData_keys']);
+                    }
+                    // Add file and line number for debugging
+                    if (isset($errorDetails['file']) && isset($errorDetails['line'])) {
+                        $errorMsg .= " | Error at: " . basename($errorDetails['file']) . ":" . $errorDetails['line'];
                     }
                     $this->importStats['error_details'][] = $errorMsg;
                     \DB::rollBack();

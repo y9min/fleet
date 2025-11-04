@@ -141,23 +141,24 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 try {
                     // Handle Collection objects (what ToCollection actually passes)
                     if ($row instanceof \Illuminate\Support\Collection) {
-                        // Check if Collection uses ArrayAccess (has header keys)
-                        if (isset($row['registration_plate']) || isset($row['Registration Plate'])) {
-                            // Try accessing by slug first, then original name
+                        // Collections don't support isset() with array syntax, use ->has() or ->get()
+                        // Convert Collection to array directly - Laravel Excel handles header mapping
+                        $rowData = $row->toArray();
+                        
+                        // If we got an empty array, try accessing as array-like
+                        if (empty($rowData) && $row->count() > 0) {
+                            // Collection might have values but toArray() returned empty
                             $rowData = [];
                             foreach ($row as $key => $value) {
                                 $rowData[$key] = $value;
                             }
-                        } else {
-                            // Fallback: convert to array
-                            $rowData = $row->toArray();
                         }
                     } elseif (is_array($row)) {
                         $rowData = $row;
                     } elseif (is_object($row) && method_exists($row, 'toArray')) {
                         $rowData = $row->toArray();
                     } else {
-                        throw new \Exception("Row is not a Collection, array, or object with toArray method. Got: " . gettype($row));
+                        throw new \Exception("Row is not a Collection, array, or object with toArray method. Got: " . gettype($row) . (is_object($row) ? " (" . get_class($row) . ")" : ""));
                     }
                     
                     // IMPORTANT: Check if we got numeric keys (header mismatch!)
@@ -211,14 +212,20 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 // Normalize column names - Laravel Excel may preserve spaces or use different formats
                 // Convert all keys to lowercase with underscores for consistency
                 $normalizedRowData = [];
-                if (!empty($rowData)) {
-                    foreach ($rowData as $key => $value) {
-                        // Skip null keys
-                        if ($key === null) {
-                            continue;
+                if (is_array($rowData) && !empty($rowData)) {
+                    try {
+                        foreach ($rowData as $key => $value) {
+                            // Skip null keys - this can cause "array offset on null" errors
+                            if ($key === null) {
+                                continue;
+                            }
+                            // Ensure key is a string before processing
+                            $keyString = is_string($key) ? $key : (string)$key;
+                            $normalizedKey = strtolower(str_replace([' ', '-'], '_', trim($keyString)));
+                            $normalizedRowData[$normalizedKey] = $value;
                         }
-                        $normalizedKey = strtolower(str_replace([' ', '-'], '_', trim((string)$key)));
-                        $normalizedRowData[$normalizedKey] = $value;
+                    } catch (\Exception $e) {
+                        throw new \Exception("Error normalizing row keys: " . $e->getMessage() . " | Key: " . (isset($key) ? var_export($key, true) : 'NOT_SET'));
                     }
                 }
                 $rowData = $normalizedRowData;
@@ -238,6 +245,16 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 ]);
                 
                 // Skip empty rows - use safe array access
+                // CRITICAL: Ensure $rowData is an array before accessing keys
+                if (!is_array($rowData) || empty($rowData)) {
+                    Log::warning("Skipping row $rowNumber - rowData is not a valid array", [
+                        'rowData_type' => gettype($rowData),
+                        'rowData_value' => $rowData
+                    ]);
+                    \DB::rollBack();
+                    continue;
+                }
+                
                 if (empty($rowData['registration_plate'] ?? null)) {
                     Log::info("Skipping empty row $rowNumber", [
                         'rowData_keys' => array_keys($rowData),
@@ -521,22 +538,48 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 ]);
 
                 \DB::commit();
-            } catch (\Exception $e) {
-                $this->importStats['errors']++;
-                Log::error('Vehicle import failed', [
-                    'row_number' => $rowNumber,
-                    'row' => $rowData ?? null,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-                
-                // Add error details for user feedback
-                if (!isset($this->importStats['error_details'])) {
-                    $this->importStats['error_details'] = [];
+                } catch (\Exception $e) {
+                    $this->importStats['errors']++;
+                    
+                    // Get detailed error info for debugging
+                    $errorDetails = [
+                        'message' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'row_type' => gettype($row),
+                        'row_class' => is_object($row) ? get_class($row) : null,
+                        'rowData_type' => isset($rowData) ? gettype($rowData) : 'NOT_SET',
+                        'rowData_is_array' => isset($rowData) && is_array($rowData),
+                    ];
+                    
+                    // Try to get more info about the row
+                    if (isset($rowData) && is_array($rowData)) {
+                        $errorDetails['rowData_keys'] = array_keys($rowData);
+                        $errorDetails['rowData_count'] = count($rowData);
+                    } elseif ($row instanceof \Illuminate\Support\Collection) {
+                        $errorDetails['collection_count'] = $row->count();
+                        $errorDetails['collection_keys'] = $row->keys()->toArray();
+                    }
+                    
+                    Log::error('Vehicle import failed', [
+                        'row_number' => $rowNumber,
+                        'row' => $rowData ?? null,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'error_details' => $errorDetails
+                    ]);
+                    
+                    // Add error details for user feedback with more context
+                    if (!isset($this->importStats['error_details'])) {
+                        $this->importStats['error_details'] = [];
+                    }
+                    $errorMsg = "Row $rowNumber: " . $e->getMessage();
+                    if (isset($errorDetails['rowData_type'])) {
+                        $errorMsg .= " | Row type: " . $errorDetails['row_type'] . ", RowData type: " . $errorDetails['rowData_type'];
+                    }
+                    $this->importStats['error_details'][] = $errorMsg;
+                    \DB::rollBack();
                 }
-                $this->importStats['error_details'][] = "Row $rowNumber: " . $e->getMessage();
-                \DB::rollBack();
-            }
             }
         // Log final import statistics
         Log::info('Vehicle import completed', $this->importStats);

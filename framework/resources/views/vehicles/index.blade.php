@@ -250,30 +250,29 @@ body {
         
         /* Fix modal z-index and pointer-events to prevent backdrop blocking interactions */
         .modal {
-            overflow: auto;
-            overflow-y: hidden;
-            z-index: 1055 !important;
+            z-index: 1050 !important;
         }
         
         .modal-dialog {
             position: relative;
-            z-index: 1056 !important;
-            pointer-events: none;
+            z-index: 1060 !important;
+            margin: 1.75rem auto;
         }
         
         .modal-content {
             pointer-events: auto !important;
-            z-index: 1057 !important;
+            z-index: 1070 !important;
             position: relative;
         }
         
         .modal-backdrop {
-            z-index: 1050 !important;
-            position: fixed;
+            z-index: 1040 !important;
+            position: fixed !important;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
+            pointer-events: none !important;
         }
         
         /* Ensure all interactive elements in modal are clickable */
@@ -1159,7 +1158,7 @@ body {
     </div>
 
     <!-- Enhanced Import Modal -->
-    <div id="import" class="modal fade" role="dialog">
+    <div id="import" class="modal fade" role="dialog" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">

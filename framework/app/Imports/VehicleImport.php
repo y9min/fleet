@@ -130,25 +130,68 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 // Log raw row structure for debugging
                 Log::debug("Processing row $rowNumber", [
                     'row_type' => gettype($row),
+                    'row_class' => is_object($row) ? get_class($row) : null,
                     'is_array' => is_array($row),
+                    'is_collection' => $row instanceof \Illuminate\Support\Collection,
                     'has_toArray' => method_exists($row, 'toArray')
                 ]);
                 
                 // Convert to array first with defensive error handling
                 $rowData = null;
                 try {
-                    if (is_array($row)) {
+                    // Handle Collection objects (what ToCollection actually passes)
+                    if ($row instanceof \Illuminate\Support\Collection) {
+                        // Check if Collection uses ArrayAccess (has header keys)
+                        if (isset($row['registration_plate']) || isset($row['Registration Plate'])) {
+                            // Try accessing by slug first, then original name
+                            $rowData = [];
+                            foreach ($row as $key => $value) {
+                                $rowData[$key] = $value;
+                            }
+                        } else {
+                            // Fallback: convert to array
+                            $rowData = $row->toArray();
+                        }
+                    } elseif (is_array($row)) {
                         $rowData = $row;
                     } elseif (is_object($row) && method_exists($row, 'toArray')) {
                         $rowData = $row->toArray();
                     } else {
-                        throw new \Exception("Row is not an array or object with toArray method");
+                        throw new \Exception("Row is not a Collection, array, or object with toArray method. Got: " . gettype($row));
                     }
+                    
+                    // IMPORTANT: Check if we got numeric keys (header mismatch!)
+                    if (is_array($rowData) && !empty($rowData)) {
+                        $keys = array_keys($rowData);
+                        $allNumeric = true;
+                        foreach ($keys as $key) {
+                            if (!is_numeric($key)) {
+                                $allNumeric = false;
+                                break;
+                            }
+                        }
+                        if ($allNumeric) {
+                            throw new \Exception("Row has numeric keys - header mapping failed! First 5 keys: " . implode(', ', array_slice($keys, 0, 5)) . ". This suggests WithHeadingRow is not working correctly.");
+                        }
+                    }
+                    
+                    // Ensure toArray() didn't return null
+                    if ($rowData === null) {
+                        throw new \Exception("toArray() returned null");
+                    }
+                    
+                    // Ensure it's actually an array
+                    if (!is_array($rowData)) {
+                        throw new \Exception("toArray() returned non-array: " . gettype($rowData));
+                    }
+                    
                 } catch (\Exception $e) {
                     $this->importStats['validation_failed']++;
-                    Log::warning("Failed to convert row $rowNumber to array", [
+                    Log::error("Failed to convert row $rowNumber to array", [
                         'error' => $e->getMessage(),
-                        'row_type' => gettype($row)
+                        'row_type' => gettype($row),
+                        'row_class' => is_object($row) ? get_class($row) : null,
+                        'row_dump' => is_object($row) ? 'object' : $row
                     ]);
                     \DB::rollBack();
                     continue;
@@ -180,10 +223,18 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 }
                 $rowData = $normalizedRowData;
                 
-                // Log normalized column names for debugging
-                Log::debug("Row $rowNumber normalized columns", [
-                    'original_keys' => array_keys($rowData ?? []),
-                    'has_registration_plate' => isset($rowData['registration_plate'])
+                // Comprehensive diagnostic logging
+                Log::info("Row $rowNumber DEBUG - After normalization", [
+                    'rowData_type' => gettype($rowData),
+                    'rowData_is_array' => is_array($rowData),
+                    'rowData_keys' => is_array($rowData) ? array_keys($rowData) : 'NOT_ARRAY',
+                    'rowData_sample' => is_array($rowData) ? array_slice($rowData, 0, 5, true) : 'NOT_ARRAY',
+                    'normalized_keys_match' => [
+                        'has_registration_plate' => isset($rowData['registration_plate']),
+                        'registration_plate_value' => $rowData['registration_plate'] ?? 'NOT_SET',
+                        'first_key' => is_array($rowData) && !empty($rowData) ? array_key_first($rowData) : 'NO_KEYS',
+                        'first_value' => is_array($rowData) && !empty($rowData) ? reset($rowData) : 'NO_VALUES',
+                    ]
                 ]);
                 
                 // Skip empty rows - use safe array access

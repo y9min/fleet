@@ -143,6 +143,13 @@ PCOFlow | Drivers
   /* Fix modal z-index and pointer-events to prevent backdrop blocking interactions */
   .modal {
     z-index: 1050 !important;
+    overflow-y: auto !important;
+    z-index: 1050 !important;
+  }
+  
+  .modal.show {
+    display: block !important;
+    overflow-y: auto !important;
   }
   
   .modal-dialog {
@@ -165,6 +172,10 @@ PCOFlow | Drivers
     width: 100vw;
     height: 100vh;
     pointer-events: none !important;
+  }
+  
+  .modal-backdrop.show {
+    pointer-events: auto !important;
   }
   
   /* Ensure all interactive elements in modal are clickable */

@@ -501,10 +501,27 @@ class VehicleImport implements ToCollection, WithHeadingRow
                 }
 
                         // Find or create vehicle type
-                        $type = VehicleTypeModel::firstOrCreate(
-                            ['name' => $rowData['vehicle_type'] ?? 'Unknown'],
-                            ['name' => $rowData['vehicle_type'] ?? 'Unknown']
-                        );
+                        $type = null;
+                        try {
+                            $vehicleTypeName = $rowData['vehicle_type'] ?? 'Unknown';
+                            if (empty($vehicleTypeName)) {
+                                $vehicleTypeName = 'Unknown';
+                            }
+                            $type = VehicleTypeModel::firstOrCreate(
+                                ['name' => $vehicleTypeName],
+                                ['name' => $vehicleTypeName]
+                            );
+                            if (!$type || !$type->id) {
+                                throw new \Exception("Failed to create or find vehicle type: " . $vehicleTypeName);
+                            }
+                        } catch (\Exception $e) {
+                            Log::error("VEHICLE_IMPORT_ERROR: Failed to create vehicle type", [
+                                'row_number' => $rowNumber,
+                                'vehicle_type' => $rowData['vehicle_type'] ?? 'NULL',
+                                'error' => $e->getMessage()
+                            ]);
+                            throw $e;
+                        }
 
                 // Find or create vehicle group
                 $group = null;
@@ -625,7 +642,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     'mileage' => (int) ($rowData['mileage'] ?? 0),
                     'int_mileage' => (int) ($rowData['mileage'] ?? 0),
                     'group_id' => $group ? $group->id : null,
-                    'type_id' => $type->id,
+                    'type_id' => ($type && $type->id) ? $type->id : null,
                     'user_id' => auth()->id(),
                     'company_id' => auth()->user()->company_id ?? null,
                 ];
@@ -686,7 +703,7 @@ class VehicleImport implements ToCollection, WithHeadingRow
                         Log::info('MOT expiry date saved to metadata', [
                             'vehicle_id' => $vehicle->id,
                             'mot_date' => $motExpiryDate->format('Y-m-d'),
-                            'vehicle' => $rowData['registration_plate']
+                            'vehicle' => $rowData['registration_plate'] ?? 'NOT_SET'
                         ]);
                     } catch (\Exception $e) {
                         Log::warning("Failed to save MOT expiry date for vehicle {$vehicle->id} in row $rowNumber", [
@@ -696,12 +713,12 @@ class VehicleImport implements ToCollection, WithHeadingRow
                     }
                 }
                 
-                if ($driver) {
+                if ($driver && isset($driver->id)) {
                     try {
                         $vehicle->setMeta('assign_driver_id', $driver->id);
                     } catch (\Exception $e) {
                         Log::warning("Failed to assign driver for vehicle {$vehicle->id} in row $rowNumber", [
-                            'driver_name' => $driverName,
+                            'driver_name' => $driverName ?? 'NOT_SET',
                             'error' => $e->getMessage()
                         ]);
                         // Continue - driver assignment is not critical for basic vehicle creation

@@ -217,6 +217,57 @@ input:checked + .slider:before {
 
   @yield("extra_css")
 
+  <!-- Global Modal Fix: Prevent backdrop from blocking interactions -->
+  <style>
+    /* Comprehensive modal z-index and pointer-events fix to prevent backdrop blocking */
+    .modal {
+      overflow: hidden;
+      z-index: 1050 !important;
+    }
+    
+    .modal.show {
+      display: block !important;
+      overflow-y: auto !important;
+    }
+    
+    .modal-dialog {
+      position: relative;
+      z-index: 1060 !important;
+      margin: 1.75rem auto;
+    }
+    
+    .modal-content {
+      pointer-events: auto !important;
+      z-index: 1070 !important;
+      position: relative;
+    }
+    
+    .modal-backdrop {
+      z-index: 1040 !important;
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none !important;
+    }
+    
+    
+    /* Ensure all interactive elements in modal are clickable */
+    .modal-content * {
+      pointer-events: auto;
+    }
+    
+    /* Allow scrolling in modal body */
+    .modal-dialog {
+      max-height: calc(100vh - 40px);
+    }
+    
+    .modal-body {
+      overflow-y: auto;
+      max-height: calc(100vh - 180px);
+    }
+  </style>
   <script>
 
     window.Laravel = {!! json_encode([
@@ -229,6 +280,18 @@ input:checked + .slider:before {
 
 ]) !!};
 
+  </script>
+
+  <script>
+    // Defensive: ensure backdrop never intercepts pointer events when any modal is shown
+    (function() {
+      if (typeof window !== 'undefined') {
+        document.addEventListener('shown.bs.modal', function() {
+          var backdrops = document.querySelectorAll('.modal-backdrop');
+          backdrops.forEach(function(el) { el.style.pointerEvents = 'none'; });
+        });
+      }
+    })();
   </script>
 
   <!-- browser notification -->

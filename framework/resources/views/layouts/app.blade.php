@@ -381,6 +381,154 @@ button.deleting {
 
   </script>
 
+<<<<<<< HEAD
+=======
+  <script>
+    // Defensive: ensure backdrop never intercepts pointer events when any modal is shown
+    (function() {
+      if (typeof window !== 'undefined') {
+        document.addEventListener('shown.bs.modal', function() {
+          var backdrops = document.querySelectorAll('.modal-backdrop');
+          backdrops.forEach(function(el) { el.style.pointerEvents = 'none'; });
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    // Advanced diagnostics for modal/backdrop issues
+    (function() {
+      function getStyleSummary(el) {
+        if (!el) return null;
+        var cs = window.getComputedStyle(el);
+        return {
+          tag: el.tagName.toLowerCase(),
+          classes: el.className,
+          id: el.id || null,
+          zIndex: cs.zIndex,
+          position: cs.position,
+          display: cs.display,
+          opacity: cs.opacity,
+          pointerEvents: cs.pointerEvents,
+          overflow: cs.overflow + ' / ' + cs.overflowY,
+          rect: el.getBoundingClientRect().toJSON ? el.getBoundingClientRect().toJSON() : {
+            top: Math.round(el.getBoundingClientRect().top),
+            left: Math.round(el.getBoundingClientRect().left),
+            width: Math.round(el.getBoundingClientRect().width),
+            height: Math.round(el.getBoundingClientRect().height)
+          }
+        };
+      }
+
+      function getZStack(el) {
+        var stack = [];
+        var cur = el;
+        while (cur && cur !== document.documentElement) {
+          var cs = window.getComputedStyle(cur);
+          stack.push({ tag: cur.tagName.toLowerCase(), id: cur.id || null, classes: cur.className, zIndex: cs.zIndex, position: cs.position });
+          cur = cur.parentElement;
+        }
+        return stack;
+      }
+
+      function elementAtCenter() {
+        var x = Math.floor(window.innerWidth / 2);
+        var y = Math.floor(window.innerHeight / 2);
+        return document.elementFromPoint(x, y);
+      }
+
+      function logModalDiagnostics(modalEl, source) {
+        try {
+          console.group('[ModalDiag] Import diagnostics - source:', source || 'unknown');
+          console.log('Timestamp:', new Date().toISOString());
+
+          var body = document.body;
+          var bodyCS = window.getComputedStyle(body);
+          console.log('Body classes:', body.className, 'overflow:', bodyCS.overflow, 'overflowY:', bodyCS.overflowY);
+
+          var backdrops = Array.from(document.querySelectorAll('.modal-backdrop'));
+          console.log('Backdrop count:', backdrops.length);
+          backdrops.forEach(function(bd, i) {
+            console.log('Backdrop['+i+'] style:', getStyleSummary(bd));
+          });
+
+          if (modalEl) {
+            var dialog = modalEl.querySelector('.modal-dialog');
+            var content = modalEl.querySelector('.modal-content');
+            console.log('Modal style:', getStyleSummary(modalEl));
+            console.log('Dialog style:', getStyleSummary(dialog));
+            console.log('Content style:', getStyleSummary(content));
+            console.log('Modal z-stack (content):', getZStack(content));
+          }
+
+          var centerEl = elementAtCenter();
+          console.log('Element at viewport center:', centerEl);
+          if (centerEl) {
+            console.log('Center element style:', getStyleSummary(centerEl));
+            console.log('Center element z-stack:', getZStack(centerEl));
+          }
+
+          // Probe clicks on backdrop
+          backdrops.forEach(function(bd) {
+            bd.addEventListener('click', function(ev) {
+              console.warn('[ModalDiag] Backdrop clicked. pointer-events:', window.getComputedStyle(bd).pointerEvents);
+            }, { once: true });
+          });
+
+          // Mutation observer to detect late backdrops
+          var seen = new WeakSet();
+          var mo = new MutationObserver(function(muts) {
+            muts.forEach(function(m) {
+              m.addedNodes && m.addedNodes.forEach(function(n) {
+                if (n.nodeType === 1 && n.classList && n.classList.contains('modal-backdrop') && !seen.has(n)) {
+                  seen.add(n);
+                  console.warn('[ModalDiag] New backdrop added after show:', getStyleSummary(n));
+                }
+              });
+            });
+          });
+          mo.observe(document.body, { childList: true });
+          setTimeout(function(){ mo.disconnect(); }, 3000);
+
+          console.groupEnd();
+        } catch (e) {
+          console.error('[ModalDiag] Error during diagnostics:', e);
+        }
+      }
+
+      // Hook import buttons and modal events
+      document.addEventListener('click', function(e) {
+        var t = e.target;
+        if (!t) return;
+        var trigger = t.closest('[data-toggle="modal"][data-target="#import"]');
+        if (trigger) {
+          // Delay so DOM changes for backdrop can occur
+          setTimeout(function(){
+            var modalEl = document.querySelector('#import');
+            logModalDiagnostics(modalEl, 'import-button-click');
+          }, 50);
+        }
+      }, true);
+
+      document.addEventListener('show.bs.modal', function(e) {
+        var modalEl = e.target;
+        if (modalEl && modalEl.id === 'import') {
+          logModalDiagnostics(modalEl, 'show.bs.modal');
+        }
+      });
+
+      document.addEventListener('shown.bs.modal', function(e) {
+        var modalEl = e.target;
+        if (modalEl && modalEl.id === 'import') {
+          // Ensure backdrop remains non-interactive, then log again
+          Array.from(document.querySelectorAll('.modal-backdrop')).forEach(function(el){ el.style.pointerEvents = 'none'; });
+          logModalDiagnostics(modalEl, 'shown.bs.modal');
+        }
+      });
+    })();
+  </script>
+
+>>>>>>> 180ad8e7 (Chore: add advanced modal/backdrop diagnostics for Import modal)
   <!-- browser notification -->
 
 

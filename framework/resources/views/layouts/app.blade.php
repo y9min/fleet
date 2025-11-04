@@ -19,7 +19,77 @@
 
 
 
-  <title>{{ Hyvikk::get('app_name') }}</title>
+  <title>
+    @if(Route::currentRouteName() == "admin.dashboard" || Request::is('admin') || Request::is('admin/'))
+        PCOFlow | Dashboard
+    @elseif(Route::currentRouteName() == "drivers.index")
+        PCOFlow | Drivers
+    @elseif(Route::currentRouteName() == "drivers.create")
+        PCOFlow | Add Driver
+    @elseif(Route::currentRouteName() == "drivers.show")
+        PCOFlow | Driver Details
+    @elseif(Route::currentRouteName() == "drivers.edit")
+        PCOFlow | Edit Driver
+    @elseif(Route::currentRouteName() == "vehicles.index")
+        PCOFlow | Vehicles
+    @elseif(Route::currentRouteName() == "vehicles.create")
+        PCOFlow | Add Vehicle
+    @elseif(Route::currentRouteName() == "vehicles.show")
+        PCOFlow | Vehicle Details
+    @elseif(Route::currentRouteName() == "vehicles.edit")
+        PCOFlow | Edit Vehicle
+    @elseif(Route::currentRouteName() == "invitations.index")
+        PCOFlow | Manage Pickup Invitations
+    @elseif(Route::currentRouteName() == "invitations.create")
+        PCOFlow | New Pickup Invitation
+    @elseif(Route::currentRouteName() == "invitations.show")
+        PCOFlow | Booking Details
+    @elseif(Route::currentRouteName() == "invitations.edit")
+        PCOFlow | Edit Booking
+    @elseif(Route::currentRouteName() == "bookings.calendar")
+        PCOFlow | Vehicle Pickup Calendar
+    @elseif(Route::currentRouteName() == "customers.index")
+        PCOFlow | Customers
+    @elseif(Route::currentRouteName() == "customers.create")
+        PCOFlow | Add Customer
+    @elseif(Route::currentRouteName() == "customers.show")
+        PCOFlow | Customer Details
+    @elseif(Route::currentRouteName() == "customers.edit")
+        PCOFlow | Edit Customer
+    @elseif(Route::currentRouteName() == "onboarding.index")
+        PCOFlow | Onboarding
+    @elseif(Route::currentRouteName() == "onboarding.show")
+        PCOFlow | Onboarding Details
+    @elseif(Request::is('admin/vehicle-types*'))
+        PCOFlow | Vehicle Types
+    @elseif(Request::is('admin/vehicle_group*'))
+        PCOFlow | Vehicle Groups
+    @elseif(Route::currentRouteName() == "vehicle_inspection")
+        PCOFlow | Vehicle Inspection
+    @elseif(Request::is('admin/income*'))
+        PCOFlow | Income Management
+    @elseif(Request::is('admin/expense*'))
+        PCOFlow | Expense Management
+    @elseif(Request::is('admin/reports*'))
+        PCOFlow | Reports
+    @elseif(Request::is('admin/settings*'))
+        PCOFlow | Settings
+    @elseif(Request::is('admin/users*'))
+        PCOFlow | User Management
+    @elseif(Request::is('admin/fines*'))
+        PCOFlow | Fines & Penalties
+    @elseif(Request::is('admin/fuel*'))
+        PCOFlow | Fuel Management
+    @elseif(Request::is('admin/parts*'))
+        PCOFlow | Parts Management
+    @elseif(Request::is('admin/chat*'))
+        PCOFlow | Messages
+    @elseif(Request::is('admin/change-details*'))
+        PCOFlow | Change Password
+    @else
+        @yield('page_title', 'PCOFlow')
+    @endif
+  </title>
 
   <!-- Tell the browser to be responsive to screen width -->
 
@@ -211,7 +281,36 @@ input:checked + .slider:before {
 
 }
 
+/* Performance optimization: Loading button states */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.7;
+}
 
+.btn-loading i.fa-spinner {
+  margin-right: 5px;
+}
+
+.deleting-row {
+  opacity: 0.6 !important;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+button.deleting {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* DataTable loading indicator enhancement */
+.dataTables_processing {
+  z-index: 9999;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
   </style>
 
@@ -268,6 +367,7 @@ input:checked + .slider:before {
       max-height: calc(100vh - 180px);
     }
   </style>
+
   <script>
 
     window.Laravel = {!! json_encode([
@@ -546,6 +646,35 @@ input:checked + .slider:before {
     /* Hide the traditional sidebar completely */
     .main-sidebar {
         display: none !important;
+        z-index: 0 !important;
+    }
+    
+    /* Ensure wrapper doesn't cause overlap */
+    .wrapper {
+        position: relative;
+    }
+    
+    /* Prevent any background from overlapping header */
+    body > .wrapper > .main-sidebar,
+    body > .wrapper > aside {
+        z-index: 1 !important;
+    }
+    
+    /* Ensure header is above all backgrounds and sidebars */
+    .main-header {
+        background-color: #032127 !important;
+    }
+    
+    /* Prevent any background colors from showing through */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Ensure content starts below header */
+    .content-wrapper,
+    .content-wrapper .container-fluid {
+        position: relative;
+        z-index: 1;
     }
 
     /* Adjust content wrapper to full width */
@@ -593,6 +722,11 @@ input:checked + .slider:before {
         padding: 0.25rem 1rem !important;
         margin-left: 0 !important;
         width: 100% !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1050 !important; /* above content and sidebar, below modals */
     }
 
     .main-header .navbar-nav {
@@ -627,6 +761,8 @@ input:checked + .slider:before {
     .content-wrapper {
         background: transparent;
         padding: 1rem;
+        padding-top: calc(1rem + 90px) !important; /* Account for fixed navbar height (80px logo + padding) */
+        margin-top: 0 !important;
     }
 
     .content {
@@ -928,8 +1064,7 @@ input:checked + .slider:before {
                         Onboarding Details
                     @elseif(Request::is('admin/vehicle-types*'))
                         Vehicle Types
-                    @elseif(Request::is('admin/vehicle_group*'))
-                        Vehicle Groups
+                    
                     @elseif(Route::currentRouteName() == "vehicle_inspection")
                         Vehicle Inspection
                     @elseif(Request::is('admin/income*'))
@@ -979,7 +1114,9 @@ input:checked + .slider:before {
                         <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-users"></i> Users <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
                             <a href="{{route('drivers.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-id-card"></i> Drivers</a>
-                            <a href="{{url('admin/users')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Users(Managers)</a>
+                            @if(Auth::user()->user_type == 'B' || Auth::user()->user_type == 'S')
+                            <a href="{{url('admin/profile/office-admins')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Office Admins</a>
+                            @endif
                         </div>
                     </div>
 
@@ -987,7 +1124,7 @@ input:checked + .slider:before {
                         <div class="menu-title" onclick="(function(el){var g=el.parentElement;if(g){g.classList.toggle('active');}})(this); return false;" style="cursor: pointer;"><i class="fas fa-car"></i> Vehicles <i class="fas fa-chevron-down" style="float: right;"></i></div>
                         <div class="submenu-content">
                             <a href="{{route('vehicles.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Vehicles</a>
-                            <a href="{{url('admin/vehicle_group')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-layer-group"></i> Manage Vehicle Group</a>
+                            
                             <a href="{{url('admin/vehicle-inspection')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-clipboard-check"></i> Vehicle Inspection</a>
                         </div>
                     </div>
@@ -998,7 +1135,8 @@ input:checked + .slider:before {
                             <a href="{{route('onboarding.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-plus"></i> Onboarding</a>
                             <a href="{{route('invitations.create')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-plus"></i> New Pickup Invitation</a>
                             <a href="{{route('invitations.index')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-list"></i> Manage Pickup Invitations</a>
-                            <a href="{{url('admin/calendar')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-calendar"></i> Vehicle Pickup Calendar </a>
+                            {{-- Vehicle Pickup Calendar - Disabled for future use --}}
+                            {{-- <a href="{{url('admin/calendar')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-calendar"></i> Vehicle Pickup Calendar </a> --}}
                         </div>
                     </div>
 
@@ -1028,7 +1166,6 @@ input:checked + .slider:before {
                             <a href="{{url('admin/profile')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user"></i> My Profile</a>
                             @if(Auth::user()->user_type == 'B' || Auth::user()->user_type == 'S')
                             <a href="{{url('admin/profile/company')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-building"></i> Company Settings</a>
-                            <a href="{{url('admin/profile/office-admins')}}" class="submenu-link" onclick="setTimeout(function(){var s=document.getElementById('hamburger-sidebar');if(s){s.classList.remove('active');document.body.style.overflow='auto';}}, 100);"><i class="fas fa-user-tie"></i> Office Admins</a>
                             @endif
                         </div>
                     </div>
@@ -1821,7 +1958,7 @@ input:checked + .slider:before {
 
 
 
-              @if((Request::is('admin/drivers*')) || (Request::is('admin/users*')) || (Request::is('admin/customers*'))
+              @if((Request::is('admin/drivers*')) || (Request::is('admin/customers*'))
 
               || (Request::is('admin/chat')) )
 
@@ -1857,14 +1994,6 @@ input:checked + .slider:before {
                     </a>
                   </li>
                   @endcan
-                  @can('Users list')
-                  <li class="nav-item">
-                    <a href="{{ route('users.index')}}" class="nav-link @if(Request::is('admin/users*')) active @endif">
-                      <i class="fa fa-user nav-icon"></i>
-                      <p>@lang('fleet.users')@lang('fleet.managers')</p>
-                    </a>
-                  </li>
-                  @endcan
                   @can('Customer list')
                   <li class="nav-item">
                     <a href="{{ route('customers.index')}}"
@@ -1897,7 +2026,6 @@ input:checked + .slider:before {
               @endcan
 
               @if((Request::is('admin/driver-logs')) || (Request::is('admin/vehicles*')) ||
-              (Request::is('admin/vehicle_group*')) ||
               (Request::is('admin/vehicle-reviews*')) || (Request::is('admin/view-vehicle-review*')) ||
               (Request::is('admin/vehicle-review*')) || (Request::is('admin/vehicle-make*')) ||
               (Request::is('admin/vehicle-model*')) || (Request::is('admin/vehicle-color*')))
@@ -1949,15 +2077,7 @@ input:checked + .slider:before {
                     </a>
                   </li>
                   @endcan --}}
-                  @can('VehicleGroup list')
-                  <li class="nav-item">
-                    <a href="{{ route('vehicle_group.index')}}"
-                      class="nav-link @if(Request::is('admin/vehicle_group*')) active @endif">
-                      <i class="fa fa-inbox nav-icon"></i>
-                      <p>@lang('fleet.manageGroup')</p>
-                    </a>
-                  </li>
-                  @endcan
+                  
                   @can('VehicleInspection list')
                   <li class="nav-item">
                     <a href="{{ url('admin/vehicle-reviews')}}"
@@ -2062,7 +2182,8 @@ input:checked + .slider:before {
                   </li>
                   @endcan
                   
-                  @can('Bookings list')
+                  {{-- Vehicle Pickup Calendar - Disabled for future use --}}
+                  {{-- @can('Bookings list')
                   <li class="nav-item">
                     <a href="{{ route('bookings.calendar')}}"
                       class="nav-link @if(Request::is('admin/calendar')) active @endif">
@@ -2071,7 +2192,7 @@ input:checked + .slider:before {
                         @lang('menu.calendar')</p>
                     </a>
                   </li>
-                  @endcan
+                  @endcan --}}
                 </ul>
               </li>
               @endcanany
@@ -2805,37 +2926,42 @@ input:checked + .slider:before {
   <!-- ./wrapper -->
   @yield('script2')
   <!-- jQuery already loaded above -->
-  <script src="{{ asset('assets/js/cdn-canvasjs.min.js')}}"></script>
-  <script src="{{asset('assets/js/jquery-ui.min.js')}}"></script>
+  <script src="{{ asset('assets/js/cdn-canvasjs.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/jquery-ui.min.js')}}" defer></script>
   {{-- <script>
     $.widget.bridge('uibutton', $.ui.button)
   </script> --}}
-  <script src="{{ asset('assets/js/moment.js') }}"></script>
-  <script src="{{ asset('assets/js/datetimepicker.js') }}"></script>
-  <script src="{{asset('assets/js/bootstrap-datepicker.min.js')}}"></script>
+  <script src="{{ asset('assets/js/moment.js') }}" defer></script>
+  <script src="{{ asset('assets/js/datetimepicker.js') }}" defer></script>
+  <script src="{{asset('assets/js/bootstrap-datepicker.min.js')}}" defer></script>
   {{-- <!-- fullCalendar 2.2.5 --> --}}
-  <script src="{{asset('assets/js/new_moment.min.js')}}"></script>
-  <script src="{{asset('assets/js/plugins-fullcalendar.min.js')}}"></script>
+  <script src="{{asset('assets/js/new_moment.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/plugins-fullcalendar.min.js')}}" defer></script>
   {{-- <script src="{{asset('assets/plugins/iCheck/icheck.min.js')}}"></script> --}}
   {{-- <script src="{{asset('assets/js/plugins-icheck.min.js')}}"></script> --}}
-  <script src="{{asset('assets/js/plugins-bootstrap.bundle.min.js')}}"></script>
-  <script src="{{asset('assets/js/plugins-select2.full.min.js')}}"></script>
-  <script src="{{asset('assets/js/plugins-fastclick.js')}}"></script>
-  <script src="{{asset('assets/js/cdn-jquery.dataTables.min.js')}}"></script>
-  <script src="{{asset('assets/js/plugins-dataTables.bootstrap4.min.js')}}"></script>
-  <script src="{{ asset('assets/js/cdn-dataTables.buttons.min.js')}}"></script>
-  <script src="{{ asset('assets/js/cdn-buttons.print.min.js')}}"></script>
-  <script src="{{asset('assets/js/adminlte.js')}}"></script>
-  <script src="{{asset('web-sw.js?v3') }}"></script>
-  <script type="text/javascript" src="{{ asset('assets/js/cdn-jszip.min.js')}}"></script>
-  <script type="text/javascript" src="{{ asset('assets/js/cdn-pdfmake.min.js')}}"></script>
-  <script type="text/javascript" src="{{ asset('assets/js/cdn-vfs_fonts.js')}}"></script>
-  <script type="text/javascript" src="{{ asset('assets/js/cdn-buttons.html5.min.js')}}"></script>
-  <script src="{{ asset('assets/js/cdn-Chart.bundle.min.js')}}"></script>
-  <script src="{{ asset('assets/js/cdn-ckeditor.js')}}"></script>
+  <script src="{{asset('assets/js/plugins-bootstrap.bundle.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/plugins-select2.full.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/plugins-fastclick.js')}}" defer></script>
+  <script src="{{asset('assets/js/cdn-jquery.dataTables.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/plugins-dataTables.bootstrap4.min.js')}}" defer></script>
+  <script src="{{ asset('assets/js/cdn-dataTables.buttons.min.js')}}" defer></script>
+  <script src="{{ asset('assets/js/cdn-buttons.print.min.js')}}" defer></script>
+  <script src="{{asset('assets/js/adminlte.js')}}" defer></script>
+  {{-- Remove direct inclusion of service worker file to avoid executing it as a script (causes 403/JS errors). Registration below will load it correctly. --}}
+  {{-- <script src="{{asset('web-sw.js?v3') }}"></script> --}}
+  <script type="text/javascript" src="{{ asset('assets/js/cdn-jszip.min.js')}}" defer></script>
+  <script type="text/javascript" src="{{ asset('assets/js/cdn-pdfmake.min.js')}}" defer></script>
+  <script type="text/javascript" src="{{ asset('assets/js/cdn-vfs_fonts.js')}}" defer></script>
+  <script type="text/javascript" src="{{ asset('assets/js/cdn-buttons.html5.min.js')}}" defer></script>
+  <script src="{{ asset('assets/js/cdn-Chart.bundle.min.js')}}" defer></script>
+  <script src="{{ asset('assets/js/cdn-ckeditor.js')}}" defer></script>
   <script>
-    if (typeof $ !== 'undefined') {
+    if (typeof $ !== 'undefined' && $.fn && typeof $.fn.tooltip === 'function') {
         $('[title]').tooltip();
+        $('[data-toggle="tooltip"]').tooltip();
+    } else {
+        // Tooltip plugin not available; skip initialization to avoid runtime errors
+        // console.warn('Bootstrap tooltip plugin not found; skipping tooltip initialization');
     }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('{{ asset("web-sw.js?v3") }}', {
@@ -3136,6 +3262,7 @@ input:checked + .slider:before {
   {{-- <script>var google_api = "{{ Hyvikk::api('google_api') }}"; </script>  --}}
   <script src="{{ asset('assets/js/pnotify.custom.min.js')}}"></script>
   <script src="{{asset('assets/js/admin-custom.js')}}"></script>
+  <script src="{{asset('assets/js/performance-monitor.js')}}"></script>
   @yield('script')
   <script> var base_url = '{{ url("/") }}'; </script>
 </body>

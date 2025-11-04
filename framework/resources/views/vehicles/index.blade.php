@@ -1,4 +1,9 @@
 @extends('layouts.app')
+
+@section('page_title')
+PCOFlow | Vehicles
+@endsection
+
 @section('extra_css')
 <!-- FontAwesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -243,9 +248,52 @@ body {
             border-radius: 4px;
         }
         
+        /* Fix modal z-index and pointer-events to prevent backdrop blocking interactions */
         .modal {
-            overflow: auto;
-            overflow-y: hidden;
+            overflow-y: auto !important;
+            z-index: 1050 !important;
+        }
+        
+        .modal.show {
+            display: block !important;
+            overflow-y: auto !important;
+        }
+        
+        .modal-dialog {
+            position: relative;
+            z-index: 1060 !important;
+            margin: 1.75rem auto;
+        }
+        
+        .modal-content {
+            pointer-events: auto !important;
+            z-index: 1070 !important;
+            position: relative;
+        }
+        
+        .modal-backdrop {
+            z-index: 1040 !important;
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none !important;
+        }
+        
+        .modal-backdrop.show {
+            pointer-events: auto !important;
+        }
+        
+        /* Ensure all interactive elements in modal are clickable */
+        .modal-content * {
+            pointer-events: auto;
+        }
+        
+        /* Allow scrolling in modal body */
+        .modal-body {
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
         }
 
         .custom_padding {
@@ -1586,6 +1634,7 @@ function generateInstantVehicleDetails(id, vehicle) {
     const vehiclePrice = vehicle.vehicle_price || vehicle.price || '';
     const insuranceDiscount = vehicle.insurance_discount || '';
     const initialCost = vehicle.initial_cost || '';
+    const pricePeriod = vehicle.price_period || 'monthly';
     
     const imageUrl = vehicle.vehicle_image || vehicle.image || '';
 
@@ -1609,8 +1658,9 @@ function generateInstantVehicleDetails(id, vehicle) {
                 <div><strong>Registration Plate:</strong> ${reg}</div>
                 <div><strong>Vehicle Year:</strong> ${year || '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Price (with insurance included):</strong> ${vehiclePrice ? vehiclePrice : '<span class="text-muted">N/A</span>'}</div>
+                <div><strong>Price Interval:</strong> ${pricePeriod ? pricePeriod.charAt(0).toUpperCase() + pricePeriod.slice(1) : 'Monthly'}</div>
                 <div><strong>Insurance Discount:</strong> ${insuranceDiscount ? insuranceDiscount : '<span class="text-muted">N/A</span>'}</div>
-                <div><strong>Select Vehicle Group:</strong> <span id="details-group-${id}"><span class="text-muted">N/A</span></span></div>
+                
                 <div><strong>Select Driver:</strong> <span id="details-driver-${id}">${driverName}</span></div>
                 <div><strong>Initial Mileage (miles):</strong> ${initialMileage || '<span class="text-muted">N/A</span>'}</div>
                 <div><strong>Is Active?:</strong> ${isActive || '<span class="text-muted">N/A</span>'}</div>
@@ -1632,13 +1682,7 @@ function generateInstantVehicleDetails(id, vehicle) {
 
 // Enhance the instant details with data from completeVehicle without showing any loading UI
 function progressivelyEnhanceVehicleDetails(id, vehicle, completeVehicle) {
-    // Group name
-    if (completeVehicle && typeof completeVehicle.group_name !== 'undefined') {
-        const el = document.getElementById(`details-group-${id}`);
-        if (el) {
-            el.textContent = completeVehicle.group_name || 'N/A';
-        }
-    }
+    // Group removed
 
     // Driver name (server may return authoritative value)
     if (completeVehicle && typeof completeVehicle.driver_name !== 'undefined') {
@@ -1725,7 +1769,7 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
                     <div><strong>Fuel Type:</strong> ${vehicle.engine_type || 'Not Selected'}</div>
                     <div><strong>Registration Plate:</strong> ${vehicle.license_plate || 'Not Set'}</div>
                     <div><strong>Vehicle Year:</strong> ${vehicle.year || 'Not Set'}</div>
-                    <div><strong>Vehicle Group:</strong> ${completeVehicle.group_name || 'Not Selected'}</div>
+                    
                     <div><strong>Assigned Driver:</strong> ${completeVehicle.driver_name || 'Not Assigned'}</div>
                     <div><strong>Initial Mileage:</strong> ${vehicle.int_mileage ? vehicle.int_mileage.toLocaleString() + ' miles' : 'Not Set'}</div>
                     <div><strong>Is Active:</strong> ${vehicle.in_service == 1 ? '<i class="fas fa-check text-success"></i> Yes' : '<i class="fas fa-times text-danger"></i> No'}</div>
@@ -1742,7 +1786,7 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
                     })()}</div>
                     <div><strong>Telematics Link:</strong> ${metadata.telematics_link ? '<a href="' + metadata.telematics_link + '" target="_blank">View Link</a>' : 'Not Set'}</div>
                     <div><strong>Vehicle ID:</strong> ${id}</div>
-                    <div><strong>Group ID:</strong> ${vehicle.group_id || 'Not Set'}</div>
+                    
                 </div>
             </div>
             
@@ -2868,6 +2912,15 @@ $(document).ready(function() {
         const container = $(this).closest('.status-container');
         const display = container.find('.status-display');
         const dropdown = container.find('.custom-dropdown-menu');
+        const displayButton = display.find('button');
+        
+        // Store original button HTML for restoration
+        const originalHtml = displayButton.html();
+        const originalDisabled = displayButton.prop('disabled');
+        
+        // Show loading state on display button
+        displayButton.prop('disabled', true);
+        displayButton.html('<i class="fas fa-spinner fa-spin me-2"></i>Updating...');
         
         console.log('Updating vehicle status:', { vehicleId, newStatus });
         
@@ -2899,6 +2952,8 @@ $(document).ready(function() {
                     }
                 } else {
                     console.error('Status update failed:', response.message);
+                    // Restore original button state on error
+                    displayButton.html(originalHtml).prop('disabled', originalDisabled);
                     if (typeof toastr !== 'undefined') {
                         toastr.error('Failed to update status: ' + (response.message || 'Unknown error'));
                     } else {
@@ -2908,6 +2963,8 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('AJAX error:', { xhr, status, error });
+                // Restore original button state on error
+                displayButton.html(originalHtml).prop('disabled', originalDisabled);
                 if (typeof toastr !== 'undefined') {
                     toastr.error('Failed to update status. Please try again.');
                 } else {
@@ -2925,6 +2982,15 @@ $(document).ready(function() {
         const container = $(this).closest('.driver-container');
         const display = container.find('.driver-display');
         const dropdown = container.find('.custom-dropdown-menu');
+        const displayButton = display.find('button');
+        
+        // Store original button HTML for restoration
+        const originalHtml = displayButton.html();
+        const originalDisabled = displayButton.prop('disabled');
+        
+        // Show loading state on display button
+        displayButton.prop('disabled', true);
+        displayButton.html('<i class="fas fa-spinner fa-spin me-2"></i>Updating...');
         
         console.log('Updating vehicle driver:', { vehicleId, driverId });
         
@@ -2958,6 +3024,8 @@ $(document).ready(function() {
                         alert('Driver assignment updated successfully!');
                     }
                 } else {
+                    // Restore original button state on error
+                    displayButton.html(originalHtml).prop('disabled', originalDisabled);
                     if (typeof toastr !== 'undefined') {
                         toastr.error(response.message || 'Failed to update driver assignment');
                     } else {
@@ -2967,6 +3035,8 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('AJAX error:', { xhr, status, error });
+                // Restore original button state on error
+                displayButton.html(originalHtml).prop('disabled', originalDisabled);
                 if (typeof toastr !== 'undefined') {
                     toastr.error('Failed to update driver assignment. Please try again.');
                 } else {

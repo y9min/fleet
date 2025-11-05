@@ -1059,14 +1059,21 @@ class VehiclesController extends Controller {
                         })
                         ->where(function($query) use ($id) {
                             // Drivers that are either unassigned OR already assigned to this specific vehicle
-                            $query->whereDoesntHave('vehicles', function($q) use ($id) {
-                                    $q->where('vehicles.id', '!=', $id);
-                                })
+                            $query->whereDoesntHave('vehicles')
                                 ->orWhereHas('vehicles', function($q) use ($id) {
                                     $q->where('vehicles.id', $id);
                                 });
                         })
                         ->get();
+                
+                // Debug logging to diagnose empty driver list
+                \Log::info('Driver query debug:', [
+                    'user_type' => $auth->user_type,
+                    'company_id' => $auth->company_id,
+                    'vehicle_id' => $id,
+                    'drivers_count' => $drivers->count(),
+                    'drivers_ids' => $drivers->pluck('id')->toArray(),
+                ]);
                 $vehicle = VehicleModel::findOrFail($id);
                 $vehicle->load('drivers');
                 $udfs = unserialize($vehicle->getMeta('udf'));

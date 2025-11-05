@@ -1373,20 +1373,17 @@ class VehiclesController extends Controller {
                                 ], 404);
                         }
                         
-                        // If assigning a driver, validate driver exists and is active
+                        // If assigning a driver, validate driver exists
+                        // Note: is_active filter removed - drivers may not have this meta set
                         if ($driverId) {
                                 $driver = User::where('id', $driverId)
                                         ->where('user_type', 'D')
-                                        ->whereHas('metas', function($query) {
-                                                $query->where('key', 'is_active')
-                                                      ->where('value', '1');
-                                        })
                                         ->first();
                                 
                                 if (!$driver) {
                                         return response()->json([
                                                 'success' => false,
-                                                'message' => 'Driver not found or inactive'
+                                                'message' => 'Driver not found'
                                         ], 404);
                                 }
                                 

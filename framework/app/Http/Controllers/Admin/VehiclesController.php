@@ -275,12 +275,9 @@ class VehiclesController extends Controller {
                 // Get all available drivers for dropdown - Cache for 5 minutes (drivers change more frequently)
                 $cacheKeyDrivers = 'active_drivers_' . ($auth->company_id ?? 'all');
                 $drivers = Cache::remember($cacheKeyDrivers, 300, function() use ($auth) {
-                    $query = User::where('user_type', 'D')
-                            ->whereHas('metas', function($q) {
-                                $q->where('key', 'is_active')
-                                  ->where('value', '1');
-                            });
-                    // Company scoping for drivers
+                    $query = User::where('user_type', 'D');
+                    // Company scoping for drivers - Super/Office Admins see only their company drivers
+                    // Note: is_active filter removed - drivers may not have this meta set
                     if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
                         $query->where('company_id', $auth->company_id);
                     }

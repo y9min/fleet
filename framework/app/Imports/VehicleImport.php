@@ -814,6 +814,8 @@ class VehicleImport implements ToCollection, WithHeadingRow
                             'mot_date' => $motExpiryDate->format('Y-m-d'),
                             'vehicle' => $safeRowData['registration_plate']
                         ]);
+                        // Ensure persistence after setting metadata
+                        $vehicle->save();
                     } catch (\Exception $e) {
                         Log::warning("Failed to save MOT expiry date for vehicle {$vehicle->id} in row $rowNumber", [
                             'error' => $e->getMessage()

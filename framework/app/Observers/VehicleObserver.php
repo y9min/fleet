@@ -4,8 +4,10 @@ namespace App\Observers;
 
 use App\Model\VehicleModel;
 use App\Model\Company;
+use App\Model\User;
 use App\Services\StripeSubscriptionService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class VehicleObserver
 {
@@ -47,6 +49,27 @@ class VehicleObserver
                 'count' => $count,
                 'after_delete' => $afterDelete,
             ]);
+
+            // Bust dashboard cache so counts refresh immediately
+            try {
+                // Company-scoped admins (Super/Office/Boss with company)
+                $adminIds = User::where('company_id', $companyId)
+                    ->whereIn('user_type', ['S','O','B'])
+                    ->pluck('id');
+                foreach ($adminIds as $uid) {
+                    Cache::forget('dashboard_stats_' . $uid . '_' . $companyId);
+                }
+                // Yamz admin (Boss with no company)
+                $yamz = User::where('email', 'yamzahmed@hotmail.com')->first();
+                if ($yamz) {
+                    Cache::forget('dashboard_stats_' . $yamz->id . '_null');
+                }
+            } catch (\Throwable $e) {
+                Log::warning('VehicleObserver cache bust failed', [
+                    'company_id' => $companyId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         } catch (\Throwable $e) {
             Log::warning('VehicleObserver Stripe sync failed', [
                 'company_id' => $companyId,

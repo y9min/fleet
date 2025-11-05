@@ -292,14 +292,14 @@
         <div class="form-field">
           <label>Vehicle Type</label>
           <select name="type_id" class="form-control">
-            <option value="1" @if(old('type_id')==1 || old('type_id')==null) selected @endif>Convertible</option>
-            <option value="2" @if(old('type_id')==2) selected @endif>Coupe</option>
-            <option value="3" @if(old('type_id')==3) selected @endif>Estate</option>
-            <option value="4" @if(old('type_id')==4) selected @endif>Hatchback</option>
-            <option value="5" @if(old('type_id')==5) selected @endif>MPV</option>
-            <option value="6" @if(old('type_id')==6) selected @endif>Pickup</option>
-            <option value="7" @if(old('type_id')==7) selected @endif>Saloon</option>
-            <option value="8" @if(old('type_id')==8) selected @endif>SUV</option>
+            <option value="">Select a Vehicle Type</option>
+            @if(isset($types) && count($types) > 0)
+              @foreach($types as $type)
+                <option value="{{$type->id}}" @if(old('type_id') == $type->id) selected @endif>
+                  {{$type->display_name ?? $type->name}}
+                </option>
+              @endforeach
+            @endif
           </select>
         </div>
         

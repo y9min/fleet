@@ -80,32 +80,32 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
 
                 // Do NOT set is_active - let database default handle it (PostgreSQL boolean)
 
-                // Normalize phone - remove Excel formula prefix (=) and any leading +
-                $phoneRaw = (string) ($driver['phone'] ?? '');
-                $phone = ltrim($phoneRaw, '=+');
-                
-                // Normalize country_code - remove Excel formula prefix (=) and any leading +
-                $countryCodeRaw = (string) ($driver['country_code'] ?? '44');
-                $countryCode = ltrim($countryCodeRaw, '=+');
-                
-                // Persist profile details into metadata store (users_meta)
-                $user->setMeta([
-                    'first_name' => $first,
-                    'middle_name' => $middle ?? '',
-                    'last_name' => $last,
-                    'address' => $driver['address'] ?? '',
-                    'phone' => $phone,
-                    'phone_code' => "+" . $countryCode,
-                    'employee_id' => $driver['employee_id'] ?? '',
-                    'contract_number' => $driver['contract_number'] ?? '',
-                    'license_number' => $licenseNumber ?? '',
-                    'issue_date' => !empty($driver['issue_date']) ? FieldNormalizers::toDate($driver['issue_date']) : null,
-                    'expiration_date' => !empty($driver['expiration_date']) ? FieldNormalizers::toDate($driver['expiration_date']) : null,
-                    'join_date' => !empty($driver['join_date']) ? FieldNormalizers::toDate($driver['join_date']) : null,
-                    'leave_date' => !empty($driver['leave_date']) ? FieldNormalizers::toDate($driver['leave_date']) : null,
-                    'gender' => $isFemale ? 0 : 1,
-                    'emergency_contact_details' => $driver['emergency_contact_details'] ?? '',
-                ]);
+            // Normalize phone - remove Excel formula prefix (=) and any leading +
+            $phoneRaw = (string) ($driver['phone'] ?? '');
+            $phone = ltrim($phoneRaw, '=+');
+            
+            // Normalize country_code - remove Excel formula prefix (=) and any leading +
+            $countryCodeRaw = (string) ($driver['country_code'] ?? '44');
+            $countryCode = ltrim($countryCodeRaw, '=+');
+
+            // Persist profile details into metadata store (users_meta)
+            $user->setMeta([
+                'first_name' => $first,
+                'middle_name' => $middle ?? '',
+                'last_name' => $last,
+                'address' => $driver['address'] ?? '',
+                'phone' => $phone,
+                'phone_code' => "+" . $countryCode,
+                'employee_id' => $driver['employee_id'] ?? '',
+                'contract_number' => $driver['contract_number'] ?? '',
+                'license_number' => $licenseNumber ?? '',
+                'issue_date' => !empty($driver['issue_date']) ? FieldNormalizers::toDate($driver['issue_date']) : null,
+                'expiration_date' => !empty($driver['expiration_date']) ? FieldNormalizers::toDate($driver['expiration_date']) : null,
+                'join_date' => !empty($driver['join_date']) ? FieldNormalizers::toDate($driver['join_date']) : null,
+                'leave_date' => !empty($driver['leave_date']) ? FieldNormalizers::toDate($driver['leave_date']) : null,
+                'gender' => $isFemale ? 0 : 1,
+                'emergency_contact_details' => $driver['emergency_contact_details'] ?? '',
+            ]);
 
                 $user->givePermissionTo([
                     'Notes add', 'Notes edit', 'Notes delete', 'Notes list',

@@ -275,7 +275,9 @@ class VehiclesController extends Controller {
                 // Get all available drivers for dropdown - Cache for 5 minutes (drivers change more frequently)
                 $cacheKeyDrivers = 'active_drivers_' . ($auth->company_id ?? 'all');
                 $drivers = Cache::remember($cacheKeyDrivers, 300, function() use ($auth) {
-                    $query = User::where('user_type', 'D');
+                    $query = User::where('user_type', 'D')
+                            // Only show drivers that are NOT assigned to any vehicle
+                            ->whereDoesntHave('vehicles');
                     // Company scoping for drivers - Super/Office Admins see only their company drivers
                     // Note: is_active filter removed - drivers may not have this meta set
                     if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
@@ -1055,10 +1057,18 @@ class VehiclesController extends Controller {
                 
                 // Super/Office Admins should see ALL drivers from their company (not filtered by is_active)
                 // The is_active filter is removed because drivers may not have this meta set
+                // Show only unassigned drivers OR drivers assigned to the current vehicle being edited
                 $drivers = User::where('user_type', 'D')
                         // Company scoping for drivers - Super/Office Admins see only their company drivers
                         ->when(in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id), function($query) use ($auth) {
                             $query->where('company_id', $auth->company_id);
+                        })
+                        ->where(function($query) use ($id) {
+                            // Drivers that are either unassigned OR already assigned to this specific vehicle
+                            $query->whereDoesntHave('vehicles')
+                                ->orWhereHas('vehicles', function($q) use ($id) {
+                                    $q->where('vehicles.id', $id);
+                                });
                         })
                         ->get();
                 

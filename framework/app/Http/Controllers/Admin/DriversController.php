@@ -1410,8 +1410,11 @@ class DriversController extends Controller {
                         $driverArray = $user->toArray();
                         
                         // Add metadata fields
-                        $phoneCode = $user->metas->firstWhere('key', 'phone_code')?->value ?? '';
-                        $phone = $user->metas->firstWhere('key', 'phone')?->value ?? '';
+                        $phoneCodeRaw = $user->metas->firstWhere('key', 'phone_code')?->value ?? '';
+                        $phoneRaw = $user->metas->firstWhere('key', 'phone')?->value ?? '';
+                        // Normalize phone_code - remove Excel formula prefixes (=) and duplicate +
+                        $phoneCode = $this->normalizePhoneCode($phoneCodeRaw);
+                        $phone = $this->normalizePhone($phoneRaw);
                         $driverArray['phone_code'] = $phoneCode;
                         $driverArray['phone'] = $phone;
                         $driverArray['phone_display'] = $phoneCode && $phone ? $phoneCode . ' ' . $phone : 'N/A';
@@ -1482,6 +1485,9 @@ class DriversController extends Controller {
                         // Default ordering: newest first
                         $users = $users->orderBy('users.created_at', 'desc');
                         
+                        // Store controller instance for use in closures
+                        $controller = $this;
+                        
                         return DataTables::eloquent($users)
                                 ->addColumn('check', function ($user) {
                                         return '<input type="checkbox" name="ids[]" value="' . $user->id . '" class="checkbox" id="chk' . $user->id . '" onclick=\'checkcheckbox();\'>';
@@ -1501,10 +1507,13 @@ class DriversController extends Controller {
                                                     </label>
                                                 </div>';
                                 })
-                                ->addColumn('phone', function ($user) {
+                                ->addColumn('phone', function ($user) use ($controller) {
                                         // Retrieve phone code and phone from metadata
-                                        $phoneCode = $user->metas->firstWhere('key', 'phone_code')?->value ?? '';
-                                        $phone = $user->metas->firstWhere('key', 'phone')?->value ?? '';
+                                        $phoneCodeRaw = $user->metas->firstWhere('key', 'phone_code')?->value ?? '';
+                                        $phoneRaw = $user->metas->firstWhere('key', 'phone')?->value ?? '';
+                                        // Normalize phone_code - remove Excel formula prefixes (=) and duplicate +
+                                        $phoneCode = $controller->normalizePhoneCode($phoneCodeRaw);
+                                        $phone = $controller->normalizePhone($phoneRaw);
                                         return $phoneCode && $phone ? $phoneCode . ' ' . $phone : 'N/A';
                                 })
                                 ->addColumn('documents', function ($user) {
@@ -1550,15 +1559,19 @@ class DriversController extends Controller {
                                         }
                                         return 'N/A';
                                 })
-                                ->addColumn('action', function ($user) {
+                                ->addColumn('action', function ($user) use ($controller) {
                                         $buttons = '<div class="d-flex justify-content-center gap-2">';
                                         
                                         // Prepare driver data for instant display
+                                        $phoneCodeRaw = $user->metas->firstWhere('key', 'phone_code')?->value ?? '';
+                                        $phoneRaw = $user->metas->firstWhere('key', 'phone')?->value ?? '';
+                                        $phoneCode = $controller->normalizePhoneCode($phoneCodeRaw);
+                                        $phone = $controller->normalizePhone($phoneRaw);
                                         $driverData = [
                                                 'id' => $user->id,
                                                 'name' => $user->name,
                                                 'email' => $user->email,
-                                                'phone' => $user->phone_code . ' ' . $user->phone,
+                                                'phone' => $phoneCode && $phone ? $phoneCode . ' ' . $phone : 'N/A',
                                                 'license_number' => $user->metas->firstWhere('key', 'license_number')?->value ?? 'N/A',
                                                 'is_active' => $user->is_active,
                                                 'assigned_vehicle' => null
@@ -2151,6 +2164,38 @@ class DriversController extends Controller {
                 $phone_code = $this->phone_code;
                 return view("drivers.edit", compact("driver", "phone_code", 'vehicles'));
         }
+        
+        /**
+         * Normalize phone_code - remove Excel formula prefixes (=) and duplicate +
+         * Handles: +=+44, =+44, +44, =44 -> +44
+         */
+        private function normalizePhoneCode($phoneCode)
+        {
+            if (empty($phoneCode)) {
+                return '';
+            }
+            // Remove Excel formula prefix (=) and any leading +, then add single +
+            $normalized = ltrim((string)$phoneCode, '=+');
+            // Ensure it starts with + if it's a country code
+            if (!empty($normalized) && !Str::startsWith($normalized, '+')) {
+                $normalized = '+' . $normalized;
+            }
+            return $normalized;
+        }
+        
+        /**
+         * Normalize phone number - remove Excel formula prefixes (=) and any leading +
+         * Handles: =+447912345678, =447912345678 -> 447912345678
+         */
+        private function normalizePhone($phone)
+        {
+            if (empty($phone)) {
+                return '';
+            }
+            // Remove Excel formula prefix (=) and any leading +
+            return ltrim((string)$phone, '=+');
+        }
+        
         private function upload_file($file, $field, $id) {
                 // Check if S3 is configured, otherwise use local storage
                 $useS3 = env('AWS_BUCKET') && env('AWS_KEY') && env('AWS_SECRET');

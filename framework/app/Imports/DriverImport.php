@@ -70,36 +70,27 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
                 'company_id' => $this->companyId,
             ]);
 
-            $user->is_active = 1;
-            $user->is_available = 0;
-            $user->first_name = $first;
-            $user->middle_name = $middle ?? '';
-            $user->last_name = $last;
-            $user->address = $driver['address'] ?? '';
-            $user->phone = $driver['phone'] ?? '';
-            $user->phone_code = "+" . ($driver['country_code'] ?? '44');
-            $user->emp_id = $driver['employee_id'] ?? '';
-            $user->contract_number = $driver['contract_number'] ?? '';
-            $user->license_number = $licenseNumber ?? '';
-            
-            if (!empty($driver['issue_date'])) {
-                $user->issue_date = FieldNormalizers::toDate($driver['issue_date']);
-            }
+            // Ensure boolean type for PostgreSQL
+            $user->is_active = true;
 
-            if (!empty($driver['expiration_date'])) {
-                $user->exp_date = FieldNormalizers::toDate($driver['expiration_date']);
-            }
-
-            if (!empty($driver['join_date'])) {
-                $user->start_date = FieldNormalizers::toDate($driver['join_date']);
-            }
-
-            if (!empty($driver['leave_date'])) {
-                $user->end_date = FieldNormalizers::toDate($driver['leave_date']);
-            }
-
-            $user->gender = $isFemale ? 0 : 1;
-            $user->econtact = $driver['emergency_contact_details'] ?? '';
+            // Persist profile details into metadata store (users_meta)
+            $user->setMeta([
+                'first_name' => $first,
+                'middle_name' => $middle ?? '',
+                'last_name' => $last,
+                'address' => $driver['address'] ?? '',
+                'phone' => (string) ($driver['phone'] ?? ''),
+                'phone_code' => "+" . (string) ($driver['country_code'] ?? '44'),
+                'employee_id' => $driver['employee_id'] ?? '',
+                'contract_number' => $driver['contract_number'] ?? '',
+                'license_number' => $licenseNumber ?? '',
+                'issue_date' => !empty($driver['issue_date']) ? FieldNormalizers::toDate($driver['issue_date']) : null,
+                'expiration_date' => !empty($driver['expiration_date']) ? FieldNormalizers::toDate($driver['expiration_date']) : null,
+                'join_date' => !empty($driver['join_date']) ? FieldNormalizers::toDate($driver['join_date']) : null,
+                'leave_date' => !empty($driver['leave_date']) ? FieldNormalizers::toDate($driver['leave_date']) : null,
+                'gender' => $isFemale ? 0 : 1,
+                'emergency_contact_details' => $driver['emergency_contact_details'] ?? '',
+            ]);
 
             $user->givePermissionTo([
                 'Notes add', 'Notes edit', 'Notes delete', 'Notes list',

@@ -1048,6 +1048,26 @@ class VehiclesController extends Controller {
                 }
                 // Get drivers excluding those already assigned to other vehicles and inactive drivers
                 $auth = Auth::user();
+                
+                // Debug: Check drivers at each filter stage
+                $allCompanyDrivers = User::where('user_type', 'D')
+                    ->when(in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id), function($query) use ($auth) {
+                        $query->where('company_id', $auth->company_id);
+                    })
+                    ->count();
+                
+                $activeCompanyDrivers = User::where('user_type', 'D')
+                    ->whereHas('metas', function($query) {
+                        $query->where('key', 'is_active')
+                              ->where('value', '1');
+                    })
+                    ->when(in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id), function($query) use ($auth) {
+                        $query->where('company_id', $auth->company_id);
+                    })
+                    ->count();
+                
+                // Super/Office Admins should see ALL drivers from their company (not just unassigned)
+                // The vehicle assignment filter is removed to show all available drivers
                 $drivers = User::where('user_type', 'D')
                         ->whereHas('metas', function($query) {
                                 $query->where('key', 'is_active')
@@ -1057,13 +1077,6 @@ class VehiclesController extends Controller {
                         ->when(in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id), function($query) use ($auth) {
                             $query->where('company_id', $auth->company_id);
                         })
-                        ->where(function($query) use ($id) {
-                            // Drivers that are either unassigned OR already assigned to this specific vehicle
-                            $query->whereDoesntHave('vehicles')
-                                ->orWhereHas('vehicles', function($q) use ($id) {
-                                    $q->where('vehicles.id', $id);
-                                });
-                        })
                         ->get();
                 
                 // Debug logging to diagnose empty driver list
@@ -1071,6 +1084,8 @@ class VehiclesController extends Controller {
                     'user_type' => $auth->user_type,
                     'company_id' => $auth->company_id,
                     'vehicle_id' => $id,
+                    'all_company_drivers' => $allCompanyDrivers,
+                    'active_company_drivers' => $activeCompanyDrivers,
                     'drivers_count' => $drivers->count(),
                     'drivers_ids' => $drivers->pluck('id')->toArray(),
                 ]);

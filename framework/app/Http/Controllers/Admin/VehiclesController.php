@@ -1047,16 +1047,24 @@ class VehiclesController extends Controller {
                         $groups = VehicleGroupModel::where('id', Auth::user()->group_id)->get();
                 }
                 // Get drivers excluding those already assigned to other vehicles and inactive drivers
-                $drivers = User::whereUser_type("D")
+                $auth = Auth::user();
+                $drivers = User::where('user_type', 'D')
                         ->whereHas('metas', function($query) {
                                 $query->where('key', 'is_active')
                                       ->where('value', '1');
                         })
-                        ->whereDoesntHave('vehicles', function($query) use ($id) {
-                                $query->where('vehicles.id', '!=', $id);
+                        // Company scoping for drivers - Super/Office Admins see only their company drivers
+                        ->when(in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id), function($query) use ($auth) {
+                            $query->where('company_id', $auth->company_id);
                         })
-                        ->orWhereHas('vehicles', function($query) use ($id) {
-                                $query->where('vehicles.id', $id);
+                        ->where(function($query) use ($id) {
+                            // Drivers that are either unassigned OR already assigned to this specific vehicle
+                            $query->whereDoesntHave('vehicles', function($q) use ($id) {
+                                    $q->where('vehicles.id', '!=', $id);
+                                })
+                                ->orWhereHas('vehicles', function($q) use ($id) {
+                                    $q->where('vehicles.id', $id);
+                                });
                         })
                         ->get();
                 $vehicle = VehicleModel::findOrFail($id);

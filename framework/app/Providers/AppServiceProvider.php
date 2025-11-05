@@ -13,6 +13,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Model\VehicleModel;
+use App\Observers\VehicleObserver;
 use Laravel\Passport\Console\ClientCommand;
 use Laravel\Passport\Console\InstallCommand;
 use Laravel\Passport\Console\KeysCommand;
@@ -41,6 +43,9 @@ class AppServiceProvider extends ServiceProvider {
                         ]);
                     }
                 });
+
+                // Observe vehicle create/delete to keep Stripe subscription quantity in sync
+                VehicleModel::observe(VehicleObserver::class);
         }
 
         /**

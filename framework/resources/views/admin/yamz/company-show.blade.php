@@ -72,6 +72,12 @@
                                     <i class="fas fa-envelope"></i> Send Payment Setup Email
                                 </button>
                             </form>
+                            <form action="{{ route('admin.yamz.companies.sync-stripe', $company->id) }}" method="POST" style="display: inline; margin-left:8px;">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-secondary">
+                                    <i class="fas fa-sync"></i> Sync Stripe Subscription
+                                </button>
+                            </form>
                         </div>
                     </div>
                 @endif

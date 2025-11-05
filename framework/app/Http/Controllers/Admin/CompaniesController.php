@@ -231,4 +231,45 @@ class CompaniesController extends Controller {
                 ->with('error', $errorMessage);
         }
     }
+
+    /**
+     * Admin action: Sync Stripe subscription to current vehicle count now
+     */
+    public function syncStripeSubscription($companyId)
+    {
+        $user = Auth::user();
+        if ($user->email !== 'yamzahmed@hotmail.com') {
+            abort(403, 'Access denied.');
+        }
+
+        $company = Company::findOrFail($companyId);
+
+        try {
+            $svc = new StripeSubscriptionService();
+
+            if (!$company->stripe_customer_id) {
+                $svc->createCustomer($company);
+                $company->refresh();
+            }
+
+            $vehicleCount = VehicleModel::where('company_id', $company->id)->count();
+
+            if (!$company->stripe_subscription_id) {
+                $svc->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+            } else {
+                $svc->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+            }
+
+            return redirect()->route('admin.yamz.companies.show', $companyId)
+                ->with('success', 'Stripe subscription synced. Vehicles: ' . $vehicleCount);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to sync Stripe subscription from admin action', [
+                'company_id' => $companyId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('admin.yamz.companies.show', $companyId)
+                ->with('error', 'Failed to sync Stripe subscription: ' . $e->getMessage());
+        }
+    }
 }

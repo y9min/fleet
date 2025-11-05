@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel {
 		'App\Console\Commands\FixDriverCompanyIds',
 		'App\Console\Commands\FixDriverPasswords',
 		'App\Console\Commands\ClearAllSessions',
+		'App\\Console\\Commands\\StripeBackfillSubscriptions',
 	];
 	protected function schedule(Schedule $schedule) {
 		$schedule->command('notification:generate')->dailyAt('10:00');

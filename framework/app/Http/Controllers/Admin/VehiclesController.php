@@ -157,6 +157,39 @@ class VehiclesController extends Controller {
                                         return back()->with('warning', $message);
                                 }
                                 
+                                // Post-import Stripe sync for the authenticated user's company
+                                try {
+                                    $companyId = auth()->user()->company_id ?? null;
+                                    if ($companyId) {
+                                        $company = \App\Model\Company::find($companyId);
+                                        if ($company) {
+                                            $stripeService = new \App\Services\StripeSubscriptionService();
+
+                                            // Ensure customer exists
+                                            if (!$company->stripe_customer_id) {
+                                                $stripeService->createCustomer($company);
+                                                $company->refresh();
+                                            }
+
+                                            // Count vehicles and create/update subscription
+                                            $vehicleCount = \App\Model\VehicleModel::where('company_id', $companyId)->count();
+                                            if (!$company->stripe_subscription_id) {
+                                                $stripeService->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+                                            } else {
+                                                $stripeService->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                                            }
+
+                                            \Log::info('Post-import Stripe sync complete', [
+                                                'company_id' => $companyId,
+                                                'vehicle_count' => $vehicleCount,
+                                                'subscription_id' => $company->stripe_subscription_id,
+                                            ]);
+                                        }
+                                    }
+                                } catch (\Throwable $e) {
+                                    \Log::warning('Post-import Stripe sync failed', ['error' => $e->getMessage()]);
+                                }
+
                                 return back()->with('success', $message);
                         } else {
                                 $message = "❌ Import failed! No vehicles were imported. ";
@@ -1643,31 +1676,26 @@ class VehiclesController extends Controller {
                         $company = Company::find($company_id);
                         if ($company) {
                             $stripeService = new StripeSubscriptionService();
-                            
+
                             // Ensure customer exists
                             if (!$company->stripe_customer_id) {
                                 $stripeService->createCustomer($company);
                                 $company->refresh();
                             }
-                            
+
                             // Count vehicles for this company
                             $vehicleCount = VehicleModel::where('company_id', $company_id)->count();
-                            
-                            if ($vehicleCount == 1) {
-                                // First vehicle - create subscription
-                                if (!$company->stripe_subscription_id) {
-                                    $stripeService->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
-                                }
+
+                            // Create subscription if missing, otherwise update quantity (works for any count)
+                            if (!$company->stripe_subscription_id) {
+                                $stripeService->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
                             } else {
-                                // Update subscription quantity
-                                if ($company->stripe_subscription_id) {
-                                    $stripeService->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
-                                }
+                                $stripeService->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
                             }
                         }
                     } catch (\Exception $e) {
                         // Don't fail vehicle creation if Stripe fails
-                        \Log::warning('Failed to update Stripe subscription when creating vehicle', [
+                        \Log::warning('Failed to sync Stripe subscription when creating vehicle', [
                             'vehicle_id' => $vehicle,
                             'company_id' => $company_id,
                             'error' => $e->getMessage(),

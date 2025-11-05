@@ -1276,16 +1276,31 @@ class DriversController extends Controller {
         
                         // Import Excel file with statistics tracking
                         $import = new DriverImport($companyId);
-                        Excel::import($import, $destinationPath . '/' . $fileName);
                         
-                        // Get import statistics
+                        try {
+                            Excel::import($import, $destinationPath . '/' . $fileName);
+                        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+                            // With SkipsOnFailure, validation failures are tracked but don't stop import
+                            // Continue processing to get stats
+                        }
+                        
+                        // Get import statistics (available even if validation exception occurred)
                         $stats = $import->importStats;
                         
                         // Prepare detailed success/error message
-                        if ($stats['successfully_imported'] > 0) {
-                                $message = "Successfully imported {$stats['successfully_imported']} drivers";
+                        // Consider it successful if we imported drivers OR if duplicates were skipped (no actual errors)
+                        $hasErrors = ($stats['validation_failed'] > 0) || ($stats['errors'] > 0);
+                        $hasSuccess = $stats['successfully_imported'] > 0;
+                        $hasOnlyDuplicates = ($stats['duplicates_skipped'] > 0 && !$hasErrors && !$hasSuccess);
+                        
+                        if ($hasSuccess || $hasOnlyDuplicates) {
+                                if ($hasSuccess) {
+                                    $message = "Successfully imported {$stats['successfully_imported']} drivers";
+                                } else {
+                                    $message = "Processed {$stats['duplicates_skipped']} duplicate entries";
+                                }
                                 
-                                if ($stats['duplicates_skipped'] > 0) {
+                                if ($stats['duplicates_skipped'] > 0 && $hasSuccess) {
                                     $message .= ", skipped {$stats['duplicates_skipped']} duplicates";
                                 }
                                 
@@ -1305,6 +1320,7 @@ class DriversController extends Controller {
                                     'stats' => $stats
                                 ]);
                         } else {
+                                // Only return error if there were actual failures, not just duplicates
                                 return response()->json([
                                     'success' => false,
                                     'message' => 'No drivers were imported. Please check your file format and data.',
@@ -1312,19 +1328,49 @@ class DriversController extends Controller {
                                 ], 400);
                         }
                         
-                } catch (ValidationException $e) {
-                        // Handle validation exceptions (if any validation rules fail in the import process)
+                } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+                        // Handle validation exceptions - but check if import was partially successful
+                        // With SkipsOnFailure, some rows may have been imported despite validation failures
                         $failures = $e->failures();
                         $errorMessages = [];
         
                         foreach ($failures as $failure) {
                                 $errorMessages[] = "Row " . $failure->row() . ": " . implode(", ", $failure->errors());
                         }
+                        
+                        // Check if we have import stats available (import may have partially completed)
+                        $stats = isset($import) ? $import->importStats : [
+                            'total_rows' => 0,
+                            'processed' => 0,
+                            'duplicates_skipped' => 0,
+                            'validation_failed' => count($failures),
+                            'successfully_imported' => 0,
+                            'errors' => 0
+                        ];
+                        
+                        // If any drivers were imported successfully, return success with warning
+                        if ($stats['successfully_imported'] > 0) {
+                            $message = "Successfully imported {$stats['successfully_imported']} drivers";
+                            if (count($errorMessages) > 0) {
+                                $message .= ". Some rows had validation errors: " . implode('; ', array_slice($errorMessages, 0, 5));
+                                if (count($errorMessages) > 5) {
+                                    $message .= " (and " . (count($errorMessages) - 5) . " more)";
+                                }
+                            }
+                            
+                            return response()->json([
+                                'success' => true,
+                                'message' => $message,
+                                'stats' => $stats,
+                                'validation_errors' => $errorMessages
+                            ]);
+                        }
         
                         return response()->json([
                             'success' => false,
                             'message' => 'Validation failed: ' . implode('; ', $errorMessages),
-                            'errors' => $errorMessages
+                            'errors' => $errorMessages,
+                            'stats' => $stats
                         ], 422);
                         
                 } catch (\Exception $e) {

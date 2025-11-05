@@ -1911,11 +1911,26 @@ $(document).ready(function() {
                         // Reload the table data from server
                         loadDriversSimple();
                         
-                        new PNotify({
-                            title: 'Import Successful!',
-                            text: `Successfully imported ${response.stats.successfully_imported || 0} drivers.`,
-                            type: 'success'
-                        });
+                        // Show appropriate notification based on results
+                        if (response.stats.successfully_imported > 0) {
+                            new PNotify({
+                                title: 'Import Successful!',
+                                text: response.message || `Successfully imported ${response.stats.successfully_imported || 0} drivers.`,
+                                type: 'success'
+                            });
+                        } else if (response.stats.duplicates_skipped > 0) {
+                            new PNotify({
+                                title: 'Import Completed',
+                                text: response.message || `All ${response.stats.duplicates_skipped} entries were duplicates and were skipped.`,
+                                type: 'info'
+                            });
+                        } else {
+                            new PNotify({
+                                title: 'Import Completed',
+                                text: response.message || 'Import completed.',
+                                type: 'success'
+                            });
+                        }
                     }
                 }, 1000);
             },

@@ -6,14 +6,19 @@ use App\Model\User;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Validators\Failure;
 use Maatwebsite\Excel\Concerns\Importable;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use App\Support\Import\FieldNormalizers;
+use Illuminate\Support\Facades\DB;
 
-class DriverImport implements ToModel, WithHeadingRow, WithValidation
+class DriverImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
     use Importable; // Enables importing and catching validation errors
+    use SkipsFailures; // Track validation failures without stopping import
 
     /**
      * @var string
@@ -61,17 +66,19 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
             $genderValue = $driver['gender'] ?? 'male';
             $genderNormalized = strtolower(trim((string)$genderValue));
             $isFemale = ($genderNormalized === 'female' || $genderNormalized === 'f');
-            $user = User::create([
-                "name" => ($first ?: '') . " " . ($last ?: ''),
-                "email" => $email,
-                "password" => bcrypt($driver['password'] ?? 'password123'),
-                "user_type" => "D",
-                'api_token' => str_random(60),
-                'company_id' => $this->companyId,
-            ]);
+            
+            // Wrap each row in its own transaction to isolate failures
+            $user = DB::transaction(function () use ($first, $last, $email, $driver, $licenseNumber, $isFemale, $middle) {
+                $user = User::create([
+                    "name" => ($first ?: '') . " " . ($last ?: ''),
+                    "email" => $email,
+                    "password" => bcrypt($driver['password'] ?? 'password123'),
+                    "user_type" => "D",
+                    'api_token' => str_random(60),
+                    'company_id' => $this->companyId,
+                ]);
 
-            // Ensure boolean type for PostgreSQL
-            $user->is_active = true;
+                // Do NOT set is_active - let database default handle it (PostgreSQL boolean)
 
             // Normalize phone - remove Excel formula prefix (=) and any leading +
             $phoneRaw = (string) ($driver['phone'] ?? '');
@@ -100,13 +107,16 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
                 'emergency_contact_details' => $driver['emergency_contact_details'] ?? '',
             ]);
 
-            $user->givePermissionTo([
-                'Notes add', 'Notes edit', 'Notes delete', 'Notes list',
-                'Drivers list', 'VehicleInspection add', 'VehicleInspection list',
-                'VehicleInspection edit', 'VehicleInspection delete'
-            ]);
+                $user->givePermissionTo([
+                    'Notes add', 'Notes edit', 'Notes delete', 'Notes list',
+                    'Drivers list', 'VehicleInspection add', 'VehicleInspection list',
+                    'VehicleInspection edit', 'VehicleInspection delete'
+                ]);
 
-            $user->save();
+                $user->save();
+                
+                return $user;
+            });
             
             $this->importStats['successfully_imported']++;
             $this->importStats['processed']++;
@@ -132,13 +142,15 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
         return !User::where('email', $email)->where('user_type', 'D')->exists();
     }
 
-    // Add validation rules
+    // Add validation rules - only validate if row has data
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
-            'first_name' => ['required'],
-            'last_name' => ['required'],
+            // Only validate if fields are present and not empty
+            // Empty rows will pass validation and be skipped in model() method
+            'email' => ['nullable', 'email'],
+            'first_name' => ['nullable'],
+            'last_name' => ['nullable'],
             'password' => ['nullable', 'min:6'],
             'phone' => ['nullable'],
             'contract_number' => ['nullable'],
@@ -165,5 +177,21 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
                 }
             }],
         ];
+    }
+    
+    /**
+     * Handle validation failures - track them but don't stop import
+     */
+    public function onFailure(Failure ...$failures)
+    {
+        foreach ($failures as $failure) {
+            $this->importStats['validation_failed']++;
+            Log::warning('Driver import validation failure', [
+                'row' => $failure->row(),
+                'attribute' => $failure->attribute(),
+                'errors' => $failure->errors(),
+                'values' => $failure->values()
+            ]);
+        }
     }
 }

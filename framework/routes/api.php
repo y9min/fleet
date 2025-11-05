@@ -12,6 +12,9 @@ Route::prefix('test-email')->group(function () {
     Route::post('/generic', 'TestEmailController@testGenericEmail');
 });
 
+// Client performance logging endpoint (no auth required)
+Route::post('/log-performance', 'Api\PerfController@store');
+
 Route::namespace ('Api')->middleware(['throttle'])->group(function () {
 
 	Route::post('/login', 'Auth@login');

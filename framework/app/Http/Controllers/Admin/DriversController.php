@@ -1282,10 +1282,19 @@ class DriversController extends Controller {
                         $stats = $import->importStats;
                         
                         // Prepare detailed success/error message
-                        if ($stats['successfully_imported'] > 0) {
-                                $message = "Successfully imported {$stats['successfully_imported']} drivers";
+                        // Consider it successful if we imported drivers OR if duplicates were skipped (no actual errors)
+                        $hasErrors = ($stats['validation_failed'] > 0) || ($stats['errors'] > 0);
+                        $hasSuccess = $stats['successfully_imported'] > 0;
+                        $hasOnlyDuplicates = ($stats['duplicates_skipped'] > 0 && !$hasErrors && !$hasSuccess);
+                        
+                        if ($hasSuccess || $hasOnlyDuplicates) {
+                                if ($hasSuccess) {
+                                    $message = "Successfully imported {$stats['successfully_imported']} drivers";
+                                } else {
+                                    $message = "Processed {$stats['duplicates_skipped']} duplicate entries";
+                                }
                                 
-                                if ($stats['duplicates_skipped'] > 0) {
+                                if ($stats['duplicates_skipped'] > 0 && $hasSuccess) {
                                     $message .= ", skipped {$stats['duplicates_skipped']} duplicates";
                                 }
                                 
@@ -1305,6 +1314,7 @@ class DriversController extends Controller {
                                     'stats' => $stats
                                 ]);
                         } else {
+                                // Only return error if there were actual failures, not just duplicates
                                 return response()->json([
                                     'success' => false,
                                     'message' => 'No drivers were imported. Please check your file format and data.',

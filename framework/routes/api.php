@@ -4,6 +4,12 @@
 
 use Illuminate\Http\Request;
 
+// Client performance logging endpoint (no auth required)
+Route::post('log-performance', function (Request $request) {
+    \Log::notice('[PERF-CLIENT]', $request->all());
+    return response()->noContent(204);
+});
+
 // Test email routes (for development/testing only)
 Route::prefix('test-email')->group(function () {
     Route::post('/driver-approval', 'TestEmailController@testDriverApprovalEmail');
@@ -11,9 +17,6 @@ Route::prefix('test-email')->group(function () {
     Route::post('/fine-notification', 'TestEmailController@testFineNotificationEmail');
     Route::post('/generic', 'TestEmailController@testGenericEmail');
 });
-
-// Client performance logging endpoint (no auth required)
-Route::post('/log-performance', 'Api\PerfController@store');
 
 Route::namespace ('Api')->middleware(['throttle'])->group(function () {
 

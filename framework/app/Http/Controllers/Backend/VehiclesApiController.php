@@ -204,7 +204,9 @@ class VehiclesApiController extends Controller {
 			IncomeModel::whereIn('vehicle_id', $request->ids)->delete();
 			Expense::whereIn('vehicle_id', $request->ids)->delete();
 			VehicleReviewModel::whereIn('vehicle_id', $request->ids)->delete();
-			ServiceReminderModel::whereIn('vehicle_id', $request->ids)->delete();
+            if (\Illuminate\Support\Facades\Schema::hasTable('service_reminders') || \Illuminate\Support\Facades\Schema::hasTable('service_reminder')) {
+                ServiceReminderModel::whereIn('vehicle_id', $request->ids)->delete();
+            }
 			FuelModel::whereIn('vehicle_id', $request->ids)->delete();
 			$data['success'] = "1";
 			$data['message'] = "Records deleted successfully!";

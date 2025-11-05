@@ -2161,7 +2161,9 @@ class VehiclesController extends Controller {
                 IncomeModel::whereIn('vehicle_id', $request->ids)->forceDelete();
                 Expense::whereIn('vehicle_id', $request->ids)->forceDelete();
                 VehicleReviewModel::whereIn('vehicle_id', $request->ids)->forceDelete();
-                ServiceReminderModel::whereIn('vehicle_id', $request->ids)->forceDelete();
+                if (\Illuminate\Support\Facades\Schema::hasTable('service_reminders') || \Illuminate\Support\Facades\Schema::hasTable('service_reminder')) {
+                        ServiceReminderModel::whereIn('vehicle_id', $request->ids)->forceDelete();
+                }
                 FuelModel::whereIn('vehicle_id', $request->ids)->forceDelete();
                 
                 // Delete bookings that reference these vehicles

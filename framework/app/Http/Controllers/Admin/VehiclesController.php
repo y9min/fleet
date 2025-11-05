@@ -1056,23 +1056,9 @@ class VehiclesController extends Controller {
                     })
                     ->count();
                 
-                $activeCompanyDrivers = User::where('user_type', 'D')
-                    ->whereHas('metas', function($query) {
-                        $query->where('key', 'is_active')
-                              ->where('value', '1');
-                    })
-                    ->when(in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id), function($query) use ($auth) {
-                        $query->where('company_id', $auth->company_id);
-                    })
-                    ->count();
-                
-                // Super/Office Admins should see ALL drivers from their company (not just unassigned)
-                // The vehicle assignment filter is removed to show all available drivers
+                // Super/Office Admins should see ALL drivers from their company (not filtered by is_active)
+                // The is_active filter is removed because drivers may not have this meta set
                 $drivers = User::where('user_type', 'D')
-                        ->whereHas('metas', function($query) {
-                                $query->where('key', 'is_active')
-                                      ->where('value', '1');
-                        })
                         // Company scoping for drivers - Super/Office Admins see only their company drivers
                         ->when(in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id), function($query) use ($auth) {
                             $query->where('company_id', $auth->company_id);
@@ -1085,7 +1071,6 @@ class VehiclesController extends Controller {
                     'company_id' => $auth->company_id,
                     'vehicle_id' => $id,
                     'all_company_drivers' => $allCompanyDrivers,
-                    'active_company_drivers' => $activeCompanyDrivers,
                     'drivers_count' => $drivers->count(),
                     'drivers_ids' => $drivers->pluck('id')->toArray(),
                 ]);

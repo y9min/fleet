@@ -6,15 +6,19 @@ use App\Model\User;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Validators\Failure;
 use Maatwebsite\Excel\Concerns\Importable;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use App\Support\Import\FieldNormalizers;
 use Illuminate\Support\Facades\DB;
 
-class DriverImport implements ToModel, WithHeadingRow, WithValidation
+class DriverImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
     use Importable; // Enables importing and catching validation errors
+    use SkipsFailures; // Track validation failures without stopping import
 
     /**
      * @var string
@@ -130,13 +134,15 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
         return !User::where('email', $email)->where('user_type', 'D')->exists();
     }
 
-    // Add validation rules
+    // Add validation rules - only validate if row has data
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
-            'first_name' => ['required'],
-            'last_name' => ['required'],
+            // Only validate if fields are present and not empty
+            // Empty rows will pass validation and be skipped in model() method
+            'email' => ['nullable', 'email'],
+            'first_name' => ['nullable'],
+            'last_name' => ['nullable'],
             'password' => ['nullable', 'min:6'],
             'phone' => ['nullable'],
             'contract_number' => ['nullable'],
@@ -163,5 +169,21 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
                 }
             }],
         ];
+    }
+    
+    /**
+     * Handle validation failures - track them but don't stop import
+     */
+    public function onFailure(Failure ...$failures)
+    {
+        foreach ($failures as $failure) {
+            $this->importStats['validation_failed']++;
+            Log::warning('Driver import validation failure', [
+                'row' => $failure->row(),
+                'attribute' => $failure->attribute(),
+                'errors' => $failure->errors(),
+                'values' => $failure->values()
+            ]);
+        }
     }
 }

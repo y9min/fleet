@@ -1231,6 +1231,23 @@ class DriversController extends Controller {
         
         public function importDrivers(ImportRequest $request) {
                 try {
+                        $auth = \Auth::user();
+                        // Block Boss Admin from importing drivers per policy
+                        if ($auth && $auth->user_type === 'B') {
+                                return response()->json([
+                                    'success' => false,
+                                    'message' => 'Boss Admin cannot import drivers.'
+                                ], 403);
+                        }
+
+                        // Resolve company_id from importing user and guard against null
+                        $companyId = $auth ? $auth->company_id : null;
+                        if (empty($companyId)) {
+                                return response()->json([
+                                    'success' => false,
+                                    'message' => 'Importer has no company assigned. Please assign a company to proceed.'
+                                ], 422);
+                        }
                         // Check if the file is uploaded and valid
                         if (!$request->hasFile('excel') || !$request->file('excel')->isValid()) {
                                 return response()->json([
@@ -1258,7 +1275,7 @@ class DriversController extends Controller {
                         $file->move($destinationPath, $fileName);
         
                         // Import Excel file with statistics tracking
-                        $import = new DriverImport();
+                        $import = new DriverImport($companyId);
                         Excel::import($import, $destinationPath . '/' . $fileName);
                         
                         // Get import statistics

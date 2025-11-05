@@ -1041,28 +1041,8 @@ body {
             </div>
         </div>
         
-        <!-- Enhanced Bulk Actions Toolbar -->
-        <div class="bulk-actions-toolbar" id="bulkToolbar" style="display: none;">
-            <div class="d-flex align-items-center justify-content-between p-4" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                <div class="d-flex align-items-center">
-                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #7FD7E1, #6BC5D2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                        <i class="fas fa-check-circle text-white"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0" style="font-weight: 600; color: #333;">Bulk Actions</h6>
-                        <small class="text-muted" id="selectedCount">0</small> vehicle(s) selected
-                    </div>
-                </div>
-                <div class="bulk-actions d-flex gap-2">
-                    <button class="btn btn-outline-secondary" onclick="clearSelection()" style="border-radius: 6px; padding: 8px 16px;">
-                        <i class="fas fa-times"></i> Clear Selection
-                    </button>
-                    <button class="btn btn-danger" onclick="bulkDeleteVehicles()" style="border-radius: 6px; padding: 8px 16px; background: linear-gradient(135deg, #dc3545, #c82333); border: none;">
-                        <i class="fas fa-trash-alt"></i> Delete Selected
-                    </button>
-                </div>
-            </div>
-        </div>
+        {{-- Bulk Actions toolbar intentionally disabled (kept for future use) --}}
+        {{-- <div class="bulk-actions-toolbar" id="bulkToolbar" style="display: none;"></div> --}}
 
         <!-- Filter Controls -->
         <div class="row mb-4">
@@ -2381,8 +2361,12 @@ window.updateSelection = function() {
     
     // Show/hide bulk toolbar
     if (checkedBoxes.length > 0) {
-        bulkToolbar.style.display = 'block';
-        selectedCount.textContent = checkedBoxes.length;
+        if (typeof window !== 'undefined' && window.BULK_ACTIONS_ENABLED && typeof bulkToolbar !== 'undefined' && bulkToolbar) {
+            bulkToolbar.style.display = 'block';
+            if (typeof selectedCount !== 'undefined' && selectedCount) {
+                selectedCount.textContent = checkedBoxes.length;
+            }
+        }
         
         // Highlight selected rows
         checkboxes.forEach(cb => {
@@ -2394,7 +2378,9 @@ window.updateSelection = function() {
             }
         });
     } else {
-        bulkToolbar.style.display = 'none';
+        if (typeof bulkToolbar !== 'undefined' && bulkToolbar) {
+            bulkToolbar.style.display = 'none';
+        }
         // Remove all row highlights
         checkboxes.forEach(cb => {
             cb.closest('tr').classList.remove('row-selected');
@@ -2419,6 +2405,9 @@ window.clearSelection = function() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOMContentLoaded - Starting vehicle initialization');
     
+    // Feature toggles
+    window.BULK_ACTIONS_ENABLED = false; // UI disabled, code retained for future use
+
     // Wait a bit for jQuery to load if needed, then initialize
     setTimeout(() => {
         try {

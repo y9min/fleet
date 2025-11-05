@@ -3,6 +3,7 @@
 namespace App\Support\Import;
 
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class FieldNormalizers {
     public static function trimOrNull($value) {
@@ -35,6 +36,19 @@ class FieldNormalizers {
     public static function toDate($value) {
         if (!$value) { return null; }
         try {
+            // Handle Excel serial date numbers (e.g., 44078)
+            if (is_int($value) || (is_string($value) && is_numeric($value)) || is_float($value)) {
+                $num = (float) $value;
+                // Excel uses 1900-based serial dates; valid serials are typically > 25569 (1970-01-01)
+                if ($num > 0) {
+                    try {
+                        return ExcelDate::excelToDateTimeObject($num)->format('Y-m-d');
+                    } catch (\Throwable $e) {
+                        // fall through to string parsing
+                    }
+                }
+            }
+
             $value = trim((string)$value);
             
             // Handle DD/MM/YYYY format explicitly

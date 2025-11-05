@@ -85,7 +85,7 @@ class StripeSubscriptionService
                 ],
                 'product_data' => [
                     'name' => 'PCO Flow - Vehicle Subscription',
-                    'description' => 'Monthly subscription per vehicle (£7/vehicle/month)',
+                    // Stripe rejects product_data[description] on Price.create in newer API versions
                 ],
             ]);
 

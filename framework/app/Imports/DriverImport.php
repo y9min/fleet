@@ -10,7 +10,6 @@ use Maatwebsite\Excel\Concerns\Importable;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use App\Support\Import\FieldNormalizers;
-use Illuminate\Support\Facades\DB;
 
 class DriverImport implements ToModel, WithHeadingRow, WithValidation
 {
@@ -62,44 +61,44 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation
             $genderValue = $driver['gender'] ?? 'male';
             $genderNormalized = strtolower(trim((string)$genderValue));
             $isFemale = ($genderNormalized === 'female' || $genderNormalized === 'f');
-            $user = DB::transaction(function () use ($first, $last, $email, $driver, $licenseNumber, $isFemale) {
-                $user = User::create([
-                    "name" => ($first ?: '') . " " . ($last ?: ''),
-                    "email" => $email,
-                    "password" => bcrypt($driver['password'] ?? 'password123'),
-                    "user_type" => "D",
-                    'api_token' => str_random(60),
-                    'company_id' => $this->companyId,
-                ]);
+            $user = User::create([
+                "name" => ($first ?: '') . " " . ($last ?: ''),
+                "email" => $email,
+                "password" => bcrypt($driver['password'] ?? 'password123'),
+                "user_type" => "D",
+                'api_token' => str_random(60),
+                'company_id' => $this->companyId,
+            ]);
 
-                // Persist profile details into metadata store (users_meta)
-                $user->setMeta([
-                    'first_name' => $first,
-                    'middle_name' => $driver['middle_name'] ?? '',
-                    'last_name' => $last,
-                    'address' => $driver['address'] ?? '',
-                    'phone' => (string) ($driver['phone'] ?? ''),
-                    'phone_code' => "+" . (string) ($driver['country_code'] ?? '44'),
-                    'employee_id' => $driver['employee_id'] ?? '',
-                    'contract_number' => $driver['contract_number'] ?? '',
-                    'license_number' => $licenseNumber ?? '',
-                    'issue_date' => !empty($driver['issue_date']) ? FieldNormalizers::toDate($driver['issue_date']) : null,
-                    'expiration_date' => !empty($driver['expiration_date']) ? FieldNormalizers::toDate($driver['expiration_date']) : null,
-                    'join_date' => !empty($driver['join_date']) ? FieldNormalizers::toDate($driver['join_date']) : null,
-                    'leave_date' => !empty($driver['leave_date']) ? FieldNormalizers::toDate($driver['leave_date']) : null,
-                    'gender' => $isFemale ? 0 : 1,
-                    'emergency_contact_details' => $driver['emergency_contact_details'] ?? '',
-                ]);
+            // Ensure boolean type for PostgreSQL
+            $user->is_active = true;
 
-                $user->givePermissionTo([
-                    'Notes add', 'Notes edit', 'Notes delete', 'Notes list',
-                    'Drivers list', 'VehicleInspection add', 'VehicleInspection list',
-                    'VehicleInspection edit', 'VehicleInspection delete'
-                ]);
+            // Persist profile details into metadata store (users_meta)
+            $user->setMeta([
+                'first_name' => $first,
+                'middle_name' => $middle ?? '',
+                'last_name' => $last,
+                'address' => $driver['address'] ?? '',
+                'phone' => (string) ($driver['phone'] ?? ''),
+                'phone_code' => "+" . (string) ($driver['country_code'] ?? '44'),
+                'employee_id' => $driver['employee_id'] ?? '',
+                'contract_number' => $driver['contract_number'] ?? '',
+                'license_number' => $licenseNumber ?? '',
+                'issue_date' => !empty($driver['issue_date']) ? FieldNormalizers::toDate($driver['issue_date']) : null,
+                'expiration_date' => !empty($driver['expiration_date']) ? FieldNormalizers::toDate($driver['expiration_date']) : null,
+                'join_date' => !empty($driver['join_date']) ? FieldNormalizers::toDate($driver['join_date']) : null,
+                'leave_date' => !empty($driver['leave_date']) ? FieldNormalizers::toDate($driver['leave_date']) : null,
+                'gender' => $isFemale ? 0 : 1,
+                'emergency_contact_details' => $driver['emergency_contact_details'] ?? '',
+            ]);
 
-                $user->save();
-                return $user;
-            });
+            $user->givePermissionTo([
+                'Notes add', 'Notes edit', 'Notes delete', 'Notes list',
+                'Drivers list', 'VehicleInspection add', 'VehicleInspection list',
+                'VehicleInspection edit', 'VehicleInspection delete'
+            ]);
+
+            $user->save();
             
             $this->importStats['successfully_imported']++;
             $this->importStats['processed']++;

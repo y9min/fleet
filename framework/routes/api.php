@@ -1,13 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\PerfController;
-
-// Client performance logging endpoint
-Route::post('log-performance', [PerfController::class, 'store']);
-
-<?php
-
 
 
 use Illuminate\Http\Request;

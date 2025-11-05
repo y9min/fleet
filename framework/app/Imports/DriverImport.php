@@ -80,14 +80,22 @@ class DriverImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
 
                 // Do NOT set is_active - let database default handle it (PostgreSQL boolean)
 
+                // Normalize phone - remove Excel formula prefix (=) and any leading +
+                $phoneRaw = (string) ($driver['phone'] ?? '');
+                $phone = ltrim($phoneRaw, '=+');
+                
+                // Normalize country_code - remove Excel formula prefix (=) and any leading +
+                $countryCodeRaw = (string) ($driver['country_code'] ?? '44');
+                $countryCode = ltrim($countryCodeRaw, '=+');
+                
                 // Persist profile details into metadata store (users_meta)
                 $user->setMeta([
                     'first_name' => $first,
                     'middle_name' => $middle ?? '',
                     'last_name' => $last,
                     'address' => $driver['address'] ?? '',
-                    'phone' => (string) ($driver['phone'] ?? ''),
-                    'phone_code' => "+" . (string) ($driver['country_code'] ?? '44'),
+                    'phone' => $phone,
+                    'phone_code' => "+" . $countryCode,
                     'employee_id' => $driver['employee_id'] ?? '',
                     'contract_number' => $driver['contract_number'] ?? '',
                     'license_number' => $licenseNumber ?? '',

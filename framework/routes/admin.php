@@ -1,8 +1,8 @@
 <?php
 use Illuminate\Support\Facades\Route;
 
-// Redirect admin login to main site
-Route::permanentRedirect('/admin/login', 'https://www.pcoflow.com')->name('admin.login');
+// Redirect admin login to unified login
+Route::permanentRedirect('/admin/login', '/login')->name('admin.login');
 Route::namespace ('Admin')->group(function () {
     // Route::get('export-events', 'HomeController@export_calendar');
 
@@ -19,9 +19,10 @@ Route::namespace ('Admin')->group(function () {
     // Route::get("/migrate", function () { \Artisan::call('migrate'); });
     // Route::get("/clear_cache", function () { /* Artisan cache commands */ });
 
-    // Logout routes - both GET and POST for compatibility
-    Route::get("logout", 'HomeController@logout')->name('logout.get');
-    Route::post("logout", 'HomeController@logout')->name('logout');
+    // Redirect admin logout to external main page
+    Route::match(['get','post'], 'logout', function () {
+        return redirect()->away('https://www.pcoflow.com');
+    })->name('admin.logout.redirect');
 
     // SECURITY: Dangerous routes moved inside auth middleware for protection
     // These routes were exposing sensitive data without authentication

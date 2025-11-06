@@ -1,8 +1,10 @@
 <?php
 use Illuminate\Support\Facades\Route;
 
-// Redirect admin login to unified login
-Route::permanentRedirect('/admin/login', '/login')->name('admin.login');
+// Admin login should render the login page (no redirect)
+Route::get('/admin/login', function () {
+    return view('unified_login');
+})->name('admin.login');
 Route::namespace ('Admin')->group(function () {
     // Route::get('export-events', 'HomeController@export_calendar');
 

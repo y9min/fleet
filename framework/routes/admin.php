@@ -1,8 +1,8 @@
 <?php
 use Illuminate\Support\Facades\Route;
 
-// Redirect admin login to unified login
-Route::permanentRedirect('/admin/login', '/login')->name('admin.login');
+// Redirect admin login to main site
+Route::permanentRedirect('/admin/login', 'https://www.pcoflow.com')->name('admin.login');
 Route::namespace ('Admin')->group(function () {
     // Route::get('export-events', 'HomeController@export_calendar');
 

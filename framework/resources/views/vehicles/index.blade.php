@@ -1784,8 +1784,26 @@ function generateCompleteVehicleDetails(id, vehicle, completeVehicle) {
                 </div>
             </div>
             
-            
-            
+            <!-- User Defined Fields -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <h4 style="color: #7FD7E1; margin-bottom: 15px; border-bottom: 2px solid #7FD7E1; padding-bottom: 8px;"><i class="fas fa-puzzle-piece"></i> User Defined Fields</h4>
+                ${(() => {
+                    const udf = completeVehicle.udf || {};
+                    const keys = Object.keys(udf);
+                    if (keys.length === 0) {
+                        return '<div style="color:#6c757d;">No custom fields defined</div>';
+                    }
+                    let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">';
+                    keys.forEach(k => {
+                        const safeKey = String(k).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                        const safeVal = String(udf[k] ?? '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                        html += `<div><strong>${safeKey}:</strong> ${safeVal || 'Not Set'}</div>`;
+                    });
+                    html += '</div>';
+                    return html;
+                })()}
+            </div>
+
             <!-- Important Dates -->
             <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
                 <h4 style="color: #7FD7E1; margin-bottom: 15px; border-bottom: 2px solid #7FD7E1; padding-bottom: 8px;"><i class="fas fa-calendar-alt"></i> Important Dates</h4>

@@ -1083,7 +1083,49 @@ class VehiclesController extends Controller {
                 ]);
                 $vehicle = VehicleModel::findOrFail($id);
                 $vehicle->load('drivers');
-                $udfs = unserialize($vehicle->getMeta('udf'));
+                
+                // Load UDFs from column first, then fallback to meta for backward compatibility
+                $rawUdf = null;
+                if ($vehicle->udf) {
+                    $rawUdf = @unserialize($vehicle->udf);
+                    if ($rawUdf === false) {
+                        $rawUdf = null;
+                    }
+                }
+                
+                // Fallback to meta if column is empty
+                if (!$rawUdf) {
+                    $metaUdf = $vehicle->getMeta('udf');
+                    if ($metaUdf) {
+                        $rawUdf = @unserialize($metaUdf);
+                        if ($rawUdf === false) {
+                            $rawUdf = null;
+                        }
+                    }
+                }
+                
+                // Normalize UDF to key=>value map
+                // Handle both formats: [{name: 'x', value: 'y'}] and {key: 'value'}
+                $udfs = [];
+                if ($rawUdf && is_array($rawUdf)) {
+                    // Check if it's the new format with name/value pairs
+                    if (isset($rawUdf[0]) && is_array($rawUdf[0]) && array_key_exists('name', $rawUdf[0])) {
+                        // New format: [{name: 'x', value: 'y'}, ...]
+                        foreach ($rawUdf as $item) {
+                            if (is_array($item) && isset($item['name']) && trim($item['name']) !== '') {
+                                $udfs[trim($item['name'])] = isset($item['value']) ? (string)$item['value'] : '';
+                            }
+                        }
+                    } else {
+                        // Legacy format: {key: 'value'}
+                        foreach ($rawUdf as $key => $value) {
+                            if (is_string($key) && trim($key) !== '') {
+                                $udfs[trim($key)] = is_array($value) ? '' : (string)$value;
+                            }
+                        }
+                    }
+                }
+                
                 $makes = VehicleModel::select('make_name')->distinct()->whereNotNull('make_name')->pluck('make_name')->toArray();
                 $models = VehicleModel::select('model_name')->distinct()->whereNotNull('model_name')->pluck('model_name')->toArray();
                 $colors = VehicleModel::select('color_name')->distinct()->whereNotNull('color_name')->pluck('color_name')->toArray();
@@ -1251,7 +1293,31 @@ class VehiclesController extends Controller {
                 $vehicle->int_mileage = $request->get("int_mileage") ? (int) $request->get("int_mileage") : null;
                 $vehicle->lic_exp_date = $request->get('lic_exp_date');
                 $vehicle->reg_exp_date = $request->get('reg_exp_date');
-                $vehicle->udf = serialize($request->get('udf'));
+                
+                // Normalize UDF data to flat key=>value map
+                $udfInput = $request->get('udf');
+                $normalizedUdf = [];
+                
+                if ($udfInput && is_array($udfInput)) {
+                    foreach ($udfInput as $key => $value) {
+                        // Handle new format: udf[index][name] and udf[index][value]
+                        if (is_array($value) && isset($value['name'])) {
+                            $name = trim((string)($value['name'] ?? ''));
+                            if ($name !== '') {
+                                $normalizedUdf[$name] = isset($value['value']) ? (string)$value['value'] : '';
+                            }
+                        } elseif (is_string($key) && trim($key) !== '') {
+                            // Handle legacy format: udf[key] = value
+                            $normalizedUdf[trim($key)] = is_array($value) ? '' : (string)$value;
+                        }
+                    }
+                }
+                
+                // Save normalized UDF to both column and meta for backward compatibility
+                $serializedUdf = serialize($normalizedUdf);
+                $vehicle->udf = $serializedUdf;
+                $vehicle->setMeta(['udf' => $serializedUdf]);
+                
                 $vehicle->average = $request->average;
                 $vehicle->save();
                 $to = \Carbon\Carbon::now();

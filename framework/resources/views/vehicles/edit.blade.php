@@ -448,10 +448,11 @@
       <div class="user-defined-section">
         <h6 style="margin-bottom: 1rem; color: #333; font-weight: 600;">Add User defined field</h6>
         <div id="user-defined-fields">
-          @if($udfs != null)
+          @if(!empty($udfs) && is_array($udfs))
             @foreach($udfs as $key => $value)
               <div class="user-defined-field">
-                <input type="text" name="udf[{{$key}}]" value="{{$value}}" class="form-control" placeholder="{{$key}}">
+                <input type="text" name="udf[{{ $loop->index }}][name]" value="{{ is_string($key) ? $key : '' }}" class="form-control" placeholder="Field name" style="background: #f8f9fa;" readonly>
+                <input type="text" name="udf[{{ $loop->index }}][value]" value="{{ is_string($value) ? $value : (is_array($value) ? '' : (string)$value) }}" class="form-control" placeholder="Field value">
                 <button type="button" class="btn btn-sm btn-danger" onclick="removeUserField(this)" style="padding: 0.5rem;">Remove</button>
               </div>
             @endforeach
@@ -479,7 +480,7 @@
 @section('script')
 <script type="text/javascript">
 // User defined fields functionality
-let userFieldIndex = {{ $udfs ? count($udfs) : 0 }};
+let userFieldIndex = {{ !empty($udfs) && is_array($udfs) ? count($udfs) : 0 }};
 
 function addUserField() {
     const fieldName = document.getElementById('new-field-name').value;

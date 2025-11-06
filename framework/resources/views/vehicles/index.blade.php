@@ -1055,6 +1055,7 @@ body {
                     </div>
                     <div class="card-body">
                         <div class="row">
+                            {{-- Group filter hidden as requested; kept for future use
                             <div class="col-md-3">
                                 <label for="group_filter" class="form-label">Group</label>
                                 <select class="form-control" id="group_filter">
@@ -1064,6 +1065,7 @@ body {
                                     @endforeach
                                 </select>
                             </div>
+                            --}}
                             <div class="col-md-3">
                                 <label for="type_filter" class="form-label">Vehicle Type</label>
                                 <select class="form-control" id="type_filter">
@@ -1098,15 +1100,15 @@ body {
                                     <option value="disabled">Disabled</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <button type="button" class="btn btn-primary" onclick="applyFilters()">
-                                    <i class="fas fa-search"></i> Apply Filters
-                                </button>
-                                <button type="button" class="btn btn-secondary ml-2" onclick="clearFilters()">
-                                    <i class="fas fa-times"></i> Clear Filters
-                                </button>
+                            <div class="col-md-3 d-flex align-items-end justify-content-end">
+                                <div>
+                                    <button type="button" class="btn" style="background-color: #7FD7E1; color: white; border: 1px solid #7FD7E1;" onclick="applyFilters()">
+                                        <i class="fas fa-search"></i> Apply Filters
+                                    </button>
+                                    <button type="button" class="btn ml-2" style="background-color: #6c757d; color: white; border: 1px solid #6c757d;" onclick="clearFilters()">
+                                        <i class="fas fa-times"></i> Clear Filters
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3070,12 +3072,12 @@ function getButtonClass(status) {
 
 // Filter functions - Client-side filtering to avoid AJAX issues
 function applyFilters() {
-    const groupFilter = document.getElementById('group_filter').value;
+    // const groupFilter = document.getElementById('group_filter').value; // hidden for now
     const typeFilter = document.getElementById('type_filter').value;
     const fuelFilter = document.getElementById('fuel_filter').value;
     const statusFilter = document.getElementById('status_filter').value;
     
-    console.log('Applying filters:', { groupFilter, typeFilter, fuelFilter, statusFilter });
+    console.log('Applying filters:', { /* groupFilter, */ typeFilter, fuelFilter, statusFilter });
     
     // Show loading state
     const tbody = document.querySelector('#ajax_data_table tbody');
@@ -3086,10 +3088,10 @@ function applyFilters() {
     // Filter the existing vehicles data
     const allVehicles = window.vehiclesGlobalData || [];
     let filteredVehicles = allVehicles.filter(vehicle => {
-        // Group filter
-        if (groupFilter && vehicle.group_id != groupFilter) {
-            return false;
-        }
+        // Group filter removed (kept for potential future use)
+        // if (groupFilter && vehicle.group_id != groupFilter) {
+        //     return false;
+        // }
         
         // Type filter
         if (typeFilter && vehicle.type_id != typeFilter) {
@@ -3182,7 +3184,7 @@ function updateVehicleStatusDisplay(vehicleId, newStatus) {
 }
 
 function clearFilters() {
-    document.getElementById('group_filter').value = '';
+    // document.getElementById('group_filter').value = ''; // hidden for now
     document.getElementById('type_filter').value = '';
     document.getElementById('fuel_filter').value = '';
     document.getElementById('status_filter').value = '';

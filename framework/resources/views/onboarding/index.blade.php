@@ -5,6 +5,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="{{ asset('assets/css/plugins-dataTables.bootstrap4.min.css') }}">
 <style>
+/* Reduce top spacing above header card by 50% */
+.content-wrapper {
+    padding-top: calc(0.25rem + 90px) !important;
+}
+
 /* Reset and base styles */
 * {
     box-sizing: border-box;

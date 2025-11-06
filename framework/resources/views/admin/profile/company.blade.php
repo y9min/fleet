@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+@section('extra_css')
+<style>
+/* Reduce top spacing above header card by 50% */
+.content-wrapper {
+    padding-top: calc(0.25rem + 90px) !important;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="content-wrapper">
     <div class="container-fluid">

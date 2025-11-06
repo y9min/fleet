@@ -1,5 +1,10 @@
 <?php
 
+// Redirect main logout (GET/POST) to external main page
+Route::match(['get','post'], '/logout', function () {
+    return redirect()->away('https://www.pcoflow.com');
+})->name('logout.redirect');
+
 // Public route for downloading sample vehicle template
 Route::get("download-vehicle-sample", "Admin\VehiclesController@downloadSample")->name("download-vehicle-sample");
 
@@ -18,7 +23,7 @@ Route::get("clear-session", "SessionClearController@clearSession")->name("clear-
 Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_enable']], function () {
 
 
-    Route::permanentRedirect('/login', 'https://www.pcoflow.com')->name('login');
+    Route::get("/login", "UnifiedLoginController@showLoginForm")->name("login");
     Route::get("/unified-login", function () {
         return redirect('/login');
     });

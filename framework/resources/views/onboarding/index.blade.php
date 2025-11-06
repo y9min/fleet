@@ -1578,25 +1578,146 @@ function generateLink() {
         return;
     }
     
+    // Find the generate link button
+    const generateButton = $('button[onclick*="generateLink()"]').first();
+    const originalHtml = generateButton.length ? generateButton.html() : '';
+    
+    // Show loading state on button
+    if (generateButton.length) {
+        generateButton.prop('disabled', true);
+        generateButton.html('<i class="fas fa-spinner fa-spin"></i> Generating...');
+    }
+    
+    console.log('[GENERATE_LINK] Starting link generation...');
+    
+    // Get CSRF token
+    const csrfToken = $('meta[name="csrf-token"]').attr('content');
+    
     $.ajax({
         url: '{{ url("admin/onboarding/generate-link") }}',
         type: 'POST',
         headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            'X-CSRF-TOKEN': csrfToken
         },
         success: function(response) {
+            console.log('[GENERATE_LINK] Success response:', response);
+            
             if (response.success) {
                 $('#generatedLink').val(response.link);
                 $('#onboardingLinkSection').show();
+                
+                // Show success message
+                if (generateButton.length) {
+                    generateButton.html('<i class="fa fa-check"></i> Link Generated!');
+                    generateButton.removeClass('btn-primary').addClass('btn-success');
+                }
                 
                 // Refresh the page to show the new link in the saved links table
                 setTimeout(function() {
                     location.reload();
                 }, 1000);
+            } else {
+                // Restore button on error
+                if (generateButton.length && originalHtml) {
+                    generateButton.html(originalHtml).prop('disabled', false);
+                }
+                alert('Error: ' + (response.message || 'Failed to generate link'));
             }
         },
-        error: function(xhr) {
-            alert('Error generating link: ' + xhr.responseText);
+        error: function(xhr, status, error) {
+            console.log('[GENERATE_LINK] Error occurred');
+            console.log('[GENERATE_LINK] XHR Response:', xhr);
+            console.log('[GENERATE_LINK] Status:', status);
+            console.log('[GENERATE_LINK] Error:', error);
+            console.log('[GENERATE_LINK] Response Text:', xhr.responseText);
+            
+            // Restore button on error
+            if (generateButton.length && originalHtml) {
+                generateButton.html(originalHtml).prop('disabled', false);
+            }
+            
+            let errorMessage = 'Error generating link: ' + error;
+            
+            if (xhr.status === 419) {
+                // CSRF token mismatch - try to refresh and retry once
+                console.log('[GENERATE_LINK] CSRF token expired, refreshing...');
+                
+                refreshCSRFToken().then(function(newToken) {
+                    console.log('[GENERATE_LINK] CSRF token refreshed, retrying...');
+                    
+                    // Show loading again for retry
+                    if (generateButton.length) {
+                        generateButton.prop('disabled', true);
+                        generateButton.html('<i class="fas fa-spinner fa-spin"></i> Retrying...');
+                    }
+                    
+                    $.ajax({
+                        url: '{{ url("admin/onboarding/generate-link") }}',
+                        type: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': newToken
+                        },
+                        success: function(response) {
+                            console.log('[GENERATE_LINK] Retry success response:', response);
+                            
+                            if (response.success) {
+                                $('#generatedLink').val(response.link);
+                                $('#onboardingLinkSection').show();
+                                
+                                // Show success message
+                                if (generateButton.length) {
+                                    generateButton.html('<i class="fa fa-check"></i> Link Generated!');
+                                    generateButton.removeClass('btn-primary').addClass('btn-success');
+                                }
+                                
+                                // Refresh the page to show the new link in the saved links table
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1000);
+                            } else {
+                                // Restore button on error
+                                if (generateButton.length && originalHtml) {
+                                    generateButton.html(originalHtml).prop('disabled', false);
+                                }
+                                alert('Error: ' + (response.message || 'Failed to generate link'));
+                            }
+                        },
+                        error: function(xhr2, status2, error2) {
+                            console.log('[GENERATE_LINK] Retry failed:', error2);
+                            
+                            // Restore button on error
+                            if (generateButton.length && originalHtml) {
+                                generateButton.html(originalHtml).prop('disabled', false);
+                            }
+                            alert('CSRF token mismatch. Please refresh the page and try again.');
+                        }
+                    });
+                }).catch(function(err) {
+                    console.log('[GENERATE_LINK] Failed to refresh CSRF token:', err);
+                    
+                    // Restore button on error
+                    if (generateButton.length && originalHtml) {
+                        generateButton.html(originalHtml).prop('disabled', false);
+                    }
+                    alert('CSRF token mismatch. Please refresh the page and try again.');
+                });
+                return;
+            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = 'Error: ' + xhr.responseJSON.message;
+            } else if (xhr.responseText) {
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    if (errorData.message) {
+                        errorMessage = 'Error: ' + errorData.message;
+                    } else {
+                        errorMessage = 'Error generating link: ' + xhr.responseText.substring(0, 200);
+                    }
+                } catch (e) {
+                    errorMessage = 'Error generating link: ' + xhr.responseText.substring(0, 200);
+                }
+            }
+            
+            alert(errorMessage);
         }
     });
 }

@@ -793,6 +793,71 @@
                     </div>
                 </div>
                 
+                <!-- User Defined Fields -->
+                <div class="details-section">
+                    <h4 class="section-title">🧩 User Defined Fields</h4>
+                    
+                    <div class="field-group">
+                        @php
+                            // Load and normalize UDFs from column first, then meta
+                            $udfArray = [];
+                            $rawUdf = null;
+                            
+                            if ($vehicle->udf) {
+                                $rawUdf = @unserialize($vehicle->udf);
+                                if ($rawUdf === false) {
+                                    $rawUdf = null;
+                                }
+                            }
+                            
+                            // Fallback to meta if column is empty
+                            if (!$rawUdf) {
+                                $metaUdf = $vehicle->getMeta('udf');
+                                if ($metaUdf) {
+                                    $rawUdf = @unserialize($metaUdf);
+                                    if ($rawUdf === false) {
+                                        $rawUdf = null;
+                                    }
+                                }
+                            }
+                            
+                            // Normalize UDF to key=>value map
+                            if ($rawUdf && is_array($rawUdf)) {
+                                // Check if it's the new format with name/value pairs
+                                if (isset($rawUdf[0]) && is_array($rawUdf[0]) && array_key_exists('name', $rawUdf[0])) {
+                                    // New format: [{name: 'x', value: 'y'}, ...]
+                                    foreach ($rawUdf as $item) {
+                                        if (is_array($item) && isset($item['name']) && trim($item['name']) !== '') {
+                                            $udfArray[trim($item['name'])] = isset($item['value']) ? (string)$item['value'] : '';
+                                        }
+                                    }
+                                } else {
+                                    // Legacy format: {key: 'value'}
+                                    foreach ($rawUdf as $key => $value) {
+                                        if (is_string($key) && trim($key) !== '') {
+                                            $udfArray[trim($key)] = is_array($value) ? '' : (string)$value;
+                                        }
+                                    }
+                                }
+                            }
+                        @endphp
+                        
+                        @if(!empty($udfArray))
+                            @foreach($udfArray as $key => $value)
+                                <div class="field-item">
+                                    <label class="field-label">{{ $key }}</label>
+                                    <div class="field-value">{{ $value ?: 'Not Set' }}</div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="field-item">
+                                <label class="field-label">Custom Fields</label>
+                                <div class="field-value">No custom fields defined</div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
                 <!-- Database & System Information -->
                 <div class="details-section">
                     <h4 class="section-title">💾 Database & System Information</h4>
@@ -822,17 +887,6 @@
                                     ✅ Yes ({{ $allMetadata->count() }} records)
                                 @else
                                     ❌ No metadata found
-                                @endif
-                            </div>
-                        </div>
-                        
-                        <div class="field-item">
-                            <label class="field-label">UDF (User Defined Fields)</label>
-                            <div class="field-value">
-                                @if($vehicle->udf)
-                                    {{ $vehicle->udf }}
-                                @else
-                                    No UDF data
                                 @endif
                             </div>
                         </div>

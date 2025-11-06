@@ -1070,14 +1070,9 @@ body {
                                 <label for="type_filter" class="form-label">Vehicle Type</label>
                                 <select class="form-control" id="type_filter">
                                     <option value="">All Types</option>
-                                    <option value="1">Convertible</option>
-                                    <option value="2">Coupe</option>
-                                    <option value="3">Estate</option>
-                                    <option value="4">Hatchback</option>
-                                    <option value="5">MPV</option>
-                                    <option value="6">Pickup</option>
-                                    <option value="7">Saloon</option>
-                                    <option value="8">SUV</option>
+                                    @foreach(($vehicle_types ?? []) as $type)
+                                        <option value="{{ $type->id }}">{{ $type->display_name ?? $type->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -3093,9 +3088,14 @@ function applyFilters() {
         //     return false;
         // }
         
-        // Type filter
-        if (typeFilter && vehicle.type_id != typeFilter) {
-            return false;
+        // Type filter (supports either vehicle.type_id or vehicle.types.id)
+        if (typeFilter) {
+            const vehicleTypeId = (vehicle.type_id !== undefined && vehicle.type_id !== null)
+                ? String(vehicle.type_id)
+                : (vehicle.types && vehicle.types.id ? String(vehicle.types.id) : '');
+            if (!vehicleTypeId || vehicleTypeId !== String(typeFilter)) {
+                return false;
+            }
         }
         
         // Fuel filter

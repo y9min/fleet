@@ -930,9 +930,13 @@ class OnboardingController extends Controller
         $custom_fields = $customFields; // Alias for view compatibility
         $fieldConfigs = OnboardingFormFieldConfig::visible()->ordered()->get();
         
-        // Get available vehicles for selection
-        $availableVehicles = VehicleModel::whereRaw('in_service IS TRUE')
-            ->get()
+        // Get available vehicles for selection - filtered by company
+        $availableVehiclesQuery = VehicleModel::whereRaw('in_service IS TRUE');
+        if ($link->company_id) {
+            $availableVehiclesQuery->where('company_id', $link->company_id);
+        }
+        
+        $availableVehicles = $availableVehiclesQuery->get()
             ->filter(function($vehicle) {
                 return $vehicle->getVehicleStatusAttribute() === 'Available';
             })

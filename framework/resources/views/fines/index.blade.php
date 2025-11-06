@@ -129,7 +129,7 @@
 <style>
 /* Reduce top spacing above header card by 50% */
 .content-wrapper {
-    padding-top: calc(0.5rem + 90px) !important;
+    padding-top: calc(0.25rem + 90px) !important;
 }
 
 /* Custom dropdown styling for fines table */

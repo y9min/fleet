@@ -1,9 +1,9 @@
 <?php
 
-// Redirect main logout (GET/POST) to external main page
+// Redirect main logout (GET/POST) to external main page (named 'logout' for Blade usage)
 Route::match(['get','post'], '/logout', function () {
     return redirect()->away('https://www.pcoflow.com');
-})->name('logout.redirect');
+})->name('logout');
 
 // Ensure /login is always available and not subject to front_enable redirects
 Route::get('/login', 'UnifiedLoginController@showLoginForm')->name('login');

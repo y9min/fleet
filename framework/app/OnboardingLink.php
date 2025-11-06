@@ -85,4 +85,56 @@ class OnboardingLink extends Model
             'used_at' => now()
         ]);
     }
+
+    /**
+     * Ensure is_active is always stored as a true boolean for PostgreSQL
+     */
+    public function setIsActiveAttribute($value)
+    {
+        $this->attributes['is_active'] = (bool) $value;
+    }
+
+    /**
+     * Ensure is_used is always stored as a true boolean for PostgreSQL
+     */
+    public function setIsUsedAttribute($value)
+    {
+        $this->attributes['is_used'] = (bool) $value;
+    }
+
+    /**
+     * Force boolean casting on insert for PostgreSQL compatibility
+     * Use DB::raw() to bypass PDO integer conversion
+     */
+    protected function performInsert(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        // Ensure boolean values are properly cast for PostgreSQL
+        if (array_key_exists('is_active', $this->attributes)) {
+            $boolValue = $this->attributes['is_active'] ? true : false;
+            $this->attributes['is_active'] = \DB::raw($boolValue ? 'TRUE' : 'FALSE');
+        }
+        if (array_key_exists('is_used', $this->attributes)) {
+            $boolValue = $this->attributes['is_used'] ? true : false;
+            $this->attributes['is_used'] = \DB::raw($boolValue ? 'TRUE' : 'FALSE');
+        }
+        return parent::performInsert($query);
+    }
+
+    /**
+     * Force boolean casting on update for PostgreSQL compatibility
+     * Use DB::raw() to bypass PDO integer conversion
+     */
+    protected function performUpdate(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        // Ensure boolean values are properly cast for PostgreSQL
+        if (array_key_exists('is_active', $this->attributes)) {
+            $boolValue = $this->attributes['is_active'] ? true : false;
+            $this->attributes['is_active'] = \DB::raw($boolValue ? 'TRUE' : 'FALSE');
+        }
+        if (array_key_exists('is_used', $this->attributes)) {
+            $boolValue = $this->attributes['is_used'] ? true : false;
+            $this->attributes['is_used'] = \DB::raw($boolValue ? 'TRUE' : 'FALSE');
+        }
+        return parent::performUpdate($query);
+    }
 }

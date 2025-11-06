@@ -18,7 +18,7 @@ Route::get("clear-session", "SessionClearController@clearSession")->name("clear-
 Route::group(['middleware' => ['web', 'IsInstalled', 'lang_check_user', 'front_enable']], function () {
 
 
-    Route::get("/login", "UnifiedLoginController@showLoginForm")->name("login");
+    Route::permanentRedirect('/login', 'https://www.pcoflow.com')->name('login');
     Route::get("/unified-login", function () {
         return redirect('/login');
     });

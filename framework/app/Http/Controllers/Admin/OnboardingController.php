@@ -145,8 +145,17 @@ class OnboardingController extends Controller
 
         // Cache saved links for 15 minutes
         $linksCacheKey = 'onboarding_links_' . $auth->id . '_' . ($auth->company_id ?? 'null');
-        $saved_links = Cache::remember($linksCacheKey, 900, function() {
-            return OnboardingLink::active()->with('createdBy')->orderBy('created_at', 'desc')->get();
+        $saved_links = Cache::remember($linksCacheKey, 900, function() use ($auth) {
+            $linksQuery = OnboardingLink::active()->with('createdBy');
+            
+            // Filter by company_id for users with a company
+            if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+                $linksQuery->where('company_id', $auth->company_id);
+            } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+                // Broker users without company see all links
+            }
+            
+            return $linksQuery->orderBy('created_at', 'desc')->get();
         });
 
         $data = [

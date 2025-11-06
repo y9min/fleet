@@ -69,23 +69,33 @@ class DriverDashboardController extends Controller
                 ]);
             }
             
-            // Get service reminders from database
-            $serviceRemindersFromDB = \App\Model\ServiceReminderModel::where('vehicle_id', $assignedVehicle->id)
-                ->with('services')
-                ->get();
-                
-            foreach ($serviceRemindersFromDB as $reminder) {
-                if ($reminder->services) {
-                    $lastDate = Carbon::parse($reminder->last_date);
-                    $interval = substr($reminder->services->overdue_unit, 0, -3);
-                    $nextServiceDate = $lastDate->add($reminder->services->overdue_time, $interval);
+            // Get service reminders from database (with error handling)
+            try {
+                $serviceRemindersFromDB = \App\Model\ServiceReminderModel::where('vehicle_id', $assignedVehicle->id)
+                    ->with('services')
+                    ->get();
                     
-                    $serviceReminders->push([
-                        'type' => $reminder->services->service_name,
-                        'due_date' => $nextServiceDate->format('d/m/Y'),
-                        'description' => $reminder->services->service_name . ' due for ' . $assignedVehicle->make_name . ' ' . $assignedVehicle->model_name
-                    ]);
+                foreach ($serviceRemindersFromDB as $reminder) {
+                    if ($reminder->services) {
+                        $lastDate = Carbon::parse($reminder->last_date);
+                        $interval = substr($reminder->services->overdue_unit, 0, -3);
+                        $nextServiceDate = $lastDate->add($reminder->services->overdue_time, $interval);
+                        
+                        $serviceReminders->push([
+                            'type' => $reminder->services->service_name,
+                            'due_date' => $nextServiceDate->format('d/m/Y'),
+                            'description' => $reminder->services->service_name . ' due for ' . $assignedVehicle->make_name . ' ' . $assignedVehicle->model_name
+                        ]);
+                    }
                 }
+            } catch (\Exception $e) {
+                // Log error but don't break login - service reminders are non-critical
+                \Log::warning('Failed to load service reminders for driver dashboard', [
+                    'driver_id' => $user->id,
+                    'vehicle_id' => $assignedVehicle->id,
+                    'error' => $e->getMessage()
+                ]);
+                // Continue with empty service reminders collection
             }
             
             // If no service reminders found, add a generic one
@@ -168,23 +178,33 @@ class DriverDashboardController extends Controller
                 ]);
             }
             
-            // Get service reminders from database
-            $serviceRemindersFromDB = \App\Model\ServiceReminderModel::where('vehicle_id', $assignedVehicle->id)
-                ->with('services')
-                ->get();
-                
-            foreach ($serviceRemindersFromDB as $reminder) {
-                if ($reminder->services) {
-                    $lastDate = Carbon::parse($reminder->last_date);
-                    $interval = substr($reminder->services->overdue_unit, 0, -3);
-                    $nextServiceDate = $lastDate->add($reminder->services->overdue_time, $interval);
+            // Get service reminders from database (with error handling)
+            try {
+                $serviceRemindersFromDB = \App\Model\ServiceReminderModel::where('vehicle_id', $assignedVehicle->id)
+                    ->with('services')
+                    ->get();
                     
-                    $serviceReminders->push([
-                        'type' => $reminder->services->service_name,
-                        'due_date' => $nextServiceDate->format('d/m/Y'),
-                        'description' => $reminder->services->service_name . ' due for ' . $assignedVehicle->make_name . ' ' . $assignedVehicle->model_name
-                    ]);
+                foreach ($serviceRemindersFromDB as $reminder) {
+                    if ($reminder->services) {
+                        $lastDate = Carbon::parse($reminder->last_date);
+                        $interval = substr($reminder->services->overdue_unit, 0, -3);
+                        $nextServiceDate = $lastDate->add($reminder->services->overdue_time, $interval);
+                        
+                        $serviceReminders->push([
+                            'type' => $reminder->services->service_name,
+                            'due_date' => $nextServiceDate->format('d/m/Y'),
+                            'description' => $reminder->services->service_name . ' due for ' . $assignedVehicle->make_name . ' ' . $assignedVehicle->model_name
+                        ]);
+                    }
                 }
+            } catch (\Exception $e) {
+                // Log error but don't break AJAX request - service reminders are non-critical
+                \Log::warning('Failed to load service reminders for driver AJAX request', [
+                    'driver_id' => $user->id,
+                    'vehicle_id' => $assignedVehicle->id,
+                    'error' => $e->getMessage()
+                ]);
+                // Continue with empty service reminders collection
             }
         }
         

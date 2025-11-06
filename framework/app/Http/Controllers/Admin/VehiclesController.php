@@ -1334,6 +1334,15 @@ class VehiclesController extends Controller {
                         
                         // Force save the vehicle to persist the meta changes
                         $vehicle->save();
+
+                        // Invalidate cached driver list for this company so main vehicles page reflects new assignment immediately
+                        try {
+                                $companyId = $vehicle->company_id ?? null;
+                                $cacheKeyDrivers = 'active_drivers_' . ($companyId ?? 'all');
+                                \Cache::forget($cacheKeyDrivers);
+                        } catch (\Throwable $t) {
+                                // Best-effort cache invalidation; ignore failures
+                        }
                         
                         // Log the status change
                         \Log::info('Vehicle status updated', [

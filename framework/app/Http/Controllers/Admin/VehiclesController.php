@@ -636,6 +636,40 @@ class VehiclesController extends Controller {
                         });
                 
                 // Prepare complete vehicle data
+                // Load and normalize UDFs from column first, then meta
+                $udfRaw = null;
+                if ($vehicle->udf) {
+                        $udfRaw = @unserialize($vehicle->udf);
+                        if ($udfRaw === false) {
+                                $udfRaw = null;
+                        }
+                }
+                if (!$udfRaw) {
+                        $metaUdf = $vehicle->getMeta('udf');
+                        if ($metaUdf) {
+                                $udfRaw = @unserialize($metaUdf);
+                                if ($udfRaw === false) {
+                                        $udfRaw = null;
+                                }
+                        }
+                }
+                $udfNormalized = [];
+                if ($udfRaw && is_array($udfRaw)) {
+                        if (isset($udfRaw[0]) && is_array($udfRaw[0]) && array_key_exists('name', $udfRaw[0])) {
+                                foreach ($udfRaw as $item) {
+                                        if (is_array($item) && isset($item['name']) && trim($item['name']) !== '') {
+                                                $udfNormalized[trim($item['name'])] = isset($item['value']) ? (string)$item['value'] : '';
+                                        }
+                                }
+                        } else {
+                                foreach ($udfRaw as $k => $v) {
+                                        if (is_string($k) && trim($k) !== '') {
+                                                $udfNormalized[trim($k)] = is_array($v) ? '' : (string)$v;
+                                        }
+                                }
+                        }
+                }
+
                 $completeData = [
                         'id' => $vehicle->id,
                         'purchase_info' => $purchaseInfo,
@@ -645,6 +679,7 @@ class VehiclesController extends Controller {
                         'created_at' => $vehicle->created_at,
                         'updated_at' => $vehicle->updated_at,
                         'metadata' => $metadata,
+                        'udf' => $udfNormalized,
                         'all_metadata' => $allMetadata,
                         'additional_meta' => [
                                 'scheme' => $vehicle->getMeta('scheme') ?: $vehicle->getMeta('vehicle_scheme'),

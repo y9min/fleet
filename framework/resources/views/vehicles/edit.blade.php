@@ -163,6 +163,8 @@
     display: none;
   }
   
+  /* User defined fields styles - Commented out for future use */
+  /*
   .user-defined-section {
     background: #f8f9fa;
     padding: 1.5rem;
@@ -194,6 +196,7 @@
   .add-field-btn:hover {
     background: #6bc4ce;
   }
+  */
   
   .submit-section {
     text-align: left;
@@ -444,7 +447,8 @@
         
       </div>
       
-      <!-- User Defined Fields Section -->
+      {{-- User Defined Fields Section - Commented out for future use --}}
+      {{--
       <div class="user-defined-section">
         <h6 style="margin-bottom: 1rem; color: #333; font-weight: 600;">Add User defined field</h6>
         <div id="user-defined-fields">
@@ -464,6 +468,7 @@
           <button type="button" class="add-field-btn" onclick="addUserField()">Add</button>
         </div>
       </div>
+      --}}
       
       <div class="submit-section">
         <a href="{{ route('vehicles.index') }}" class="cancel-btn">Cancel</a>
@@ -479,7 +484,8 @@
 
 @section('script')
 <script type="text/javascript">
-// User defined fields functionality
+// User defined fields functionality - Commented out for future use
+/*
 let userFieldIndex = {{ !empty($udfs) && is_array($udfs) ? count($udfs) : 0 }};
 
 function addUserField() {
@@ -514,6 +520,7 @@ function addUserField() {
 function removeUserField(button) {
     button.parentElement.remove();
 }
+*/
 
 // Form validation
 document.addEventListener('DOMContentLoaded', function() {

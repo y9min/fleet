@@ -148,7 +148,7 @@ class FinesController extends Controller
                     $emailResult = $emailService->sendFineNotificationEmail(
                         $driver->email,
                         $driver->name,
-                        $fine->fine_type,
+                        $fine->fine_type_title,
                         $fine->total_amount,
                         $fine->due_date ? $fine->due_date->format('Y-m-d') : 'Not specified'
                     );

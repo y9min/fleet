@@ -211,4 +211,56 @@ class OnboardingFormFieldConfig extends Model
             }
         }
     }
+
+    /**
+     * Ensure is_visible is always stored as a true boolean for PostgreSQL
+     */
+    public function setIsVisibleAttribute($value)
+    {
+        $this->attributes['is_visible'] = (bool) $value;
+    }
+
+    /**
+     * Ensure is_required is always stored as a true boolean for PostgreSQL
+     */
+    public function setIsRequiredAttribute($value)
+    {
+        $this->attributes['is_required'] = (bool) $value;
+    }
+
+    /**
+     * Force boolean casting on insert for PostgreSQL compatibility
+     * Use DB::raw() to bypass PDO integer conversion
+     */
+    protected function performInsert(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        // Ensure boolean values are properly cast for PostgreSQL
+        if (array_key_exists('is_visible', $this->attributes)) {
+            $boolValue = $this->attributes['is_visible'] ? true : false;
+            $this->attributes['is_visible'] = \DB::raw($boolValue ? 'TRUE' : 'FALSE');
+        }
+        if (array_key_exists('is_required', $this->attributes)) {
+            $boolValue = $this->attributes['is_required'] ? true : false;
+            $this->attributes['is_required'] = \DB::raw($boolValue ? 'TRUE' : 'FALSE');
+        }
+        return parent::performInsert($query);
+    }
+
+    /**
+     * Force boolean casting on update for PostgreSQL compatibility
+     * Use DB::raw() to bypass PDO integer conversion
+     */
+    protected function performUpdate(\Illuminate\Database\Eloquent\Builder $query)
+    {
+        // Ensure boolean values are properly cast for PostgreSQL
+        if (array_key_exists('is_visible', $this->attributes)) {
+            $boolValue = $this->attributes['is_visible'] ? true : false;
+            $this->attributes['is_visible'] = \DB::raw($boolValue ? 'TRUE' : 'FALSE');
+        }
+        if (array_key_exists('is_required', $this->attributes)) {
+            $boolValue = $this->attributes['is_required'] ? true : false;
+            $this->attributes['is_required'] = \DB::raw($boolValue ? 'TRUE' : 'FALSE');
+        }
+        return parent::performUpdate($query);
+    }
 }

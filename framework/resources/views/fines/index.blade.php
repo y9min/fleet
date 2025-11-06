@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="content-wrapper">
-    <div class="content-header">
-        <div class="header-card" style="background: linear-gradient(135deg, #7ED6E0 0%, #6CC5D2 100%); border-radius: 15px; padding: 30px; margin-bottom: 0;">
+    <div class="content-header" style="margin-top: 0; padding-top: 0;">
+        <div class="header-card" style="background: linear-gradient(135deg, #7ED6E0 0%, #6CC5D2 100%); border-radius: 15px; padding: 20px; margin-bottom: 0;">
             <div class="header-content d-flex justify-content-between align-items-center">
                 <div>
                     <h1 style="color: white; font-size: 33px; font-weight: 700; margin: 0; line-height: 33px;">Fines Management</h1>

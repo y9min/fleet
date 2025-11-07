@@ -28,9 +28,20 @@ class Hyvikk {
 
         public static function twilio($key) {
                 $cacheKey = 'hyvikk_twilio';
-                $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
-                    return array_pluck(TwilioSettings::all()->toArray(), 'value', 'name');
-                });
+                try {
+                    $settings = Cache::remember($cacheKey, self::$cacheDuration, function () {
+                        // Use withoutGlobalScopes() to bypass SoftDeletes since deleted_at column may not exist
+                        return array_pluck(TwilioSettings::withoutGlobalScopes()->all()->toArray(), 'value', 'name');
+                    });
+                } catch (\Exception $e) {
+                    // Log the error but don't block functionality - twilio settings are optional
+                    Log::warning('Failed to load twilio settings: ' . $e->getMessage(), [
+                        'exception' => $e,
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // Return empty array to prevent errors
+                    $settings = [];
+                }
                 
                 if (is_array($key)) {
                     return array_only($settings, $key);

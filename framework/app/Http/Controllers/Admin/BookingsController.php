@@ -1299,12 +1299,7 @@ public function assign_driver($id)
 		}
 		
 		$drivers = $drivers->get();
-		$data['drivers'] = [];
-		foreach ($drivers as $d) {
-			if ($d->getMeta('is_active') == 1) {
-				$data['drivers'][] = $d;
-			}
-		}
+		$data['drivers'] = $drivers->all(); // Show all drivers from company, regardless of active status
 		
 		// Add onboarding drivers (including those yet to be approved)
 		$onboardingDrivers = \App\OnboardingDriver::whereIn('status', ['submitted', 'approved']);

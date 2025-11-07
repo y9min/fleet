@@ -1693,6 +1693,21 @@ public function assign_driver($id)
                 
                 // ensure dropoff is at least pickup + 15 minutes
                 $payload['dropoff'] = $computedDropoff->format('Y-m-d H:i:s');
+                
+                // Set company_id if not already in payload
+                if (!isset($payload['company_id'])) {
+                    $auth = Auth::user();
+                    if (!is_null($auth->company_id)) {
+                        $payload['company_id'] = $auth->company_id;
+                    } elseif (isset($payload['vehicle_id'])) {
+                        // Fall back to vehicle's company_id if user doesn't have one
+                        $vehicle = VehicleModel::find($payload['vehicle_id']);
+                        if ($vehicle && !is_null($vehicle->company_id)) {
+                            $payload['company_id'] = $vehicle->company_id;
+                        }
+                    }
+                }
+                
                 $id = Bookings::create($payload)->id;
 				Address::updateOrCreate(['customer_id' => $request->get('customer_id'), 'address' => $request->get('pickup_addr')]);
 				$booking = Bookings::with(['driver', 'customer', 'vehicle'])->find($id);
@@ -1733,15 +1748,35 @@ public function assign_driver($id)
 				
 				if(isset($request->booking_type) && $request->booking_type  == "return_way")
 				{
-					$ids = Bookings::create(['customer_id' => $request->customer_id,
-					'pickup_addr' => $request->pickup_addr,
-					'dest_addr' => '',
-					'note' => $request->get('note'),
-					'pickup' => $request->return_pickup_date_time,
-					'dropoff'=>$request->return_dropoff_date_time,
-					'vehicle_id'=>$request->vehicle_id,
-					'user_id' => Auth::user()->id
-					])->id;
+					// Set company_id for return booking
+					$returnCompanyId = null;
+					$auth = Auth::user();
+					if (!is_null($auth->company_id)) {
+						$returnCompanyId = $auth->company_id;
+					} elseif ($request->vehicle_id) {
+						// Fall back to vehicle's company_id if user doesn't have one
+						$vehicle = VehicleModel::find($request->vehicle_id);
+						if ($vehicle && !is_null($vehicle->company_id)) {
+							$returnCompanyId = $vehicle->company_id;
+						}
+					}
+					
+					$returnBookingData = [
+						'customer_id' => $request->customer_id,
+						'pickup_addr' => $request->pickup_addr,
+						'dest_addr' => '',
+						'note' => $request->get('note'),
+						'pickup' => $request->return_pickup_date_time,
+						'dropoff'=>$request->return_dropoff_date_time,
+						'vehicle_id'=>$request->vehicle_id,
+						'user_id' => Auth::user()->id
+					];
+					
+					if (!is_null($returnCompanyId)) {
+						$returnBookingData['company_id'] = $returnCompanyId;
+					}
+					
+					$ids = Bookings::create($returnBookingData)->id;
 					$return_date_time = Carbon::parse($request->return_pickup_date_time);
 					$bookings = Bookings::find($ids);
 					

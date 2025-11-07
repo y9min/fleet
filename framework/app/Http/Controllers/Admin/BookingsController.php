@@ -141,7 +141,7 @@ class BookingsController extends Controller {
 				
 				// Apply company filter if user has a company_id
 				if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
-					$bookings = $bookings->where('company_id', $auth->company_id);
+					$bookings = $bookings->where('bookings.company_id', $auth->company_id);
 				} elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
 					$bookings = $bookings->whereRaw('1=0'); // No results for this user type
 				}
@@ -151,7 +151,7 @@ class BookingsController extends Controller {
 				
 				// Also apply company filter for group-based queries if needed
 				if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
-					$bookings = $bookings->where('company_id', $auth->company_id);
+					$bookings = $bookings->where('bookings.company_id', $auth->company_id);
 				} elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
 					$bookings = $bookings->whereRaw('1=0'); // No results for this user type
 				}

@@ -132,13 +132,29 @@ class BookingsController extends Controller {
 	public function fetch_data(Request $request) {
 		if ($request->ajax()) {
 			$date_format_setting = (Hyvikk::get('date_format')) ? Hyvikk::get('date_format') : 'd-m-Y';
-			if (Auth::user()->user_type == "C") {
-				$bookings = Bookings::where('customer_id', Auth::id())->latest();
-			} elseif (Auth::user()->group_id == null || Auth::user()->user_type == "S") {
+			$auth = Auth::user();
+			
+			if ($auth->user_type == "C") {
+				$bookings = Bookings::where('customer_id', $auth->id)->latest();
+			} elseif ($auth->group_id == null || $auth->user_type == "S") {
 				$bookings = Bookings::latest();
+				
+				// Apply company filter if user has a company_id
+				if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+					$bookings = $bookings->where('company_id', $auth->company_id);
+				} elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+					$bookings = $bookings->whereRaw('1=0'); // No results for this user type
+				}
 			} else {
-				$vehicle_ids = VehicleModel::where('group_id', Auth::user()->group_id)->pluck('id')->toArray();
+				$vehicle_ids = VehicleModel::where('group_id', $auth->group_id)->pluck('id')->toArray();
 				$bookings = Bookings::whereIn('vehicle_id', $vehicle_ids)->latest();
+				
+				// Also apply company filter for group-based queries if needed
+				if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+					$bookings = $bookings->where('company_id', $auth->company_id);
+				} elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+					$bookings = $bookings->whereRaw('1=0'); // No results for this user type
+				}
 			}
             // Exclude collected (Ongoing) bookings from the index listing via meta
             $bookings->leftJoin('bookings_meta as ride_status_meta', function ($join) {

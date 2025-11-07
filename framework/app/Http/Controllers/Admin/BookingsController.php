@@ -1284,9 +1284,21 @@ public function assign_driver($id)
 		return $data;
 	}
 	public function create() {
-		$user = Auth::user()->group_id;
+		$auth = Auth::user();
+		$user = $auth->group_id;
 		$data['customers'] = User::where('user_type', 'C')->get();
-		$drivers = User::whereUser_type("D")->get();
+		
+		// Get approved drivers with company scoping
+		$drivers = User::whereUser_type("D");
+		
+		// Apply company scoping for drivers (same pattern as DriversController)
+		if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+			$drivers = $drivers->where('company_id', $auth->company_id);
+		} elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+			$drivers = $drivers->whereRaw('1=0'); // No results for this user type
+		}
+		
+		$drivers = $drivers->get();
 		$data['drivers'] = [];
 		foreach ($drivers as $d) {
 			if ($d->getMeta('is_active') == 1) {
@@ -1295,7 +1307,6 @@ public function assign_driver($id)
 		}
 		
 		// Add onboarding drivers (including those yet to be approved)
-		$auth = Auth::user();
 		$onboardingDrivers = \App\OnboardingDriver::whereIn('status', ['submitted', 'approved']);
 		
 		// Apply company scoping if applicable
@@ -1323,36 +1334,60 @@ public function assign_driver($id)
 			$data['drivers'][] = $driverObj;
 		}
 		
-		$data['addresses'] = Address::where('customer_id', Auth::user()->id)->get();
+		$data['addresses'] = Address::where('customer_id', $auth->id)->get();
         // Prefill pickup address from company settings if available
         $companyAddress = null;
-        if (Auth::user()->company_id) {
-            $company = Company::find(Auth::user()->company_id);
+        if ($auth->company_id) {
+            $company = Company::find($auth->company_id);
             $companyAddress = $company ? $company->address : null;
         }
         $data['company_address'] = $companyAddress;
+		
+		// Get vehicles with company scoping (preserve group_id and status filters)
 		if ($user == null) {
-			$data['vehicles'] = VehicleModel::whereRaw('in_service IS TRUE')
-				->whereMeta('vehicle_status', 'Available')
-				->get();
+			$vehiclesQuery = VehicleModel::whereRaw('in_service IS TRUE')
+				->whereMeta('vehicle_status', 'Available');
 		} else {
-			$data['vehicles'] = VehicleModel::where('group_id', $user)
+			$vehiclesQuery = VehicleModel::where('group_id', $user)
 				->whereRaw('in_service IS TRUE')
-				->whereMeta('vehicle_status', 'Available')
-				->get();
+				->whereMeta('vehicle_status', 'Available');
 		}
+		
+		// Apply company scoping for vehicles (same pattern as VehiclesController)
+		if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+			$vehiclesQuery = $vehiclesQuery->where('company_id', $auth->company_id);
+		} elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+			$vehiclesQuery = $vehiclesQuery->whereRaw('1=0'); // No results for this user type
+		}
+		
+		$data['vehicles'] = $vehiclesQuery->get();
 
 		// Diagnostics + fallback: if no vehicles via Eloquent, try raw DB (Postgres boolean/scoping issues)
 		try {
 			\Log::info('[Invitations] Vehicles via Eloquent', [
 				'count' => $data['vehicles'] ? $data['vehicles']->count() : 0,
 				'user_group' => $user,
-				'user_id' => Auth::id()
+				'user_id' => $auth->id,
+				'company_id' => $auth->company_id
 			]);
 			if (!$data['vehicles'] || $data['vehicles']->count() === 0) {
 				$raw = \DB::table('vehicles')
 					->select('id','make_name','model_name','year','license_plate','type_id','group_id','in_service','company_id')
-					->get();
+					->where('in_service', true);
+				
+				// Apply company filter to fallback query too
+				if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+					$raw = $raw->where('company_id', $auth->company_id);
+				} elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+					$raw = $raw->whereRaw('1=0'); // No results for this user type
+				}
+				
+				// Apply group_id filter if present
+				if ($user != null) {
+					$raw = $raw->where('group_id', $user);
+				}
+				
+				$raw = $raw->get();
 				\Log::warning('[Invitations] Fallback raw vehicles used', [ 'count' => $raw->count() ]);
 				$data['vehicles'] = collect($raw)->map(function($r){ return (object) $r; });
 			}

@@ -656,8 +656,8 @@ function loadDriversSimple(filteredData = null, page = 1) {
         }
         
         // Escape strings for use in onclick attribute
-        const safeName = (driver.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        const safeEmail = (driver.email || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeName = (driver.name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        const safeEmail = (driver.email || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
         
         // Action buttons
         const actionButtons = '<div class="d-flex justify-content-center gap-2">' +

@@ -198,26 +198,6 @@ PCOFlow | Drivers
     border-radius: 10px;
   }
 
-  /* Delete confirmation styles - matching vehicles page */
-  .delete-confirmation {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    border-radius: 4px;
-    padding: 0.5rem;
-    margin: 0.25rem 0;
-    font-size: 0.85rem;
-  }
-  
-  .delete-warning-icon {
-    color: #f39c12;
-    margin-right: 0.25rem;
-  }
-  
-  .confirm-delete-row {
-    background-color: #fff3cd !important;
-    border-left: 4px solid #ffc107;
-  }
-
   /* Enhanced page header with modern design - matching vehicles page */
   .page-header {
       background: linear-gradient(135deg, #7ed6e1, #6dc6d2);
@@ -537,7 +517,7 @@ PCOFlow | Drivers
 
 <!-- Modal -->
 {{-- Delete modal removed - now using inline confirmation row like vehicles page --}}
-{{--
+<!-- Modal -->
 <div id="myModal" class="modal fade" role="dialog">
   <div class="modal-dialog">
     <!-- Modal content-->
@@ -557,7 +537,6 @@ PCOFlow | Drivers
     </div>
   </div>
 </div>
---}}
 <!-- Modal -->
 
 <!-- Modal -->
@@ -655,16 +634,12 @@ function loadDriversSimple(filteredData = null, page = 1) {
             vehicleHTML = '<a href="{{ url("admin/vehicles") }}/' + driver.vehicle.id + '" class="badge badge-warning text-dark" style="background-color: #EABE14; color: #333; border-radius: 4px; padding: 6px 12px; text-decoration: none; font-weight: bold;" title="View Vehicle Details">' + driver.vehicle.license_plate + '</a>';
         }
         
-        // Escape strings for use in onclick attribute
-        const safeName = (driver.name || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-        const safeEmail = (driver.email || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-        
         // Action buttons
         const actionButtons = '<div class="d-flex justify-content-center gap-2">' +
             '<button class="btn btn-sm btn-info" data-driver-id="' + driver.id + '" onclick="toggleDriverDetailsInstant(this)" title="View Details" style="padding: 6px 8px;"><i class="fas fa-eye"></i></button>' +
             '<button class="btn btn-sm btn-warning" data-id="' + driver.id + '" data-toggle="modal" data-target="#changepass" title="Change Password" style="padding: 6px 8px;"><i class="fas fa-key"></i></button>' +
             '<a href="{{ url("admin/drivers") }}/' + driver.id + '/edit" class="btn btn-sm btn-primary" title="Edit Driver" style="padding: 6px 8px;"><i class="fas fa-edit"></i></a>' +
-            '<button class="btn btn-sm btn-danger" onclick="confirmDeleteDriver(' + driver.id + ', \'' + safeName + '\', \'' + safeEmail + '\'); return false;" title="Delete Driver" style="padding: 6px 8px;"><i class="fas fa-trash"></i></button>' +
+            '<button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#myModal" data-id="' + driver.id + '" title="Delete Driver" style="padding: 6px 8px;"><i class="fas fa-trash"></i></button>' +
             '</div>';
         
         tableHTML += '<tr id="driver-row-' + driver.id + '">' +
@@ -852,226 +827,52 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Driver loading function called');
 });
 
-  // Delete confirmation function - matching vehicles page style
-  window.confirmDeleteDriver = function(id, name, email) {
-    console.log('confirmDeleteDriver called with ID:', id, 'Name:', name);
+  // Modal delete handlers
+  $(document).on("click", "#del_btn", function(){
+    var id = $(this).data("submit");
+    console.log("Delete button clicked for driver ID:", id);
     
     if (!id) {
-      console.error('No ID provided to confirmDeleteDriver');
-      alert('Error: No driver ID provided');
+      console.error("No driver ID found");
       return;
     }
     
-    const row = document.getElementById(`driver-row-${id}`);
-    if (!row) {
-      console.error('Row not found for ID:', id);
-      return;
-    }
+    // Close the modal first
+    $('#myModal').modal('hide');
     
-    // First, close ALL existing delete confirmations to prevent stacking
-    const allExistingConfirms = document.querySelectorAll('.delete-confirmation-row');
-    allExistingConfirms.forEach(confirmRow => {
-      const driverRow = confirmRow.previousElementSibling;
-      if (driverRow) {
-        driverRow.classList.remove('confirm-delete-row');
-      }
-      confirmRow.remove();
-    });
-    
-    // Check if this specific row already had a confirmation (toggle behavior)
-    const existingConfirm = row.nextElementSibling;
-    if (existingConfirm && existingConfirm.classList.contains('delete-confirmation-row')) {
-      // If it already had a confirmation, we just removed it above, so we're done (toggle off)
-      console.log('Delete confirmation toggled off for driver:', id);
-      return;
-    }
-    
-    // Highlight the row
-    row.classList.add('confirm-delete-row');
-    
-    // Create confirmation row
-    const confirmRow = document.createElement('tr');
-    confirmRow.className = 'delete-confirmation-row';
-    confirmRow.innerHTML = `
-      <td colspan="8">
-        <div class="delete-confirmation">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <i class="fas fa-exclamation-triangle delete-warning-icon"></i>
-              <strong>Confirm Deletion:</strong> Are you sure you want to delete <strong>${name}</strong> (${email})?
-              <br><small class="text-muted">This will permanently delete the driver and all associated records.</small>
-            </div>
-            <div>
-              <button class="btn btn-sm btn-danger mr-2" onclick="deleteDriver(${id})">
-                <i class="fas fa-trash-alt"></i> Delete
-              </button>
-              <button class="btn btn-sm btn-secondary" onclick="cancelDeleteDriver(${id})" type="button">
-                <i class="fas fa-times"></i> Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </td>
-    `;
-    
-    row.parentNode.insertBefore(confirmRow, row.nextSibling);
-    
-    // Add event listener to cancel button as a fallback
-    const cancelBtn = confirmRow.querySelector('.btn-secondary');
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('Cancel button clicked via event listener');
-        cancelDeleteDriver(id);
+    // Create a form dynamically and submit it
+    setTimeout(function() {
+      var form = $('<form>', {
+        'method': 'POST',
+        'action': '{{ url("admin/drivers") }}/' + id
       });
-    }
-    
-    console.log('Delete confirmation toggled on for driver:', id);
-  }
+      
+      form.append($('<input>', {
+        'type': 'hidden',
+        'name': '_method',
+        'value': 'DELETE'
+      }));
+      
+      form.append($('<input>', {
+        'type': 'hidden',
+        'name': '_token',
+        'value': $('meta[name="csrf-token"]').attr('content')
+      }));
+      
+      form.append($('<input>', {
+        'type': 'hidden',
+        'name': 'id',
+        'value': id
+      }));
+      
+      $('body').append(form);
+      form.submit();
+    }, 300);
+  });
 
-  window.cancelDeleteDriver = function(id) {
-    console.log('cancelDeleteDriver called with ID:', id);
-    
-    const row = document.getElementById(`driver-row-${id}`);
-    if (!row) {
-      console.error('Row not found for ID:', id);
-      return;
-    }
-    
-    // Find the confirmation row (it's a sibling, not a child)
-    const confirmRow = row.nextElementSibling;
-    if (confirmRow && confirmRow.classList.contains('delete-confirmation-row')) {
-      console.log('Removing confirmation row');
-      confirmRow.remove();
-    } else {
-      // Fallback: search for any confirmation row in the table
-      const allConfirmRows = document.querySelectorAll('.delete-confirmation-row');
-      allConfirmRows.forEach(row => row.remove());
-    }
-    
-    // Remove the highlight class
-    row.classList.remove('confirm-delete-row');
-    console.log('Delete confirmation cancelled');
-  }
-
-  window.deleteDriver = function(id) {
-    console.log('Starting driver deletion for ID:', id);
-    
-    if (!id) {
-      console.error('No ID provided to deleteDriver');
-      alert('Error: No driver ID provided');
-      return;
-    }
-    
-    // Show loading state
-    const row = document.getElementById(`driver-row-${id}`);
-    if (row) {
-      row.style.opacity = '0.5';
-      row.style.pointerEvents = 'none';
-      console.log('Row found and loading state applied');
-    } else {
-      console.warn('Row not found for ID:', id);
-    }
-    
-    // Get CSRF token
-    let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-                   document.querySelector('input[name="_token"]')?.value ||
-                   window.Laravel?.csrfToken;
-    
-    if (!csrfToken) {
-      console.error('CSRF token not found');
-      alert('Security token not found. Please refresh the page.');
-      if (row) {
-        row.style.opacity = '1';
-        row.style.pointerEvents = 'auto';
-      }
-      return;
-    }
-    
-    // Submit via fetch
-    fetch('{{ url("admin/drivers") }}/' + id, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRF-TOKEN': csrfToken,
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      body: new URLSearchParams({
-        '_method': 'DELETE',
-        '_token': csrfToken,
-        'id': id
-      })
-    })
-    .then(response => {
-      if (response.ok) {
-        return response.json().then(data => {
-          if (data.success || response.status === 200) {
-            // Remove the row from the table immediately
-            if (row) {
-              row.remove();
-            }
-            
-            // Remove any confirmation row if it exists
-            const confirmRow = document.querySelector('.delete-confirmation-row');
-            if (confirmRow) {
-              confirmRow.remove();
-            }
-            
-            // Show success message
-            if (typeof showNotification === 'function') {
-              showNotification('Driver deleted successfully!', 'success');
-            } else {
-              alert('Driver deleted successfully!');
-            }
-          } else {
-            throw new Error(data.message || 'Delete failed');
-          }
-        }).catch(err => {
-          // If JSON parsing fails, assume success if status is 200
-          if (response.status === 200) {
-            if (row) row.remove();
-            const confirmRow = document.querySelector('.delete-confirmation-row');
-            if (confirmRow) confirmRow.remove();
-            if (typeof showNotification === 'function') {
-              showNotification('Driver deleted successfully!', 'success');
-            }
-          } else {
-            throw err;
-          }
-        });
-      } else {
-        return response.text().then(text => {
-          throw new Error('Delete failed: ' + text);
-        });
-      }
-    })
-    .catch(error => {
-      console.error('Delete error:', error);
-      alert('Error deleting driver: ' + error.message);
-      if (row) {
-        row.style.opacity = '1';
-        row.style.pointerEvents = 'auto';
-      }
-    });
-  }
-
-  // Add global click handler to close delete confirmations when clicking outside
-  document.addEventListener('click', function(e) {
-    // If clicking outside a delete confirmation, close any open confirmations
-    if (!e.target.closest('.delete-confirmation') && !e.target.closest('[onclick*="confirmDeleteDriver"]')) {
-      const openConfirmations = document.querySelectorAll('.delete-confirmation-row');
-      if (openConfirmations.length > 0) {
-        console.log('Closing all delete confirmations due to outside click');
-        openConfirmations.forEach(confirmRow => {
-          const driverRow = confirmRow.previousElementSibling;
-          if (driverRow) {
-            driverRow.classList.remove('confirm-delete-row');
-          }
-          confirmRow.remove();
-        });
-      }
-    }
+  $('#myModal').on('show.bs.modal', function(e) {
+    var id = $(e.relatedTarget).data('id');
+    $("#del_btn").attr("data-submit", id);
   });
 
   $('#changepass').on('show.bs.modal', function(e) {

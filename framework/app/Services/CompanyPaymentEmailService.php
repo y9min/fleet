@@ -9,6 +9,7 @@ use Resend;
 use Resend\Exceptions\ResendException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class CompanyPaymentEmailService
@@ -79,15 +80,33 @@ class CompanyPaymentEmailService
                 }
             }
 
-            // Generate and store billing portal token
+            // Generate billing portal token
             $token = Str::random(32);
-            $company->update(['billing_portal_token' => $token]);
             
-            Log::info('Billing portal token generated for payment email', [
-                'company_id' => $company->id,
-                'customer_id' => $company->stripe_customer_id,
-                'token' => $token,
-            ]);
+            // Only update token if column exists (migration may not have run yet)
+            try {
+                if (Schema::hasColumn('companies', 'billing_portal_token')) {
+                    $company->update(['billing_portal_token' => $token]);
+                    Log::info('Billing portal token generated and stored for payment email', [
+                        'company_id' => $company->id,
+                        'customer_id' => $company->stripe_customer_id,
+                        'token' => $token,
+                    ]);
+                } else {
+                    Log::warning('Billing portal token column does not exist, token generated but not stored', [
+                        'company_id' => $company->id,
+                        'token' => $token,
+                        'note' => 'Run migration: 2025_11_08_000001_add_billing_portal_token_to_companies_table.php',
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // If token update fails, log but continue - token is still generated for email
+                Log::warning('Failed to store billing portal token, but continuing with email send', [
+                    'company_id' => $company->id,
+                    'token' => $token,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             // Get vehicle count for the email
             $vehicleCount = $company->vehicles()->count();

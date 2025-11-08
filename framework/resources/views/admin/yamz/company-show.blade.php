@@ -82,6 +82,129 @@
                     </div>
                 @endif
 
+                @if($confirmationNeeded)
+                <!-- Payment Confirmation Modal -->
+                <div class="modal fade" id="confirmPaymentModal" tabindex="-1" role="dialog" aria-labelledby="confirmPaymentModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="confirmPaymentModalLabel">
+                                    <i class="fas fa-credit-card"></i> Activate Subscription?
+                                </h5>
+                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" id="confirmModalCloseBtn">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>You've added a payment method. Would you like to activate your subscription now?</p>
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-info-circle"></i> If you choose "No", the subscription will be activated automatically via webhook.
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="confirmNoBtn">No</button>
+                                <button type="button" class="btn btn-primary" id="confirmYesBtn">
+                                    <i class="fas fa-check"></i> Yes, Activate Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                $(document).ready(function() {
+                    // Show modal automatically when page loads
+                    $('#confirmPaymentModal').modal('show');
+                    
+                    // Prevent closing modal by clicking outside or pressing ESC
+                    $('#confirmPaymentModal').on('hide.bs.modal', function (e) {
+                        // Only allow closing if user clicked No or Close button
+                        if (!$(e.relatedTarget).is('#confirmNoBtn, #confirmModalCloseBtn'))) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    });
+                    
+                    $('#confirmYesBtn').on('click', function() {
+                        const btn = $(this);
+                        const originalHtml = btn.html();
+                        
+                        // Disable button and show loading state
+                        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Activating...');
+                        $('#confirmNoBtn').prop('disabled', true);
+                        $('#confirmModalCloseBtn').prop('disabled', true);
+                        
+                        $.ajax({
+                            url: '{{ route("admin.yamz.companies.confirm-payment", $company->id) }}',
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    // Show success message
+                                    // Use existing toast function if available
+                                    if (typeof showToast === 'function') {
+                                        showToast(response.message || 'Payment confirmed successfully!', 'success');
+                                    } else {
+                                        alert(response.message || 'Payment confirmed successfully!');
+                                    }
+                                    
+                                    // Close modal
+                                    $('#confirmPaymentModal').modal('hide');
+                                    
+                                    // Reload page after short delay to show updated subscription status
+                                    setTimeout(function() {
+                                        window.location.reload();
+                                    }, 500);
+                                } else {
+                                    // Show error message
+                                    if (typeof showToast === 'function') {
+                                        showToast(response.message || 'Failed to confirm payment', 'error');
+                                    } else {
+                                        alert(response.message || 'Failed to confirm payment');
+                                    }
+                                    
+                                    // Re-enable buttons
+                                    btn.prop('disabled', false).html(originalHtml);
+                                    $('#confirmNoBtn').prop('disabled', false);
+                                    $('#confirmModalCloseBtn').prop('disabled', false);
+                                }
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'An error occurred while confirming payment.';
+                                
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                } else if (xhr.status === 0) {
+                                    errorMessage = 'Network error. Please check your connection.';
+                                } else if (xhr.status === 500) {
+                                    errorMessage = 'Server error. Please try again later.';
+                                }
+                                
+                                // Show error message
+                                if (typeof showToast === 'function') {
+                                    showToast(errorMessage, 'error');
+                                } else {
+                                    alert(errorMessage);
+                                }
+                                
+                                // Re-enable buttons
+                                btn.prop('disabled', false).html(originalHtml);
+                                $('#confirmNoBtn').prop('disabled', false);
+                                $('#confirmModalCloseBtn').prop('disabled', false);
+                            }
+                        });
+                    });
+                    
+                    $('#confirmNoBtn, #confirmModalCloseBtn').on('click', function() {
+                        $('#confirmPaymentModal').modal('hide');
+                    });
+                });
+                </script>
+                @endif
+
                 <h5 class="mt-4">Super Admins</h5>
                 <ul class="list-group mb-3">
                     @forelse($supers as $u)

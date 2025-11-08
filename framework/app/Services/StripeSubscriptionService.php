@@ -344,5 +344,118 @@ class StripeSubscriptionService
             return false;
         }
     }
+
+    /**
+     * Check if subscription needs payment intent confirmation
+     * 
+     * @param string $subscriptionId The Stripe subscription ID
+     * @return array|null Returns array with subscription_id, payment_intent_id, payment_method_id if confirmation needed, null otherwise
+     */
+    public function checkIfConfirmationNeeded(string $subscriptionId): ?array
+    {
+        try {
+            // Retrieve subscription with expanded payment intent, customer, and payment method data
+            $subscription = Subscription::retrieve($subscriptionId, [
+                'expand' => [
+                    'latest_invoice.payment_intent',
+                    'default_payment_method',
+                    'customer.invoice_settings.default_payment_method',
+                ],
+            ]);
+
+            // Only check incomplete subscriptions
+            if (!in_array($subscription->status, ['incomplete', 'incomplete_expired'])) {
+                Log::info('Subscription is not incomplete, confirmation not needed', [
+                    'subscription_id' => $subscriptionId,
+                    'status' => $subscription->status,
+                ]);
+                return null;
+            }
+
+            // Check if there's a payment intent that needs confirmation
+            if (!$subscription->latest_invoice || !$subscription->latest_invoice->payment_intent) {
+                Log::info('Subscription has no payment intent', [
+                    'subscription_id' => $subscriptionId,
+                ]);
+                return null;
+            }
+
+            $paymentIntent = $subscription->latest_invoice->payment_intent;
+            
+            // Only proceed if payment intent requires payment method
+            if ($paymentIntent->status !== 'requires_payment_method') {
+                Log::info('Payment intent does not require payment method', [
+                    'subscription_id' => $subscriptionId,
+                    'payment_intent_id' => $paymentIntent->id,
+                    'status' => $paymentIntent->status,
+                ]);
+                return null;
+            }
+
+            // Get payment method ID from subscription, customer invoice settings, or customer default
+            $paymentMethodId = null;
+            
+            if ($subscription->default_payment_method) {
+                $paymentMethodId = is_string($subscription->default_payment_method) 
+                    ? $subscription->default_payment_method 
+                    : $subscription->default_payment_method->id;
+            } elseif ($subscription->customer && is_object($subscription->customer) && $subscription->customer->invoice_settings->default_payment_method ?? null) {
+                $paymentMethodId = is_string($subscription->customer->invoice_settings->default_payment_method)
+                    ? $subscription->customer->invoice_settings->default_payment_method
+                    : $subscription->customer->invoice_settings->default_payment_method->id;
+            } else {
+                // Retrieve customer separately if not expanded
+                try {
+                    $customer = Customer::retrieve($subscription->customer, [
+                        'expand' => ['invoice_settings.default_payment_method'],
+                    ]);
+                    
+                    if ($customer->invoice_settings->default_payment_method ?? null) {
+                        $paymentMethodId = is_string($customer->invoice_settings->default_payment_method)
+                            ? $customer->invoice_settings->default_payment_method
+                            : $customer->invoice_settings->default_payment_method->id;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Could not retrieve customer to check payment method', [
+                        'subscription_id' => $subscriptionId,
+                        'customer_id' => $subscription->customer,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            if (!$paymentMethodId) {
+                Log::info('No payment method found for incomplete subscription', [
+                    'subscription_id' => $subscriptionId,
+                ]);
+                return null;
+            }
+
+            Log::info('Confirmation needed for subscription', [
+                'subscription_id' => $subscriptionId,
+                'payment_intent_id' => $paymentIntent->id,
+                'payment_method_id' => $paymentMethodId,
+            ]);
+
+            return [
+                'subscription_id' => $subscriptionId,
+                'payment_intent_id' => $paymentIntent->id,
+                'payment_method_id' => $paymentMethodId,
+            ];
+        } catch (ApiErrorException $e) {
+            Log::error('Error checking if confirmation needed', [
+                'subscription_id' => $subscriptionId,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Unexpected error checking if confirmation needed', [
+                'subscription_id' => $subscriptionId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return null;
+        }
+    }
 }
 

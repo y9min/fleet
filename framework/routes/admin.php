@@ -458,6 +458,7 @@ Route::namespace ('Admin')->group(function () {
         Route::delete('yamz/companies/{id}', 'CompaniesController@destroy')->name('admin.yamz.companies.delete');
         Route::post('yamz/companies/{id}/send-payment-email', 'CompaniesController@sendPaymentSetupEmail')->name('admin.yamz.companies.send-payment-email');
         Route::post('yamz/companies/{id}/sync-stripe', 'CompaniesController@syncStripeSubscription')->name('admin.yamz.companies.sync-stripe');
+        Route::post('yamz/companies/{id}/confirm-payment', 'CompaniesController@confirmPayment')->name('admin.yamz.companies.confirm-payment');
     });
 
 });

@@ -9,6 +9,7 @@ use Resend;
 use Resend\Exceptions\ResendException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 
 class CompanyPaymentEmailService
 {
@@ -78,10 +79,14 @@ class CompanyPaymentEmailService
                 }
             }
 
-            // Billing Portal session will be created on-demand when user clicks the email link
-            Log::info('Customer verified/created for payment email, portal link will be generated on-demand', [
+            // Generate and store billing portal token
+            $token = Str::random(32);
+            $company->update(['billing_portal_token' => $token]);
+            
+            Log::info('Billing portal token generated for payment email', [
                 'company_id' => $company->id,
                 'customer_id' => $company->stripe_customer_id,
+                'token' => $token,
             ]);
 
             // Get vehicle count for the email
@@ -99,6 +104,7 @@ class CompanyPaymentEmailService
                 'superAdmin' => $superAdmin,
                 'vehicleCount' => $vehicleCount,
                 'monthlyAmount' => $monthlyAmount,
+                'token' => $token,
             ])->render();
 
             // Render plaintext alternative for deliverability
@@ -107,6 +113,7 @@ class CompanyPaymentEmailService
                 'superAdmin' => $superAdmin,
                 'vehicleCount' => $vehicleCount,
                 'monthlyAmount' => $monthlyAmount,
+                'token' => $token,
             ])->render();
 
             // Send email via Resend

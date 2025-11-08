@@ -20,7 +20,8 @@ class Company extends BaseUuidModel
         'stripe_customer_id',
         'stripe_subscription_id',
         'stripe_subscription_item_id',
-        'subscription_status'
+        'subscription_status',
+        'billing_portal_token'
     ];
     
     protected $dates = ['deleted_at'];

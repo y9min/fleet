@@ -282,7 +282,11 @@ class CompaniesController extends Controller {
                 }
                 $company->refresh();
             } else {
-                $svc->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                $result = $svc->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                if (!$result) {
+                    return redirect()->route('admin.yamz.companies.show', $companyId)
+                        ->with('error', 'Failed to update Stripe subscription. Subscription may have been deleted. Try syncing again.');
+                }
             }
 
             return redirect()->route('admin.yamz.companies.show', $companyId)

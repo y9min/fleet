@@ -188,10 +188,31 @@ class StripeSubscriptionService
     public function createSubscription(string $customerId, int $vehicleCount, Company $company): ?array
     {
         try {
-            // If subscription already exists, return it
+            // If subscription already exists in database, verify it exists in Stripe first
             if ($company->stripe_subscription_id) {
-                // Update quantity if needed
-                return $this->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                // Verify subscription actually exists in Stripe
+                try {
+                    $existingSubscription = Subscription::retrieve($company->stripe_subscription_id);
+                    // Subscription exists, update quantity if needed
+                    Log::info('Subscription exists in Stripe, updating quantity', [
+                        'subscription_id' => $company->stripe_subscription_id,
+                        'current_status' => $existingSubscription->status,
+                    ]);
+                    return $this->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                } catch (ApiErrorException $e) {
+                    // Subscription was deleted in Stripe, clear it and create new one
+                    Log::warning('Stripe subscription was deleted, creating new one', [
+                        'company_id' => $company->id,
+                        'old_subscription_id' => $company->stripe_subscription_id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $company->update([
+                        'stripe_subscription_id' => null,
+                        'stripe_subscription_item_id' => null,
+                        'subscription_status' => null,
+                    ]);
+                    // Continue to create new subscription below
+                }
             }
 
             $priceId = $this->createPrice();
@@ -203,6 +224,12 @@ class StripeSubscriptionService
             // Calculate billing cycle anchor (last day of current month)
             $now = Carbon::now();
             $anchor = $now->copy()->endOfMonth()->timestamp;
+
+            Log::info('Creating new Stripe subscription', [
+                'company_id' => $company->id,
+                'customer_id' => $customerId,
+                'vehicle_count' => $vehicleCount,
+            ]);
 
             $subscription = Subscription::create([
                 'customer' => $customerId,
@@ -249,6 +276,7 @@ class StripeSubscriptionService
                 'company_id' => $company->id,
                 'customer_id' => $customerId,
                 'error' => $e->getMessage(),
+                'stripe_code' => $e->getStripeCode(),
             ]);
             return null;
         }

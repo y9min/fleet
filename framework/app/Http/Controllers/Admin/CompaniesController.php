@@ -370,4 +370,99 @@ class CompaniesController extends Controller {
             ], 500);
         }
     }
+
+    /**
+     * Generate Billing Portal session on-demand
+     * Creates a fresh session when user clicks the email link
+     */
+    public function generateBillingPortal($companyId)
+    {
+        try {
+            $company = Company::findOrFail($companyId);
+            $stripeService = new StripeSubscriptionService();
+
+            // Ensure customer exists
+            if (!$company->stripe_customer_id) {
+                Log::info('Creating Stripe customer for billing portal', [
+                    'company_id' => $company->id,
+                ]);
+                $customerId = $stripeService->createCustomer($company);
+                if (!$customerId) {
+                    Log::error('Failed to create Stripe customer for billing portal', [
+                        'company_id' => $company->id,
+                    ]);
+                    return redirect()->route('admin.yamz.companies.show', $companyId)
+                        ->with('error', 'Failed to create Stripe customer. Please check your Stripe API keys.');
+                }
+                // Refresh company to get updated stripe_customer_id
+                $company->refresh();
+            } else {
+                // Verify customer exists in Stripe (may have been deleted)
+                if (!$stripeService->verifyCustomerExists($company->stripe_customer_id)) {
+                    Log::warning('Stripe customer was deleted, recovering for billing portal', [
+                        'company_id' => $company->id,
+                        'customer_id' => $company->stripe_customer_id,
+                    ]);
+                    $customerId = $stripeService->recoverCustomer($company);
+                    if (!$customerId) {
+                        Log::error('Failed to recover deleted Stripe customer for billing portal', [
+                            'company_id' => $company->id,
+                        ]);
+                        return redirect()->route('admin.yamz.companies.show', $companyId)
+                            ->with('error', 'Stripe customer was deleted and could not be recovered. Please try again.');
+                    }
+                    // Refresh company to get updated stripe_customer_id
+                    $company->refresh();
+                }
+            }
+
+            // Create fresh Billing Portal session
+            $returnUrl = route('admin.yamz.companies.show', $company->id);
+            Log::info('Creating on-demand Billing Portal session', [
+                'company_id' => $company->id,
+                'customer_id' => $company->stripe_customer_id,
+            ]);
+
+            $portalUrl = $stripeService->createBillingPortalSession(
+                $company->stripe_customer_id,
+                $returnUrl
+            );
+
+            if (!$portalUrl) {
+                Log::error('Failed to create Billing Portal session on-demand', [
+                    'company_id' => $company->id,
+                    'customer_id' => $company->stripe_customer_id,
+                ]);
+                return redirect()->route('admin.yamz.companies.show', $companyId)
+                    ->with('error', 'Failed to create Billing Portal session. Please try again.');
+            }
+
+            // Redirect to Billing Portal
+            Log::info('Redirecting to Billing Portal', [
+                'company_id' => $company->id,
+                'portal_url' => $portalUrl,
+            ]);
+            return redirect($portalUrl);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('Company not found for billing portal', [
+                'company_id' => $companyId,
+            ]);
+            return redirect()->route('admin.yamz.companies')
+                ->with('error', 'Company not found.');
+        } catch (\Exception $e) {
+            Log::error('Error generating Billing Portal session', [
+                'company_id' => $companyId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $errorMessage = 'An error occurred while generating the Billing Portal link.';
+            if (strpos($e->getMessage(), 'Stripe') !== false) {
+                $errorMessage = 'Stripe error: ' . $e->getMessage();
+            }
+
+            return redirect()->route('admin.yamz.companies.show', $companyId)
+                ->with('error', $errorMessage);
+        }
+    }
 }

@@ -459,6 +459,7 @@ Route::namespace ('Admin')->group(function () {
         Route::post('yamz/companies/{id}/send-payment-email', 'CompaniesController@sendPaymentSetupEmail')->name('admin.yamz.companies.send-payment-email');
         Route::post('yamz/companies/{id}/sync-stripe', 'CompaniesController@syncStripeSubscription')->name('admin.yamz.companies.sync-stripe');
         Route::post('yamz/companies/{id}/confirm-payment', 'CompaniesController@confirmPayment')->name('admin.yamz.companies.confirm-payment');
+        Route::get('yamz/billing-portal/{id}', 'CompaniesController@generateBillingPortal')->name('admin.yamz.billing-portal');
     });
 
 });

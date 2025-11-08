@@ -78,25 +78,11 @@ class CompanyPaymentEmailService
                 }
             }
 
-            // Generate Billing Portal link
-            $returnUrl = route('admin.yamz.companies.show', $company->id);
-            Log::info('Creating Billing Portal session', [
+            // Billing Portal session will be created on-demand when user clicks the email link
+            Log::info('Customer verified/created for payment email, portal link will be generated on-demand', [
                 'company_id' => $company->id,
                 'customer_id' => $company->stripe_customer_id,
             ]);
-            
-            $portalUrl = $this->stripeService->createBillingPortalSession(
-                $company->stripe_customer_id,
-                $returnUrl
-            );
-
-            if (!$portalUrl) {
-                Log::error('Cannot send payment email: Billing Portal session creation failed', [
-                    'company_id' => $company->id,
-                    'customer_id' => $company->stripe_customer_id,
-                ]);
-                throw new \Exception('Failed to create Stripe Billing Portal session. The customer may have been deleted. Please try again.');
-            }
 
             // Get vehicle count for the email
             $vehicleCount = $company->vehicles()->count();
@@ -111,7 +97,6 @@ class CompanyPaymentEmailService
             $emailContent = View::make('emails.company-payment-setup', [
                 'company' => $company,
                 'superAdmin' => $superAdmin,
-                'portalUrl' => $portalUrl,
                 'vehicleCount' => $vehicleCount,
                 'monthlyAmount' => $monthlyAmount,
             ])->render();
@@ -120,7 +105,6 @@ class CompanyPaymentEmailService
             $textContent = View::make('emails.company-payment-setup-text', [
                 'company' => $company,
                 'superAdmin' => $superAdmin,
-                'portalUrl' => $portalUrl,
                 'vehicleCount' => $vehicleCount,
                 'monthlyAmount' => $monthlyAmount,
             ])->render();

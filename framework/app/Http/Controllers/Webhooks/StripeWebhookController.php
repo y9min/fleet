@@ -4,14 +4,24 @@ namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Model\Company;
+use App\Services\StripeSubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\Webhook;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Stripe;
+use Stripe\Customer;
+use Stripe\Subscription;
 
 class StripeWebhookController extends Controller
 {
+    protected $stripeService;
+
+    public function __construct(StripeSubscriptionService $stripeService)
+    {
+        $this->stripeService = $stripeService;
+    }
+
     /**
      * Handle Stripe webhook events
      */
@@ -178,11 +188,79 @@ class StripeWebhookController extends Controller
                     'status' => $subscription->status,
                     'quantity' => $subscription->items->data[0]->quantity ?? 0,
                 ]);
+
+                // Check if subscription is incomplete and has a payment method
+                // If so, attempt to confirm the payment intent
+                if (in_array($subscription->status, ['incomplete', 'incomplete_expired'])) {
+                    $this->attemptPaymentIntentConfirmation($subscriptionId, $customerId);
+                }
             }
         } catch (\Exception $e) {
             Log::error('Error handling customer.subscription.updated webhook', [
                 'subscription_id' => $subscription->id ?? null,
                 'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Attempt to confirm payment intent for incomplete subscription
+     */
+    private function attemptPaymentIntentConfirmation(string $subscriptionId, string $customerId): void
+    {
+        try {
+            // Retrieve customer to get default payment method
+            $customer = Customer::retrieve($customerId);
+            
+            // Get default payment method from subscription, customer, or invoice settings
+            $paymentMethodId = null;
+            
+            // First, try to get the subscription with expanded data to check for default_payment_method
+            $subscription = Subscription::retrieve($subscriptionId, [
+                'expand' => ['latest_invoice.payment_intent'],
+            ]);
+            
+            if ($subscription->default_payment_method) {
+                $paymentMethodId = is_string($subscription->default_payment_method) 
+                    ? $subscription->default_payment_method 
+                    : $subscription->default_payment_method->id;
+            } elseif ($customer->invoice_settings->default_payment_method) {
+                $paymentMethodId = is_string($customer->invoice_settings->default_payment_method)
+                    ? $customer->invoice_settings->default_payment_method
+                    : $customer->invoice_settings->default_payment_method->id;
+            } elseif ($customer->default_source) {
+                // Fallback to default source if no payment method
+                Log::info('Customer has default source but no payment method, skipping confirmation', [
+                    'subscription_id' => $subscriptionId,
+                    'customer_id' => $customerId,
+                ]);
+                return;
+            }
+
+            if (!$paymentMethodId) {
+                Log::info('No payment method found for incomplete subscription', [
+                    'subscription_id' => $subscriptionId,
+                    'customer_id' => $customerId,
+                ]);
+                return;
+            }
+
+            // Attempt to confirm the payment intent
+            $confirmed = $this->stripeService->confirmSubscriptionPaymentIntent($subscriptionId, $paymentMethodId);
+            
+            if ($confirmed) {
+                Log::info('Payment intent confirmation attempted for incomplete subscription', [
+                    'subscription_id' => $subscriptionId,
+                    'customer_id' => $customerId,
+                    'payment_method_id' => $paymentMethodId,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error attempting payment intent confirmation', [
+                'subscription_id' => $subscriptionId,
+                'customer_id' => $customerId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }

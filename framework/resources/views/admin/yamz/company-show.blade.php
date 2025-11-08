@@ -74,6 +74,7 @@
                             </form>
                             <form action="{{ route('admin.yamz.companies.sync-stripe', $company->id) }}" method="POST" style="display: inline; margin-left:8px;">
                                 @csrf
+                                @method('POST')
                                 <button type="submit" class="btn btn-outline-secondary">
                                     <i class="fas fa-sync"></i> Sync Stripe Subscription
                                 </button>

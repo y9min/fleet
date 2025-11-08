@@ -420,9 +420,16 @@
                 type: 'GET',
                 success: function(response) {
                     if (response.success) {
+                        // Store customFieldsMap globally for use in display function
+                        if (response.customFieldsMap) {
+                            window.customFieldsMap = response.customFieldsMap;
+                        } else {
+                            window.customFieldsMap = {};
+                        }
                         displayRegularDriverDetails(response.driver);
                     } else {
                         // Fallback to basic info if API fails
+                        window.customFieldsMap = {};
                         var driverName = $('#driver_id option:selected').text().split(' - ')[0];
                         var driverInfo = {
                             name: driverName,
@@ -434,6 +441,7 @@
                 error: function(xhr) {
                     console.log('AJAX Error:', xhr);
                     // Fallback to basic info if API fails
+                    window.customFieldsMap = {};
                     var driverName = $('#driver_id option:selected').text().split(' - ')[0];
                     var driverInfo = {
                         name: driverName,
@@ -599,6 +607,13 @@
             html += '<div class="inline-field"><strong>Email:</strong><span class="text-muted">' + (driver.email || 'N/A') + '</span></div>';
             html += '<div class="inline-field"><strong>Phone:</strong><span class="text-muted">' + (driver.phone || 'N/A') + '</span></div>';
             html += '<div class="inline-field"><strong>License Number:</strong><span class="text-muted">' + (driver.license_number || 'N/A') + '</span></div>';
+            
+            // License Expiry - prefer license_expiry_date over license_expiry
+            var licenseExpiry = driver.license_expiry_date || driver.license_expiry;
+            if (licenseExpiry) {
+                html += '<div class="inline-field"><strong>License Expiry:</strong><span class="text-muted">' + licenseExpiry + '</span></div>';
+            }
+            
             html += '<div class="inline-field"><strong>Status:</strong><span class="badge badge-' + (driver.is_active == 1 ? 'success' : 'danger') + '">' + (driver.is_active == 1 ? 'Active' : 'Inactive') + '</span></div>';
             html += '</div>';
             
@@ -606,6 +621,14 @@
             if (driver.assigned_vehicle) {
                 html += '<div class="mb-3">';
                 html += '<div class="inline-field"><strong>Assigned Vehicle:</strong><span class="text-muted">' + driver.assigned_vehicle.license_plate + ' (' + driver.assigned_vehicle.make_name + ' ' + driver.assigned_vehicle.model_name + ')</span></div>';
+                html += '</div>';
+            }
+            
+            // Vehicle Selection - Show vehicle details if available
+            if (driver.vehicle_selection && driver.vehicle_details) {
+                html += '<div class="mb-3">';
+                var vehicleText = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
+                html += '<div class="vehicle-selection-highlight"><strong>Vehicle Selection:</strong><span class="text-muted">' + vehicleText + '</span></div>';
                 html += '</div>';
             }
             
@@ -634,44 +657,70 @@
             var hasAdditionalInfo = false;
             var processedFields = new Set(); // Track processed fields to avoid duplicates
             
+            // Comprehensive skip list for system fields, arrays, and redundant fields
+            var skipFields = new Set([
+                'id', 'user_id', 'created_at', 'updated_at', 'deleted_at',
+                'name', 'email', 'phone', 'license_number', 'is_active',
+                'assigned_vehicle', 'license_url', 'insurance_url',
+                'password', 'remember_token', 'api_token', 'user_type',
+                'group_id', 'company_id', 'email_verified_at', 'terms', 'token',
+                'custom_data', 'license_upload_path', 'insurance_upload_path',
+                'license_image', 'documents', 'metas', 'vehicles', 'vehicle_details',
+                'license_expiry', 'license_expiry_date', // Already shown above
+                'first_name', 'last_name', // Redundant when name exists
+                'is_verified', 'identity_docs_deleted', 'identity_docs_deleted_at', // Internal/system fields
+                'vehicle_id', 'vehicle_selection' // Will be handled separately if vehicle_details exists
+            ]);
+            
             // First, process custom_data if it exists
             if (driver.custom_data) {
                 try {
                     var customData = typeof driver.custom_data === 'string' ? JSON.parse(driver.custom_data) : driver.custom_data;
                     for (var customKey in customData) {
-                        if (customData.hasOwnProperty(customKey) && customKey !== 'terms' && customKey !== 'token') {
+                        if (customData.hasOwnProperty(customKey) && customKey !== 'terms' && customKey !== 'token' && !skipFields.has(customKey)) {
                             var customValue = customData[customKey];
                             if (customValue && customValue !== null && customValue !== 'null' && customValue !== 'undefined' && customValue !== '') {
                                 var customFieldName = customKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                                 var customDisplayValue = '';
                                 
-                                if (customKey === 'scheme_selection') {
-                                    customDisplayValue = customValue;
-                                } else if (customKey === 'vehicle_selection') {
-                                    // Try to get vehicle details from the driver object or make an AJAX call
+                                // Skip vehicle_selection as it's already shown above if vehicle_details exists
+                                if (customKey === 'vehicle_selection') {
                                     if (driver.vehicle_details) {
-                                        customDisplayValue = driver.vehicle_details.make_name + ' ' + driver.vehicle_details.model_name + ' (' + driver.vehicle_details.license_plate + ')';
-                                    } else {
-                                        customDisplayValue = 'Vehicle ID: ' + customValue;
+                                        processedFields.add(customKey);
+                                        continue; // Skip since we already displayed it above
                                     }
-                                    // Add highlighting class for vehicle selection
+                                    // If no vehicle_details, show it below with vehicle ID
+                                    customDisplayValue = 'Vehicle ID: ' + customValue;
                                     html += '<div class="vehicle-selection-highlight"><strong>' + customFieldName + ':</strong><span class="text-muted">' + customDisplayValue + '</span></div>';
                                     hasAdditionalInfo = true;
                                     processedFields.add(customKey);
                                     continue;
+                                }
+                                
+                                if (customKey === 'scheme_selection') {
+                                    customDisplayValue = customValue;
                                 } else if (customKey === 'insurance_selection') {
                                     customDisplayValue = customValue === 'with_insurance' ? 'With Insurance' : 'Without Insurance';
                                 } else if (customKey.startsWith('custom_')) {
-                                    // Handle custom file fields
+                                    // Handle custom file fields - resolve field name from customFieldsMap
+                                    var fieldId = customKey.replace('custom_', '');
+                                    var fieldName = customFieldName;
+                                    
+                                    // Try to get field name from customFieldsMap (handles both UUID and numeric IDs)
+                                    if (window.customFieldsMap && window.customFieldsMap[customKey]) {
+                                        fieldName = window.customFieldsMap[customKey].field_name || fieldName;
+                                    }
+                                    
                                     if (typeof customValue === 'string' && customValue.length > 0 && customValue.includes('/')) {
-                                        var customFileName = customValue.split('/').pop();
-                                        var customFileUrl = '{{ asset("storage/") }}/' + customValue;
+                                        // Use driver[key + '_url'] if available, otherwise construct URL
+                                        var customFileUrl = driver[customKey + '_url'] || ('{{ asset("storage/") }}/' + customValue);
                                         customDisplayValue = '<a href="' + customFileUrl + '" class="btn btn-sm btn-outline-primary" target="_blank" style="border: 1px solid #007bff; color: #007bff; padding: 4px 8px; font-size: 12px; margin-left: 5px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">';
                                         customDisplayValue += '<i class="fas fa-eye"></i> View Document';
                                         customDisplayValue += '</a>';
                                     } else {
                                         customDisplayValue = customValue;
                                     }
+                                    customFieldName = fieldName; // Use resolved field name
                                 } else {
                                     customDisplayValue = customValue;
                                 }
@@ -689,47 +738,46 @@
             
             // Then process other fields, but skip those already processed from custom_data
             for (var key in driver) {
-                if (driver.hasOwnProperty(key) && !processedFields.has(key)) {
+                if (driver.hasOwnProperty(key) && !processedFields.has(key) && !skipFields.has(key)) {
                     var value = driver[key];
                     
-                    // Skip system fields and already displayed fields
-                    if (key !== 'id' && key !== 'user_id' && key !== 'created_at' && key !== 'updated_at' && key !== 'deleted_at' && 
-                        key !== 'name' && key !== 'email' && key !== 'phone' && key !== 'license_number' && key !== 'is_active' && 
-                        key !== 'assigned_vehicle' && key !== 'license_url' && key !== 'insurance_url' && 
-                        key !== 'password' && key !== 'remember_token' && key !== 'api_token' && key !== 'user_type' && 
-                        key !== 'group_id' && key !== 'company_id' && key !== 'email_verified_at' && key !== 'terms' && key !== 'token' &&
-                        key !== 'custom_data' && key !== 'license_upload_path' && key !== 'insurance_upload_path') {
+                    // Skip arrays and objects explicitly
+                    if (Array.isArray(value) || (typeof value === 'object' && value !== null && !(value instanceof Date))) {
+                        continue;
+                    }
+                    
+                    if (value !== null && value !== undefined && value !== '' && value !== 'null' && value !== 'undefined') {
+                        var displayValue = '';
+                        var fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                         
-                        if (value !== null && value !== undefined && value !== '' && value !== 'null' && value !== 'undefined') {
-                            var displayValue = '';
-                            var fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                            
-                            // Special handling for specific fields
-                            if (key === 'license_image' || key === 'documents') {
-                                // For file fields, show as clickable buttons
-                                if (typeof value === 'string' && value.length > 0) {
-                                    var fileName = value.split('/').pop() || value;
-                                    var fileUrl = value.startsWith('http') ? value : '{{ asset("storage/") }}/' + value;
-                                    displayValue = '<a href="' + fileUrl + '" class="btn btn-sm btn-outline-primary" target="_blank" style="border: 1px solid #007bff; color: #007bff; padding: 4px 8px; font-size: 12px; margin-left: 5px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">';
-                                    displayValue += '<i class="fas fa-eye"></i> View Document';
-                                    displayValue += '</a>';
-                                } else {
-                                    continue; // Skip if no value
-                                }
+                        // Handle custom fields with UUIDs/numeric IDs - resolve field name
+                        if (key.startsWith('custom_')) {
+                            // Try to get field name from customFieldsMap
+                            if (window.customFieldsMap && window.customFieldsMap[key]) {
+                                fieldName = window.customFieldsMap[key].field_name || fieldName;
                             } else {
-                                if (Array.isArray(value)) {
-                                    displayValue = value.length === 0 ? 'No data provided' : value.join(', ');
-                                } else if (typeof value === 'object' && value !== null) {
-                                    // Skip complex objects
-                                    continue;
-                                } else {
-                                    displayValue = value.toString();
+                                // If it's a UUID and not in map, use generic name
+                                var fieldId = key.replace('custom_', '');
+                                if (fieldId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+                                    fieldName = 'Custom Field';
                                 }
                             }
                             
-                            html += '<div class="inline-field"><strong>' + fieldName + ':</strong><span class="text-muted">' + displayValue + '</span></div>';
-                            hasAdditionalInfo = true;
+                            // Check if it's a file field
+                            if (typeof value === 'string' && value.length > 0 && value.includes('/')) {
+                                var fileUrl = driver[key + '_url'] || ('{{ asset("storage/") }}/' + value);
+                                displayValue = '<a href="' + fileUrl + '" class="btn btn-sm btn-outline-primary" target="_blank" style="border: 1px solid #007bff; color: #007bff; padding: 4px 8px; font-size: 12px; margin-left: 5px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">';
+                                displayValue += '<i class="fas fa-eye"></i> View Document';
+                                displayValue += '</a>';
+                            } else {
+                                displayValue = value.toString();
+                            }
+                        } else {
+                            displayValue = value.toString();
                         }
+                        
+                        html += '<div class="inline-field"><strong>' + fieldName + ':</strong><span class="text-muted">' + displayValue + '</span></div>';
+                        hasAdditionalInfo = true;
                     }
                 }
             }

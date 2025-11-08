@@ -264,14 +264,23 @@ class CompaniesController extends Controller {
             $svc = new StripeSubscriptionService();
 
             if (!$company->stripe_customer_id) {
-                $svc->createCustomer($company);
+                $customerId = $svc->createCustomer($company);
+                if (!$customerId) {
+                    return redirect()->route('admin.yamz.companies.show', $companyId)
+                        ->with('error', 'Failed to create Stripe customer.');
+                }
                 $company->refresh();
             }
 
             $vehicleCount = VehicleModel::where('company_id', $company->id)->count();
 
             if (!$company->stripe_subscription_id) {
-                $svc->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+                $result = $svc->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+                if (!$result) {
+                    return redirect()->route('admin.yamz.companies.show', $companyId)
+                        ->with('error', 'Failed to create Stripe subscription. Check logs for details.');
+                }
+                $company->refresh();
             } else {
                 $svc->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
             }
@@ -279,9 +288,10 @@ class CompaniesController extends Controller {
             return redirect()->route('admin.yamz.companies.show', $companyId)
                 ->with('success', 'Stripe subscription synced. Vehicles: ' . $vehicleCount);
         } catch (\Throwable $e) {
-            Log::warning('Failed to sync Stripe subscription from admin action', [
+            Log::error('Failed to sync Stripe subscription from admin action', [
                 'company_id' => $companyId,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->route('admin.yamz.companies.show', $companyId)

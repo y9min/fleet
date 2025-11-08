@@ -2062,6 +2062,9 @@ class DriversController extends Controller {
                         
                         if (!$driver) {
                                 \Log::error('Driver not found with ID: ' . $request->get('id'));
+                                if ($request->ajax()) {
+                                        return response()->json(['error' => 'Driver not found.'], 404);
+                                }
                                 return redirect()->route('drivers.index')->with('error', 'Driver not found.');
                         }
 
@@ -2109,10 +2112,21 @@ class DriversController extends Controller {
                         }
                         
                         \Log::info('Driver deleted successfully:', ['id' => $request->get('id')]);
+                        
+                        // Return appropriate response based on request type
+                        if ($request->ajax()) {
+                                return response()->json(['success' => true, 'message' => 'Driver deleted successfully.']);
+                        }
+                        
                         return redirect()->route('drivers.index')->with('success', 'Driver deleted successfully.');
                         
                 } catch (\Exception $e) {
                         \Log::error('Error deleting driver: ' . $e->getMessage());
+                        
+                        if ($request->ajax()) {
+                                return response()->json(['error' => 'An error occurred while deleting the driver: ' . $e->getMessage()], 500);
+                        }
+                        
                         return redirect()->route('drivers.index')->with('error', 'An error occurred while deleting the driver.');
                 }
         }

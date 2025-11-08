@@ -193,12 +193,30 @@ class StripeSubscriptionService
                 // Verify subscription actually exists in Stripe
                 try {
                     $existingSubscription = Subscription::retrieve($company->stripe_subscription_id);
-                    // Subscription exists, update quantity if needed
-                    Log::info('Subscription exists in Stripe, updating quantity', [
-                        'subscription_id' => $company->stripe_subscription_id,
-                        'current_status' => $existingSubscription->status,
-                    ]);
-                    return $this->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                    
+                    // Check if subscription is in a valid state (can be updated)
+                    $invalidStatuses = ['incomplete_expired', 'canceled', 'unpaid'];
+                    if (in_array($existingSubscription->status, $invalidStatuses)) {
+                        // Subscription is expired/canceled, clear it and create new one
+                        Log::warning('Stripe subscription is in invalid state, creating new one', [
+                            'company_id' => $company->id,
+                            'old_subscription_id' => $company->stripe_subscription_id,
+                            'status' => $existingSubscription->status,
+                        ]);
+                        $company->update([
+                            'stripe_subscription_id' => null,
+                            'stripe_subscription_item_id' => null,
+                            'subscription_status' => null,
+                        ]);
+                        // Continue to create new subscription below
+                    } else {
+                        // Subscription exists and is valid, update quantity if needed
+                        Log::info('Subscription exists in Stripe, updating quantity', [
+                            'subscription_id' => $company->stripe_subscription_id,
+                            'current_status' => $existingSubscription->status,
+                        ]);
+                        return $this->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
+                    }
                 } catch (ApiErrorException $e) {
                     // Subscription was deleted in Stripe, clear it and create new one
                     Log::warning('Stripe subscription was deleted, creating new one', [

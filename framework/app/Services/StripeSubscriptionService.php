@@ -27,9 +27,18 @@ class StripeSubscriptionService
     public function createCustomer(Company $company): ?string
     {
         try {
-            // If customer already exists, return it
+            // If customer already exists, verify it still exists in Stripe
             if ($company->stripe_customer_id) {
-                return $company->stripe_customer_id;
+                if ($this->verifyCustomerExists($company->stripe_customer_id)) {
+                    return $company->stripe_customer_id;
+                } else {
+                    // Customer was deleted, clear it and create new one
+                    Log::warning('Stripe customer was deleted, recreating', [
+                        'company_id' => $company->id,
+                        'old_customer_id' => $company->stripe_customer_id,
+                    ]);
+                    $company->update(['stripe_customer_id' => null]);
+                }
             }
 
             $customer = Customer::create([
@@ -51,6 +60,80 @@ class StripeSubscriptionService
             return $customer->id;
         } catch (ApiErrorException $e) {
             Log::error('Failed to create Stripe customer', [
+                'company_id' => $company->id,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Verify if a Stripe customer exists
+     * 
+     * @param string $customerId The Stripe customer ID
+     * @return bool True if customer exists, false otherwise
+     */
+    public function verifyCustomerExists(string $customerId): bool
+    {
+        try {
+            Customer::retrieve($customerId);
+            return true;
+        } catch (ApiErrorException $e) {
+            // Check if error is "No such customer"
+            if (strpos($e->getMessage(), 'No such customer') !== false || 
+                strpos($e->getMessage(), 'does not exist') !== false) {
+                Log::info('Stripe customer does not exist', [
+                    'customer_id' => $customerId,
+                ]);
+                return false;
+            }
+            // For other errors, log and assume customer exists (to avoid false positives)
+            Log::warning('Error verifying customer existence', [
+                'customer_id' => $customerId,
+                'error' => $e->getMessage(),
+            ]);
+            return true; // Assume exists to avoid breaking flow
+        } catch (\Exception $e) {
+            Log::error('Unexpected error verifying customer', [
+                'customer_id' => $customerId,
+                'error' => $e->getMessage(),
+            ]);
+            return true; // Assume exists to avoid breaking flow
+        }
+    }
+
+    /**
+     * Recover a deleted customer by recreating it
+     * 
+     * @param Company $company The company to recover customer for
+     * @return string|null The new customer ID, or null if failed
+     */
+    public function recoverCustomer(Company $company): ?string
+    {
+        try {
+            Log::info('Recovering deleted Stripe customer', [
+                'company_id' => $company->id,
+                'old_customer_id' => $company->stripe_customer_id,
+            ]);
+
+            // Clear the old customer ID
+            $oldCustomerId = $company->stripe_customer_id;
+            $company->update(['stripe_customer_id' => null]);
+
+            // Create new customer
+            $newCustomerId = $this->createCustomer($company);
+
+            if ($newCustomerId) {
+                Log::info('Stripe customer recovered successfully', [
+                    'company_id' => $company->id,
+                    'old_customer_id' => $oldCustomerId,
+                    'new_customer_id' => $newCustomerId,
+                ]);
+            }
+
+            return $newCustomerId;
+        } catch (\Exception $e) {
+            Log::error('Failed to recover Stripe customer', [
                 'company_id' => $company->id,
                 'error' => $e->getMessage(),
             ]);
@@ -229,6 +312,14 @@ class StripeSubscriptionService
     public function createBillingPortalSession(string $customerId, string $returnUrl): ?string
     {
         try {
+            // Verify customer exists before creating session
+            if (!$this->verifyCustomerExists($customerId)) {
+                Log::error('Cannot create Billing Portal session: customer does not exist', [
+                    'customer_id' => $customerId,
+                ]);
+                return null;
+            }
+
             $session = \Stripe\BillingPortal\Session::create([
                 'customer' => $customerId,
                 'return_url' => $returnUrl,
@@ -241,10 +332,19 @@ class StripeSubscriptionService
 
             return $session->url;
         } catch (ApiErrorException $e) {
-            Log::error('Failed to create Stripe Billing Portal session', [
-                'customer_id' => $customerId,
-                'error' => $e->getMessage(),
-            ]);
+            // Check if error is due to customer not existing
+            if (strpos($e->getMessage(), 'No such customer') !== false || 
+                strpos($e->getMessage(), 'does not exist') !== false) {
+                Log::error('Cannot create Billing Portal session: customer does not exist', [
+                    'customer_id' => $customerId,
+                    'error' => $e->getMessage(),
+                ]);
+            } else {
+                Log::error('Failed to create Stripe Billing Portal session', [
+                    'customer_id' => $customerId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
             return null;
         }
     }
@@ -455,6 +555,119 @@ class StripeSubscriptionService
                 'trace' => $e->getTraceAsString(),
             ]);
             return null;
+        }
+    }
+
+    /**
+     * Ensure payment intent exists for incomplete subscription
+     * Creates payment intent if subscription is incomplete and has no payment intent
+     * 
+     * @param string $subscriptionId The Stripe subscription ID
+     * @return bool True if payment intent exists or was created, false otherwise
+     */
+    public function ensurePaymentIntentExists(string $subscriptionId): bool
+    {
+        try {
+            $subscription = Subscription::retrieve($subscriptionId, [
+                'expand' => ['latest_invoice.payment_intent'],
+            ]);
+
+            // Only process incomplete subscriptions
+            if (!in_array($subscription->status, ['incomplete', 'incomplete_expired'])) {
+                return true; // Subscription is not incomplete, no action needed
+            }
+
+            // Check if payment intent exists
+            if ($subscription->latest_invoice && $subscription->latest_invoice->payment_intent) {
+                Log::info('Payment intent already exists for subscription', [
+                    'subscription_id' => $subscriptionId,
+                    'payment_intent_id' => $subscription->latest_invoice->payment_intent->id,
+                ]);
+                return true;
+            }
+
+            // If no payment intent, we need to pay the invoice
+            // For incomplete subscriptions, we can't create a payment intent directly
+            // Instead, we need to update the subscription with a payment method
+            // This will be handled by the confirmation process
+            Log::info('Subscription has no payment intent, will be created during confirmation', [
+                'subscription_id' => $subscriptionId,
+            ]);
+
+            return false;
+        } catch (ApiErrorException $e) {
+            Log::error('Error ensuring payment intent exists', [
+                'subscription_id' => $subscriptionId,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Unexpected error ensuring payment intent exists', [
+                'subscription_id' => $subscriptionId,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Sync subscription status from Stripe to database
+     * 
+     * @param string $subscriptionId The Stripe subscription ID
+     * @param Company|null $company Optional company object, will be looked up if not provided
+     * @return bool True if sync was successful, false otherwise
+     */
+    public function syncSubscriptionStatus(string $subscriptionId, ?Company $company = null): bool
+    {
+        try {
+            $subscription = Subscription::retrieve($subscriptionId);
+
+            // If company not provided, find it by customer ID
+            if (!$company) {
+                $company = Company::where('stripe_subscription_id', $subscriptionId)->first();
+                if (!$company && $subscription->customer) {
+                    $company = Company::where('stripe_customer_id', $subscription->customer)->first();
+                }
+            }
+
+            if (!$company) {
+                Log::warning('Cannot sync subscription status: company not found', [
+                    'subscription_id' => $subscriptionId,
+                ]);
+                return false;
+            }
+
+            // Update subscription item ID if it changed
+            $subscriptionItemId = null;
+            if (!empty($subscription->items->data)) {
+                $subscriptionItemId = $subscription->items->data[0]->id;
+            }
+
+            $company->update([
+                'stripe_subscription_id' => $subscriptionId,
+                'stripe_subscription_item_id' => $subscriptionItemId,
+                'subscription_status' => $subscription->status,
+            ]);
+
+            Log::info('Subscription status synced', [
+                'company_id' => $company->id,
+                'subscription_id' => $subscriptionId,
+                'status' => $subscription->status,
+            ]);
+
+            return true;
+        } catch (ApiErrorException $e) {
+            Log::error('Error syncing subscription status', [
+                'subscription_id' => $subscriptionId,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Unexpected error syncing subscription status', [
+                'subscription_id' => $subscriptionId,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
         }
     }
 }

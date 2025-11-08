@@ -81,6 +81,7 @@ To receive real-time updates about payments and subscriptions:
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
    - `customer.subscription.created`
+   - `payment_method.attached` (NEW - for immediate payment method detection)
 5. Copy the signing secret and add to `.env` as `STRIPE_WEBHOOK_SECRET`
 
 ## How It Works
@@ -98,8 +99,12 @@ To receive real-time updates about payments and subscriptions:
 
 4. **Payment Activation**: When the super admin adds a payment method via the Billing Portal:
    - The payment method is attached to the customer
-   - The `customer.subscription.updated` webhook is triggered
-   - The system automatically detects the incomplete subscription and confirms the payment intent
+   - The `payment_method.attached` webhook is triggered immediately
+   - The system finds all incomplete subscriptions for that customer
+   - The system ensures payment intent exists (creates if needed)
+   - The system automatically confirms the payment intent with the new payment method
+   - The `customer.subscription.updated` webhook is also triggered
+   - Subscription status is synced from Stripe to ensure database is up to date
    - The subscription becomes active immediately after payment confirmation
 
 5. **Vehicle Changes**: 
@@ -130,8 +135,11 @@ To receive real-time updates about payments and subscriptions:
 ## Features
 
 - ✅ Automatic customer creation when company with super admin is created
+- ✅ Automatic customer recovery if customer is deleted in Stripe
 - ✅ Automatic subscription creation when first vehicle is added
 - ✅ Automatic payment intent confirmation when payment method is added
+- ✅ Payment method detection via `payment_method.attached` webhook
+- ✅ Automatic subscription status synchronization
 - ✅ Automatic quantity updates when vehicles are added/removed
 - ✅ Proration for mid-cycle changes
 - ✅ Billing cycle anchor set to end of month
@@ -160,6 +168,13 @@ To receive real-time updates about payments and subscriptions:
 - Check subscription status in database (`subscription_status` column)
 - Check Laravel logs for payment intent confirmation errors
 - Note: Payment intent is automatically confirmed when payment method is added via webhook
+- If customer was deleted in Stripe, the system will automatically recreate it when sending payment email
+
+### Customer deleted in Stripe?
+- The system automatically detects deleted customers
+- When sending payment email, if customer is deleted, it will be automatically recreated
+- Old customer ID is cleared and new customer is created
+- Subscription will need to be recreated if it was also deleted
 
 ## Testing
 

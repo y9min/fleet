@@ -96,7 +96,11 @@ To receive real-time updates about payments and subscriptions:
    - Sends an email to the company super admin via Resend
    - Email contains link to add payment method and view subscription
 
-4. **Payment Activation**: When the super admin adds a payment method via the Billing Portal, the subscription automatically becomes active.
+4. **Payment Activation**: When the super admin adds a payment method via the Billing Portal:
+   - The payment method is attached to the customer
+   - The `customer.subscription.updated` webhook is triggered
+   - The system automatically detects the incomplete subscription and confirms the payment intent
+   - The subscription becomes active immediately after payment confirmation
 
 5. **Vehicle Changes**: 
    - Adding vehicles → Subscription quantity increases (prorated)
@@ -127,6 +131,7 @@ To receive real-time updates about payments and subscriptions:
 
 - ✅ Automatic customer creation when company with super admin is created
 - ✅ Automatic subscription creation when first vehicle is added
+- ✅ Automatic payment intent confirmation when payment method is added
 - ✅ Automatic quantity updates when vehicles are added/removed
 - ✅ Proration for mid-cycle changes
 - ✅ Billing cycle anchor set to end of month
@@ -151,8 +156,10 @@ To receive real-time updates about payments and subscriptions:
 
 ### Payment method not working?
 - Check Stripe Dashboard for subscription status
-- Verify payment method was added in Billing Portal
+- Verify payment method was added in Billing Portal and set as default
 - Check subscription status in database (`subscription_status` column)
+- Check Laravel logs for payment intent confirmation errors
+- Note: Payment intent is automatically confirmed when payment method is added via webhook
 
 ## Testing
 

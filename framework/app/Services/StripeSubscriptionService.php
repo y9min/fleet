@@ -7,6 +7,7 @@ use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Price;
 use Stripe\Subscription;
+use Stripe\PaymentIntent;
 use Stripe\Exception\ApiErrorException;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -265,6 +266,82 @@ class StripeSubscriptionService
                 'error' => $e->getMessage(),
             ]);
             return null;
+        }
+    }
+
+    /**
+     * Confirm payment intent for an incomplete subscription
+     * 
+     * @param string $subscriptionId The Stripe subscription ID
+     * @param string $paymentMethodId The payment method ID to use for confirmation
+     * @return bool True if confirmation was successful or already confirmed, false otherwise
+     */
+    public function confirmSubscriptionPaymentIntent(string $subscriptionId, string $paymentMethodId): bool
+    {
+        try {
+            // Retrieve subscription with expanded latest invoice and payment intent
+            $subscription = Subscription::retrieve($subscriptionId, [
+                'expand' => ['latest_invoice.payment_intent'],
+            ]);
+
+            // Check if subscription has a latest invoice with a payment intent
+            if (!$subscription->latest_invoice || !$subscription->latest_invoice->payment_intent) {
+                Log::info('Subscription has no payment intent to confirm', [
+                    'subscription_id' => $subscriptionId,
+                ]);
+                return false;
+            }
+
+            $paymentIntent = $subscription->latest_invoice->payment_intent;
+            
+            // If payment intent is already succeeded or processing, no need to confirm
+            if (in_array($paymentIntent->status, ['succeeded', 'processing', 'requires_capture'])) {
+                Log::info('Payment intent already confirmed or processing', [
+                    'subscription_id' => $subscriptionId,
+                    'payment_intent_id' => $paymentIntent->id,
+                    'status' => $paymentIntent->status,
+                ]);
+                return true;
+            }
+
+            // Only confirm if payment intent requires a payment method
+            if ($paymentIntent->status !== 'requires_payment_method') {
+                Log::info('Payment intent in unexpected state', [
+                    'subscription_id' => $subscriptionId,
+                    'payment_intent_id' => $paymentIntent->id,
+                    'status' => $paymentIntent->status,
+                ]);
+                return false;
+            }
+
+            // Confirm the payment intent with the provided payment method
+            $confirmedIntent = PaymentIntent::confirm($paymentIntent->id, [
+                'payment_method' => $paymentMethodId,
+            ]);
+
+            Log::info('Payment intent confirmed for subscription', [
+                'subscription_id' => $subscriptionId,
+                'payment_intent_id' => $paymentIntent->id,
+                'payment_method_id' => $paymentMethodId,
+                'new_status' => $confirmedIntent->status,
+            ]);
+
+            return true;
+        } catch (ApiErrorException $e) {
+            Log::error('Failed to confirm subscription payment intent', [
+                'subscription_id' => $subscriptionId,
+                'payment_method_id' => $paymentMethodId,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Unexpected error confirming subscription payment intent', [
+                'subscription_id' => $subscriptionId,
+                'payment_method_id' => $paymentMethodId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return false;
         }
     }
 }

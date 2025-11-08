@@ -2067,6 +2067,9 @@ class DriversController extends Controller {
 
                         \Log::info('Found driver:', ['id' => $driver->id, 'email' => $driver->email]);
 
+                        // Store company_id before deletion for cache clearing
+                        $companyId = $driver->company_id;
+
                         // Delete from Firebase first
                         $this->deleteUser($driver->email);
 
@@ -2100,6 +2103,11 @@ class DriversController extends Controller {
                         // Finally delete the driver record
                         $driver->delete();
                         
+                        // Clear dashboard cache to reflect updated driver count
+                        if ($companyId) {
+                            $this->clearDashboardCacheForCompany($companyId);
+                        }
+                        
                         \Log::info('Driver deleted successfully:', ['id' => $request->get('id')]);
                         return redirect()->route('drivers.index')->with('success', 'Driver deleted successfully.');
                         
@@ -2111,6 +2119,9 @@ class DriversController extends Controller {
         public function bulk_delete(Request $request) {
                 try {
                         $drivers = User::whereIn('id', $request->ids)->get();
+                        
+                        // Collect unique company IDs before deletion for cache clearing
+                        $companyIds = $drivers->pluck('company_id')->filter()->unique()->toArray();
                         
                         foreach ($drivers as $driver) {
                                 // Delete from Firebase first
@@ -2146,6 +2157,11 @@ class DriversController extends Controller {
                         
                         // Delete driver-vehicle relationships
                         DriverVehicleModel::whereIn('driver_id', $request->ids)->delete();
+                        
+                        // Clear dashboard cache for all affected companies
+                        foreach ($companyIds as $companyId) {
+                            $this->clearDashboardCacheForCompany($companyId);
+                        }
                         
                         return back()->with('success', 'Selected drivers deleted successfully.');
                         
@@ -2371,6 +2387,13 @@ class DriversController extends Controller {
                 $user->setMeta($form_data);
                 $user->save();
                 $user->givePermissionTo(['Notes add', 'Notes edit', 'Notes delete', 'Notes list', 'Drivers list', 'Fuel add', 'Fuel edit', 'Fuel delete', 'Fuel list', 'VehicleInspection add', 'Transactions list', 'Transactions add', 'Transactions edit', 'Transactions delete']);
+                
+                // Clear dashboard cache to reflect new driver count
+                $companyId = Auth::user()->company_id;
+                if ($companyId) {
+                    $this->clearDashboardCacheForCompany($companyId);
+                }
+                
                 return redirect()->route("drivers.index");
         }
         public function enable($id) {

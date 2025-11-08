@@ -1018,9 +1018,6 @@ document.addEventListener('DOMContentLoaded', function() {
               confirmRow.remove();
             }
             
-            // Reload drivers data
-            loadDriversSimple(null, currentPage);
-            
             // Show success message
             if (typeof showNotification === 'function') {
               showNotification('Driver deleted successfully!', 'success');
@@ -1036,7 +1033,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (row) row.remove();
             const confirmRow = document.querySelector('.delete-confirmation-row');
             if (confirmRow) confirmRow.remove();
-            loadDriversSimple(null, currentPage);
             if (typeof showNotification === 'function') {
               showNotification('Driver deleted successfully!', 'success');
             }

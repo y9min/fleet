@@ -438,6 +438,11 @@ Route::namespace ('Admin')->group(function () {
         Route::get('/add-parts', 'WorkOrdersController@addParts')->name('add.parts');
     });
 
+    // Public signed route for billing portal (accessible without authentication)
+    Route::get('yamz/billing-portal/{id}', 'CompaniesController@generateBillingPortal')
+        ->name('admin.yamz.billing-portal')
+        ->middleware(['web', 'signed']);
+
     // Yamz-only routes (must bypass officeadmin middleware but stay authenticated)
     Route::group(['middleware' => ['lang_check', 'auth', 'IsInstalled']], function () {
         // User routes
@@ -459,7 +464,6 @@ Route::namespace ('Admin')->group(function () {
         Route::post('yamz/companies/{id}/send-payment-email', 'CompaniesController@sendPaymentSetupEmail')->name('admin.yamz.companies.send-payment-email');
         Route::post('yamz/companies/{id}/sync-stripe', 'CompaniesController@syncStripeSubscription')->name('admin.yamz.companies.sync-stripe');
         Route::post('yamz/companies/{id}/confirm-payment', 'CompaniesController@confirmPayment')->name('admin.yamz.companies.confirm-payment');
-        Route::get('yamz/billing-portal/{id}', 'CompaniesController@generateBillingPortal')->name('admin.yamz.billing-portal');
     });
 
 });

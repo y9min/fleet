@@ -38,11 +38,8 @@ class VehicleObserver
 
             $count = VehicleModel::where('company_id', $companyId)->count();
 
-            if (!$company->stripe_subscription_id) {
-                $svc->createSubscription($company->stripe_customer_id, $count, $company);
-            } else {
-                $svc->updateSubscriptionQuantity($company->stripe_subscription_id, $count, $company);
-            }
+            // Always use createSubscription - it will verify if subscription exists and update or create accordingly
+            $svc->createSubscription($company->stripe_customer_id, $count, $company);
 
             Log::info('VehicleObserver Stripe sync', [
                 'company_id' => $companyId,

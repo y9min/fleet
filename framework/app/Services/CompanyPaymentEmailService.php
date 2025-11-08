@@ -59,6 +59,23 @@ class CompanyPaymentEmailService
                 }
                 // Refresh company to get updated stripe_customer_id
                 $company->refresh();
+            } else {
+                // Verify customer exists in Stripe (may have been deleted)
+                if (!$this->stripeService->verifyCustomerExists($company->stripe_customer_id)) {
+                    Log::warning('Stripe customer was deleted, recovering', [
+                        'company_id' => $company->id,
+                        'customer_id' => $company->stripe_customer_id,
+                    ]);
+                    $customerId = $this->stripeService->recoverCustomer($company);
+                    if (!$customerId) {
+                        Log::error('Cannot send payment email: Failed to recover deleted Stripe customer', [
+                            'company_id' => $company->id,
+                        ]);
+                        throw new \Exception('Stripe customer was deleted and could not be recovered. Please try again.');
+                    }
+                    // Refresh company to get updated stripe_customer_id
+                    $company->refresh();
+                }
             }
 
             // Generate Billing Portal link
@@ -76,8 +93,9 @@ class CompanyPaymentEmailService
             if (!$portalUrl) {
                 Log::error('Cannot send payment email: Billing Portal session creation failed', [
                     'company_id' => $company->id,
+                    'customer_id' => $company->stripe_customer_id,
                 ]);
-                throw new \Exception('Failed to create Stripe Billing Portal session. Please check your Stripe configuration.');
+                throw new \Exception('Failed to create Stripe Billing Portal session. The customer may have been deleted. Please try again.');
             }
 
             // Get vehicle count for the email

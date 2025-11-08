@@ -70,6 +70,10 @@ class StripeWebhookController extends Controller
                     $this->handleSubscriptionCreated($event->data->object);
                     break;
 
+                case 'payment_method.attached':
+                    $this->handlePaymentMethodAttached($event->data->object);
+                    break;
+
                 default:
                     Log::info('Unhandled Stripe webhook event', [
                         'type' => $event->type,
@@ -193,11 +197,40 @@ class StripeWebhookController extends Controller
                 // If so, attempt to confirm the payment intent
                 if (in_array($subscription->status, ['incomplete', 'incomplete_expired'])) {
                     $this->attemptPaymentIntentConfirmation($subscriptionId, $customerId);
+                    
+                    // Sync subscription status after confirmation attempt
+                    // This ensures we get the latest status even if webhook arrived before payment processed
+                    $this->syncSubscriptionStatus($subscriptionId, $company);
+                } else {
+                    // For non-incomplete subscriptions, always sync status to ensure database is up to date
+                    $this->syncSubscriptionStatus($subscriptionId, $company);
                 }
             }
         } catch (\Exception $e) {
             Log::error('Error handling customer.subscription.updated webhook', [
                 'subscription_id' => $subscription->id ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Sync subscription status from Stripe to database
+     */
+    private function syncSubscriptionStatus(string $subscriptionId, Company $company): void
+    {
+        try {
+            $synced = $this->stripeService->syncSubscriptionStatus($subscriptionId, $company);
+            if ($synced) {
+                Log::info('Subscription status synced via webhook', [
+                    'company_id' => $company->id,
+                    'subscription_id' => $subscriptionId,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error syncing subscription status in webhook', [
+                'company_id' => $company->id ?? null,
+                'subscription_id' => $subscriptionId,
                 'error' => $e->getMessage(),
             ]);
         }
@@ -259,6 +292,80 @@ class StripeWebhookController extends Controller
             Log::error('Error attempting payment intent confirmation', [
                 'subscription_id' => $subscriptionId,
                 'customer_id' => $customerId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    /**
+     * Handle payment method attached
+     */
+    private function handlePaymentMethodAttached($paymentMethod)
+    {
+        try {
+            $customerId = $paymentMethod->customer;
+            $paymentMethodId = $paymentMethod->id;
+
+            if (!$customerId) {
+                Log::info('Payment method attached but no customer associated', [
+                    'payment_method_id' => $paymentMethodId,
+                ]);
+                return;
+            }
+
+            $company = Company::where('stripe_customer_id', $customerId)->first();
+
+            if (!$company) {
+                Log::info('Payment method attached for customer with no associated company', [
+                    'customer_id' => $customerId,
+                    'payment_method_id' => $paymentMethodId,
+                ]);
+                return;
+            }
+
+            Log::info('Payment method attached', [
+                'company_id' => $company->id,
+                'customer_id' => $customerId,
+                'payment_method_id' => $paymentMethodId,
+            ]);
+
+            // Find all incomplete subscriptions for this customer
+            $subscriptions = Subscription::all([
+                'customer' => $customerId,
+                'status' => 'incomplete',
+                'limit' => 100,
+            ]);
+
+            if (empty($subscriptions->data)) {
+                // Also check incomplete_expired
+                $subscriptions = Subscription::all([
+                    'customer' => $customerId,
+                    'status' => 'incomplete_expired',
+                    'limit' => 100,
+                ]);
+            }
+
+            foreach ($subscriptions->data as $subscription) {
+                Log::info('Found incomplete subscription for payment method attachment', [
+                    'company_id' => $company->id,
+                    'subscription_id' => $subscription->id,
+                    'status' => $subscription->status,
+                ]);
+
+                // Ensure payment intent exists
+                $this->stripeService->ensurePaymentIntentExists($subscription->id);
+
+                // Attempt to confirm payment intent
+                $this->attemptPaymentIntentConfirmation($subscription->id, $customerId);
+
+                // Sync subscription status after a short delay to allow payment to process
+                // We'll do this in the subscription.updated handler, but also try here
+                $this->syncSubscriptionStatus($subscription->id, $company);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error handling payment_method.attached webhook', [
+                'payment_method_id' => $paymentMethod->id ?? null,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

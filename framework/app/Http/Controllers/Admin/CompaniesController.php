@@ -274,20 +274,13 @@ class CompaniesController extends Controller {
 
             $vehicleCount = VehicleModel::where('company_id', $company->id)->count();
 
-            if (!$company->stripe_subscription_id) {
-                $result = $svc->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
-                if (!$result) {
-                    return redirect()->route('admin.yamz.companies.show', $companyId)
-                        ->with('error', 'Failed to create Stripe subscription. Check logs for details.');
-                }
-                $company->refresh();
-            } else {
-                $result = $svc->updateSubscriptionQuantity($company->stripe_subscription_id, $vehicleCount, $company);
-                if (!$result) {
-                    return redirect()->route('admin.yamz.companies.show', $companyId)
-                        ->with('error', 'Failed to update Stripe subscription. Subscription may have been deleted. Try syncing again.');
-                }
+            // Always use createSubscription - it will verify if subscription exists and update or create accordingly
+            $result = $svc->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+            if (!$result) {
+                return redirect()->route('admin.yamz.companies.show', $companyId)
+                    ->with('error', 'Failed to sync Stripe subscription. Check logs for details.');
             }
+            $company->refresh();
 
             return redirect()->route('admin.yamz.companies.show', $companyId)
                 ->with('success', 'Stripe subscription synced. Vehicles: ' . $vehicleCount);

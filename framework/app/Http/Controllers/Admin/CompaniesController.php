@@ -50,7 +50,23 @@ class CompaniesController extends Controller {
         $vehiclesCount = VehicleModel::where('company_id',$company->id)->count();
         $vehicles = VehicleModel::where('company_id',$company->id)->orderBy('id','desc')->limit(50)->get();
 
-        return view('admin.yamz.company-show', compact('company','supers','offices','drivers','vehicles','vehiclesCount'));
+        // Check if payment intent confirmation is needed
+        $confirmationNeeded = null;
+        if ($company->stripe_subscription_id) {
+            try {
+                $stripeService = new StripeSubscriptionService();
+                $confirmationNeeded = $stripeService->checkIfConfirmationNeeded($company->stripe_subscription_id);
+            } catch (\Exception $e) {
+                // Log error but don't break page load
+                Log::error('Error checking if payment confirmation needed', [
+                    'company_id' => $companyId,
+                    'subscription_id' => $company->stripe_subscription_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return view('admin.yamz.company-show', compact('company','supers','offices','drivers','vehicles','vehiclesCount','confirmationNeeded'));
     }
 
     public function create() {
@@ -270,6 +286,88 @@ class CompaniesController extends Controller {
 
             return redirect()->route('admin.yamz.companies.show', $companyId)
                 ->with('error', 'Failed to sync Stripe subscription: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Confirm payment intent for incomplete subscription
+     */
+    public function confirmPayment($companyId, Request $request)
+    {
+        $user = Auth::user();
+        if ($user->email !== 'yamzahmed@hotmail.com') {
+            return response()->json(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
+        $company = Company::findOrFail($companyId);
+
+        if (!$company->stripe_subscription_id) {
+            return response()->json(['success' => false, 'message' => 'No subscription found'], 400);
+        }
+
+        try {
+            $stripeService = new StripeSubscriptionService();
+            
+            // Double-check if confirmation is still needed (race condition protection)
+            $confirmationData = $stripeService->checkIfConfirmationNeeded($company->stripe_subscription_id);
+
+            if (!$confirmationData) {
+                // Payment intent may have already been confirmed by webhook
+                // Refresh company to get latest status
+                $company->refresh();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment already confirmed or not needed',
+                    'subscription_status' => $company->subscription_status,
+                ]);
+            }
+
+            // Confirm the payment intent
+            $confirmed = $stripeService->confirmSubscriptionPaymentIntent(
+                $confirmationData['subscription_id'],
+                $confirmationData['payment_method_id']
+            );
+
+            if ($confirmed) {
+                // Refresh company to get updated subscription status
+                $company->refresh();
+                
+                Log::info('Payment intent confirmed via user action', [
+                    'company_id' => $companyId,
+                    'subscription_id' => $confirmationData['subscription_id'],
+                    'payment_method_id' => $confirmationData['payment_method_id'],
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment confirmed successfully!',
+                    'subscription_status' => $company->subscription_status,
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to confirm payment. Please try again or wait for automatic confirmation.',
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error confirming payment', [
+                'company_id' => $companyId,
+                'subscription_id' => $company->stripe_subscription_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $errorMessage = 'An error occurred while confirming payment.';
+            if (strpos($e->getMessage(), 'No such payment_intent') !== false) {
+                $errorMessage = 'Payment intent not found. It may have already been processed.';
+            } elseif (strpos($e->getMessage(), 'already been confirmed') !== false) {
+                $errorMessage = 'Payment has already been confirmed.';
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage,
+            ], 500);
         }
     }
 }

@@ -20,7 +20,7 @@
     </div>
 
     <div style="text-align: center; margin: 30px 0;">
-        <a href="{{ URL::temporarySignedRoute('admin.yamz.billing-portal', now()->addDays(7), ['id' => $company->id]) }}" style="background-color: #0d6efd; color: #ffffff; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+        <a href="{{ route('admin.yamz.billing-portal', $token) }}" style="background-color: #0d6efd; color: #ffffff; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
             Complete Setup
         </a>
     </div>

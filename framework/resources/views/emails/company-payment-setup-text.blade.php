@@ -7,7 +7,7 @@ SUBSCRIPTION DETAILS
 Company: {{ $company->name }}
 Price per vehicle: £7/month
 
-Complete Setup: {{ URL::temporarySignedRoute('admin.yamz.billing-portal', now()->addDays(7), ['id' => $company->id]) }}
+Complete Setup: {{ route('admin.yamz.billing-portal', $token) }}
 
 This link opens a secure Stripe billing page where you can add your preferred payment method and manage your subscription.
 

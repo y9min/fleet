@@ -374,11 +374,23 @@ class CompaniesController extends Controller {
     /**
      * Generate Billing Portal session on-demand
      * Creates a fresh session when user clicks the email link
+     * Uses token-based authentication (no login required)
      */
-    public function generateBillingPortal($companyId)
+    public function generateBillingPortal($token)
     {
         try {
-            $company = Company::findOrFail($companyId);
+            // Find company by token
+            $company = Company::where('billing_portal_token', $token)->first();
+            
+            if (!$company) {
+                Log::error('Invalid billing portal token', [
+                    'token' => $token,
+                ]);
+                return view('admin.yamz.billing-portal-error', [
+                    'message' => 'Invalid or expired link. Please request a new payment setup email.'
+                ]);
+            }
+
             $stripeService = new StripeSubscriptionService();
 
             // Ensure customer exists
@@ -391,8 +403,9 @@ class CompaniesController extends Controller {
                     Log::error('Failed to create Stripe customer for billing portal', [
                         'company_id' => $company->id,
                     ]);
-                    return redirect()->route('admin.yamz.companies.show', $companyId)
-                        ->with('error', 'Failed to create Stripe customer. Please check your Stripe API keys.');
+                    return view('admin.yamz.billing-portal-error', [
+                        'message' => 'Failed to create Stripe customer. Please contact support.'
+                    ]);
                 }
                 // Refresh company to get updated stripe_customer_id
                 $company->refresh();
@@ -408,16 +421,32 @@ class CompaniesController extends Controller {
                         Log::error('Failed to recover deleted Stripe customer for billing portal', [
                             'company_id' => $company->id,
                         ]);
-                        return redirect()->route('admin.yamz.companies.show', $companyId)
-                            ->with('error', 'Stripe customer was deleted and could not be recovered. Please try again.');
+                        return view('admin.yamz.billing-portal-error', [
+                            'message' => 'Stripe customer was deleted and could not be recovered. Please contact support.'
+                        ]);
                     }
                     // Refresh company to get updated stripe_customer_id
                     $company->refresh();
                 }
             }
 
+            // Ensure subscription exists (for existing companies with vehicles)
+            if (!$company->stripe_subscription_id) {
+                $vehicleCount = \App\Model\VehicleModel::where('company_id', $company->id)->count();
+                if ($vehicleCount > 0) {
+                    Log::info('Creating subscription for existing company with vehicles', [
+                        'company_id' => $company->id,
+                        'vehicle_count' => $vehicleCount,
+                    ]);
+                    $subscriptionResult = $stripeService->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+                    if ($subscriptionResult) {
+                        $company->refresh();
+                    }
+                }
+            }
+
             // Create fresh Billing Portal session
-            $returnUrl = route('admin.yamz.companies.show', $company->id);
+            $returnUrl = url('/admin/yamz/billing-portal/' . $token);
             Log::info('Creating on-demand Billing Portal session', [
                 'company_id' => $company->id,
                 'customer_id' => $company->stripe_customer_id,
@@ -433,8 +462,9 @@ class CompaniesController extends Controller {
                     'company_id' => $company->id,
                     'customer_id' => $company->stripe_customer_id,
                 ]);
-                return redirect()->route('admin.yamz.companies.show', $companyId)
-                    ->with('error', 'Failed to create Billing Portal session. Please try again.');
+                return view('admin.yamz.billing-portal-error', [
+                    'message' => 'Failed to create Billing Portal session. Please try again or contact support.'
+                ]);
             }
 
             // Redirect to Billing Portal
@@ -443,26 +473,16 @@ class CompaniesController extends Controller {
                 'portal_url' => $portalUrl,
             ]);
             return redirect($portalUrl);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error('Company not found for billing portal', [
-                'company_id' => $companyId,
-            ]);
-            return redirect()->route('admin.yamz.companies')
-                ->with('error', 'Company not found.');
         } catch (\Exception $e) {
             Log::error('Error generating Billing Portal session', [
-                'company_id' => $companyId,
+                'token' => $token,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $errorMessage = 'An error occurred while generating the Billing Portal link.';
-            if (strpos($e->getMessage(), 'Stripe') !== false) {
-                $errorMessage = 'Stripe error: ' . $e->getMessage();
-            }
-
-            return redirect()->route('admin.yamz.companies.show', $companyId)
-                ->with('error', $errorMessage);
+            return view('admin.yamz.billing-portal-error', [
+                'message' => 'An error occurred. Please contact support if this persists.'
+            ]);
         }
     }
 }

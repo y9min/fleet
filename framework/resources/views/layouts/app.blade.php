@@ -352,7 +352,7 @@ button.deleting {
     }
     
     .modal-backdrop.show {
-      pointer-events: auto !important;
+      pointer-events: none !important;
     }
     
     /* Ensure all interactive elements in modal are clickable */
@@ -381,8 +381,6 @@ button.deleting {
 
   </script>
 
-<<<<<<< HEAD
-=======
   <script>
     // Defensive: ensure backdrop never intercepts pointer events when any modal is shown
     (function() {
@@ -542,8 +540,6 @@ button.deleting {
       });
     })();
   </script>
-
->>>>>>> 180ad8e7 (Chore: add advanced modal/backdrop diagnostics for Import modal)
   <!-- browser notification -->
 
 

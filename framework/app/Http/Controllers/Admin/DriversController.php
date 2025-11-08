@@ -27,6 +27,7 @@ use DataTables;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Kreait\Laravel\Firebase\Facades\Firebase;
@@ -1294,6 +1295,11 @@ class DriversController extends Controller {
                         $hasOnlyDuplicates = ($stats['duplicates_skipped'] > 0 && !$hasErrors && !$hasSuccess);
                         
                         if ($hasSuccess || $hasOnlyDuplicates) {
+                                // Clear dashboard cache if drivers were actually imported
+                                if ($hasSuccess) {
+                                    $this->clearDashboardCacheForCompany($companyId);
+                                }
+                                
                                 if ($hasSuccess) {
                                     $message = "Successfully imported {$stats['successfully_imported']} drivers";
                                 } else {
@@ -1350,6 +1356,9 @@ class DriversController extends Controller {
                         
                         // If any drivers were imported successfully, return success with warning
                         if ($stats['successfully_imported'] > 0) {
+                            // Clear dashboard cache to reflect new driver count
+                            $this->clearDashboardCacheForCompany($companyId);
+                            
                             $message = "Successfully imported {$stats['successfully_imported']} drivers";
                             if (count($errorMessages) > 0) {
                                 $message .= ". Some rows had validation errors: " . implode('; ', array_slice($errorMessages, 0, 5));
@@ -3533,6 +3542,33 @@ if(Hyvikk::api('firebase_url') != NULL)
             });
 
         return response()->json($statuses);
+    }
+
+    /**
+     * Clear dashboard cache for all relevant users in a company
+     * Matches the pattern used in VehicleObserver
+     */
+    private function clearDashboardCacheForCompany($companyId)
+    {
+        try {
+            // Company-scoped admins (Super/Office/Boss with company)
+            $adminIds = User::where('company_id', $companyId)
+                ->whereIn('user_type', ['S','O','B'])
+                ->pluck('id');
+            foreach ($adminIds as $uid) {
+                Cache::forget('dashboard_stats_' . $uid . '_' . $companyId);
+            }
+            // Yamz admin (Boss with no company)
+            $yamz = User::where('email', 'yamzahmed@hotmail.com')->first();
+            if ($yamz) {
+                Cache::forget('dashboard_stats_' . $yamz->id . '_null');
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Driver import cache bust failed', [
+                'company_id' => $companyId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
 }

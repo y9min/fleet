@@ -353,14 +353,38 @@ class StripeWebhookController extends Controller
                     'status' => $subscription->status,
                 ]);
 
+                // Set the attached payment method as the subscription's default
+                try {
+                    Subscription::update($subscription->id, [
+                        'default_payment_method' => $paymentMethodId,
+                    ]);
+                    Log::info('Set payment method as subscription default', [
+                        'subscription_id' => $subscription->id,
+                        'payment_method_id' => $paymentMethodId,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to set payment method as subscription default', [
+                        'subscription_id' => $subscription->id,
+                        'payment_method_id' => $paymentMethodId,
+                        'error' => $e->getMessage(),
+                    ]);
+                    // Continue anyway - might still work
+                }
+
                 // Ensure payment intent exists
                 $this->stripeService->ensurePaymentIntentExists($subscription->id);
 
-                // Attempt to confirm payment intent
-                $this->attemptPaymentIntentConfirmation($subscription->id, $customerId);
+                // Confirm payment intent using the payment method ID directly from webhook
+                $confirmed = $this->stripeService->confirmSubscriptionPaymentIntent($subscription->id, $paymentMethodId);
+                
+                if ($confirmed) {
+                    Log::info('Payment intent confirmed for incomplete subscription', [
+                        'subscription_id' => $subscription->id,
+                        'payment_method_id' => $paymentMethodId,
+                    ]);
+                }
 
-                // Sync subscription status after a short delay to allow payment to process
-                // We'll do this in the subscription.updated handler, but also try here
+                // Sync subscription status after confirmation
                 $this->syncSubscriptionStatus($subscription->id, $company);
             }
         } catch (\Exception $e) {

@@ -231,7 +231,9 @@ class VehiclesController extends Controller {
                             ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
                             ->with(['types', 'company', 'drivers', 'group']) // Optimize: eager load all relationships
                             ->groupBy('vehicles.id')
-                            ->get();
+                            ->get()
+                            ->sortByDesc('created_at')
+                            ->values();
                     }
                 } elseif (($user->getRawOriginal('user_type') == "S" || $user->getRawOriginal('user_type') == "O")) {
                     // Super/Office Admin - must have a company assigned; otherwise none
@@ -244,7 +246,9 @@ class VehiclesController extends Controller {
                             ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
                             ->with(['types', 'company', 'drivers', 'group']) // Optimize: eager load all relationships
                             ->groupBy('vehicles.id')
-                            ->get();
+                            ->get()
+                            ->sortByDesc('created_at')
+                            ->values();
                     }
                 } else {
                     // Driver - see only assigned vehicles
@@ -255,7 +259,9 @@ class VehiclesController extends Controller {
                         ->leftJoin('users', 'users.id', '=', 'driver_vehicle.driver_id')
                         ->with(['types', 'company', 'drivers', 'group']) // Optimize: eager load all relationships
                         ->groupBy('vehicles.id')
-                        ->get();
+                        ->get()
+                        ->sortByDesc('created_at')
+                        ->values();
                 }
 
                 // Already handled Boss-without-company above
@@ -792,8 +798,11 @@ class VehiclesController extends Controller {
                                 }
                         }
                         
-                        // Group by vehicles.id and execute
-                        $vehicles = $vehicles->groupBy('vehicles.id')->get();
+                        // Group by vehicles.id and execute, then sort by newest first
+                        $vehicles = $vehicles->groupBy('vehicles.id')
+                            ->get()
+                            ->sortByDesc('created_at')
+                            ->values();
                         
                         try {
                                 // Optimize: Load all metadata in a single query instead of N+1 queries

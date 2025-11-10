@@ -330,6 +330,20 @@ class StripeWebhookController extends Controller
                 'payment_method_id' => $paymentMethodId,
             ]);
 
+            // Check if company has a subscription
+            if (!$company->stripe_subscription_id) {
+                // No subscription exists, create one with 0 vehicles
+                $vehicleCount = \App\Model\VehicleModel::where('company_id', $company->id)->count();
+                Log::info('Creating subscription on payment method attachment (no subscription exists)', [
+                    'company_id' => $company->id,
+                    'vehicle_count' => $vehicleCount,
+                ]);
+                $subscriptionResult = $this->stripeService->createSubscription($customerId, $vehicleCount, $company);
+                if ($subscriptionResult) {
+                    $company->refresh();
+                }
+            }
+
             // Find all incomplete subscriptions for this customer
             $subscriptions = Subscription::all([
                 'customer' => $customerId,

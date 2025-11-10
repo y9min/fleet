@@ -437,18 +437,16 @@ class CompaniesController extends Controller {
                 }
             }
 
-            // Ensure subscription exists (for existing companies with vehicles)
+            // Ensure subscription exists (create with 0 vehicles if needed)
             if (!$company->stripe_subscription_id) {
                 $vehicleCount = \App\Model\VehicleModel::where('company_id', $company->id)->count();
-                if ($vehicleCount > 0) {
-                    Log::info('Creating subscription for existing company with vehicles', [
-                        'company_id' => $company->id,
-                        'vehicle_count' => $vehicleCount,
-                    ]);
-                    $subscriptionResult = $stripeService->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
-                    if ($subscriptionResult) {
-                        $company->refresh();
-                    }
+                Log::info('Creating subscription for company (may have 0 vehicles)', [
+                    'company_id' => $company->id,
+                    'vehicle_count' => $vehicleCount,
+                ]);
+                $subscriptionResult = $stripeService->createSubscription($company->stripe_customer_id, $vehicleCount, $company);
+                if ($subscriptionResult) {
+                    $company->refresh();
                 }
             }
 

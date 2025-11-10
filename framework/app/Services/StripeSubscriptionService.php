@@ -239,17 +239,14 @@ class StripeSubscriptionService
                 return null;
             }
 
-            // Calculate billing cycle anchor (last day of current month)
-            $now = Carbon::now();
-            $anchor = $now->copy()->endOfMonth()->timestamp;
-
             Log::info('Creating new Stripe subscription', [
                 'company_id' => $company->id,
                 'customer_id' => $customerId,
                 'vehicle_count' => $vehicleCount,
             ]);
 
-            $subscription = Subscription::create([
+            // Only set billing cycle anchor if there are vehicles (to avoid invoice for 0 quantity)
+            $subscriptionParams = [
                 'customer' => $customerId,
                 'items' => [
                     [
@@ -257,16 +254,23 @@ class StripeSubscriptionService
                         'quantity' => $vehicleCount,
                     ],
                 ],
-                'billing_cycle_anchor' => $anchor,
-                'proration_behavior' => 'create_prorations',
                 'metadata' => [
                     'company_id' => $company->id,
                     'company_name' => $company->name,
                 ],
-                // Subscription will be incomplete until payment method is added
                 'payment_behavior' => 'default_incomplete',
                 'expand' => ['latest_invoice.payment_intent'],
-            ]);
+            ];
+
+            // Only add billing cycle anchor and proration if there are vehicles
+            if ($vehicleCount > 0) {
+                $now = Carbon::now();
+                $anchor = $now->copy()->endOfMonth()->timestamp;
+                $subscriptionParams['billing_cycle_anchor'] = $anchor;
+                $subscriptionParams['proration_behavior'] = 'create_prorations';
+            }
+
+            $subscription = Subscription::create($subscriptionParams);
 
             // Get subscription item ID
             $subscriptionItemId = $subscription->items->data[0]->id ?? null;

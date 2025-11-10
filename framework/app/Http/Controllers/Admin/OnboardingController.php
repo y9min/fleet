@@ -51,24 +51,15 @@ class OnboardingController extends Controller
         // TOTAL: Onboarding records (submitted + rejected) + approved drivers from users table
         
         if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
-            $vehicleIds = \App\Model\VehicleModel::where('company_id', $auth->company_id)->pluck('id')->toArray();
-            
-            // Pending: Only submitted status in onboarding table
+            // Pending: Only submitted status in onboarding table - filter by company_id
             $pending_count = OnboardingDriver::submitted()
-                ->where(function($query) use ($vehicleIds) {
-                    $query->whereIn('vehicle_id', $vehicleIds)
-                          ->orWhereNull('vehicle_id');
-                })->count();
+                ->where('company_id', $auth->company_id)
+                ->count();
                 
             // Approved: Count from users table where user_type = 'D' (actual approved drivers)
             // Filter out test users and only count real drivers from onboarding process
             $approved_count = \App\Model\User::where('user_type', 'D')
-                ->where(function($query) use ($vehicleIds) {
-                    // Use the many-to-many relationship through driver_vehicle table
-                    $query->whereHas('vehicles', function($q) use ($vehicleIds) {
-                        $q->whereIn('vehicles.id', $vehicleIds);
-                    })->orWhereDoesntHave('vehicles');
-                })
+                ->where('company_id', $auth->company_id)
                 ->where(function($query) {
                     // Exclude test users based on patterns
                     $query->where('email', 'not like', '%@example.%')
@@ -78,18 +69,13 @@ class OnboardingController extends Controller
                           ->whereYear('created_at', '>=', 2025);
                 })->count();
                 
-            // Rejected: Only rejected status in onboarding table
+            // Rejected: Only rejected status in onboarding table - filter by company_id
             $rejected_count = OnboardingDriver::rejected()
-                ->where(function($query) use ($vehicleIds) {
-                    $query->whereIn('vehicle_id', $vehicleIds)
-                          ->orWhereNull('vehicle_id');
-                })->count();
+                ->where('company_id', $auth->company_id)
+                ->count();
                 
             // Total: Onboarding records (submitted + rejected) + approved drivers from users table
-            $onboarding_total = OnboardingDriver::where(function($query) use ($vehicleIds) {
-                $query->whereIn('vehicle_id', $vehicleIds)
-                      ->orWhereNull('vehicle_id');
-            })->count();
+            $onboarding_total = OnboardingDriver::where('company_id', $auth->company_id)->count();
             $total_count = $onboarding_total + $approved_count;
             
         } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {

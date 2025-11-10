@@ -252,9 +252,11 @@ class HomeController extends Controller {
             
             // Onboarding & Fines statistics (company-scoped)
             if (in_array($user->getRawOriginal('user_type'), ['S','O']) && !is_null($user->company_id)) {
-                // Show global onboarding counts to ensure accuracy even if vehicle_id is null
-                $data['onboarding_pending'] = OnboardingDriver::submitted()->count();
-                $data['onboarding_total'] = OnboardingDriver::count();
+                // Filter onboarding by company_id to match table filtering
+                $data['onboarding_pending'] = OnboardingDriver::submitted()
+                    ->where('company_id', $user->company_id)
+                    ->count();
+                $data['onboarding_total'] = OnboardingDriver::where('company_id', $user->company_id)->count();
                 // Fines still scoped by company vehicles
                 $companyVehicleIds = \App\Model\VehicleModel::where('company_id', $user->company_id)->pluck('id')->toArray();
                 if (empty($companyVehicleIds)) {

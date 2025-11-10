@@ -944,14 +944,23 @@ class VehiclesController extends Controller {
                 $index['makes'] = VehicleModel::select('make_name')->distinct()->whereNotNull('make_name')->pluck('make_name')->toArray();
                 $index['models'] = VehicleModel::select('model_name')->distinct()->whereNotNull('model_name')->pluck('model_name')->toArray();
                 $index['colors'] = VehicleModel::select('color_name')->distinct()->whereNotNull('color_name')->pluck('color_name')->toArray();
-                // Get drivers excluding those already assigned to any vehicle and inactive drivers
-                $index['drivers'] = User::whereUser_type("D")
-                        ->whereHas('metas', function($query) {
-                                $query->where('key', 'is_active')
-                                      ->where('value', '1');
-                        })
-                        ->whereDoesntHave('vehicles')
-                        ->get();
+		// Get drivers excluding those already assigned to any vehicle and inactive drivers
+		$auth = Auth::user();
+		$driversQuery = User::whereUser_type("D")
+				->whereHas('metas', function($query) {
+						$query->where('key', 'is_active')
+							  ->where('value', '1');
+				})
+				->whereDoesntHave('vehicles');
+
+		// Apply company scoping for drivers
+		if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+				$driversQuery->where('company_id', $auth->company_id);
+		} elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+				$driversQuery->whereRaw('1=0'); // No results for this user type
+		}
+
+		$index['drivers'] = $driversQuery->get();
                 return view("vehicles.create", $index);
         }
         public function get_models($name) {

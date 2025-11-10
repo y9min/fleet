@@ -222,7 +222,12 @@ class OnboardingController extends Controller
             'emergency_contact', 'emergency_phone', 'created_at', 'updated_at'
         ])->with(['vehicle']);
 
-        // NO FILTERING AT ALL - SHOW EVERYTHING
+        // Apply company scoping for onboarding drivers
+        if (in_array($auth->user_type, ['S','O']) && !is_null($auth->company_id)) {
+            $query->where('company_id', $auth->company_id);
+        } elseif ($auth->user_type === 'B' && is_null($auth->company_id)) {
+            // Boss Admin without company sees all records
+        }
 
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
